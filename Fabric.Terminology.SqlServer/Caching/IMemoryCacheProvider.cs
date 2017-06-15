@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Fabric.Terminology.Domain.Caching
+namespace Fabric.Terminology.SqlServer.Caching
 {
     public interface IMemoryCacheProvider : ICacheProvider
     {

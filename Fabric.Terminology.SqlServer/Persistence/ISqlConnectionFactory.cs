@@ -1,6 +1,6 @@
 ﻿using System.Data.SqlClient;
 
-namespace Fabric.Terminology.Domain.Persistence
+namespace Fabric.Terminology.SqlServer.Persistence
 {
     public interface ISqlConnectionFactory
     {

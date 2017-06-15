@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Data.SqlClient;
 
-namespace Fabric.Terminology.Domain.Persistence
+using Fabric.Terminology.Domain;
+
+namespace Fabric.Terminology.SqlServer.Persistence
 {
     internal class SqlConnectionFactory : ISqlConnectionFactory
     {

@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Runtime.InteropServices.ComTypes;
 
-namespace Fabric.Terminology.Domain.Caching
+namespace Fabric.Terminology.SqlServer.Caching
 {
     public interface ICacheProvider
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 
-namespace Fabric.Terminology.Domain.Threading
+namespace Fabric.Terminology.SqlServer.Threading
 {
     internal class SlimWriterLock : IDisposable
     {

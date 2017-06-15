@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fabric.Terminology.UnitTest
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fabric.Terminology.Domain", "Fabric.Terminology.Domain\Fabric.Terminology.Domain.csproj", "{4F3E143F-963E-45C4-A0CC-7033B7172DF0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fabric.Terminology.SqlServer", "Fabric.Terminology.SqlServer\Fabric.Terminology.SqlServer.csproj", "{89A44276-F986-4CF7-BC87-96B3C63252F3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,6 +37,10 @@ Global
 		{4F3E143F-963E-45C4-A0CC-7033B7172DF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4F3E143F-963E-45C4-A0CC-7033B7172DF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4F3E143F-963E-45C4-A0CC-7033B7172DF0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{89A44276-F986-4CF7-BC87-96B3C63252F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{89A44276-F986-4CF7-BC87-96B3C63252F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{89A44276-F986-4CF7-BC87-96B3C63252F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{89A44276-F986-4CF7-BC87-96B3C63252F3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

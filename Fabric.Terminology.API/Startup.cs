@@ -1,10 +1,16 @@
-﻿using Fabric.Terminology.API.Configuration;
+﻿using System;
+using System.Collections.Generic;
+using Fabric.Terminology.API.Configuration;
+using Fabric.Terminology.API.DependencyInjection;
+using Fabric.Terminology.API.Logging;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Nancy.Owin;
+using Serilog.Core;
+using Serilog.Events;
 
 namespace Fabric.Terminology.API
 {
@@ -26,7 +32,6 @@ namespace Fabric.Terminology.API
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -35,6 +40,9 @@ namespace Fabric.Terminology.API
             var appConfig = new AppConfiguration();
             Configuration.Bind(appConfig);
 
+            var logger = LogFactory.CreateLogger(new LoggingLevelSwitch(LogEventLevel.Debug));
+
+            logger.Information("Fabric.Terminology.API starting.");
 
             if (env.IsDevelopment())
             {
@@ -43,7 +51,9 @@ namespace Fabric.Terminology.API
 
             //app.UseStaticFiles(); // <- requires Microsoft.AspNetCore.StaticFiles
             app.UseOwin()
-                .UseNancy(opt => opt.Bootstrapper = new Bootstrapper(appConfig));
+                .UseNancy(opt => opt.Bootstrapper = new Bootstrapper(appConfig, logger));
+
+            logger.Information("Fabric.Terminology.API started!");
         }
     }
 }

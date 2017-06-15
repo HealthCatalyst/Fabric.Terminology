@@ -1,4 +1,4 @@
-﻿namespace Fabric.Terminology.Domain
+﻿namespace Fabric.Terminology.API
 {
     /// <summary>
     /// Extension methods

@@ -1,11 +1,15 @@
-﻿namespace Fabric.Terminology.Domain.Persistence
+﻿using System;
+using System.Linq.Expressions;
+
+namespace Fabric.Terminology.Domain.Persistence
 {
-    public abstract class PageableRepositoryBase
+    public abstract class PageableRepositoryBase<TDto>
+        where TDto : class
     {
         /// <summary>
-        /// Gets a value designating the default sort or "order by" field for repository queries.
+        /// Gets the default sort expression for repository queries based off the repository DTO.
         /// </summary>
-        protected abstract string SortField { get; }
+        protected abstract Expression<Func<TDto, string>> SortExpression { get; }
 
         /// <summary>
         /// Gets a value designating the default sort direction for repository queries.

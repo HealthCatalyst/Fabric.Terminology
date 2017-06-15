@@ -1,9 +1,9 @@
-﻿using Fabric.Terminology.Domain.Configuration;
+﻿using Fabric.Terminology.SqlServer.Configuration;
 
 namespace Fabric.Terminology.API.Configuration
 {
     public interface IAppConfiguration
     {
-        TerminologySettings TerminologySettings { get; set; }
+        TerminologySqlSettings TerminologySqlSettings { get; set; }
     }
 }

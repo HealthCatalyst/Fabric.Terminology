@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Threading;
-using Fabric.Terminology.Domain.Threading;
+using Fabric.Terminology.SqlServer.Threading;
 using Microsoft.Extensions.Caching.Memory;
 
-namespace Fabric.Terminology.Domain.Caching
+namespace Fabric.Terminology.SqlServer.Caching
 {
-    public class MemoryCacheProvider : IMemoryCacheProvider
+    internal class MemoryCacheProvider : IMemoryCacheProvider
     {
         private readonly ReaderWriterLockSlim _locker = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
         private IMemoryCache _memCache = Create();

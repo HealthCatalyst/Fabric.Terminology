@@ -9,13 +9,20 @@
     <PackageReference Include="Microsoft.AspNetCore" Version="1.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Owin" Version="1.1.2" />
     <PackageReference Include="Nancy" Version="2.0.0-clinteastwood" />
+    <PackageReference Include="Serilog" Version="2.4.0" />
+    <PackageReference Include="Serilog.Sinks.Literate" Version="2.1.0" />
+    <PackageReference Include="Serilog.Sinks.RollingFile" Version="3.3.0" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="DependencyInjection\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Fabric.Terminology.Domain\Fabric.Terminology.Domain.csproj" />
+    <ProjectReference Include="..\Fabric.Terminology.SqlServer\Fabric.Terminology.SqlServer.csproj" />
   </ItemGroup>
-
+  <ItemGroup>
+	<Compile Update="Extensions.*.cs">
+		<DependentUpon>Extensions.cs</DependentUpon>
+	</Compile>
+	</ItemGroup>
 </Project>
