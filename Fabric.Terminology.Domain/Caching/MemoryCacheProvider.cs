@@ -5,7 +5,7 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace Fabric.Terminology.Domain.Caching
 {
-    internal class MemoryCacheProvider : IMemoryCacheProvider
+    public class MemoryCacheProvider : IMemoryCacheProvider
     {
         private readonly ReaderWriterLockSlim _locker = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
         private IMemoryCache _memCache = Create();

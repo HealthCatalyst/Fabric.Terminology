@@ -14,6 +14,7 @@ namespace Fabric.Terminology.API
             var host = new WebHostBuilder()
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseIISIntegration() // this is required for the IIS Express button
                 .UseStartup<Startup>()
                 .UseApplicationInsights()
                 .Build();

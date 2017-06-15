@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Fabric.Terminology.Domain.Models;
 
-namespace Fabric.Terminology.Domain.Services.Persistence
+namespace Fabric.Terminology.Domain.Persistence
 {
     public interface IValueSetRepository
     {
