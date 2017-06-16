@@ -10,11 +10,8 @@ namespace Fabric.Terminology.API.DependencyInjection
     public class SqlAppComposition : IContainerComposition<TinyIoCContainer>
     {
         public void Compose(TinyIoCContainer container)
-        {
-            var settings = container.Resolve<IAppConfiguration>().TerminologySqlSettings;
-
-            // TODO - may be able to remove this
-            container.Register<TerminologySqlSettings>(settings);
+        {           
+            container.Register<TerminologySqlSettings>((c,s) => c.Resolve<IAppConfiguration>().TerminologySqlSettings);
             container.Register<SharedContextFactory>().AsSingleton();
 
             // Caching
