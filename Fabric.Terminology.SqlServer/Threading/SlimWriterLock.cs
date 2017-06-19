@@ -15,7 +15,7 @@ namespace Fabric.Terminology.SqlServer.Threading
 
         void IDisposable.Dispose()
         {
-            _lock.ExitWriteLock();
+            _lock.ExitReadLock();
         }
     }
 }
