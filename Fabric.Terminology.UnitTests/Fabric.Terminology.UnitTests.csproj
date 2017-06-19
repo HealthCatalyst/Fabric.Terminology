@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>    
-    <TargetFramework>netcoreapp1.1</TargetFramework>
+    <TargetFramework>netcoreapp1.1</TargetFramework>    
+    <PreBuildEvent>xcopy "C:\Working\VS\Fabric.Terminology\Fabric.Terminology.API\appsettings.json" "C:\Working\VS\Fabric.Terminology\Fabric.Terminology.UnitTests\App_Data\Configs\appsettings.integration.json*" /Y</PreBuildEvent>
   </PropertyGroup>
 
   <ItemGroup>
@@ -10,6 +11,12 @@
     <PackageReference Include="Nancy.Testing" Version="2.0.0-clinteastwood" />
     <PackageReference Include="xunit" Version="2.2.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Fabric.Terminology.API\Fabric.Terminology.API.csproj" />
+    <ProjectReference Include="..\Fabric.Terminology.Domain\Fabric.Terminology.Domain.csproj" />
+    <ProjectReference Include="..\Fabric.Terminology.SqlServer\Fabric.Terminology.SqlServer.csproj" />
   </ItemGroup>
 
   <ItemGroup>

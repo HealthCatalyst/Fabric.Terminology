@@ -40,7 +40,7 @@ namespace Fabric.Terminology.API
             var appConfig = new AppConfiguration();
             Configuration.Bind(appConfig);
 
-            var logger = LogFactory.CreateLogger(new LoggingLevelSwitch(LogEventLevel.Debug));
+            var logger = LogFactory.CreateLogger(new LoggingLevelSwitch());
 
             logger.Information("Fabric.Terminology.API starting.");
 
