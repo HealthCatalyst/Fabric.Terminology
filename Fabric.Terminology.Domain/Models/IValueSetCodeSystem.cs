@@ -3,7 +3,7 @@
     public interface IValueSetCodeSystem
     {
         /// <summary>
-        /// Gets the code system 'ValueSetId'
+        /// Gets the code system's unique "code".
         /// </summary>
         /// <remarks>
         /// Maps to Terminology.ValueSetCode field CodeSystemCD Field
