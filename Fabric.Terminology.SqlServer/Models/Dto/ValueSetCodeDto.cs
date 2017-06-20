@@ -6,64 +6,45 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Fabric.Terminology.SqlServer.Models.Dto
 {
-    [Table("Terminology.ValueSetCode")]
+
+    [Table("ValueSetCode", Schema = "Terminology")]
     internal sealed class ValueSetCodeDto
-    {
-        [Key]
-        [Column(Order = 5)]
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+    {        
+        //// [Key]
         public int BindingID { get; set; }
 
-        [Key]
-        [Column(Order = 6)]
-        [StringLength(14)]
+        //// [Key]
         public string BindingNM { get; set; }
 
-        [Key]
-        [Column(Order = 3)]
-        [StringLength(100)]
+        //// [Key]
         public string CodeCD { get; set; }
 
-        [StringLength(4000)]
         public string CodeDSC { get; set; }
 
-        [Key]
-        [Column(Order = 4)]
-        [StringLength(100)]
+        //// [Key]
         public string CodeSystemCD { get; set; }
 
-        [StringLength(1000)]
         public string CodeSystemNM { get; set; }
 
-        [StringLength(1000)]
         public string CodeSystemVersionTXT { get; set; }
 
-        [Key]
-        [Column(Order = 7)]
+        //// [Key]
         public DateTime LastLoadDTS { get; set; }
 
-        [Column(TypeName = "datetime2")]
+        //// [Column(TypeName = "datetime2")]
         public DateTime? RevisionDTS { get; set; }
 
-        [Key]
-        [Column(Order = 2)]
-        [StringLength(100)]
+        //// [Key]
         public string SourceDSC { get; set; }
 
-        [Key]
-        [Column(Order = 0)]
-        [StringLength(255)]
+        //// [Key]
         public string ValueSetID { get; set; }
 
-        [StringLength(255)]
         public string ValueSetNM { get; set; }
 
-        [StringLength(100)]
         public string ValueSetOID { get; set; }
 
-        [Key]
-        [Column(Order = 1)]
-        [StringLength(100)]
+        //// [Key]
         public string VersionDSC { get; set; }
     }
 }

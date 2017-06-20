@@ -3,20 +3,23 @@ using System.Linq;
 
 namespace Fabric.Terminology.Domain.Models
 {
-    public class PagedCollection<TResultType> : PagedCollection
+    public class PagedCollection<TResultType> 
     {
-        public IEnumerable<TResultType> Items { get; set; }
+        public int TotalItems { get; set; } = 0;
+
+        public IPagerSettings PagerSettings { get; set; } = new PagerSettings();
+
+        public int TotalPages { get; set; } = 0;
+
+        public bool IsFirstPage => this.PagerSettings.CurrentPage <= 1;
+
+        public bool IsLastPage => this.PagerSettings.CurrentPage >= this.TotalPages;
+
+        public IReadOnlyCollection<TResultType> Items { get; set; } = new List<TResultType>().AsReadOnly();
 
         public static PagedCollection<TResultType> Empty()
         {
-            return new PagedCollection<TResultType>
-            {
-                CurrentPage = 1,
-                Items = Enumerable.Empty<TResultType>(),
-                ItemsPerPage = DefaultItemsPerPage,
-                TotalItems = 0,
-                TotalPages = 0
-            };
+            return new PagedCollection<TResultType>();
         }
     }
 }

@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Fabric.Terminology.SqlServer.Caching;
 using Xunit;
 
 namespace Fabric.Terminology.UnitTests.Caching
 {
-    public class MemoryCacheProviderTests
-    {
+    public class MemoryCacheProviderTests 
+    {        
         [Fact]
         public void GetItem_ReturnsNullWhenNotFound()
         {

@@ -38,17 +38,18 @@ namespace Fabric.Terminology.API
             base.ConfigureApplicationContainer(container);
 
             container.Register<IAppConfiguration>(_appConfig);
+            container.Register<ILogger>(_logger);
 
             // Persistence (Must precede service registration)
-            container.ComposeFrom<TinyIoCContainer, SqlAppComposition>();
+            container.ComposeFrom<SqlAppComposition>();
         }
 
         protected override void ConfigureRequestContainer(TinyIoCContainer container, NancyContext context)
         {
             base.ConfigureRequestContainer(container, context);
 
-            container.ComposeFrom<TinyIoCContainer, SqlRequestComposition>();
-            container.ComposeFrom<TinyIoCContainer, ServicesRequestComposition>();
+            container.ComposeFrom<SqlRequestComposition>();
+            container.ComposeFrom<ServicesRequestComposition>();
         }
 
         protected override void ApplicationStartup(TinyIoCContainer container, IPipelines pipelines)

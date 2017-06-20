@@ -2,7 +2,7 @@
 {
     public interface IPagerSettings
     {
-        long CurrentPage { get; set; }
-        long ItemsPerPage { get; set; }        
+        int CurrentPage { get; set; }
+        int ItemsPerPage { get; set; }        
     }
 }

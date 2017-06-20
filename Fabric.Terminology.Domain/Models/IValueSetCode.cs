@@ -1,10 +1,11 @@
-﻿namespace Fabric.Terminology.Domain.Models
+﻿using System;
+
+namespace Fabric.Terminology.Domain.Models
 {
     public interface IValueSetCode : IValueSetCodeItem
     {
         string VersionDescription { get; }
-        string RevisionDescription { get; }
-        string CodeDescription { get; }
+        DateTime? RevisionDate { get; }
         IValueSetCodeSystem CodeSystem { get; }
     }
 }

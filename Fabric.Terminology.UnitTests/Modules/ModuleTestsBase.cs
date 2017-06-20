@@ -1,5 +1,5 @@
 ﻿using System.Security.Claims;
-using Fabric.Terminology.UnitTests.Mocks;
+using Fabric.Terminology.TestsBase.Mocks;
 using Nancy;
 using Nancy.Testing;
 

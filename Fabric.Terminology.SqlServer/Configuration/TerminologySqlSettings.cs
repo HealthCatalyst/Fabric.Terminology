@@ -9,5 +9,9 @@
         public bool MemoryCacheSliding { get; set; } = true;
 
         public int MemoryCacheMinDuration { get; set; } = 5;
+
+        public int DefaultItemsPerPage { get; set; } = 500;
+
+        public bool LogGeneratedSql { get; set; } = false;
     }
 }

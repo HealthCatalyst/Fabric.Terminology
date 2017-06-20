@@ -1,4 +1,5 @@
-﻿using Nancy.TinyIoc;
+﻿using Fabric.Terminology.Domain.DependencyInjection;
+using Nancy.TinyIoc;
 
 namespace Fabric.Terminology.API
 {
@@ -7,6 +8,12 @@ namespace Fabric.Terminology.API
     /// </summary>
     public static partial class Extensions
     {
-        //internal static TinyIoCContainer RegisterFrom
+        public static TinyIoCContainer ComposeFrom<TComposition>(this TinyIoCContainer container)
+            where TComposition : class, IContainerComposition<TinyIoCContainer>, new()
+        {
+            var composition = new TComposition();
+            composition.Compose(container);
+            return container;
+        }
     }
 }

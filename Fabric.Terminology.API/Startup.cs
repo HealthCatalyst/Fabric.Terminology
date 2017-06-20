@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Nancy.Owin;
+using Serilog;
 using Serilog.Core;
 using Serilog.Events;
 
@@ -26,6 +27,9 @@ namespace Fabric.Terminology.API
                 .AddJsonFile("appsettings.json");
 
             Configuration = builder.Build();
+
+            var logger = LogFactory.CreateLogger(new LoggingLevelSwitch());
+            Log.Logger = logger;
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -35,14 +39,14 @@ namespace Fabric.Terminology.API
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IApplicationLifetime appLifetime)
         {
             var appConfig = new AppConfiguration();
             Configuration.Bind(appConfig);
 
-            var logger = LogFactory.CreateLogger(new LoggingLevelSwitch());
+            loggerFactory.AddSerilog();
 
-            logger.Information("Fabric.Terminology.API starting.");
+            Log.Logger.Information("Fabric.Terminology.API starting.");
 
             if (env.IsDevelopment())
             {
@@ -51,9 +55,9 @@ namespace Fabric.Terminology.API
 
             //app.UseStaticFiles(); // <- requires Microsoft.AspNetCore.StaticFiles
             app.UseOwin()
-                .UseNancy(opt => opt.Bootstrapper = new Bootstrapper(appConfig, logger));
+                .UseNancy(opt => opt.Bootstrapper = new Bootstrapper(appConfig, Log.Logger));
 
-            logger.Information("Fabric.Terminology.API started!");
+            Log.Logger.Information("Fabric.Terminology.API started!");
         }
     }
 }

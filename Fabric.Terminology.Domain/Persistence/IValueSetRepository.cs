@@ -6,6 +6,6 @@ namespace Fabric.Terminology.Domain.Persistence
     public interface IValueSetRepository
     {
         IValueSet GetValueSet(string valueSetId);
-        IEnumerable<IValueSet> GetValueSets(params string[] ids);
+        IReadOnlyCollection<IValueSet> GetValueSets(params string[] ids);
     }
 }

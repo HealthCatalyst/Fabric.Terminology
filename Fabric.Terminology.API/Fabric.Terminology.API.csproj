@@ -7,9 +7,13 @@
 
   <ItemGroup>
     <Compile Remove="Logs\**" />
+    <Compile Remove="Properties\PublishProfiles\**" />
     <Content Remove="Logs\**" />
+    <Content Remove="Properties\PublishProfiles\**" />
     <EmbeddedResource Remove="Logs\**" />
+    <EmbeddedResource Remove="Properties\PublishProfiles\**" />
     <None Remove="Logs\**" />
+    <None Remove="Properties\PublishProfiles\**" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.0.0" />

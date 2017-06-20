@@ -2,9 +2,14 @@
 
 namespace Fabric.Terminology.Domain.Models
 {
-    public interface IValueSet : IValueSetDescription
+    public interface IValueSet : IValueSetItem
     {
+        string AuthoringSourceDescription { get; }
+        string PurposeDescription { get; }
+        string SourceDescription { get; }
+        string VersionDescription { get; }
+
         int ValueSetCodesCount { get; }
-        IEnumerable<IValueSetCode> ValueSetCodes { get; }
+        IReadOnlyCollection<IValueSetCode> ValueSetCodes { get; }
     }
 }

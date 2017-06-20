@@ -1,16 +1,21 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Fabric.Terminology.Domain.Models;
 
 namespace Fabric.Terminology.Domain.Persistence
 {
     public interface IValueSetCodeRepository
     {
-        IEnumerable<IValueSetCode> GetCodesByValueSet(string valueSetId);
+        IReadOnlyCollection<IValueSetCode> GetCodesByValueSet(string valueSetId);
 
-        PagedCollection<IValueSetCode> GetValueSetCodes(string codeSystemCode, IPagerSettings settings);
+        Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(string codeSystemCode, IPagerSettings settings);
 
-        IEnumerable<IValueSetCode> GetAll();
+        // TODO remove 
+        Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(string codeSystemCode, int currentPage, int itemsPerPage);
 
-        IEnumerable<IValueSetCode> GetAll(string codeSystemCode);
+        Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(string[] codeSytemCodes, IPagerSettings settings);
+
+        // TODO remove
+        // Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(string[] codeSytemCodes, int currentPage, int itemsPerPage);
     }
 }

@@ -1,13 +1,6 @@
-﻿using System;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using Fabric.Terminology.API;
-using Fabric.Terminology.API.Modules;
-using Fabric.Terminology.UnitTests.TestSetup;
+﻿using Fabric.Terminology.API.Modules;
 using Nancy;
-using Nancy.Testing;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Fabric.Terminology.UnitTests.Modules
 {
