@@ -58,7 +58,28 @@ namespace Fabric.Terminology.IntegrationTests.Repositories
  
             //// Act
             var codesPage = ExecuteTimed(async () => await _valueSetCodeRepository.GetValueSetCodesAsync(codeSystemCode, settings), $"Querying code system code = {codeSystemCode} - Page {currentPage}").Result;
-            Output.WriteLine($"Result count: {codesPage.Items}");
+            Output.WriteLine($"Result count: {codesPage.Items.Count}");
+
+            //// Assert
+            Assert.Equal(currentPage, codesPage.PagerSettings.CurrentPage);
+            Assert.Equal(itemsPerPage, codesPage.PagerSettings.ItemsPerPage);
+            Assert.True(codesPage.TotalItems > 0);
+            Output.WriteLine($"Last page {codesPage.TotalPages}");
+        }
+
+        [Theory]
+        [InlineData("Low forceps", "2.16.840.1.113883.6.104", 1, 500)]
+        [InlineData("Low forceps operation", "2.16.840.1.113883.6.104", 1, 500)]
+        [InlineData("episiotomy", "2.16.840.1.113883.6.104", 1, 500)]
+        //[InlineData("Low forceps operation", "NOT_A_REAL_CODE", 1, 500)]
+        public void GetCodesByValueSetCodeSearch_ShouldHaveResults(string codeDsc, string codeSystemCode, int currentPage, int itemsPerPage)
+        {
+            //// Arrange
+            var settings = new PagerSettings { CurrentPage = currentPage, ItemsPerPage = itemsPerPage };
+
+            //// Act
+            var codesPage = ExecuteTimed(async () => await _valueSetCodeRepository.GetValueSetCodesAsync(codeDsc, codeSystemCode, settings), $"Querying code system code = {codeSystemCode} - Page {currentPage}").Result;
+            Output.WriteLine($"Result count: {codesPage.Items.Count}");
 
             //// Assert
             Assert.Equal(currentPage, codesPage.PagerSettings.CurrentPage);

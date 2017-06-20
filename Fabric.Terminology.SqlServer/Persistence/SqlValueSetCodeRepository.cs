@@ -44,20 +44,35 @@ namespace Fabric.Terminology.SqlServer.Persistence
             return GetValueSetCodesAsync(new[] { codeSystemCode }, settings);
         }
 
-        public Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(string[] codeSytemCodes, IPagerSettings settings)
+        public Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(string searchTerm, string codeSystemCode, IPagerSettings settings)
+        {
+            return GetValueSetCodesAsync(searchTerm, new[] {codeSystemCode}, settings);
+        }
+
+        public Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(string[] codeSystemCodes, IPagerSettings settings)
+        {
+            return GetValueSetCodesAsync(string.Empty, codeSystemCodes, settings);
+        }
+
+        public Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(string searchTerm, string[] codeSystemCodes, IPagerSettings settings)
         {
 
             if (settings.CurrentPage <= 0) settings.CurrentPage = 1;
             if (settings.ItemsPerPage < 0) settings.ItemsPerPage = SharedContext.DefaultItemsPerPage;
 
-            if (codeSytemCodes == null) throw new ArgumentNullException(nameof(codeSytemCodes));
-            if (!codeSytemCodes.Any()) throw new InvalidOperationException("A code system must be specified.");
+            if (codeSystemCodes == null) throw new ArgumentNullException(nameof(codeSystemCodes));
+            if (!codeSystemCodes.Any()) throw new InvalidOperationException("A code system must be specified.");
 
-            var dtos = codeSytemCodes.Length > 1
+            var dtos = codeSystemCodes.Length > 1
                 ? DbSet
-                    .Where(dto => codeSytemCodes.Contains(dto.CodeSystemCD))
+                    .Where(dto => codeSystemCodes.Contains(dto.CodeSystemCD))
                 : DbSet
-                    .Where(dto => dto.CodeSystemCD.Equals(codeSytemCodes.First()));
+                    .Where(dto => dto.CodeSystemCD.Equals(codeSystemCodes.First()));
+
+            if (!searchTerm.IsNullOrWhiteSpace())
+            {
+                dtos = dtos.Where(dto => dto.CodeDSC.Contains(searchTerm));
+            }
 
             return CreatePagedCollectionAsync(dtos, settings);
         }

@@ -10,6 +10,11 @@ namespace Fabric.Terminology.Domain.Persistence
 
         Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(string codeSystemCode, IPagerSettings settings);
 
-        Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(string[] codeSytemCodes, IPagerSettings settings);
+        Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(string searchTerm, string codeSystemCode, IPagerSettings settings);
+
+        Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(string[] codeSystemCodes, IPagerSettings settings);
+
+        Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(string searchTerm, string[] codeSystemCodes, IPagerSettings settings);
+
     }
 }
