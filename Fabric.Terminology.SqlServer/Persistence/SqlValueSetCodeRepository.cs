@@ -41,12 +41,7 @@ namespace Fabric.Terminology.SqlServer.Persistence
 
         public Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(string codeSystemCode, IPagerSettings settings)
         {
-            return GetValueSetCodesAsync(codeSystemCode, settings.CurrentPage, settings.ItemsPerPage);
-        }
-
-        public Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(string codeSystemCode, int currentPage, int itemsPerPage)
-        {
-            return GetValueSetCodesAsync(new[] {codeSystemCode}, currentPage, itemsPerPage);
+            return GetValueSetCodesAsync(new[] { codeSystemCode }, settings);
         }
 
         public Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(string[] codeSytemCodes, IPagerSettings settings)
@@ -65,6 +60,11 @@ namespace Fabric.Terminology.SqlServer.Persistence
                     .Where(dto => dto.CodeSystemCD.Equals(codeSytemCodes.First()));
 
             return CreatePagedCollectionAsync(dtos, settings);
+        }
+
+        internal Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(string codeSystemCode, int currentPage, int itemsPerPage)
+        {
+            return GetValueSetCodesAsync(new[] { codeSystemCode }, new PagerSettings { CurrentPage = currentPage, ItemsPerPage = itemsPerPage });
         }
 
         internal Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(string[] codeSytemCodes, int currentPage, int itemsPerPage)
