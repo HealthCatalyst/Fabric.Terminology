@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Linq;
+using Fabric.Terminology.Domain.Models;
 using Fabric.Terminology.Domain.Persistence;
 using Fabric.Terminology.SqlServer.Persistence;
 using Fabric.Terminology.SqlServer.Persistence.DataContext;
@@ -53,10 +54,10 @@ namespace Fabric.Terminology.IntegrationTests.Repositories
         public void GetCodesByValueSetCodeSystem(string codeSystemCode, int currentPage, int itemsPerPage)
         {
             //// Arrange
-            //// Handled in inline data
+            var settings = new PagerSettings {CurrentPage = currentPage, ItemsPerPage = itemsPerPage};
  
             //// Act
-            var codesPage = ExecuteTimed(async () => await _valueSetCodeRepository.GetValueSetCodesAsync(codeSystemCode, currentPage, itemsPerPage), $"Querying code system code = {codeSystemCode} - Page {currentPage}").Result;
+            var codesPage = ExecuteTimed(async () => await _valueSetCodeRepository.GetValueSetCodesAsync(codeSystemCode, settings), $"Querying code system code = {codeSystemCode} - Page {currentPage}").Result;
             Output.WriteLine($"Result count: {codesPage.Items}");
 
             //// Assert
