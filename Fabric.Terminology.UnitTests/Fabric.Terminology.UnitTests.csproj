@@ -21,8 +21,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Fabric.Terminology.API\Fabric.Terminology.API.csproj" />
-    <ProjectReference Include="..\Fabric.Terminology.Domain\Fabric.Terminology.Domain.csproj" />
-    <ProjectReference Include="..\Fabric.Terminology.SqlServer\Fabric.Terminology.SqlServer.csproj" />
     <ProjectReference Include="..\Fabric.Terminology.TestsBase\Fabric.Terminology.TestsBase.csproj" />
   </ItemGroup>
 

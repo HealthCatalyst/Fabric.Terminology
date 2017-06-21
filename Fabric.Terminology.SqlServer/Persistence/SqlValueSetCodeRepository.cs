@@ -9,7 +9,6 @@ using Fabric.Terminology.Domain.Persistence;
 using Fabric.Terminology.SqlServer.Caching;
 using Fabric.Terminology.SqlServer.Models.Dto;
 using Fabric.Terminology.SqlServer.Persistence.DataContext;
-using Fabric.Terminology.SqlServer.Persistence.Mappers;
 using Microsoft.EntityFrameworkCore;
 
 namespace Fabric.Terminology.SqlServer.Persistence
@@ -89,7 +88,22 @@ namespace Fabric.Terminology.SqlServer.Persistence
 
         protected override IValueSetCode MapToResult(ValueSetCodeDto dto)
         {
-            return ModelFactory.BuildModel(dto);
+            var codeSystem = new ValueSetCodeSystem
+            {
+                Code = dto.CodeSystemCD,
+                Name = dto.CodeSystemNM,
+                Version = dto.CodeSystemVersionTXT
+            };
+
+            return new ValueSetCode
+            {
+                ValueSetId = dto.ValueSetID,
+                Code = dto.CodeCD,
+                CodeSystem = codeSystem,
+                Name = dto.CodeDSC,
+                RevisionDate = dto.RevisionDTS,
+                VersionDescription = dto.VersionDSC
+            };
         }
     }
 }
