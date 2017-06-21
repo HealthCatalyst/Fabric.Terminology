@@ -26,44 +26,60 @@ namespace Fabric.Terminology.SqlServer.Persistence
 
         protected override DbSet<ValueSetCodeDto> DbSet => SharedContext.ValueSetCodes;
 
-        public IValueSetCode GetCode(string code)
+        public IValueSetCode GetCode(string code, string codeSytemCode)
         {
-            var dto = DbSet.SingleOrDefault(q => q.CodeDSC.Equals(code));
+            var dto = DbSet.SingleOrDefault(q => q.CodeCD.Equals(code) && q.CodeSystemCD.Equals(codeSytemCode));
             return dto != null ? MapToResult(dto) : null;
         }
 
-        public IReadOnlyCollection<IValueSetCode> GetByValueSet(string valueSetId)
+        public IValueSetCode GetFirstCode(string code)
         {
-            // Memory cache check is here
-
-            var dtos = DbSet
-                .Where(dto => dto.ValueSetID.Equals(valueSetId))
-                .OrderBy(SortExpression)
-                .AsNoTracking();
-
-            return dtos.Select(dto => MapToResult(dto)).ToList().AsReadOnly();
+            var dto = DbSet.FirstOrDefault(q => q.CodeCD.Equals(code));
+            return dto != null ? MapToResult(dto) : null;
         }
 
-        public Task<PagedCollection<IValueSetCode>> GetByCodeSystemAsync(string codeSystemCode, IPagerSettings settings)
+        public IReadOnlyCollection<IValueSetCode> GetCodes(string code)
         {
-            return GetByCodeSystemAsync(new[] { codeSystemCode }, settings);
+            var dtos = DbSet.Where(dto => dto.CodeCD.Equals(code)).AsNoTracking().ToList();
+            return dtos.Select(MapToResult).ToList().AsReadOnly();
         }
 
-        public Task<PagedCollection<IValueSetCode>> GetByCodeSystemAsync(string codeNameFilterText, string codeSystemCode, IPagerSettings settings)
+        public Task<PagedCollection<IValueSetCode>> GetCodesAsync(IPagerSettings settings)
         {
-            return GetByCodeSystemAsync(codeNameFilterText, new[] {codeSystemCode}, settings);
+            return FindCodesAsync(string.Empty, settings);
         }
 
-        public Task<PagedCollection<IValueSetCode>> GetByCodeSystemAsync(string[] codeSystemCodes, IPagerSettings settings)
+        public Task<PagedCollection<IValueSetCode>> GetCodesAsync(string codeSystemCode, IPagerSettings settings)
         {
-            return GetByCodeSystemAsync(string.Empty, codeSystemCodes, settings);
+            return GetCodesAsync(new[] { codeSystemCode }, settings);
         }
 
-        public Task<PagedCollection<IValueSetCode>> GetByCodeSystemAsync(string codeNameFilterText, string[] codeSystemCodes, IPagerSettings settings)
+
+        public Task<PagedCollection<IValueSetCode>> GetCodesAsync(string[] codeSystemCodes, IPagerSettings settings)
+        {
+            return FindCodesAsync(string.Empty, codeSystemCodes, settings);
+        }
+
+        public Task<PagedCollection<IValueSetCode>> FindCodesAsync(string codeNameFilterText, IPagerSettings settings)
+        {
+            EnsurePagerSettings(settings);
+
+            var dtos = !codeNameFilterText.IsNullOrWhiteSpace() ? 
+                        DbSet.Where(dto => dto.CodeDSC.Equals(codeNameFilterText)) : 
+                        DbSet;
+
+            return CreatePagedCollectionAsync(dtos, settings);
+        }
+
+        public Task<PagedCollection<IValueSetCode>> FindCodesAsync(string codeNameFilterText, string codeSystemCode, IPagerSettings settings)
+        {
+            return FindCodesAsync(codeNameFilterText, new[] {codeSystemCode}, settings);
+        }
+
+        public Task<PagedCollection<IValueSetCode>> FindCodesAsync(string codeNameFilterText, string[] codeSystemCodes, IPagerSettings settings)
         {
 
-            if (settings.CurrentPage <= 0) settings.CurrentPage = 1;
-            if (settings.ItemsPerPage < 0) settings.ItemsPerPage = SharedContext.DefaultItemsPerPage;
+            EnsurePagerSettings(settings);
 
             if (codeSystemCodes == null) throw new ArgumentNullException(nameof(codeSystemCodes));
             if (!codeSystemCodes.Any()) throw new InvalidOperationException("A code system must be specified.");
@@ -82,14 +98,24 @@ namespace Fabric.Terminology.SqlServer.Persistence
             return CreatePagedCollectionAsync(dtos, settings);
         }
 
-        internal Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(string codeSystemCode, int currentPage, int itemsPerPage)
+        public IReadOnlyCollection<IValueSetCode> GetValueSetCodes(string valueSetId)
         {
-            return GetByCodeSystemAsync(new[] { codeSystemCode }, new PagerSettings { CurrentPage = currentPage, ItemsPerPage = itemsPerPage });
-        }
+            // Memory cache check is here
+            var cacheKey = CacheKeys.ValueSetCodesKey(valueSetId);
 
-        internal Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(string[] codeSytemCodes, int currentPage, int itemsPerPage)
-        {
-            return GetByCodeSystemAsync(codeSytemCodes, new PagerSettings { CurrentPage = currentPage, ItemsPerPage = itemsPerPage });
+            return (IReadOnlyCollection<IValueSetCode>)
+                Cache.GetItem(cacheKey, () =>
+                    {
+                        var dtos = DbSet
+                            .Where(dto => dto.ValueSetID.Equals(valueSetId))
+                            .OrderBy(SortExpression)
+                            .AsNoTracking();
+
+                        return dtos.Select(dto => MapToResult(dto)).ToList().AsReadOnly();
+                    },
+                    TimeSpan.FromMinutes(5),
+                    true);
+
         }
 
         protected override IValueSetCode MapToResult(ValueSetCodeDto dto)
