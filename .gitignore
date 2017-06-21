@@ -212,3 +212,4 @@ _Pvt_Extensions/
 ModelManifest.xml
 bower_components
 Fabric.Terminology.Domain/bin/
+Fabric.Terminology.API/Logs/
