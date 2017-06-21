@@ -1,0 +1,8 @@
+version: '2.1'
+
+services:
+  fabric.terminology.api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "80"

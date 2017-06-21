@@ -1,0 +1,8 @@
+version: '2.1'
+
+services:
+  fabric.terminology.api:
+    image: fabric.terminology.api
+    build:
+      context: ./Fabric.Terminology.API
+      dockerfile: Dockerfile
