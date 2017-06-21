@@ -6,9 +6,7 @@ namespace Fabric.Terminology.Domain.Persistence
 {
     public interface IValueSetCodeRepository
     {
-        IValueSetCode GetCode(string code, string codeSystemCode);
-
-        IValueSetCode GetFirstCode(string code);
+        IValueSetCode GetCode(string code, string codeSystemCode, string valueSetId);
 
         /// <summary>
         /// Gets the <see cref="IValueSetCode"/> with CodeCD field "equal" to <param name="code">code</param>

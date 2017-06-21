@@ -26,15 +26,13 @@ namespace Fabric.Terminology.SqlServer.Persistence
 
         protected override DbSet<ValueSetCodeDto> DbSet => SharedContext.ValueSetCodes;
 
-        public IValueSetCode GetCode(string code, string codeSytemCode)
+        public IValueSetCode GetCode(string code, string codeSytemCode, string valueSetId)
         {
-            var dto = DbSet.SingleOrDefault(q => q.CodeCD.Equals(code) && q.CodeSystemCD.Equals(codeSytemCode));
-            return dto != null ? MapToResult(dto) : null;
-        }
+            var dto = DbSet
+                        .Where(q => q.CodeCD.Equals(code) && q.CodeSystemCD.Equals(codeSytemCode) && q.ValueSetID.Equals(valueSetId))
+                        .OrderByDescending(q => q.RevisionDTS)
+                        .SingleOrDefault();
 
-        public IValueSetCode GetFirstCode(string code)
-        {
-            var dto = DbSet.FirstOrDefault(q => q.CodeCD.Equals(code));
             return dto != null ? MapToResult(dto) : null;
         }
 
@@ -53,7 +51,6 @@ namespace Fabric.Terminology.SqlServer.Persistence
         {
             return GetCodesAsync(new[] { codeSystemCode }, settings);
         }
-
 
         public Task<PagedCollection<IValueSetCode>> GetCodesAsync(string[] codeSystemCodes, IPagerSettings settings)
         {

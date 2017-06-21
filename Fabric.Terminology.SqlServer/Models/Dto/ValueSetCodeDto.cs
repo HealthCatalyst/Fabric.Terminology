@@ -1,7 +1,6 @@
 // ReSharper disable InconsistentNaming
 
 using System;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Fabric.Terminology.SqlServer.Models.Dto
