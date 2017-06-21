@@ -10,13 +10,14 @@ using Fabric.Terminology.SqlServer.Caching;
 using Fabric.Terminology.SqlServer.Models.Dto;
 using Fabric.Terminology.SqlServer.Persistence.DataContext;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace Fabric.Terminology.SqlServer.Persistence
 {
     internal class SqlValueSetCodeRepository : SqlPageableRepositoryBase<ValueSetCodeDto, IValueSetCode>, IValueSetCodeRepository
     {
-        public SqlValueSetCodeRepository(SharedContext sharedContext, IMemoryCacheProvider cache) 
-            : base(sharedContext, cache)
+        public SqlValueSetCodeRepository(SharedContext sharedContext, ILogger logger, IMemoryCacheProvider cache) 
+            : base(sharedContext, logger, cache)
         {
         }
 
@@ -97,6 +98,8 @@ namespace Fabric.Terminology.SqlServer.Persistence
 
         public IReadOnlyCollection<IValueSetCode> GetValueSetCodes(string valueSetId)
         {
+
+
             // Memory cache check is here
             var cacheKey = CacheKeys.ValueSetCodesKey(valueSetId);
 

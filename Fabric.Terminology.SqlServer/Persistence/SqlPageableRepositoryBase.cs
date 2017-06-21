@@ -7,20 +7,24 @@ using Fabric.Terminology.Domain.Persistence;
 using Fabric.Terminology.SqlServer.Caching;
 using Fabric.Terminology.SqlServer.Persistence.DataContext;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace Fabric.Terminology.SqlServer.Persistence
 {
     internal abstract class SqlPageableRepositoryBase<TDto, TResult> : PageableRepositoryBase<TDto>
         where TDto : class
     {
-        // private readonly ILog _logger;
-
-        protected SqlPageableRepositoryBase(SharedContext sharedContext, IMemoryCacheProvider cache)
+        protected SqlPageableRepositoryBase(SharedContext sharedContext, ILogger logger, IMemoryCacheProvider cache)
         {
-            
+            Logger = logger ?? throw new ArgumentException(nameof(logger));
             Cache = cache ?? throw new ArgumentNullException(nameof(cache));
             this.SharedContext = sharedContext ?? throw new ArgumentException(nameof(sharedContext));
         }
+
+        // used for testing
+        internal Type CacheProviderType => Cache.GetType();
+
+        protected ILogger Logger { get; }
 
         protected virtual IMemoryCacheProvider Cache { get; }
 
@@ -47,7 +51,7 @@ namespace Fabric.Terminology.SqlServer.Persistence
         protected virtual void EnsurePagerSettings(IPagerSettings pagerSettings)
         {
             if (pagerSettings.CurrentPage <= 0) pagerSettings.CurrentPage = 1;
-            if (pagerSettings.ItemsPerPage < 0) pagerSettings.ItemsPerPage = SharedContext.DefaultItemsPerPage;
+            if (pagerSettings.ItemsPerPage < 0) pagerSettings.ItemsPerPage = SharedContext.Settings.DefaultItemsPerPage;
         }
     }
 }

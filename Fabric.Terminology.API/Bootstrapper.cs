@@ -3,6 +3,7 @@ using Fabric.Terminology.API.Configuration;
 using Fabric.Terminology.API.DependencyInjection;
 using Fabric.Terminology.API.Logging;
 using Fabric.Terminology.Domain;
+using Fabric.Terminology.SqlServer.Caching;
 using Nancy;
 using Nancy.Bootstrapper;
 using Nancy.TinyIoc;
@@ -23,6 +24,7 @@ namespace Fabric.Terminology.API
             _logger = logger ?? throw new ArgumentException(nameof(logger));
         }
 
+
         protected override void RequestStartup(TinyIoCContainer container, IPipelines pipelines, NancyContext context)
         {
             base.RequestStartup(container, pipelines, context);
@@ -39,6 +41,16 @@ namespace Fabric.Terminology.API
 
             container.Register<IAppConfiguration>(_appConfig);
             container.Register<ILogger>(_logger);
+
+            // Caching
+            if (_appConfig.TerminologySqlSettings.MemoryCacheEnabled)
+            {                                
+                container.Register<IMemoryCacheProvider, MemoryCacheProvider>().AsSingleton();
+            }
+            else
+            {
+                container.Register<IMemoryCacheProvider, NullMemoryCacheProvider>().AsSingleton();
+            }
 
             // Persistence (Must precede service registration)
             container.ComposeFrom<SqlAppComposition>();

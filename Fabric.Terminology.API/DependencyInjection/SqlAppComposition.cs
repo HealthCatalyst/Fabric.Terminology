@@ -13,9 +13,6 @@ namespace Fabric.Terminology.API.DependencyInjection
         {           
             container.Register<TerminologySqlSettings>((c,s) => c.Resolve<IAppConfiguration>().TerminologySqlSettings);
             container.Register<SharedContextFactory>().AsSingleton();
-
-            // Caching
-            container.Register<IMemoryCacheProvider, MemoryCacheProvider>().AsSingleton();            
         }
     }
 }

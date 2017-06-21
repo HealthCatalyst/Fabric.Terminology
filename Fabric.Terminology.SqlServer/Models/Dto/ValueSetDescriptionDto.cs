@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Fabric.Terminology.SqlServer.Models.Dto
 {
-    [Table("Terminology.ValueSetDescription")]
+    [Table("ValueSetDescription", Schema = "Terminology")]
     internal sealed class ValueSetDescriptionDto
     {
         public string AuthoringSourceDSC { get; set; }

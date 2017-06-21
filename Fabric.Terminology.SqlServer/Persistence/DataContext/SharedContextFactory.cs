@@ -29,7 +29,6 @@ namespace Fabric.Terminology.SqlServer.Persistence.DataContext
         public SharedContext Create()
         {
             var context = _settings.UseInMemory ? CreateInMemory() : CreateAttached();
-            context.DefaultItemsPerPage = _settings.DefaultItemsPerPage;
             return context;
         }
 
@@ -44,14 +43,14 @@ namespace Fabric.Terminology.SqlServer.Persistence.DataContext
                 builder.UseLoggerFactory(lf);
 
             }
-            return new SharedContext(builder.Options) { IsInMemory = false };
+            return new SharedContext(builder.Options, _settings) { IsInMemory = false };
         }
 
         private SharedContext CreateInMemory()
         {
             var builder = new DbContextOptionsBuilder<SharedContext>();
             builder.UseInMemoryDatabase();
-            var context = new SharedContext(builder.Options) { IsInMemory =  true };
+            var context = new SharedContext(builder.Options, _settings) { IsInMemory =  true };
             _seededDatabaseInitializer?.Initialize(context);
             return context;
         }        

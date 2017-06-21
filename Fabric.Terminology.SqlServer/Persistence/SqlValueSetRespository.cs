@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Fabric.Terminology.Domain;
@@ -9,6 +9,7 @@ using Fabric.Terminology.SqlServer.Caching;
 using Fabric.Terminology.SqlServer.Models.Dto;
 using Fabric.Terminology.SqlServer.Persistence.DataContext;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace Fabric.Terminology.SqlServer.Persistence
 {
@@ -16,8 +17,8 @@ namespace Fabric.Terminology.SqlServer.Persistence
     {
         private readonly IValueSetCodeRepository _valueSetCodeRepository;
 
-        public SqlValueSetRespository(SharedContext sharedContext, IMemoryCacheProvider cache, IValueSetCodeRepository valueSetCodeRepository) 
-            : base(sharedContext, cache)
+        public SqlValueSetRespository(SharedContext sharedContext, ILogger logger, IMemoryCacheProvider cache, IValueSetCodeRepository valueSetCodeRepository) 
+            : base(sharedContext, logger, cache)
         {
             _valueSetCodeRepository = valueSetCodeRepository ?? throw new NullReferenceException(nameof(valueSetCodeRepository));
         }
@@ -28,32 +29,52 @@ namespace Fabric.Terminology.SqlServer.Persistence
 
         public IValueSet GetValueSet(string valueSetId)
         {
-            throw new System.NotImplementedException();
+            var dto = DbSet.FirstOrDefault(q => q.ValueSetID.Equals(valueSetId));
+            if (dto == null) return null;
+
+            var valueSet = MapToResult(dto);
+            ((ValueSet) valueSet).ValueSetCodes = _valueSetCodeRepository.GetValueSetCodes(valueSetId);
+            return valueSet;
         }
 
-        Task<IReadOnlyCollection<IValueSet>> IValueSetRepository.GetValueSets(params string[] ids)
+        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings pagerSettings)
         {
-            throw new NotImplementedException();
+            return FindValueSetsAsync(string.Empty, pagerSettings);
         }
 
-        public Task<PagedCollection<IValueSet>> GetValueSets(IPagerSettings pagerSettings)
+        public Task<PagedCollection<IValueSet>> FindValueSetsAsync(string nameFilterText, IPagerSettings pagerSettings)
         {
-            throw new NotImplementedException();
-        }
+            EnsurePagerSettings(pagerSettings);
 
-        public Task<PagedCollection<IValueSet>> GetValueSets(string nameFilterText, IPagerSettings pagerSettings)
-        {
-            throw new NotImplementedException();
-        }
+            var dtos = !nameFilterText.IsNullOrWhiteSpace()
+                ? DbSet.Where(dto => dto.ValueSetNM.Contains(nameFilterText))
+                : DbSet;
 
-        public IReadOnlyCollection<IValueSet> GetValueSets(params string[] ids)
-        {
-            throw new System.NotImplementedException();
+           return  CreatePagedCollectionAsync(dtos, pagerSettings);
         }
 
         protected override IValueSet MapToResult(ValueSetDescriptionDto dto)
         {
-            throw new NotImplementedException();
+            // value set codes are cached.  DO NOT cache the value set!            
+            var codes = _valueSetCodeRepository.GetValueSetCodes(dto.ValueSetID);
+
+            return new ValueSet
+            {
+                ValueSetId = dto.ValueSetID,
+                AuthoringSourceDescription = dto.AuthoringSourceDSC,
+                Name = dto.ValueSetNM,
+                IsCustom = false,
+                PurposeDescription = dto.PurposeDSC,
+                SourceDescription = dto.SourceDSC,
+                VersionDescription = dto.VersionDSC,                
+                ValueSetCodesCount = codes.Count,
+                ValueSetCodes = codes
+            };
+        }
+
+        private Task FillValueSetCodesAsync(ValueSet valueSet)
+        {
+            return Task.Run(() => valueSet.ValueSetCodes = _valueSetCodeRepository.GetValueSetCodes(valueSet.ValueSetId));
         }
     }
 }

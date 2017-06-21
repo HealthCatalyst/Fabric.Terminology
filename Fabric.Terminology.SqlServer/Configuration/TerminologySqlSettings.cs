@@ -6,6 +6,8 @@
 
         public bool UseInMemory { get; set; } = false;
 
+        public bool MemoryCacheEnabled { get; set; } = true;
+
         public bool MemoryCacheSliding { get; set; } = true;
 
         public int MemoryCacheMinDuration { get; set; } = 5;

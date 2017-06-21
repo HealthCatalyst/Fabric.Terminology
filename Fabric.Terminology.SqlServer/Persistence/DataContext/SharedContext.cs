@@ -1,4 +1,6 @@
-﻿using Fabric.Terminology.SqlServer.Models.Dto;
+﻿using System;
+using Fabric.Terminology.SqlServer.Configuration;
+using Fabric.Terminology.SqlServer.Models.Dto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
 
@@ -6,9 +8,10 @@ namespace Fabric.Terminology.SqlServer.Persistence.DataContext
 {
     internal class SharedContext : DbContext
     {        
-        public SharedContext(DbContextOptions options)
+        public SharedContext(DbContextOptions options, TerminologySqlSettings settings)
             : base(options)
         {
+            Settings = settings ?? throw new ArgumentNullException(nameof(settings));
         }
 
         public DbSet<ValueSetCodeDto> ValueSetCodes { get; set; }
@@ -17,7 +20,7 @@ namespace Fabric.Terminology.SqlServer.Persistence.DataContext
         // Used for testing
         internal bool IsInMemory { get; set; }
 
-        internal int DefaultItemsPerPage { get; set; }
+        internal TerminologySqlSettings Settings { get; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

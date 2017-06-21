@@ -6,9 +6,8 @@ namespace Fabric.Terminology.Domain.Persistence
 {
     public interface IValueSetRepository
     {
-        IValueSet GetValueSet(string valueSetId);
-        Task<IReadOnlyCollection<IValueSet>> GetValueSets(params string[] ids);
-        Task<PagedCollection<IValueSet>> GetValueSets(IPagerSettings pagerSettings);
-        Task<PagedCollection<IValueSet>> GetValueSets(string nameFilterText, IPagerSettings pagerSettings);
+        IValueSet GetValueSet(string valueSetId);        
+        Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings pagerSettings);
+        Task<PagedCollection<IValueSet>> FindValueSetsAsync(string nameFilterText, IPagerSettings pagerSettings);
     }
 }
