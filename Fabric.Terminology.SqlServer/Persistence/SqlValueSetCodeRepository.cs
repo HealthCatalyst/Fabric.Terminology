@@ -26,7 +26,13 @@ namespace Fabric.Terminology.SqlServer.Persistence
 
         protected override DbSet<ValueSetCodeDto> DbSet => SharedContext.ValueSetCodes;
 
-        public IReadOnlyCollection<IValueSetCode> GetCodesByValueSet(string valueSetId)
+        public IValueSetCode GetCode(string code)
+        {
+            var dto = DbSet.SingleOrDefault(q => q.CodeDSC.Equals(code));
+            return dto != null ? MapToResult(dto) : null;
+        }
+
+        public IReadOnlyCollection<IValueSetCode> GetByValueSet(string valueSetId)
         {
             // Memory cache check is here
 
@@ -38,22 +44,22 @@ namespace Fabric.Terminology.SqlServer.Persistence
             return dtos.Select(dto => MapToResult(dto)).ToList().AsReadOnly();
         }
 
-        public Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(string codeSystemCode, IPagerSettings settings)
+        public Task<PagedCollection<IValueSetCode>> GetByCodeSystemAsync(string codeSystemCode, IPagerSettings settings)
         {
-            return GetValueSetCodesAsync(new[] { codeSystemCode }, settings);
+            return GetByCodeSystemAsync(new[] { codeSystemCode }, settings);
         }
 
-        public Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(string searchTerm, string codeSystemCode, IPagerSettings settings)
+        public Task<PagedCollection<IValueSetCode>> GetByCodeSystemAsync(string codeNameFilterText, string codeSystemCode, IPagerSettings settings)
         {
-            return GetValueSetCodesAsync(searchTerm, new[] {codeSystemCode}, settings);
+            return GetByCodeSystemAsync(codeNameFilterText, new[] {codeSystemCode}, settings);
         }
 
-        public Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(string[] codeSystemCodes, IPagerSettings settings)
+        public Task<PagedCollection<IValueSetCode>> GetByCodeSystemAsync(string[] codeSystemCodes, IPagerSettings settings)
         {
-            return GetValueSetCodesAsync(string.Empty, codeSystemCodes, settings);
+            return GetByCodeSystemAsync(string.Empty, codeSystemCodes, settings);
         }
 
-        public Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(string searchTerm, string[] codeSystemCodes, IPagerSettings settings)
+        public Task<PagedCollection<IValueSetCode>> GetByCodeSystemAsync(string codeNameFilterText, string[] codeSystemCodes, IPagerSettings settings)
         {
 
             if (settings.CurrentPage <= 0) settings.CurrentPage = 1;
@@ -68,9 +74,9 @@ namespace Fabric.Terminology.SqlServer.Persistence
                 : DbSet
                     .Where(dto => dto.CodeSystemCD.Equals(codeSystemCodes.First()));
 
-            if (!searchTerm.IsNullOrWhiteSpace())
+            if (!codeNameFilterText.IsNullOrWhiteSpace())
             {
-                dtos = dtos.Where(dto => dto.CodeDSC.Contains(searchTerm));
+                dtos = dtos.Where(dto => dto.CodeDSC.Contains(codeNameFilterText));
             }
 
             return CreatePagedCollectionAsync(dtos, settings);
@@ -78,12 +84,12 @@ namespace Fabric.Terminology.SqlServer.Persistence
 
         internal Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(string codeSystemCode, int currentPage, int itemsPerPage)
         {
-            return GetValueSetCodesAsync(new[] { codeSystemCode }, new PagerSettings { CurrentPage = currentPage, ItemsPerPage = itemsPerPage });
+            return GetByCodeSystemAsync(new[] { codeSystemCode }, new PagerSettings { CurrentPage = currentPage, ItemsPerPage = itemsPerPage });
         }
 
         internal Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(string[] codeSytemCodes, int currentPage, int itemsPerPage)
         {
-            return GetValueSetCodesAsync(codeSytemCodes, new PagerSettings { CurrentPage = currentPage, ItemsPerPage = itemsPerPage });
+            return GetByCodeSystemAsync(codeSytemCodes, new PagerSettings { CurrentPage = currentPage, ItemsPerPage = itemsPerPage });
         }
 
         protected override IValueSetCode MapToResult(ValueSetCodeDto dto)

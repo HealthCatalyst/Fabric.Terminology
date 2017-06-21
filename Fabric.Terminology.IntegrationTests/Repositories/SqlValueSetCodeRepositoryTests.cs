@@ -23,6 +23,7 @@ namespace Fabric.Terminology.IntegrationTests.Repositories
             _valueSetCodeRepository = new SqlValueSetCodeRepository(factory.Create(), new NullMemoryCacheProvider());
         }
 
+        
 
         [Theory]
         [Trait(TestTraits.Category, TestCategory.LongRunning)]
@@ -30,12 +31,12 @@ namespace Fabric.Terminology.IntegrationTests.Repositories
         [InlineData("2.16.840.1.113762.1.4.1045.36")]
         [InlineData("2.16.840.1.113883.3.526.3.1459")]
         [InlineData("2.16.840.1.113883.3.67.1.101.1.278")]
-        public void GetCodesByValueSet(string valueSetId)
+        public void GetByValueSet(string valueSetId)
         {
             //// Arrange
 
             //// Act
-            var codes = ExecuteTimed(() => _valueSetCodeRepository.GetCodesByValueSet(valueSetId), $"Querying ValueSetId = {valueSetId}");
+            var codes = ExecuteTimed(() => _valueSetCodeRepository.GetByValueSet(valueSetId), $"Querying ValueSetId = {valueSetId}");
             Output.WriteLine($"Result count: {codes.Count}");
 
             //// Assert
@@ -50,13 +51,13 @@ namespace Fabric.Terminology.IntegrationTests.Repositories
         [InlineData("2.16.840.1.113883.6.104", 3, 500)]
         [InlineData("2.16.840.1.113883.6.90", 1, 500)] // ICD10CM - approx 11
         [InlineData("2.16.840.1.113883.6.90", 3, 500)]
-        public void GetCodesByValueSetCodeSystem(string codeSystemCode, int currentPage, int itemsPerPage)
+        public void GetByCodeSystem(string codeSystemCode, int currentPage, int itemsPerPage)
         {
             //// Arrange
             var settings = new PagerSettings {CurrentPage = currentPage, ItemsPerPage = itemsPerPage};
  
             //// Act
-            var codesPage = ExecuteTimed(async () => await _valueSetCodeRepository.GetValueSetCodesAsync(codeSystemCode, settings), $"Querying code system code = {codeSystemCode} - Page {currentPage}").Result;
+            var codesPage = ExecuteTimed(async () => await _valueSetCodeRepository.GetByCodeSystemAsync(codeSystemCode, settings), $"Querying code system code = {codeSystemCode} - Page {currentPage}").Result;
             Output.WriteLine($"Result count: {codesPage.Items.Count}");
 
             //// Assert
@@ -71,13 +72,13 @@ namespace Fabric.Terminology.IntegrationTests.Repositories
         [InlineData("Low forceps operation", "2.16.840.1.113883.6.104", 1, 500)]
         [InlineData("episiotomy", "2.16.840.1.113883.6.104", 1, 500)]
         //[InlineData("Low forceps operation", "NOT_A_REAL_CODE", 1, 500)]
-        public void GetCodesByValueSetCodeSearch_ShouldHaveResults(string codeDsc, string codeSystemCode, int currentPage, int itemsPerPage)
+        public void GetByCodeSystem_WithFilter_ShouldHaveResults(string codeDsc, string codeSystemCode, int currentPage, int itemsPerPage)
         {
             //// Arrange
             var settings = new PagerSettings { CurrentPage = currentPage, ItemsPerPage = itemsPerPage };
 
             //// Act
-            var codesPage = ExecuteTimed(async () => await _valueSetCodeRepository.GetValueSetCodesAsync(codeDsc, codeSystemCode, settings), $"Querying code system code = {codeSystemCode} - Page {currentPage}").Result;
+            var codesPage = ExecuteTimed(async () => await _valueSetCodeRepository.GetByCodeSystemAsync(codeDsc, codeSystemCode, settings), $"Querying code system code = {codeSystemCode} - Page {currentPage}").Result;
             Output.WriteLine($"Result count: {codesPage.Items.Count}");
 
             //// Assert

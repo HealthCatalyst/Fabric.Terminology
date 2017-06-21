@@ -6,15 +6,16 @@ namespace Fabric.Terminology.Domain.Persistence
 {
     public interface IValueSetCodeRepository
     {
-        IReadOnlyCollection<IValueSetCode> GetCodesByValueSet(string valueSetId);
+        IValueSetCode GetCode(string code);
 
-        Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(string codeSystemCode, IPagerSettings settings);
+        IReadOnlyCollection<IValueSetCode> GetByValueSet(string valueSetId);
 
-        Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(string searchTerm, string codeSystemCode, IPagerSettings settings);
+        Task<PagedCollection<IValueSetCode>> GetByCodeSystemAsync(string codeSystemCode, IPagerSettings settings);
 
-        Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(string[] codeSystemCodes, IPagerSettings settings);
+        Task<PagedCollection<IValueSetCode>> GetByCodeSystemAsync(string codeNameFilterText, string codeSystemCode, IPagerSettings settings);
 
-        Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(string searchTerm, string[] codeSystemCodes, IPagerSettings settings);
+        Task<PagedCollection<IValueSetCode>> GetByCodeSystemAsync(string[] codeSystemCodes, IPagerSettings settings);
 
+        Task<PagedCollection<IValueSetCode>> GetByCodeSystemAsync(string codeNameFilterText, string[] codeSystemCodes, IPagerSettings settings);
     }
 }
