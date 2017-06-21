@@ -43,5 +43,11 @@ namespace Fabric.Terminology.SqlServer.Persistence
                 Items = items.Select(MapToResult).ToList().AsReadOnly()
             };
         }
+
+        protected virtual void EnsurePagerSettings(IPagerSettings pagerSettings)
+        {
+            if (pagerSettings.CurrentPage <= 0) pagerSettings.CurrentPage = 1;
+            if (pagerSettings.ItemsPerPage < 0) pagerSettings.ItemsPerPage = SharedContext.DefaultItemsPerPage;
+        }
     }
 }

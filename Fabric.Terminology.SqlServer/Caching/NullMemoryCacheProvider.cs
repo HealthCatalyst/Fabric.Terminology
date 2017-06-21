@@ -1,7 +1,6 @@
 ﻿using System;
-using Fabric.Terminology.SqlServer.Caching;
 
-namespace Fabric.Terminology.TestsBase.Mocks
+namespace Fabric.Terminology.SqlServer.Caching
 {
     public class NullMemoryCacheProvider : IMemoryCacheProvider
     {
@@ -23,9 +22,9 @@ namespace Fabric.Terminology.TestsBase.Mocks
             return null;
         }
 
-        public object GetItem(string cacheKey, Func<object> getCacheItem, TimeSpan? timeout, bool isSliding = false)
+        public object GetItem(string cacheKey, Func<object> getItem, TimeSpan? timeout, bool isSliding = false)
         {
-            return null;
+            return getItem.Invoke();
         }
     }
 }
