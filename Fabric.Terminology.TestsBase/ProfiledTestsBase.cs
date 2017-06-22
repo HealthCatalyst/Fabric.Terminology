@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using System.Threading.Tasks;
 using Fabric.Terminology.Domain;
 using Xunit.Abstractions;
 
@@ -26,6 +27,17 @@ namespace Fabric.Terminology.TestsBase
             OutputTimer(msg);
             return result;
 
+        }
+
+        protected T ExecuteTimedAysnc<T>(Func<Task<T>> toWatch, string msg = "")
+        {
+            Stopwatch.Reset();
+            Stopwatch.Start();
+            var result = toWatch.Invoke().Result;
+            Stopwatch.Stop();
+            OutputTimer(msg);
+
+            return result;
         }
 
         protected void InvokeTimed(Action toWatch, string msg = "")

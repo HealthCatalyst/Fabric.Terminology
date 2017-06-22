@@ -6,9 +6,14 @@ namespace Fabric.Terminology.SqlServer.Caching
 {
     internal static class CacheKeys
     {
+        public static string ValueSetKey(string valueSetId)
+        {
+            return $"{typeof(ValueSet)}-{valueSetId}";
+        }
+
         public static string ValueSetCodesKey(string valueSetId)
         {
-            return $"{typeof(IValueSetCode)}-{valueSetId}";
+            return $"{typeof(ValueSetCode)}-{valueSetId}";
         }
     }
 }

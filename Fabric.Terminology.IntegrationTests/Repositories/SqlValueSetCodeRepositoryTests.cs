@@ -1,13 +1,8 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using Fabric.Terminology.Domain.Models;
 using Fabric.Terminology.Domain.Persistence;
 using Fabric.Terminology.IntegrationTests.Fixtures;
-using Fabric.Terminology.SqlServer.Caching;
-using Fabric.Terminology.SqlServer.Persistence;
-using Fabric.Terminology.SqlServer.Persistence.DataContext;
 using Fabric.Terminology.TestsBase;
-using Fabric.Terminology.TestsBase.Mocks;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -71,7 +66,7 @@ namespace Fabric.Terminology.IntegrationTests.Repositories
             var settings = new PagerSettings { CurrentPage = currentPage, ItemsPerPage = itemsPerPage };
 
             //// Act
-            var codesPage = ExecuteTimed(async () => await ValueSetCodeRepository.GetCodesAsync(codeSystemCode, settings), $"Querying code system code = {codeSystemCode} - Page {currentPage}").Result;
+            var codesPage = ExecuteTimedAysnc(() => ValueSetCodeRepository.GetCodesAsync(codeSystemCode, settings), $"Querying code system code = {codeSystemCode} - Page {currentPage}");
             Output.WriteLine($"Result count: {codesPage.Items.Count}");
 
             //// Assert
@@ -89,7 +84,7 @@ namespace Fabric.Terminology.IntegrationTests.Repositories
             var settings = new PagerSettings {CurrentPage = 1, ItemsPerPage = 500};
 
             //// Act
-            var codesPage = ExecuteTimed(async () => await ValueSetCodeRepository.GetCodesAsync(codeSystemCodes, settings), $"Querying code system code = {codeSystemCodes} - Page {settings.CurrentPage}").Result;
+            var codesPage = ExecuteTimedAysnc(() => ValueSetCodeRepository.GetCodesAsync(codeSystemCodes, settings), $"Querying code system code = {codeSystemCodes} - Page {settings.CurrentPage}");
 
             //// Assert
             Assert.Equal(settings.CurrentPage, codesPage.PagerSettings.CurrentPage);
@@ -110,7 +105,7 @@ namespace Fabric.Terminology.IntegrationTests.Repositories
             var settings = new PagerSettings { CurrentPage = currentPage, ItemsPerPage = itemsPerPage };
 
             //// Act
-            var codesPage = ExecuteTimed(async () => await ValueSetCodeRepository.FindCodesAsync(codeDsc, codeSystemCode, settings), $"Querying code system code = {codeSystemCode} - Page {currentPage}").Result;
+            var codesPage = ExecuteTimedAysnc(() => ValueSetCodeRepository.FindCodesAsync(codeDsc, codeSystemCode, settings), $"Querying code system code = {codeSystemCode} - Page {currentPage}");
             Output.WriteLine($"Result count: {codesPage.Items.Count}");
 
             //// Assert
@@ -130,7 +125,7 @@ namespace Fabric.Terminology.IntegrationTests.Repositories
             var settings = new PagerSettings { CurrentPage = currentPage, ItemsPerPage = itemsPerPage };
 
             //// Act
-            var codesPage = ExecuteTimed(async () => await ValueSetCodeRepository.FindCodesAsync(codeDsc, codeSystemCode, settings), $"Querying code system code = {codeSystemCode} - Page {currentPage}").Result;
+            var codesPage = ExecuteTimedAysnc(() => ValueSetCodeRepository.FindCodesAsync(codeDsc, codeSystemCode, settings), $"Querying code system code = {codeSystemCode} - Page {currentPage}");
             Output.WriteLine($"Result count: {codesPage.Items.Count}");
 
             //// Assert

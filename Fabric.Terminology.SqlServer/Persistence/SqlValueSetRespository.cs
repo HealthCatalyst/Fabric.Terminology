@@ -44,8 +44,6 @@ namespace Fabric.Terminology.SqlServer.Persistence
 
         public Task<PagedCollection<IValueSet>> FindValueSetsAsync(string nameFilterText, IPagerSettings pagerSettings)
         {
-            EnsurePagerSettings(pagerSettings);
-
             var dtos = !nameFilterText.IsNullOrWhiteSpace()
                 ? DbSet.Where(dto => dto.ValueSetNM.Contains(nameFilterText))
                 : DbSet;
@@ -56,29 +54,25 @@ namespace Fabric.Terminology.SqlServer.Persistence
         protected override IValueSet MapToResult(ValueSetDescriptionDto dto)
         {
 
-            var codes = _valueSetCodeRepository.GetValueSetCodes(dto.ValueSetID);
-
-            var valueSet = new ValueSet
+           var cacheKey = CacheKeys.ValueSetKey(dto.ValueSetID);
+            return (IValueSet) Cache.GetItem(cacheKey, () =>
             {
-                ValueSetId = dto.ValueSetID,
-                AuthoringSourceDescription = dto.AuthoringSourceDSC,
-                Name = dto.ValueSetNM,
-                IsCustom = false,
-                PurposeDescription = dto.PurposeDSC,
-                SourceDescription = dto.SourceDSC,
-                VersionDescription = dto.VersionDSC,
-                ValueSetCodes = codes,
-                ValueSetCodesCount = codes.Count
-            };
-
-            //FillValueSetCodesAsync(valueSet).Wait();
-            //valueSet.ValueSetCodesCount = valueSet.ValueSetCodes.Count;
-            return valueSet;
-        }
-
-        private Task FillValueSetCodesAsync(ValueSet valueSet)
-        {
-            return Task.Run(() => valueSet.ValueSetCodes = _valueSetCodeRepository.GetValueSetCodes(valueSet.ValueSetId));
+                var codes = _valueSetCodeRepository.GetValueSetCodes(dto.ValueSetID);
+                return new ValueSet
+                {
+                    ValueSetId = dto.ValueSetID,
+                    AuthoringSourceDescription = dto.AuthoringSourceDSC,
+                    Name = dto.ValueSetNM,
+                    IsCustom = false,
+                    PurposeDescription = dto.PurposeDSC,
+                    SourceDescription = dto.SourceDSC,
+                    VersionDescription = dto.VersionDSC,
+                    ValueSetCodes = codes,
+                    ValueSetCodesCount = codes.Count
+                };
+            },
+            TimeSpan.FromMinutes(SharedContext.Settings.MemoryCacheMinDuration),
+            SharedContext.Settings.MemoryCacheSliding);
         }
     }
 }

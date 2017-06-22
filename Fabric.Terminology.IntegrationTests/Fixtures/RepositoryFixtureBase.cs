@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Fabric.Terminology.API.Configuration;
 using Fabric.Terminology.API.Logging;
-using Fabric.Terminology.Domain.Persistence;
 using Fabric.Terminology.SqlServer.Caching;
 using Fabric.Terminology.SqlServer.Persistence.DataContext;
 using Fabric.Terminology.TestsBase;

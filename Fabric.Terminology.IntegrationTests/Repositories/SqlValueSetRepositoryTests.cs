@@ -28,11 +28,35 @@ namespace Fabric.Terminology.IntegrationTests.Repositories
             var pagerSettings = new PagerSettings {CurrentPage = currentPage, ItemsPerPage = itemsPerPage};
 
             //// Act
-            var valueSets = ExecuteTimed(async () => await _valueSetRepository.GetValueSetsAsync(pagerSettings)).Result;
+            var valueSets = ExecuteTimedAysnc(() => _valueSetRepository.GetValueSetsAsync(pagerSettings));
             Output.WriteLine($"Total Items {valueSets.TotalItems}");
             Output.WriteLine($"Total Pages {valueSets.TotalPages}");
+            
             //// Assert
             Assert.NotNull(valueSets);
+            Assert.True(valueSets.TotalPages > 0);
+            Assert.True(valueSets.TotalItems > 0);
+
+            //// Call again - to time cached
+            var cached = ExecuteTimedAysnc(() => _valueSetRepository.GetValueSetsAsync(pagerSettings), "Cached time: ");
+        }
+
+        [Theory]
+        [InlineData("Cancer")]
+        [InlineData("tumor")]
+        [InlineData("hiv")]
+        public void FindValueSetsAsync_ReturnsResults(string nameFilter)
+        {
+            //// Arrange
+            var pagerSettings = new PagerSettings {CurrentPage = 1, ItemsPerPage = 20};
+
+            //// Act
+            var valueSets = ExecuteTimedAysnc(() => _valueSetRepository.FindValueSetsAsync(nameFilter, pagerSettings));
+
+            //// Assert
+            Assert.NotNull(valueSets);
+            Assert.True(valueSets.TotalPages > 0);
+            Assert.True(valueSets.TotalItems > 0);
         }
     }
 }

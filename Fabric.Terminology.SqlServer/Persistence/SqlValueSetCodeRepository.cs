@@ -60,8 +60,6 @@ namespace Fabric.Terminology.SqlServer.Persistence
 
         public Task<PagedCollection<IValueSetCode>> FindCodesAsync(string codeNameFilterText, IPagerSettings settings)
         {
-            EnsurePagerSettings(settings);
-
             var dtos = !codeNameFilterText.IsNullOrWhiteSpace() ? 
                         DbSet.Where(dto => dto.CodeDSC.Equals(codeNameFilterText)) : 
                         DbSet;
@@ -76,9 +74,6 @@ namespace Fabric.Terminology.SqlServer.Persistence
 
         public Task<PagedCollection<IValueSetCode>> FindCodesAsync(string codeNameFilterText, string[] codeSystemCodes, IPagerSettings settings)
         {
-
-            EnsurePagerSettings(settings);
-
             if (codeSystemCodes == null) throw new ArgumentNullException(nameof(codeSystemCodes));
             if (!codeSystemCodes.Any()) throw new InvalidOperationException("A code system must be specified.");
 
@@ -98,24 +93,12 @@ namespace Fabric.Terminology.SqlServer.Persistence
 
         public IReadOnlyCollection<IValueSetCode> GetValueSetCodes(string valueSetId)
         {
+            var dtos = DbSet
+                .Where(dto => dto.ValueSetID.Equals(valueSetId))
+                .OrderBy(SortExpression)
+                .AsNoTracking();
 
-
-            // Memory cache check is here
-            var cacheKey = CacheKeys.ValueSetCodesKey(valueSetId);
-
-            return (IReadOnlyCollection<IValueSetCode>)
-                Cache.GetItem(cacheKey, () =>
-                    {
-                        var dtos = DbSet
-                            .Where(dto => dto.ValueSetID.Equals(valueSetId))
-                            .OrderBy(SortExpression)
-                            .AsNoTracking();
-
-                        return dtos.Select(dto => MapToResult(dto)).ToList().AsReadOnly();
-                    },
-                    TimeSpan.FromMinutes(SharedContext.Settings.MemoryCacheMinDuration),
-                    SharedContext.Settings.MemoryCacheSliding);
-
+            return dtos.Select(dto => MapToResult(dto)).ToList().AsReadOnly();
         }
 
         public Task<PagedCollection<IValueSetCode>> GetValueSetCodes(string valueSetId, IPagerSettings settings)

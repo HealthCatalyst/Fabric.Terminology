@@ -36,6 +36,8 @@ namespace Fabric.Terminology.SqlServer.Persistence
 
         protected virtual async Task<PagedCollection<TResult>> CreatePagedCollectionAsync(IQueryable<TDto> source, IPagerSettings pagerSettings)
         {
+            EnsurePagerSettings(pagerSettings);
+
             var count = await source.CountAsync();
             var items = await source.OrderBy(SortExpression).Skip((pagerSettings.CurrentPage - 1) * pagerSettings.ItemsPerPage).Take(pagerSettings.ItemsPerPage).AsNoTracking().ToListAsync();
 
