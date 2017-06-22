@@ -8,7 +8,7 @@ using Xunit.Abstractions;
 
 namespace Fabric.Terminology.IntegrationTests.Repositories
 {
-    public class SqlValueSetRepositoryTests : ProfiledTestsBase, IClassFixture<ValueSetRepositoryFixture>
+    public class SqlValueSetRepositoryTests : OutputTestBase, IClassFixture<ValueSetRepositoryFixture>
     {
         private readonly IValueSetRepository _valueSetRepository;
 
@@ -30,7 +30,7 @@ namespace Fabric.Terminology.IntegrationTests.Repositories
             var pagerSettings = new PagerSettings {CurrentPage = currentPage, ItemsPerPage = itemsPerPage};
 
             // Act
-            var valueSets = ExecuteTimedAysnc(() => _valueSetRepository.GetValueSetsAsync(pagerSettings));
+            var valueSets = Profiler.ExecuteTimed(() => _valueSetRepository.GetValueSetsAsync(pagerSettings));
             Output.WriteLine($"Total Items {valueSets.TotalItems}");
             Output.WriteLine($"Total Pages {valueSets.TotalPages}");
             
@@ -41,7 +41,7 @@ namespace Fabric.Terminology.IntegrationTests.Repositories
            
 
             // Call again - to time cached
-            var cached = ExecuteTimedAysnc(() => _valueSetRepository.GetValueSetsAsync(pagerSettings), "Cached time: ");
+            var cached = Profiler.ExecuteTimed(() => _valueSetRepository.GetValueSetsAsync(pagerSettings), "Cached time: ");
         }
 
         [Theory]
@@ -54,7 +54,7 @@ namespace Fabric.Terminology.IntegrationTests.Repositories
             var pagerSettings = new PagerSettings {CurrentPage = 1, ItemsPerPage = 20};
 
             // Act
-            var valueSets = ExecuteTimedAysnc(() => _valueSetRepository.FindValueSetsAsync(nameFilter, pagerSettings));
+            var valueSets = Profiler.ExecuteTimed(() => _valueSetRepository.FindValueSetsAsync(nameFilter, pagerSettings));
 
             // Assert
             valueSets.Should().NotBeNull();

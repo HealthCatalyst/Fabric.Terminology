@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using Fabric.Terminology.Domain.Models;
 using Fabric.Terminology.Domain.Persistence;
 using Fabric.Terminology.IntegrationTests.Fixtures;
 using Fabric.Terminology.TestsBase;
@@ -8,7 +7,7 @@ using Xunit.Abstractions;
 
 namespace Fabric.Terminology.IntegrationTests.Repositories
 {
-    public class SqlValueSetCodeRepositoryTests : ProfiledTestsBase, IClassFixture<ValueSetCodeRepositoryFixture>
+    public class SqlValueSetCodeRepositoryTests : OutputTestBase, IClassFixture<ValueSetCodeRepositoryFixture>
     {
         
         public SqlValueSetCodeRepositoryTests(ValueSetCodeRepositoryFixture fixture, ITestOutputHelper output) 
@@ -31,7 +30,7 @@ namespace Fabric.Terminology.IntegrationTests.Repositories
             // Handled in inline data
 
             //// Act
-            var codes = ExecuteTimed(() => ValueSetCodeRepository.GetValueSetCodes(valueSetId), $"Querying ValueSetId = {valueSetId}");
+            var codes = Profiler.ExecuteTimed(() => ValueSetCodeRepository.GetValueSetCodes(valueSetId), $"Querying ValueSetId = {valueSetId}");
             Output.WriteLine($"Result count: {codes.Count}");
 
             //// Assert

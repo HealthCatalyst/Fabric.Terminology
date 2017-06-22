@@ -1,21 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 using System.Threading.Tasks;
 using Fabric.Terminology.Domain;
 using Xunit.Abstractions;
 
 namespace Fabric.Terminology.TestsBase
 {
-    public abstract class ProfiledTestsBase : TestsBase
-    {       
-        protected ProfiledTestsBase(ITestOutputHelper output) 
-            : base(output)
+    public class TestProfiler
+    {
+        public TestProfiler(ITestOutputHelper output)
         {
+            Output = output;
         }
 
-        protected T ExecuteTimed<T>(Func<T> toWatch, string msg = "")
+        protected ITestOutputHelper Output { get; }
+
+        public T ExecuteTimed<T>(Func<T> toWatch, string msg = "")
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -25,7 +25,7 @@ namespace Fabric.Terminology.TestsBase
             return result;
         }
 
-        protected T ExecuteTimedAysnc<T>(Func<Task<T>> toWatch, string msg = "")
+        public T ExecuteTimed<T>(Func<Task<T>> toWatch, string msg = "")
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -36,7 +36,7 @@ namespace Fabric.Terminology.TestsBase
             return result;
         }
 
-        protected void ExecuteTimed(Action toWatch, string msg = "")
+        public void ExecuteTimed(Action toWatch, string msg = "")
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
