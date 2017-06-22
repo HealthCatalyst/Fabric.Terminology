@@ -113,9 +113,15 @@ namespace Fabric.Terminology.SqlServer.Persistence
 
                         return dtos.Select(dto => MapToResult(dto)).ToList().AsReadOnly();
                     },
-                    TimeSpan.FromMinutes(5),
-                    true);
+                    TimeSpan.FromMinutes(SharedContext.Settings.MemoryCacheMinDuration),
+                    SharedContext.Settings.MemoryCacheSliding);
 
+        }
+
+        public Task<PagedCollection<IValueSetCode>> GetValueSetCodes(string valueSetId, IPagerSettings settings)
+        {
+            var dtos = DbSet.Where(dto => dto.ValueSetID.Equals(valueSetId));
+            return CreatePagedCollectionAsync(dtos, settings);
         }
 
         protected override IValueSetCode MapToResult(ValueSetCodeDto dto)

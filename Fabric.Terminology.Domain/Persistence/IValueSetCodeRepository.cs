@@ -30,5 +30,7 @@ namespace Fabric.Terminology.Domain.Persistence
         Task<PagedCollection<IValueSetCode>> FindCodesAsync(string codeNameFilterText, string[] codeSystemCodes, IPagerSettings settings);
 
         IReadOnlyCollection<IValueSetCode> GetValueSetCodes(string valueSetId);
+
+        Task<PagedCollection<IValueSetCode>> GetValueSetCodes(string valueSetId, IPagerSettings settings);
     }
 }

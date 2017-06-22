@@ -17,11 +17,11 @@ namespace Fabric.Terminology.IntegrationTests.Repositories
         }
 
         [Theory]
-        [InlineData(1, 50)]
-        [InlineData(2, 50)]
-        [InlineData(3, 50)]
-        [InlineData(4, 50)]
-        [InlineData(5, 50)]
+        [InlineData(1, 20)]
+        [InlineData(2, 20)]
+        [InlineData(3, 20)]
+        [InlineData(4, 20)]
+        [InlineData(5, 20)]
         public void GetValueSetsAsync_ReturnsPageOfValueSets(int currentPage, int itemsPerPage)
         {
             //// Arrange

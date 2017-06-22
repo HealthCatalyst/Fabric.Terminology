@@ -55,10 +55,10 @@ namespace Fabric.Terminology.SqlServer.Persistence
 
         protected override IValueSet MapToResult(ValueSetDescriptionDto dto)
         {
-            // value set codes are cached.  DO NOT cache the value set!            
+
             var codes = _valueSetCodeRepository.GetValueSetCodes(dto.ValueSetID);
 
-            return new ValueSet
+            var valueSet = new ValueSet
             {
                 ValueSetId = dto.ValueSetID,
                 AuthoringSourceDescription = dto.AuthoringSourceDSC,
@@ -66,10 +66,14 @@ namespace Fabric.Terminology.SqlServer.Persistence
                 IsCustom = false,
                 PurposeDescription = dto.PurposeDSC,
                 SourceDescription = dto.SourceDSC,
-                VersionDescription = dto.VersionDSC,                
-                ValueSetCodesCount = codes.Count,
-                ValueSetCodes = codes
+                VersionDescription = dto.VersionDSC,
+                ValueSetCodes = codes,
+                ValueSetCodesCount = codes.Count
             };
+
+            //FillValueSetCodesAsync(valueSet).Wait();
+            //valueSet.ValueSetCodesCount = valueSet.ValueSetCodes.Count;
+            return valueSet;
         }
 
         private Task FillValueSetCodesAsync(ValueSet valueSet)
