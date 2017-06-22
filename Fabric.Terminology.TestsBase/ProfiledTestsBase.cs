@@ -13,46 +13,42 @@ namespace Fabric.Terminology.TestsBase
         protected ProfiledTestsBase(ITestOutputHelper output) 
             : base(output)
         {
-            Stopwatch = new Stopwatch();
         }
-
-        protected virtual Stopwatch Stopwatch { get; }
 
         protected T ExecuteTimed<T>(Func<T> toWatch, string msg = "")
         {
-            Stopwatch.Reset();
-            Stopwatch.Start();
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
             var result = toWatch.Invoke();
-            Stopwatch.Stop();
-            OutputTimer(msg);
+            stopwatch.Stop();
+            OutputTimer(stopwatch, msg);
             return result;
-
         }
 
         protected T ExecuteTimedAysnc<T>(Func<Task<T>> toWatch, string msg = "")
         {
-            Stopwatch.Reset();
-            Stopwatch.Start();
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
             var result = toWatch.Invoke().Result;
-            Stopwatch.Stop();
-            OutputTimer(msg);
+            stopwatch.Stop();
+            OutputTimer(stopwatch, msg);
 
             return result;
         }
 
-        protected void InvokeTimed(Action toWatch, string msg = "")
+        protected void ExecuteTimed(Action toWatch, string msg = "")
         {
-            Stopwatch.Reset();
-            Stopwatch.Start();
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
             toWatch.Invoke();
-            Stopwatch.Stop();
-            OutputTimer(msg);
+            stopwatch.Stop();
+            OutputTimer(stopwatch, msg);
         }
 
-        private void OutputTimer(string msg = "")
+        private void OutputTimer(Stopwatch stopwatch, string msg = "")
         {
             if (!msg.IsNullOrWhiteSpace()) msg += Environment.NewLine;
-            Output.WriteLine($"{msg}Operation completed in {Stopwatch.Elapsed.TotalSeconds} seconds.");
+            Output.WriteLine($"{msg}Operation completed in {stopwatch.Elapsed.TotalSeconds} seconds.");
         }
     }
 }

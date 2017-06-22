@@ -2,6 +2,7 @@
 using Fabric.Terminology.SqlServer.Persistence.DataContext;
 using Fabric.Terminology.TestsBase;
 using Fabric.Terminology.TestsBase.Fixtures;
+using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -28,8 +29,8 @@ namespace Fabric.Terminology.UnitTests.Persistence.DataContext
             var context = factory.Create();
 
             // Assert
-            Assert.NotNull(context);
-            Assert.True(context.IsInMemory);
+            context.Should().NotBeNull();
+            context.IsInMemory.Should().BeTrue();
         }
 
         [Fact]
@@ -44,8 +45,8 @@ namespace Fabric.Terminology.UnitTests.Persistence.DataContext
             var context = factory.Create();
 
             // Assert
-            Assert.NotNull(context);
-            Assert.False(context.IsInMemory);
+            context.Should().NotBeNull();
+            context.IsInMemory.Should().BeFalse();
         }
     }
 }

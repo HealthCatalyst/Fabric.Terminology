@@ -1,4 +1,5 @@
 ﻿using System;
+using JetBrains.Annotations;
 
 namespace Fabric.Terminology.SqlServer.Caching
 {
@@ -12,6 +13,7 @@ namespace Fabric.Terminology.SqlServer.Caching
         {         
         }
 
+        [CanBeNull]
         public object GetItem(string key)
         {
             return null;
@@ -19,7 +21,7 @@ namespace Fabric.Terminology.SqlServer.Caching
 
         public object GetItem(string key, Func<object> getItem)
         {
-            return null;
+            return getItem.Invoke();
         }
 
         public object GetItem(string cacheKey, Func<object> getItem, TimeSpan? timeout, bool isSliding = false)

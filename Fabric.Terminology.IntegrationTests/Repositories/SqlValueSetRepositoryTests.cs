@@ -2,6 +2,7 @@
 using Fabric.Terminology.Domain.Persistence;
 using Fabric.Terminology.IntegrationTests.Fixtures;
 using Fabric.Terminology.TestsBase;
+using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -34,9 +35,10 @@ namespace Fabric.Terminology.IntegrationTests.Repositories
             Output.WriteLine($"Total Pages {valueSets.TotalPages}");
             
             // Assert
-            Assert.NotNull(valueSets);
-            Assert.True(valueSets.TotalPages > 0);
-            Assert.True(valueSets.TotalItems > 0);
+            valueSets.Should().NotBeNull();
+            valueSets.TotalItems.Should().BeGreaterThan(0);
+            valueSets.TotalPages.Should().BeGreaterThan(0);
+           
 
             // Call again - to time cached
             var cached = ExecuteTimedAysnc(() => _valueSetRepository.GetValueSetsAsync(pagerSettings), "Cached time: ");
@@ -55,9 +57,9 @@ namespace Fabric.Terminology.IntegrationTests.Repositories
             var valueSets = ExecuteTimedAysnc(() => _valueSetRepository.FindValueSetsAsync(nameFilter, pagerSettings));
 
             // Assert
-            Assert.NotNull(valueSets);
-            Assert.True(valueSets.TotalPages > 0);
-            Assert.True(valueSets.TotalItems > 0);
+            valueSets.Should().NotBeNull();
+            valueSets.TotalItems.Should().BeGreaterThan(0);
+            valueSets.TotalPages.Should().BeGreaterThan(0);
         }
     }
 }

@@ -8,6 +8,7 @@ using Fabric.Terminology.Domain.Persistence;
 using Fabric.Terminology.SqlServer.Caching;
 using Fabric.Terminology.SqlServer.Models.Dto;
 using Fabric.Terminology.SqlServer.Persistence.DataContext;
+using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -27,6 +28,7 @@ namespace Fabric.Terminology.SqlServer.Persistence
         protected override SortDirection Direction { get; } = SortDirection.Ascending;
         protected override DbSet<ValueSetDescriptionDto> DbSet => SharedContext.ValueSetDescriptions;
 
+        [CanBeNull]
         public IValueSet GetValueSet(string valueSetId)
         {
             var dto = DbSet.FirstOrDefault(q => q.ValueSetID.Equals(valueSetId));

@@ -1,5 +1,6 @@
 ﻿using System;
 using Fabric.Terminology.SqlServer.Caching;
+using FluentAssertions;
 using Xunit;
 
 namespace Fabric.Terminology.UnitTests.Caching
@@ -55,14 +56,14 @@ namespace Fabric.Terminology.UnitTests.Caching
             cache.GetItem(key3, () => obj3);
 
             // Act
-            Assert.NotNull(cache.GetItem(key2));
-
+            cache.GetItem(key2).Should().NotBeNull();
+            
             cache.ClearItem(key2);
 
             // Assert
-            Assert.Null(cache.GetItem(key2));
-            Assert.NotNull(cache.GetItem(key1));
-            Assert.NotNull(cache.GetItem(key3));
+            cache.GetItem(key2).Should().BeNull();
+            cache.GetItem(key1).Should().NotBeNull();
+            cache.GetItem(key3).Should().NotBeNull();
 
         }
 
@@ -82,9 +83,9 @@ namespace Fabric.Terminology.UnitTests.Caching
             cache.GetItem(key2, () => obj2);
             cache.GetItem(key3, () => obj3);
 
-            Assert.NotNull(cache.GetItem(key1));
-            Assert.NotNull(cache.GetItem(key2));
-            Assert.NotNull(cache.GetItem(key3));
+            cache.GetItem(key1).Should().NotBeNull();
+            cache.GetItem(key2).Should().NotBeNull();
+            cache.GetItem(key3).Should().NotBeNull();
 
             var instanceKey = cache.InstanceKey;
 
@@ -92,10 +93,10 @@ namespace Fabric.Terminology.UnitTests.Caching
             cache.ClearAll();
 
             // Assert
-            Assert.Null(cache.GetItem(key1));
-            Assert.Null(cache.GetItem(key2));
-            Assert.Null(cache.GetItem(key2));
-            Assert.NotEqual(instanceKey, cache.InstanceKey);
+            cache.GetItem(key1).Should().BeNull();
+            cache.GetItem(key2).Should().BeNull();
+            cache.GetItem(key3).Should().BeNull();
+            instanceKey.Should().NotBe(cache.InstanceKey);
         }
 
         [Fact]
@@ -104,13 +105,13 @@ namespace Fabric.Terminology.UnitTests.Caching
             // Arrange
             var cache = new MemoryCacheProvider();
             const string key = "key";
-            Assert.Null(cache.GetItem(key));
+            cache.GetItem(key).Should().BeNull();
 
             // Act
             cache.GetItem(key, () => new TestObject {Text = "Test string", Stamp = DateTime.Now});
 
             // Assert
-            Assert.NotNull(cache.GetItem(key));
+            cache.GetItem(key).Should().NotBeNull();
         }
 
         private class TestObject

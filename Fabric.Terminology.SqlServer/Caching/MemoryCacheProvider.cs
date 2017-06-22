@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using Fabric.Terminology.SqlServer.Threading;
+using JetBrains.Annotations;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Fabric.Terminology.SqlServer.Caching
@@ -40,6 +41,7 @@ namespace Fabric.Terminology.SqlServer.Caching
             }
         }
 
+        [CanBeNull]
         public object GetItem(string key)
         {
             object result;

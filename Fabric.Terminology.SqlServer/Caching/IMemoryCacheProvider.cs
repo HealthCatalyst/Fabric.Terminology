@@ -1,4 +1,5 @@
 ﻿using System;
+using JetBrains.Annotations;
 
 namespace Fabric.Terminology.SqlServer.Caching
 {

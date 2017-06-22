@@ -1,4 +1,5 @@
 ﻿using Fabric.Terminology.API.Modules;
+using FluentAssertions;
 using Nancy;
 using Xunit;
 
@@ -18,7 +19,7 @@ namespace Fabric.Terminology.UnitTests.Modules
             var result = browser.Get("/", with => { with.HttpRequest(); }).Result;
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+            HttpStatusCode.OK.Should().Be(result.StatusCode);
         }        
     }
 }
