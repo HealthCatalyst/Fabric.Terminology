@@ -10,8 +10,8 @@ namespace Fabric.Terminology.TestsBase
 {
     public abstract class ProfiledTestsBase : TestsBase
     {       
-        protected ProfiledTestsBase(ITestOutputHelper output, ConfigTestFor testType = ConfigTestFor.Unit) 
-            : base(output, testType)
+        protected ProfiledTestsBase(ITestOutputHelper output) 
+            : base(output)
         {
             Stopwatch = new Stopwatch();
         }

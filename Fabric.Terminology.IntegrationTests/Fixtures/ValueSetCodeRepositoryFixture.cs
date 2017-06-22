@@ -4,7 +4,7 @@ using Fabric.Terminology.SqlServer.Persistence;
 
 namespace Fabric.Terminology.IntegrationTests.Fixtures
 {
-    public class ValueSetCodeRepositoryFixture : RepositoryFixtureBase, IDisposable
+    public class ValueSetCodeRepositoryFixture : RepositoryFixtureBase
     {
         public ValueSetCodeRepositoryFixture()
         {
@@ -12,11 +12,6 @@ namespace Fabric.Terminology.IntegrationTests.Fixtures
         }
 
         public IValueSetCodeRepository ValueSetCodeRepository { get; private set; }
-
-        public void Dispose()
-        {
-            // nothing to do here thus far
-        }
 
         private void Initialize()
         {

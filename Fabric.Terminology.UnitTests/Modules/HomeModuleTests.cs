@@ -11,13 +11,13 @@ namespace Fabric.Terminology.UnitTests.Modules
         [Fact]
         public void ShouldReturnOkStatusForDefaultRoute()
         {
-            //// Arrange
+            // Arrange
             var browser = CreateBrowser();
 
-            //// Act
+            // Act
             var result = browser.Get("/", with => { with.HttpRequest(); }).Result;
 
-            //// Assert
+            // Assert
             Assert.Equal(HttpStatusCode.OK, result.StatusCode);
         }        
     }

@@ -19,11 +19,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="System.Threading.Tasks.Parallel">
-      <HintPath>..\..\..\..\Users\rusty.swayne\.nuget\packages\system.threading.tasks.parallel\4.3.0\ref\netstandard1.1\System.Threading.Tasks.Parallel.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
 	<Compile Update="Extensions.*.cs">
 		<DependentUpon>Extensions.cs</DependentUpon>
 	</Compile>

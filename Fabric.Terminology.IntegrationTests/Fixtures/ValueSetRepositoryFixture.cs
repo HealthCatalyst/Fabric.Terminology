@@ -13,10 +13,6 @@ namespace Fabric.Terminology.IntegrationTests.Fixtures
 
         public IValueSetRepository ValueSetRepository { get; private set; }
 
-        public void Dispose()
-        {
-        }
-
         private void Initialize()
         {
             var valueSetCodeRepository = new SqlValueSetCodeRepository(SharedContext, Logger, Cache);

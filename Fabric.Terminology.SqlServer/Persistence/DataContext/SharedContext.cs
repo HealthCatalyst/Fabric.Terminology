@@ -24,6 +24,7 @@ namespace Fabric.Terminology.SqlServer.Persistence.DataContext
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<ValueSetCodeDto>().ToTable("ValueSetCode", "Terminology");
             modelBuilder.Entity<ValueSetCodeDto>().Property(e => e.BindingNM).IsUnicode(false);
             modelBuilder.Entity<ValueSetCodeDto>().HasKey(code =>
                 new
@@ -37,9 +38,9 @@ namespace Fabric.Terminology.SqlServer.Persistence.DataContext
                     code.VersionDSC
                 });
 
+            modelBuilder.Entity<ValueSetDescriptionDto>().ToTable("ValueSetDescription", "Terminology");
             modelBuilder.Entity<ValueSetDescriptionDto>().Property(e => e.BindingNM).IsUnicode(false);
-            modelBuilder.Entity<ValueSetDescriptionDto>().HasKey(
-                desc => 
+            modelBuilder.Entity<ValueSetDescriptionDto>().HasKey(desc => 
                 new
                 {
                     desc.BindingID,

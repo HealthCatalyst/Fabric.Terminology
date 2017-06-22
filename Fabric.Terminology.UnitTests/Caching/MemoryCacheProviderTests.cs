@@ -9,31 +9,31 @@ namespace Fabric.Terminology.UnitTests.Caching
         [Fact]
         public void GetItem_ReturnsNullWhenNotFound()
         {
-            //// Arrange
+            // Arrange
             var cache = new MemoryCacheProvider();
-            var key = "key";
+            const string key = "key";
 
-            //// Act
+            // Act
             var val = cache.GetItem(key);
 
-            //// Assert
+            // Assert
             Assert.Null(val);
         }
 
         [Fact]
         public void GetItem_CanAddToCache()
         {
-            //// Arrange
+            // Arrange
             var cache = new MemoryCacheProvider();
-            var key = "key";
+            const string key = "key";
             var dt = DateTime.Now;
             var obj = new TestObject {Text = "Test", Stamp = dt };
 
-            //// Act           
+            // Act           
             var tmp = cache.GetItem(key, () => obj);
             var cached = cache.GetItem(key) as TestObject;
 
-            //// Assert
+            // Assert
             Assert.NotNull(cached);
             Assert.Equal(dt, cached.Stamp);
         }
@@ -41,7 +41,7 @@ namespace Fabric.Terminology.UnitTests.Caching
         [Fact]
         public void ClearItem_ClearsSingleItem()
         {
-            //// Arrange
+            // Arrange
             var cache = new MemoryCacheProvider();
             var key1 = "key1";
             var key2 = "key2";
@@ -54,12 +54,12 @@ namespace Fabric.Terminology.UnitTests.Caching
             cache.GetItem(key2, () => obj2);
             cache.GetItem(key3, () => obj3);
 
-            //// Act
+            // Act
             Assert.NotNull(cache.GetItem(key2));
 
             cache.ClearItem(key2);
 
-            //// Assert
+            // Assert
             Assert.Null(cache.GetItem(key2));
             Assert.NotNull(cache.GetItem(key1));
             Assert.NotNull(cache.GetItem(key3));
@@ -69,11 +69,11 @@ namespace Fabric.Terminology.UnitTests.Caching
         [Fact]
         public void ClearAll_ClearsAllCache()
         {
-            //// Arrange
+            // Arrange
             var cache = new MemoryCacheProvider();
-            var key1 = "key1";
-            var key2 = "key2";
-            var key3 = "key3";
+            const string key1 = "key1";
+            const string key2 = "key2";
+            const string key3 = "key3";
             var obj1 = new TestObject { Text = "Test1", Stamp = DateTime.Now };
             var obj2 = new TestObject { Text = "Test2", Stamp = DateTime.Now };
             var obj3 = new TestObject { Text = "Test3", Stamp = DateTime.Now };
@@ -88,10 +88,10 @@ namespace Fabric.Terminology.UnitTests.Caching
 
             var instanceKey = cache.InstanceKey;
 
-            //// Act
+            // Act
             cache.ClearAll();
 
-            //// Assert
+            // Assert
             Assert.Null(cache.GetItem(key1));
             Assert.Null(cache.GetItem(key2));
             Assert.Null(cache.GetItem(key2));
@@ -101,15 +101,15 @@ namespace Fabric.Terminology.UnitTests.Caching
         [Fact]
         public void GetItem_AddsItemByFunction()
         {
-            //// Arrange
+            // Arrange
             var cache = new MemoryCacheProvider();
-            var key = "key";
+            const string key = "key";
             Assert.Null(cache.GetItem(key));
 
-            //// Act
+            // Act
             cache.GetItem(key, () => new TestObject {Text = "Test string", Stamp = DateTime.Now});
 
-            //// Assert
+            // Assert
             Assert.NotNull(cache.GetItem(key));
         }
 

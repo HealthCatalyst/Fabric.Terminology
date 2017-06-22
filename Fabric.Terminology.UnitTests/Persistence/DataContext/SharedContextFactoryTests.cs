@@ -1,50 +1,51 @@
 ﻿using Fabric.Terminology.API.Configuration;
 using Fabric.Terminology.SqlServer.Persistence.DataContext;
 using Fabric.Terminology.TestsBase;
+using Fabric.Terminology.TestsBase.Fixtures;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Fabric.Terminology.UnitTests.Persistence.DataContext
 {
-    public class SharedContextFactoryTests
+    public class SharedContextFactoryTests : IClassFixture<AppConfigurationFixture>
     {
-        private readonly AppConfiguration _appConfig;
+        private readonly AppConfigurationFixture _fixture;
 
-        public SharedContextFactoryTests()
+        public SharedContextFactoryTests(AppConfigurationFixture fixture)
         {
-            _appConfig = TestHelper.GetAppConfig();
+            _fixture = fixture;
         }
-        
-        //[Fact]
-        //public void CanCreateInMemoryContext()
-        //{
-        //    //// Arrange
-        //    var settings = _appConfig.TerminologySqlSettings;
-        //    settings.UseInMemory = true;
 
-        //    //// Act
-        //    var factory = new SharedContextFactory(settings);
-        //    var context = factory.Create();
+        [Fact]
+        public void CanCreateInMemoryContext()
+        {
+            // Arrange
+            var settings = _fixture.AppConfiguration.TerminologySqlSettings;
+            settings.UseInMemory = true;
 
-        //    //// Assert
-        //    Assert.NotNull(context);
-        //    Assert.True(context.IsInMemory);
-        //}
+            // Act
+            var factory = new SharedContextFactory(settings, _fixture.Logger);
+            var context = factory.Create();
 
-        //[Fact]
-        //public void CanCreateAttachedSharedContext()
-        //{
-        //    //// Arrange
-        //    var settings = _appConfig.TerminologySqlSettings;
-        //    settings.UseInMemory = false;
+            // Assert
+            Assert.NotNull(context);
+            Assert.True(context.IsInMemory);
+        }
 
-        //    //// Act
-        //    var factory = new SharedContextFactory(settings);
-        //    var context = factory.Create();
+        [Fact]
+        public void CanCreateAttachedSharedContext()
+        {
+            // Arrange
+            var settings = _fixture.AppConfiguration.TerminologySqlSettings;
+            settings.UseInMemory = false;
 
-        //    //// Assert
-        //    Assert.NotNull(context);
-        //    Assert.False(context.IsInMemory);
-        //}
+            // Act
+            var factory = new SharedContextFactory(settings, _fixture.Logger);
+            var context = factory.Create();
+
+            // Assert
+            Assert.NotNull(context);
+            Assert.False(context.IsInMemory);
+        }
     }
 }

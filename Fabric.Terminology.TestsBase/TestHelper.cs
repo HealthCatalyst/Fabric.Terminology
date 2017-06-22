@@ -12,14 +12,12 @@ namespace Fabric.Terminology.TestsBase
             var fileName = $"appsettings.json";
             var path = $"{Directory.GetCurrentDirectory()}\\..\\..\\..\\";
             var filePath = $"{path}{fileName}";
-
             return !File.Exists(filePath) ? null : new FileInfo(filePath);
         }
 
         public static AppConfiguration GetAppConfig()
         {
             var file = GetAppConfigFile();
-
             if (file == null)
             {
                 return new AppConfiguration
@@ -30,14 +28,7 @@ namespace Fabric.Terminology.TestsBase
                     }
                 };
             }
-
             return JsonConvert.DeserializeObject<AppConfiguration>(File.ReadAllText(file.FullName));
         }
-    }
-
-    public enum ConfigTestFor
-    {
-        Integration,
-        Unit
     }
 }

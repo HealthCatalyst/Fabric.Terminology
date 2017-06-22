@@ -11,7 +11,8 @@ namespace Fabric.Terminology.Domain.Models
         public string PurposeDescription { get; set; }
         public string SourceDescription { get; set; }
         public string VersionDescription { get;set; }
-        
+        public bool AllCodesLoaded => ValueSetCodesCount == ValueSetCodes.Count;
+
         /// <summary>
         /// Gets or sets the number (count) of codes in the value set.
         /// </summary>
@@ -20,6 +21,6 @@ namespace Fabric.Terminology.Domain.Models
         /// this count correct for representation in the UI.
         /// </remarks>
         public int ValueSetCodesCount { get; set; }
-        public IReadOnlyCollection<IValueSetCode> ValueSetCodes { get; set; } = new IValueSetCode[]{};
+        public IReadOnlyCollection<IValueSetCode> ValueSetCodes { get; set; } = new IValueSetCode[]{};        
     }
 }

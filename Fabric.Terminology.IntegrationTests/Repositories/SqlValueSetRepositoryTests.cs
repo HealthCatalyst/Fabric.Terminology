@@ -11,7 +11,8 @@ namespace Fabric.Terminology.IntegrationTests.Repositories
     {
         private readonly IValueSetRepository _valueSetRepository;
 
-        public SqlValueSetRepositoryTests(ValueSetRepositoryFixture fixture, ITestOutputHelper output, ConfigTestFor testType = ConfigTestFor.Unit) : base(output, testType)
+        public SqlValueSetRepositoryTests(ValueSetRepositoryFixture fixture, ITestOutputHelper output) 
+            : base(output)
         {
             _valueSetRepository = fixture.ValueSetRepository;
         }
@@ -24,20 +25,20 @@ namespace Fabric.Terminology.IntegrationTests.Repositories
         [InlineData(5, 20)]
         public void GetValueSetsAsync_ReturnsPageOfValueSets(int currentPage, int itemsPerPage)
         {
-            //// Arrange
+            // Arrange
             var pagerSettings = new PagerSettings {CurrentPage = currentPage, ItemsPerPage = itemsPerPage};
 
-            //// Act
+            // Act
             var valueSets = ExecuteTimedAysnc(() => _valueSetRepository.GetValueSetsAsync(pagerSettings));
             Output.WriteLine($"Total Items {valueSets.TotalItems}");
             Output.WriteLine($"Total Pages {valueSets.TotalPages}");
             
-            //// Assert
+            // Assert
             Assert.NotNull(valueSets);
             Assert.True(valueSets.TotalPages > 0);
             Assert.True(valueSets.TotalItems > 0);
 
-            //// Call again - to time cached
+            // Call again - to time cached
             var cached = ExecuteTimedAysnc(() => _valueSetRepository.GetValueSetsAsync(pagerSettings), "Cached time: ");
         }
 
@@ -47,13 +48,13 @@ namespace Fabric.Terminology.IntegrationTests.Repositories
         [InlineData("hiv")]
         public void FindValueSetsAsync_ReturnsResults(string nameFilter)
         {
-            //// Arrange
+            // Arrange
             var pagerSettings = new PagerSettings {CurrentPage = 1, ItemsPerPage = 20};
 
-            //// Act
+            // Act
             var valueSets = ExecuteTimedAysnc(() => _valueSetRepository.FindValueSetsAsync(nameFilter, pagerSettings));
 
-            //// Assert
+            // Assert
             Assert.NotNull(valueSets);
             Assert.True(valueSets.TotalPages > 0);
             Assert.True(valueSets.TotalItems > 0);

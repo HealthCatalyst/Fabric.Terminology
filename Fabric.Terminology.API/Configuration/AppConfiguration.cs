@@ -5,5 +5,6 @@ namespace Fabric.Terminology.API.Configuration
     public class AppConfiguration : IAppConfiguration
     {
         public TerminologySqlSettings TerminologySqlSettings { get; set; }
+        public ValueSetProxySettings ValueSetProxySettings { get; set; }
     }
 }

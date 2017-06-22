@@ -1,14 +1,12 @@
 ﻿using System.IO;
 using Fabric.Terminology.API.Configuration;
 using Microsoft.Extensions.Configuration;
-using Xunit.Abstractions;
 
-namespace Fabric.Terminology.TestsBase
+namespace Fabric.Terminology.TestsBase.Fixtures
 {
-    public abstract class RuntimeTestsBase : ProfiledTestsBase
+    public class AppConfigurationFixture : TestFixtureBase
     {
-        protected RuntimeTestsBase(ITestOutputHelper output, ConfigTestFor testType = ConfigTestFor.Unit) 
-            : base(output, testType)
+        public AppConfigurationFixture()
         {
             var builder = new ConfigurationBuilder()
                 .AddEnvironmentVariables()
@@ -17,14 +15,12 @@ namespace Fabric.Terminology.TestsBase
 
             Configuration = builder.Build();
 
-            AppConfig = new AppConfiguration();
-            Configuration.Bind(AppConfig);
+            AppConfiguration = new AppConfiguration();
+            Configuration.Bind(AppConfiguration);
         }
 
-
-        protected AppConfiguration AppConfig { get; }
+        public IAppConfiguration AppConfiguration { get; }
 
         protected IConfigurationRoot Configuration { get; }
-
     }
 }
