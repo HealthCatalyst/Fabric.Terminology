@@ -15,7 +15,7 @@ namespace Fabric.Terminology.IntegrationTests.Fixtures
 
         private void Initialize()
         {
-            ValueSetCodeRepository = new SqlValueSetCodeRepository(SharedContext, Logger, Cache);
+            ValueSetCodeRepository = new SqlValueSetCodeRepository(SharedContext, Logger);
         }
     }
 }

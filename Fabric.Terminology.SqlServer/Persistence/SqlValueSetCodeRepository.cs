@@ -9,6 +9,7 @@ using Fabric.Terminology.Domain.Persistence;
 using Fabric.Terminology.SqlServer.Caching;
 using Fabric.Terminology.SqlServer.Models.Dto;
 using Fabric.Terminology.SqlServer.Persistence.DataContext;
+using Fabric.Terminology.SqlServer.Persistence.Mapping;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -16,8 +17,8 @@ namespace Fabric.Terminology.SqlServer.Persistence
 {
     internal class SqlValueSetCodeRepository : SqlPageableRepositoryBase<ValueSetCodeDto, IValueSetCode>, IValueSetCodeRepository
     {
-        public SqlValueSetCodeRepository(SharedContext sharedContext, ILogger logger, IMemoryCacheProvider cache) 
-            : base(sharedContext, logger, cache)
+        public SqlValueSetCodeRepository(SharedContext sharedContext, ILogger logger) 
+            : base(sharedContext, logger)
         {
         }
 
@@ -34,33 +35,15 @@ namespace Fabric.Terminology.SqlServer.Persistence
                 .OrderBy(SortExpression)
                 .AsNoTracking();
 
-            return dtos.Select(dto => MapToResult(dto)).ToList().AsReadOnly();
+            var mapper = new ValueSetCodeMapper();
+
+            return dtos.Select(mapper.Map).ToList().AsReadOnly();
         }
 
         public Task<PagedCollection<IValueSetCode>> GetValueSetCodes(string valueSetId, IPagerSettings settings)
         {
             var dtos = DbSet.Where(dto => dto.ValueSetID == valueSetId);
-            return CreatePagedCollectionAsync(dtos, settings);
-        }
-
-        protected override IValueSetCode MapToResult(ValueSetCodeDto dto)
-        {
-            var codeSystem = new ValueSetCodeSystem
-            {
-                Code = dto.CodeSystemCD,
-                Name = dto.CodeSystemNM,
-                Version = dto.CodeSystemVersionTXT
-            };
-
-            return new ValueSetCode
-            {
-                ValueSetId = dto.ValueSetID,
-                Code = dto.CodeCD,
-                CodeSystem = codeSystem,
-                Name = dto.CodeDSC,
-                RevisionDate = dto.RevisionDTS,
-                VersionDescription = dto.VersionDSC
-            };
+            return CreatePagedCollectionAsync(dtos, settings, new ValueSetCodeMapper());
         }
     }
 }

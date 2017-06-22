@@ -1,10 +1,18 @@
 ﻿using System;
+using Fabric.Terminology.SqlServer.Configuration;
 using JetBrains.Annotations;
 
 namespace Fabric.Terminology.SqlServer.Caching
 {
     public class NullMemoryCacheProvider : IMemoryCacheProvider
     {
+        public NullMemoryCacheProvider(IMemoryCacheSettings settings)
+        {
+            Settings = settings ?? throw new ArgumentNullException(nameof(settings));
+        }
+
+        public IMemoryCacheSettings Settings { get; }
+
         public void ClearAll()
         {            
         }

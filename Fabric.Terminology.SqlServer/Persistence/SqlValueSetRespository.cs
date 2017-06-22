@@ -8,6 +8,7 @@ using Fabric.Terminology.Domain.Persistence;
 using Fabric.Terminology.SqlServer.Caching;
 using Fabric.Terminology.SqlServer.Models.Dto;
 using Fabric.Terminology.SqlServer.Persistence.DataContext;
+using Fabric.Terminology.SqlServer.Persistence.Mapping;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -18,12 +19,15 @@ namespace Fabric.Terminology.SqlServer.Persistence
     {
         private readonly IValueSetCodeRepository _valueSetCodeRepository;
 
-        public SqlValueSetRespository(SharedContext sharedContext, ILogger logger, IMemoryCacheProvider cache, IValueSetCodeRepository valueSetCodeRepository) 
-            : base(sharedContext, logger, cache)
+        public SqlValueSetRespository(SharedContext sharedContext, IMemoryCacheProvider cache, ILogger logger, IValueSetCodeRepository valueSetCodeRepository) 
+            : base(sharedContext, logger)
         {
             _valueSetCodeRepository = valueSetCodeRepository ?? throw new NullReferenceException(nameof(valueSetCodeRepository));
+            Cache = cache ?? throw new ArgumentNullException(nameof(cache));
         }
-        
+
+        protected virtual IMemoryCacheProvider Cache { get; }
+
         protected override Expression<Func<ValueSetDescriptionDto, string>> SortExpression => sortBy => sortBy.ValueSetNM;
         protected override SortDirection Direction { get; } = SortDirection.Ascending;
         protected override DbSet<ValueSetDescriptionDto> DbSet => SharedContext.ValueSetDescriptions;
@@ -34,7 +38,9 @@ namespace Fabric.Terminology.SqlServer.Persistence
             var dto = DbSet.FirstOrDefault(q => q.ValueSetID == valueSetId);
             if (dto == null) return null;
 
-            var valueSet = MapToResult(dto);
+            var mapper = new ValueSetMapper(Cache, _valueSetCodeRepository);
+
+            var valueSet = mapper.Map(dto);
             ((ValueSet) valueSet).ValueSetCodes = _valueSetCodeRepository.GetValueSetCodes(valueSetId);
             return valueSet;
         }
@@ -50,31 +56,7 @@ namespace Fabric.Terminology.SqlServer.Persistence
                 ? DbSet.Where(dto => dto.ValueSetNM.Contains(nameFilterText))
                 : DbSet;
 
-           return  CreatePagedCollectionAsync(dtos, pagerSettings);
-        }
-
-        protected override IValueSet MapToResult(ValueSetDescriptionDto dto)
-        {
-
-           var cacheKey = CacheKeys.ValueSetKey(dto.ValueSetID);
-            return (IValueSet) Cache.GetItem(cacheKey, () =>
-            {
-                var codes = _valueSetCodeRepository.GetValueSetCodes(dto.ValueSetID);
-                return new ValueSet
-                {
-                    ValueSetId = dto.ValueSetID,
-                    AuthoringSourceDescription = dto.AuthoringSourceDSC,
-                    Name = dto.ValueSetNM,
-                    IsCustom = false,
-                    PurposeDescription = dto.PurposeDSC,
-                    SourceDescription = dto.SourceDSC,
-                    VersionDescription = dto.VersionDSC,
-                    ValueSetCodes = codes,
-                    ValueSetCodesCount = codes.Count
-                };
-            },
-            TimeSpan.FromMinutes(SharedContext.Settings.MemoryCacheMinDuration),
-            SharedContext.Settings.MemoryCacheSliding);
+           return  CreatePagedCollectionAsync(dtos, pagerSettings, new ValueSetMapper(Cache, _valueSetCodeRepository));
         }
     }
 }

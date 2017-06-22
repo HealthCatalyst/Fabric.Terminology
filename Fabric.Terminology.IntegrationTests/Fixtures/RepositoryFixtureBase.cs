@@ -14,8 +14,8 @@ namespace Fabric.Terminology.IntegrationTests.Fixtures
             if (SharedContext.IsInMemory) throw new InvalidOperationException();
 
             Cache = AppConfiguration.TerminologySqlSettings.MemoryCacheEnabled ?
-                (IMemoryCacheProvider)new MemoryCacheProvider() :
-                new NullMemoryCacheProvider();
+                (IMemoryCacheProvider)new MemoryCacheProvider(AppConfiguration.TerminologySqlSettings) :
+                new NullMemoryCacheProvider(AppConfiguration.TerminologySqlSettings);
         }
 
         internal SharedContext SharedContext { get; }

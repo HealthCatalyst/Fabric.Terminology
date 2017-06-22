@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using Fabric.Terminology.SqlServer.Configuration;
 using Fabric.Terminology.SqlServer.Threading;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Caching.Memory;
@@ -11,10 +12,13 @@ namespace Fabric.Terminology.SqlServer.Caching
         private readonly ReaderWriterLockSlim _locker = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
         private IMemoryCache _memCache = Create();
 
-        public MemoryCacheProvider()
+        public MemoryCacheProvider(IMemoryCacheSettings settings)
         {
+            Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             this.InstanceKey = Guid.NewGuid();
         }
+
+        public IMemoryCacheSettings Settings { get; }
 
         /// Used in tests
         internal Guid InstanceKey { get; private set; }

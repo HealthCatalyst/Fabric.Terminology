@@ -1,40 +1,45 @@
 ﻿using System;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Fabric.Terminology.Domain;
 using Fabric.Terminology.Domain.Models;
 using Fabric.Terminology.Domain.Persistence;
 using Fabric.Terminology.SqlServer.Caching;
 using Fabric.Terminology.SqlServer.Persistence.DataContext;
+using Fabric.Terminology.SqlServer.Persistence.Mapping;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 namespace Fabric.Terminology.SqlServer.Persistence
 {
-    internal abstract class SqlPageableRepositoryBase<TDto, TResult> : PageableRepositoryBase<TDto>
+    internal abstract class SqlPageableRepositoryBase<TDto, TResult>
         where TDto : class
     {
-        protected SqlPageableRepositoryBase(SharedContext sharedContext, ILogger logger, IMemoryCacheProvider cache)
+        protected SqlPageableRepositoryBase(SharedContext sharedContext, ILogger logger)
         {
-            Logger = logger ?? throw new ArgumentException(nameof(logger));
-            Cache = cache ?? throw new ArgumentNullException(nameof(cache));
+            Logger = logger ?? throw new ArgumentException(nameof(logger));            
             this.SharedContext = sharedContext ?? throw new ArgumentException(nameof(sharedContext));
         }
 
-        // used for testing
-        internal Type CacheProviderType => Cache.GetType();
-
         protected ILogger Logger { get; }
-
-        protected virtual IMemoryCacheProvider Cache { get; }
 
         protected SharedContext SharedContext { get; }
 
         protected abstract DbSet<TDto> DbSet { get; }
 
-        protected abstract TResult MapToResult(TDto dto);
+        /// <summary>
+        /// Gets the default sort expression for repository queries based off the repository DTO.
+        /// </summary>
+        protected abstract Expression<Func<TDto, string>> SortExpression { get; }
 
-        protected virtual async Task<PagedCollection<TResult>> CreatePagedCollectionAsync(IQueryable<TDto> source, IPagerSettings pagerSettings)
+        /// <summary>
+        /// Gets a value designating the default sort direction for repository queries.
+        /// </summary>
+        protected abstract SortDirection Direction { get; }
+        
+        protected virtual async Task<PagedCollection<TResult>> CreatePagedCollectionAsync(IQueryable<TDto> source, IPagerSettings pagerSettings, IModelMapper<TDto, TResult> mapper)
         {
             EnsurePagerSettings(pagerSettings);
 
@@ -46,7 +51,7 @@ namespace Fabric.Terminology.SqlServer.Persistence
                 TotalItems = count,
                 PagerSettings = new PagerSettings { CurrentPage = pagerSettings.CurrentPage, ItemsPerPage = pagerSettings.ItemsPerPage },
                 TotalPages = (int) Math.Ceiling((double) count / pagerSettings.ItemsPerPage),
-                Items = items.Select(MapToResult).ToList().AsReadOnly()
+                Items = items.Select(mapper.Map).ToList().AsReadOnly()
             };
         }
 

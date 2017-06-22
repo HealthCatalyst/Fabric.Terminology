@@ -1,17 +1,25 @@
 ﻿using System;
 using Fabric.Terminology.SqlServer.Caching;
+using Fabric.Terminology.TestsBase.Fixtures;
 using FluentAssertions;
 using Xunit;
 
 namespace Fabric.Terminology.UnitTests.Caching
 {
-    public class MemoryCacheProviderTests 
-    {        
+    public class MemoryCacheProviderTests : IClassFixture<AppConfigurationFixture>
+    {
+        private readonly AppConfigurationFixture _fixture;
+
+        public MemoryCacheProviderTests(AppConfigurationFixture fixture)
+        {
+            _fixture = fixture;
+        }
+
         [Fact]
         public void GetItem_ReturnsNullWhenNotFound()
         {
             // Arrange
-            var cache = new MemoryCacheProvider();
+            var cache = new MemoryCacheProvider(_fixture.AppConfiguration.TerminologySqlSettings);
             const string key = "key";
 
             // Act
@@ -25,7 +33,7 @@ namespace Fabric.Terminology.UnitTests.Caching
         public void GetItem_CanAddToCache()
         {
             // Arrange
-            var cache = new MemoryCacheProvider();
+            var cache = new MemoryCacheProvider(_fixture.AppConfiguration.TerminologySqlSettings);
             const string key = "key";
             var dt = DateTime.Now;
             var obj = new TestObject {Text = "Test", Stamp = dt };
@@ -43,7 +51,7 @@ namespace Fabric.Terminology.UnitTests.Caching
         public void ClearItem_ClearsSingleItem()
         {
             // Arrange
-            var cache = new MemoryCacheProvider();
+            var cache = new MemoryCacheProvider(_fixture.AppConfiguration.TerminologySqlSettings);
             var key1 = "key1";
             var key2 = "key2";
             var key3 = "key3";
@@ -71,7 +79,7 @@ namespace Fabric.Terminology.UnitTests.Caching
         public void ClearAll_ClearsAllCache()
         {
             // Arrange
-            var cache = new MemoryCacheProvider();
+            var cache = new MemoryCacheProvider(_fixture.AppConfiguration.TerminologySqlSettings);
             const string key1 = "key1";
             const string key2 = "key2";
             const string key3 = "key3";
@@ -103,7 +111,7 @@ namespace Fabric.Terminology.UnitTests.Caching
         public void GetItem_AddsItemByFunction()
         {
             // Arrange
-            var cache = new MemoryCacheProvider();
+            var cache = new MemoryCacheProvider(_fixture.AppConfiguration.TerminologySqlSettings);
             const string key = "key";
             cache.GetItem(key).Should().BeNull();
 

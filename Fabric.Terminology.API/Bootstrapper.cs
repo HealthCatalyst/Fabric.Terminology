@@ -4,6 +4,7 @@ using Fabric.Terminology.API.DependencyInjection;
 using Fabric.Terminology.API.Logging;
 using Fabric.Terminology.Domain;
 using Fabric.Terminology.SqlServer.Caching;
+using Fabric.Terminology.SqlServer.Configuration;
 using Nancy;
 using Nancy.Bootstrapper;
 using Nancy.TinyIoc;
@@ -40,6 +41,7 @@ namespace Fabric.Terminology.API
             base.ConfigureApplicationContainer(container);
 
             container.Register<IAppConfiguration>(_appConfig);
+            container.Register<IMemoryCacheSettings>(_appConfig.TerminologySqlSettings);
             container.Register<ILogger>(_logger);
 
             // Caching
