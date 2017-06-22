@@ -39,7 +39,7 @@ namespace Fabric.Terminology.SqlServer.Persistence
 
         public Task<PagedCollection<IValueSetCode>> GetValueSetCodes(string valueSetId, IPagerSettings settings)
         {
-            var dtos = DbSet.Where(dto => dto.ValueSetID.Equals(valueSetId));
+            var dtos = DbSet.Where(dto => dto.ValueSetID == valueSetId);
             return CreatePagedCollectionAsync(dtos, settings);
         }
 

@@ -31,7 +31,7 @@ namespace Fabric.Terminology.SqlServer.Persistence
         [CanBeNull]
         public IValueSet GetValueSet(string valueSetId)
         {
-            var dto = DbSet.FirstOrDefault(q => q.ValueSetID.Equals(valueSetId));
+            var dto = DbSet.FirstOrDefault(q => q.ValueSetID == valueSetId);
             if (dto == null) return null;
 
             var valueSet = MapToResult(dto);
