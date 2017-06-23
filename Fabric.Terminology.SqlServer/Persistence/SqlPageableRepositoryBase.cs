@@ -19,8 +19,8 @@ namespace Fabric.Terminology.SqlServer.Persistence
     {
         protected SqlPageableRepositoryBase(SharedContext sharedContext, ILogger logger)
         {
-            Logger = logger ?? throw new ArgumentException(nameof(logger));            
-            this.SharedContext = sharedContext ?? throw new ArgumentException(nameof(sharedContext));
+            this.Logger = logger;            
+            this.SharedContext = sharedContext;
         }
 
         protected ILogger Logger { get; }
@@ -41,10 +41,10 @@ namespace Fabric.Terminology.SqlServer.Persistence
         
         protected virtual async Task<PagedCollection<TResult>> CreatePagedCollectionAsync(IQueryable<TDto> source, IPagerSettings pagerSettings, IModelMapper<TDto, TResult> mapper)
         {
-            EnsurePagerSettings(pagerSettings);
+            this.EnsurePagerSettings(pagerSettings);
 
             var count = await source.CountAsync();
-            var items = await source.OrderBy(SortExpression).Skip((pagerSettings.CurrentPage - 1) * pagerSettings.ItemsPerPage).Take(pagerSettings.ItemsPerPage).AsNoTracking().ToListAsync();
+            var items = await source.OrderBy(this.SortExpression).Skip((pagerSettings.CurrentPage - 1) * pagerSettings.ItemsPerPage).Take(pagerSettings.ItemsPerPage).AsNoTracking().ToListAsync();
 
             return new PagedCollection<TResult>
             {

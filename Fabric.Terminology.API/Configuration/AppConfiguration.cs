@@ -1,10 +1,11 @@
-﻿using Fabric.Terminology.SqlServer.Configuration;
-
-namespace Fabric.Terminology.API.Configuration
+﻿namespace Fabric.Terminology.API.Configuration
 {
+    using Fabric.Terminology.SqlServer.Configuration;
+
     public class AppConfiguration : IAppConfiguration
     {
         public TerminologySqlSettings TerminologySqlSettings { get; set; }
+
         public ValueSetProxySettings ValueSetProxySettings { get; set; }
     }
 }

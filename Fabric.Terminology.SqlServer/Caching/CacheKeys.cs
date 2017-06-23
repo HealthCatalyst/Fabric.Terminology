@@ -1,6 +1,4 @@
-﻿using System;
-using Fabric.Terminology.Domain;
-using Fabric.Terminology.Domain.Models;
+﻿using Fabric.Terminology.Domain.Models;
 
 namespace Fabric.Terminology.SqlServer.Caching
 {

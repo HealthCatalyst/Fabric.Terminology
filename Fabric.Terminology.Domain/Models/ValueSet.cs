@@ -11,7 +11,7 @@ namespace Fabric.Terminology.Domain.Models
         public string PurposeDescription { get; set; }
         public string SourceDescription { get; set; }
         public string VersionDescription { get;set; }
-        public bool AllCodesLoaded => ValueSetCodesCount == ValueSetCodes.Count;
+        public bool AllCodesLoaded => this.ValueSetCodesCount == this.ValueSetCodes.Count;
 
         /// <summary>
         /// Gets or sets the number (count) of codes in the value set.

@@ -1,13 +1,10 @@
-﻿using System;
-using Fabric.Terminology.Domain.DependencyInjection;
-using Fabric.Terminology.Domain.Services;
-using Fabric.Terminology.SqlServer.Persistence;
-using Fabric.Terminology.SqlServer.Persistence.DataContext;
-using Microsoft.EntityFrameworkCore;
-using Nancy.TinyIoc;
-
-namespace Fabric.Terminology.API.DependencyInjection
+﻿namespace Fabric.Terminology.API.DependencyInjection
 {
+    using Fabric.Terminology.Domain.DependencyInjection;
+    using Fabric.Terminology.Domain.Services;
+    using Fabric.Terminology.SqlServer.Persistence.DataContext;
+    using Nancy.TinyIoc;
+
     public class ServicesRequestComposition : IContainerComposition<TinyIoCContainer>
     {
         public void Compose(TinyIoCContainer container)

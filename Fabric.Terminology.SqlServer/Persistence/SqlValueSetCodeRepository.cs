@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Fabric.Terminology.Domain;
 using Fabric.Terminology.Domain.Models;
 using Fabric.Terminology.Domain.Persistence;
-using Fabric.Terminology.SqlServer.Caching;
 using Fabric.Terminology.SqlServer.Models.Dto;
 using Fabric.Terminology.SqlServer.Persistence.DataContext;
 using Fabric.Terminology.SqlServer.Persistence.Mapping;
@@ -26,13 +25,13 @@ namespace Fabric.Terminology.SqlServer.Persistence
 
         protected override SortDirection Direction { get; } = SortDirection.Ascending;
 
-        protected override DbSet<ValueSetCodeDto> DbSet => SharedContext.ValueSetCodes;
+        protected override DbSet<ValueSetCodeDto> DbSet => this.SharedContext.ValueSetCodes;
 
         public IReadOnlyCollection<IValueSetCode> GetValueSetCodes(string valueSetId)
         {
-            var dtos = DbSet
+            var dtos = this.DbSet
                 .Where(dto => dto.ValueSetID.Equals(valueSetId))
-                .OrderBy(SortExpression)
+                .OrderBy(this.SortExpression)
                 .AsNoTracking();
 
             var mapper = new ValueSetCodeMapper();
@@ -42,8 +41,8 @@ namespace Fabric.Terminology.SqlServer.Persistence
 
         public Task<PagedCollection<IValueSetCode>> GetValueSetCodes(string valueSetId, IPagerSettings settings)
         {
-            var dtos = DbSet.Where(dto => dto.ValueSetID == valueSetId);
-            return CreatePagedCollectionAsync(dtos, settings, new ValueSetCodeMapper());
+            var dtos = this.DbSet.Where(dto => dto.ValueSetID == valueSetId);
+            return this.CreatePagedCollectionAsync(dtos, settings, new ValueSetCodeMapper());
         }
 
         public ILookup<string, IValueSetCode> LookupValueSetCodes(IQueryable<string> valueSetIds, int count = 5)
@@ -52,7 +51,7 @@ namespace Fabric.Terminology.SqlServer.Persistence
 
             var mapper = new ValueSetCodeMapper();
 
-            var dtos = DbSet
+            var dtos = this.DbSet
                 .Where(dto => ids.Contains(dto.ValueSetID))
                 .GroupBy(dto => dto.ValueSetID)
                 .Select(dto => dto.OrderBy(x => x.CodeDSC).Take(count))

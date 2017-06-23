@@ -8,50 +8,53 @@ using ILogger = Serilog.ILogger;
 
 namespace Fabric.Terminology.SqlServer.Persistence.DataContext
 {
+    using JetBrains.Annotations;
+
     internal class SharedContextFactory
     {
-        private readonly TerminologySqlSettings _settings;
-        private readonly ILogger _logger;
-        private readonly ISeededDatabaseInitializer<SharedContext> _seededDatabaseInitializer;
+        private readonly TerminologySqlSettings settings;
+        private readonly ILogger logger;
+        [CanBeNull]
+        private readonly ISeededDatabaseInitializer<SharedContext> seededDatabaseInitializer;
 
-        public SharedContextFactory(TerminologySqlSettings settings, ILogger logger)
-            : this(settings, logger, null)
+        public SharedContextFactory(TerminologySqlSettings sqlSettings, ILogger logger)
+            : this(sqlSettings, logger, null)
         {            
         }
 
         internal SharedContextFactory(TerminologySqlSettings settings, ILogger logger, ISeededDatabaseInitializer<SharedContext> seededDatabaseInitializer = null)
         {
-            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
-            _logger = logger ?? throw new ArgumentException(nameof(settings));
-            _seededDatabaseInitializer = seededDatabaseInitializer;
+            this.settings = settings;
+            this.logger = logger;
+            this.seededDatabaseInitializer = seededDatabaseInitializer;
         }
 
         public SharedContext Create()
         {
-            var context = _settings.UseInMemory ? CreateInMemory() : CreateAttached();
+            var context = this.settings.UseInMemory ? this.CreateInMemory() : this.CreateAttached();
             return context;
         }
 
         private SharedContext CreateAttached()
         {
             var builder = new DbContextOptionsBuilder<SharedContext>();
-            builder.UseSqlServer(_settings.ConnectionString);
-            if (_settings.LogGeneratedSql)
+            builder.UseSqlServer(this.settings.ConnectionString);
+            if (this.settings.LogGeneratedSql)
             {
                 var lf = new LoggerFactory();
-                lf.AddSerilog(_logger);
+                lf.AddSerilog(this.logger);
                 builder.UseLoggerFactory(lf);
 
             }
-            return new SharedContext(builder.Options, _settings) { IsInMemory = false };
+            return new SharedContext(builder.Options, this.settings) { IsInMemory = false };
         }
 
         private SharedContext CreateInMemory()
         {
             var builder = new DbContextOptionsBuilder<SharedContext>();
             builder.UseInMemoryDatabase();
-            var context = new SharedContext(builder.Options, _settings) { IsInMemory =  true };
-            _seededDatabaseInitializer?.Initialize(context);
+            var context = new SharedContext(builder.Options, this.settings) { IsInMemory =  true };
+            this.seededDatabaseInitializer?.Initialize(context);
             return context;
         }        
     }

@@ -1,8 +1,8 @@
-﻿using Serilog;
-using Serilog.Core;
-
-namespace Fabric.Terminology.API.Logging
+﻿namespace Fabric.Terminology.API.Logging
 {
+    using Serilog;
+    using Serilog.Core;
+
     /// <summary>
     /// Responsible for creating the <see cref="ILogger"/>
     /// </summary>

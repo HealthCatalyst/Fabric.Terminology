@@ -9,22 +9,22 @@ namespace Fabric.Terminology.SqlServer.Persistence.Mapping
 {
     internal sealed class ValueSetMapper : IModelMapper<ValueSetDescriptionDto, IValueSet>
     {
-        private readonly IMemoryCacheProvider _cache;
-        private readonly IValueSetCodeRepository _valueSetCodeRepository;
+        private readonly IMemoryCacheProvider cache;
+        private readonly IValueSetCodeRepository repository;
 
-        public ValueSetMapper(IMemoryCacheProvider cache, IValueSetCodeRepository valueSetCodeRepository)
+        public ValueSetMapper(IMemoryCacheProvider memCache, IValueSetCodeRepository valueSetCodeRepository)
         {
             // TODO null protect
-            _cache = cache;
-            _valueSetCodeRepository = valueSetCodeRepository;
+            this.cache = memCache;
+            this.repository = valueSetCodeRepository;
         }
 
         public IValueSet Map(ValueSetDescriptionDto dto)
         {
             var cacheKey = CacheKeys.ValueSetKey(dto.ValueSetID);
-            return (IValueSet)_cache.GetItem(cacheKey, () =>
+            return (IValueSet)this.cache.GetItem(cacheKey, () =>
                 {
-                    var codes = _valueSetCodeRepository.GetValueSetCodes(dto.ValueSetID);
+                    var codes = this.repository.GetValueSetCodes(dto.ValueSetID);
                     return new ValueSet
                     {
                         ValueSetId = dto.ValueSetID,
@@ -38,8 +38,8 @@ namespace Fabric.Terminology.SqlServer.Persistence.Mapping
                         ValueSetCodesCount = codes.Count
                     };
                 },
-                TimeSpan.FromMinutes(_cache.Settings.MemoryCacheMinDuration),
-                _cache.Settings.MemoryCacheSliding);
+                TimeSpan.FromMinutes(this.cache.Settings.MemoryCacheMinDuration),
+                this.cache.Settings.MemoryCacheSliding);
         }
     }
 }

@@ -17,66 +17,48 @@ namespace Fabric.Terminology.SqlServer.Persistence
 {
     internal class SqlValueSetRespository : SqlPageableRepositoryBase<ValueSetDescriptionDto, IValueSet>, IValueSetRepository
     {
-        private readonly IValueSetCodeRepository _valueSetCodeRepository;
+        private readonly IValueSetCodeRepository valueSetCodeRepository;
 
-        public SqlValueSetRespository(SharedContext sharedContext, IMemoryCacheProvider cache, ILogger logger, IValueSetCodeRepository valueSetCodeRepository) 
+        public SqlValueSetRespository(SharedContext sharedContext, IMemoryCacheProvider cache, ILogger logger, IValueSetCodeRepository valsetCodeRepository) 
             : base(sharedContext, logger)
         {
-            _valueSetCodeRepository = valueSetCodeRepository ?? throw new NullReferenceException(nameof(valueSetCodeRepository));
-            Cache = cache ?? throw new ArgumentNullException(nameof(cache));
+            this.valueSetCodeRepository = valsetCodeRepository;
+            this.Cache = cache;
         }
 
         protected virtual IMemoryCacheProvider Cache { get; }
 
         protected override Expression<Func<ValueSetDescriptionDto, string>> SortExpression => sortBy => sortBy.ValueSetNM;
         protected override SortDirection Direction { get; } = SortDirection.Ascending;
-        protected override DbSet<ValueSetDescriptionDto> DbSet => SharedContext.ValueSetDescriptions;
+        protected override DbSet<ValueSetDescriptionDto> DbSet => this.SharedContext.ValueSetDescriptions;
 
         [CanBeNull]
         public IValueSet GetValueSet(string valueSetId)
         {
-            var dto = DbSet.FirstOrDefault(q => q.ValueSetID == valueSetId);
+            var dto = this.DbSet.FirstOrDefault(q => q.ValueSetID == valueSetId);
             if (dto == null) return null;
 
-            var mapper = new ValueSetMapper(Cache, _valueSetCodeRepository);
+            var mapper = new ValueSetMapper(this.Cache, this.valueSetCodeRepository);
 
             var valueSet = mapper.Map(dto);
-            ((ValueSet) valueSet).ValueSetCodes = _valueSetCodeRepository.GetValueSetCodes(valueSetId);
+            ((ValueSet) valueSet).ValueSetCodes = this.valueSetCodeRepository.GetValueSetCodes(valueSetId);
             return valueSet;
         }
 
         public Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings pagerSettings)
         {
-            return FindValueSetsAsync(string.Empty, pagerSettings);
+            return this.FindValueSetsAsync(string.Empty, pagerSettings);
         }
 
         public Task<PagedCollection<IValueSet>> FindValueSetsAsync(string nameFilterText, IPagerSettings pagerSettings)
         {
             var dtos = !nameFilterText.IsNullOrWhiteSpace()
-                ? DbSet.Where(dto => dto.ValueSetNM.Contains(nameFilterText))
-                : DbSet;
+                ? this.DbSet.Where(dto => dto.ValueSetNM.Contains(nameFilterText))
+                : this.DbSet;
 
-            var ids = dtos.OrderBy(SortExpression).Select(dto => dto.ValueSetID).Skip((pagerSettings.CurrentPage - 1) * pagerSettings.ItemsPerPage).Take(pagerSettings.ItemsPerPage);
+            var ids = dtos.OrderBy(this.SortExpression).Select(dto => dto.ValueSetID).Skip((pagerSettings.CurrentPage - 1) * pagerSettings.ItemsPerPage).Take(pagerSettings.ItemsPerPage);
 
-            return  CreatePagedCollectionAsync(dtos, pagerSettings, new ValueSetMapper(Cache, _valueSetCodeRepository));
+            return this.CreatePagedCollectionAsync(dtos, pagerSettings, new ValueSetMapper(this.Cache, this.valueSetCodeRepository));
         }
-
-        //protected async Task<PagedCollection<IValueSet>> CreatePagedCollectionAsync(IQueryable<ValueSetDescriptionDto> source, IPagerSettings pagerSettings)
-        //{
-        //    EnsurePagerSettings(pagerSettings);
-
-        //    var count = await source.CountAsync();
-        //    var items = await source.OrderBy(SortExpression).Skip((pagerSettings.CurrentPage - 1) * pagerSettings.ItemsPerPage).Take(pagerSettings.ItemsPerPage).AsNoTracking().ToListAsync();
-
-        //    var ids = items.Select(dto => dto.ValueSetID).ToList();
-
-        //    return new PagedCollection<IValueSet>
-        //    {
-        //        TotalItems = count,
-        //        PagerSettings = new PagerSettings { CurrentPage = pagerSettings.CurrentPage, ItemsPerPage = pagerSettings.ItemsPerPage },
-        //        TotalPages = (int)Math.Ceiling((double)count / pagerSettings.ItemsPerPage),
-        //        Items = items.Select(mapper.Map).ToList().AsReadOnly()
-        //    };
-        //}
     }
 }
