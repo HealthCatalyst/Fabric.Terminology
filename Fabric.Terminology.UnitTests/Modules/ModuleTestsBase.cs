@@ -1,5 +1,4 @@
 ﻿using System.Security.Claims;
-using Fabric.Terminology.TestsBase.Mocks;
 using Nancy;
 using Nancy.Testing;
 
@@ -27,7 +26,7 @@ namespace Fabric.Terminology.UnitTests.Modules
             configurableBootstrapperConfigurator.Module<T>();
             configurableBootstrapperConfigurator.RequestStartup((container, pipeline, context) =>
             {
-                context.CurrentUser = new TestPrincipal(claims);
+                context.CurrentUser = new ClaimsPrincipal(new ClaimsIdentity(claims, "testauthentication"));
             });
             return configurableBootstrapperConfigurator;
         }

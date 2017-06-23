@@ -6,7 +6,6 @@ using Fabric.Terminology.SqlServer.Caching;
 using Fabric.Terminology.SqlServer.Persistence;
 using Fabric.Terminology.SqlServer.Persistence.DataContext;
 using Fabric.Terminology.TestsBase;
-using Fabric.Terminology.TestsBase.Mocks;
 using Xunit;
 using Xunit.Abstractions;
 
