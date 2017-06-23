@@ -56,7 +56,27 @@ namespace Fabric.Terminology.SqlServer.Persistence
                 ? DbSet.Where(dto => dto.ValueSetNM.Contains(nameFilterText))
                 : DbSet;
 
-           return  CreatePagedCollectionAsync(dtos, pagerSettings, new ValueSetMapper(Cache, _valueSetCodeRepository));
+            var ids = dtos.OrderBy(SortExpression).Select(dto => dto.ValueSetID).Skip((pagerSettings.CurrentPage - 1) * pagerSettings.ItemsPerPage).Take(pagerSettings.ItemsPerPage);
+
+            return  CreatePagedCollectionAsync(dtos, pagerSettings, new ValueSetMapper(Cache, _valueSetCodeRepository));
         }
+
+        //protected async Task<PagedCollection<IValueSet>> CreatePagedCollectionAsync(IQueryable<ValueSetDescriptionDto> source, IPagerSettings pagerSettings)
+        //{
+        //    EnsurePagerSettings(pagerSettings);
+
+        //    var count = await source.CountAsync();
+        //    var items = await source.OrderBy(SortExpression).Skip((pagerSettings.CurrentPage - 1) * pagerSettings.ItemsPerPage).Take(pagerSettings.ItemsPerPage).AsNoTracking().ToListAsync();
+
+        //    var ids = items.Select(dto => dto.ValueSetID).ToList();
+
+        //    return new PagedCollection<IValueSet>
+        //    {
+        //        TotalItems = count,
+        //        PagerSettings = new PagerSettings { CurrentPage = pagerSettings.CurrentPage, ItemsPerPage = pagerSettings.ItemsPerPage },
+        //        TotalPages = (int)Math.Ceiling((double)count / pagerSettings.ItemsPerPage),
+        //        Items = items.Select(mapper.Map).ToList().AsReadOnly()
+        //    };
+        //}
     }
 }

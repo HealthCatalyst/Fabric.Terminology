@@ -45,5 +45,21 @@ namespace Fabric.Terminology.SqlServer.Persistence
             var dtos = DbSet.Where(dto => dto.ValueSetID == valueSetId);
             return CreatePagedCollectionAsync(dtos, settings, new ValueSetCodeMapper());
         }
+
+        public ILookup<string, IValueSetCode> LookupValueSetCodes(IQueryable<string> valueSetIds, int count = 5)
+        {
+            var ids = valueSetIds.ToList();
+
+            var mapper = new ValueSetCodeMapper();
+
+            var dtos = DbSet
+                .Where(dto => ids.Contains(dto.ValueSetID))
+                .GroupBy(dto => dto.ValueSetID)
+                .Select(dto => dto.OrderBy(x => x.CodeDSC).Take(count))
+                .SelectMany(dto => dto)
+                .ToLookup(dto => dto.ValueSetID, dto => mapper.Map(dto));
+
+            return dtos;
+        }
     }
 }

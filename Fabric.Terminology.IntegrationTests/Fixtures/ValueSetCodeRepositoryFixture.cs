@@ -1,5 +1,4 @@
-﻿using System;
-using Fabric.Terminology.Domain.Persistence;
+﻿using Fabric.Terminology.Domain.Persistence;
 using Fabric.Terminology.SqlServer.Persistence;
 
 namespace Fabric.Terminology.IntegrationTests.Fixtures
