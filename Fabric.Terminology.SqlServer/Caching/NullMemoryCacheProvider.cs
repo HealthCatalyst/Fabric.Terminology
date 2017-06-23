@@ -4,11 +4,14 @@ using JetBrains.Annotations;
 
 namespace Fabric.Terminology.SqlServer.Caching
 {
+    using System.Collections.Generic;
+    using System.Linq;
+
     public class NullMemoryCacheProvider : IMemoryCacheProvider
     {
         public NullMemoryCacheProvider(IMemoryCacheSettings settings)
         {
-            Settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            this.Settings = settings;
         }
 
         public IMemoryCacheSettings Settings { get; }
@@ -30,6 +33,11 @@ namespace Fabric.Terminology.SqlServer.Caching
         public object GetItem(string key, Func<object> getItem)
         {
             return getItem.Invoke();
+        }
+
+        public IEnumerable<object> GetItems(params string[] cacheKeys)
+        {
+            return Enumerable.Empty<object>();
         }
 
         public object GetItem(string cacheKey, Func<object> getItem, TimeSpan? timeout, bool isSliding = false)

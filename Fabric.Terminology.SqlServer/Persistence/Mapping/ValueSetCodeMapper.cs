@@ -3,6 +3,8 @@ using Fabric.Terminology.SqlServer.Models.Dto;
 
 namespace Fabric.Terminology.SqlServer.Persistence.Mapping
 {
+    using System.Threading.Tasks;
+
     internal sealed class ValueSetCodeMapper : IModelMapper<ValueSetCodeDto,IValueSetCode>
     {
         public IValueSetCode Map(ValueSetCodeDto dto)

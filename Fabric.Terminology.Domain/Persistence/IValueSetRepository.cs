@@ -9,7 +9,7 @@ namespace Fabric.Terminology.Domain.Persistence
     {
         [CanBeNull]
         IValueSet GetValueSet(string valueSetId);        
-        Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings pagerSettings);
-        Task<PagedCollection<IValueSet>> FindValueSetsAsync(string nameFilterText, IPagerSettings pagerSettings);
+        Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings pagerSettings, bool includeAllValueSetCodes = false);
+        Task<PagedCollection<IValueSet>> FindValueSetsAsync(string nameFilterText, IPagerSettings pagerSettings, bool includeAllValueSetCodes = false);
     }
 }

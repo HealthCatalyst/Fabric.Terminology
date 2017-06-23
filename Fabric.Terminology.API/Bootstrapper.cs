@@ -29,6 +29,7 @@
 
             container.Register<IAppConfiguration>(this.appConfig);
             container.Register<IMemoryCacheSettings>(this.appConfig.TerminologySqlSettings);
+            container.Register(this.appConfig.ValueSetSettings);
             container.Register<ILogger>(this.logger);
 
             // Caching

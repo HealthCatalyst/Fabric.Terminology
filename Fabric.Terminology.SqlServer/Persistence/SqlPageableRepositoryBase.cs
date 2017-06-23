@@ -14,6 +14,8 @@ using Serilog;
 
 namespace Fabric.Terminology.SqlServer.Persistence
 {
+    using System.Collections.Generic;
+
     internal abstract class SqlPageableRepositoryBase<TDto, TResult>
         where TDto : class
     {
@@ -38,19 +40,14 @@ namespace Fabric.Terminology.SqlServer.Persistence
         /// Gets a value designating the default sort direction for repository queries.
         /// </summary>
         protected abstract SortDirection Direction { get; }
-        
-        protected virtual async Task<PagedCollection<TResult>> CreatePagedCollectionAsync(IQueryable<TDto> source, IPagerSettings pagerSettings, IModelMapper<TDto, TResult> mapper)
+
+        protected PagedCollection<TResult> CreatePagedCollection(IEnumerable<TDto> items, int totalCount, IPagerSettings pagerSettings, IModelMapper<TDto, TResult> mapper)
         {
-            this.EnsurePagerSettings(pagerSettings);
-
-            var count = await source.CountAsync();
-            var items = await source.OrderBy(this.SortExpression).Skip((pagerSettings.CurrentPage - 1) * pagerSettings.ItemsPerPage).Take(pagerSettings.ItemsPerPage).AsNoTracking().ToListAsync();
-
             return new PagedCollection<TResult>
             {
-                TotalItems = count,
+                TotalItems = totalCount,
                 PagerSettings = new PagerSettings { CurrentPage = pagerSettings.CurrentPage, ItemsPerPage = pagerSettings.ItemsPerPage },
-                TotalPages = (int) Math.Ceiling((double) count / pagerSettings.ItemsPerPage),
+                TotalPages = (int)Math.Ceiling((double)totalCount / pagerSettings.ItemsPerPage),
                 Items = items.Select(mapper.Map).ToList().AsReadOnly()
             };
         }
@@ -58,7 +55,7 @@ namespace Fabric.Terminology.SqlServer.Persistence
         protected virtual void EnsurePagerSettings(IPagerSettings pagerSettings)
         {
             if (pagerSettings.CurrentPage <= 0) pagerSettings.CurrentPage = 1;
-            if (pagerSettings.ItemsPerPage < 0) pagerSettings.ItemsPerPage = SharedContext.Settings.DefaultItemsPerPage;
+            if (pagerSettings.ItemsPerPage < 0) pagerSettings.ItemsPerPage = this.SharedContext.Settings.DefaultItemsPerPage;
         }
     }
 }

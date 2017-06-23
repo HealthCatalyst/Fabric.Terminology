@@ -110,14 +110,14 @@
         {
             // Arrange
             var cache = new MemoryCacheProvider(this.fixture.AppConfiguration.TerminologySqlSettings);
-            const string key = "key";
-            cache.GetItem(key).Should().BeNull();
+            const string Key = "key";
+            cache.GetItem(Key).Should().BeNull();
 
             // Act
-            cache.GetItem(key, () => new TestObject {Text = "Test string", Stamp = DateTime.Now});
+            cache.GetItem(Key, () => new TestObject {Text = "Test string", Stamp = DateTime.Now});
 
             // Assert
-            cache.GetItem(key).Should().NotBeNull();
+            cache.GetItem(Key).Should().NotBeNull();
         }
 
         private class TestObject

@@ -27,7 +27,7 @@
         public void GetValueSetsAsyncReturnsPageOfValueSets(int currentPage, int itemsPerPage)
         {
             // Arrange
-            var pagerSettings = new PagerSettings {CurrentPage = currentPage, ItemsPerPage = itemsPerPage};
+            var pagerSettings = new PagerSettings { CurrentPage = currentPage, ItemsPerPage = itemsPerPage };
 
             // Act
             var valueSets = this.Profiler.ExecuteTimed(() => this.valueSetRepository.GetValueSetsAsync(pagerSettings));
@@ -50,7 +50,7 @@
         public void FindValueSetsAsyncReturnsResults(string nameFilter)
         {
             // Arrange
-            var pagerSettings = new PagerSettings {CurrentPage = 1, ItemsPerPage = 20};
+            var pagerSettings = new PagerSettings { CurrentPage = 1, ItemsPerPage = 20 };
 
             // Act
             var valueSets = this.Profiler.ExecuteTimed(() => this.valueSetRepository.FindValueSetsAsync(nameFilter, pagerSettings));

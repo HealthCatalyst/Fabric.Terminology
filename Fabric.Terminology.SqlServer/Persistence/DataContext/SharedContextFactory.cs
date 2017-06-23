@@ -32,6 +32,10 @@ namespace Fabric.Terminology.SqlServer.Persistence.DataContext
         public SharedContext Create()
         {
             var context = this.settings.UseInMemory ? this.CreateInMemory() : this.CreateAttached();
+
+            // Shared Terminology data is read only so there is no reason to ever track the entities.
+            context.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+
             return context;
         }
 

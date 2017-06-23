@@ -16,7 +16,12 @@
         private void Initialize()
         {
             var valueSetCodeRepository = new SqlValueSetCodeRepository(this.SharedContext, this.Logger);
-            this.ValueSetRepository = new SqlValueSetRespository(this.SharedContext, this.Cache, this.Logger, valueSetCodeRepository);
+            this.ValueSetRepository = new SqlValueSetRespository(
+                                        this.SharedContext,
+                                        this.Cache,
+                                        this.Logger,
+                                        valueSetCodeRepository,
+                                        this.AppConfiguration.ValueSetSettings);
         }
     }
 }

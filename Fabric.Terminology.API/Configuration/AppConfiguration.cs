@@ -6,6 +6,6 @@
     {
         public TerminologySqlSettings TerminologySqlSettings { get; set; }
 
-        public ValueSetProxySettings ValueSetProxySettings { get; set; }
+        public ValueSetSettings ValueSetSettings { get; set; }
     }
 }

@@ -23,6 +23,8 @@
 
         internal SharedContext SharedContext { get; }
 
+        protected override bool EnableLogging => true;
+
         protected IMemoryCacheProvider Cache { get; }
     }
 }

@@ -7,6 +7,9 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace Fabric.Terminology.SqlServer.Caching
 {
+    using System.Collections.Generic;
+    using System.Linq;
+
     internal class MemoryCacheProvider : IMemoryCacheProvider
     {
         private readonly ReaderWriterLockSlim locker = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
@@ -61,6 +64,16 @@ namespace Fabric.Terminology.SqlServer.Caching
         public object GetItem(string key, Func<object> getItem)
         {
             return this.GetItem(key, getItem, TimeSpan.FromMinutes(5), false);
+        }
+
+        public IEnumerable<object> GetItems(params string[] cacheKeys)
+        {
+            if (!cacheKeys.Any())
+            {
+                return Enumerable.Empty<object>();
+            }
+
+            return cacheKeys.Select(this.GetItem).Where(x => x != null);
         }
 
         public object GetItem(string key, Func<object> getItem, TimeSpan? timeout, bool isSliding = false)

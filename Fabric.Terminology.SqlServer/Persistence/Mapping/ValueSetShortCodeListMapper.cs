@@ -1,30 +1,47 @@
 ﻿using System;
 using Fabric.Terminology.Domain.Models;
-using Fabric.Terminology.Domain.Persistence;
 using Fabric.Terminology.SqlServer.Caching;
-using Fabric.Terminology.SqlServer.Configuration;
 using Fabric.Terminology.SqlServer.Models.Dto;
 
 namespace Fabric.Terminology.SqlServer.Persistence.Mapping
 {
-    internal sealed class ValueSetMapper : IModelMapper<ValueSetDescriptionDto, IValueSet>
+    using System.Collections.Generic;
+    using System.Linq;
+
+    internal sealed class ValueSetShortCodeListMapper : IModelMapper<ValueSetDescriptionDto, IValueSet>
     {
         private readonly IMemoryCacheProvider cache;
-        private readonly IValueSetCodeRepository repository;
 
-        public ValueSetMapper(IMemoryCacheProvider memCache, IValueSetCodeRepository valueSetCodeRepository)
+        private readonly ILookup<string, IValueSetCode> lookupCodes;
+
+        private readonly IDictionary<string, IValueSet> stash;
+
+        private readonly Func<string, int> getCount;
+
+        public ValueSetShortCodeListMapper(
+            IMemoryCacheProvider memCache, 
+            ILookup<string, IValueSetCode> lookup, 
+            IDictionary<string, IValueSet> previouslyCached,
+            Func<string, int> getCount)
         {
-            // TODO null protect
             this.cache = memCache;
-            this.repository = valueSetCodeRepository;
+            this.lookupCodes = lookup;
+            this.stash = previouslyCached;
+            this.getCount = getCount;
         }
 
         public IValueSet Map(ValueSetDescriptionDto dto)
         {
+            if (this.stash.ContainsKey(dto.ValueSetID))
+            {
+                return this.stash[dto.ValueSetID];
+            }
+
             var cacheKey = CacheKeys.ValueSetKey(dto.ValueSetID);
-            return (IValueSet)this.cache.GetItem(cacheKey, () =>
+            return (IValueSet)this.cache.GetItem(
+                cacheKey, () =>
                 {
-                    var codes = this.repository.GetValueSetCodes(dto.ValueSetID);
+                    var codes = this.lookupCodes[dto.ValueSetID].ToArray();
                     return new ValueSet
                     {
                         ValueSetId = dto.ValueSetID,
@@ -35,7 +52,7 @@ namespace Fabric.Terminology.SqlServer.Persistence.Mapping
                         SourceDescription = dto.SourceDSC,
                         VersionDescription = dto.VersionDSC,
                         ValueSetCodes = codes,
-                        ValueSetCodesCount = codes.Count
+                        ValueSetCodesCount = this.getCount.Invoke(dto.ValueSetID)
                     };
                 },
                 TimeSpan.FromMinutes(this.cache.Settings.MemoryCacheMinDuration),
