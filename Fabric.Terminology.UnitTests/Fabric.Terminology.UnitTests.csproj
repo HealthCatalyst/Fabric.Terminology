@@ -3,6 +3,7 @@
   <PropertyGroup>    
     <TargetFramework>netcoreapp1.1</TargetFramework>    
     <PreBuildEvent></PreBuildEvent>
+    <CodeAnalysisRuleSet>..\Catalyst.TestRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <ItemGroup>

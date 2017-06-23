@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp1.1</TargetFramework>
     <PreBuildEvent>del /q /f "$(TargetDir)Logs"</PreBuildEvent>
+    <CodeAnalysisRuleSet>..\Catalyst.TestRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <ItemGroup>
