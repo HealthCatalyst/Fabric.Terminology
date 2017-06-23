@@ -1,8 +1,8 @@
-﻿using Fabric.Terminology.Domain.Persistence;
-using Fabric.Terminology.SqlServer.Persistence;
-
-namespace Fabric.Terminology.IntegrationTests.Fixtures
+﻿namespace Fabric.Terminology.IntegrationTests.Fixtures
 {
+    using Fabric.Terminology.Domain.Persistence;
+    using Fabric.Terminology.SqlServer.Persistence;
+
     public class ValueSetCodeRepositoryFixture : RepositoryFixtureBase
     {
         public ValueSetCodeRepositoryFixture()
@@ -14,7 +14,7 @@ namespace Fabric.Terminology.IntegrationTests.Fixtures
 
         private void Initialize()
         {
-            ValueSetCodeRepository = new SqlValueSetCodeRepository(SharedContext, Logger);
+            this.ValueSetCodeRepository = new SqlValueSetCodeRepository(this.SharedContext, this.Logger);
         }
     }
 }

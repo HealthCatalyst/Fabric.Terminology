@@ -1,12 +1,16 @@
-﻿using System.IO;
-using Fabric.Terminology.API.Configuration;
-using Fabric.Terminology.SqlServer.Configuration;
-using Newtonsoft.Json;
-
-namespace Fabric.Terminology.TestsBase
+﻿namespace Fabric.Terminology.TestsBase
 {
+    using System.IO;
+    using Fabric.Terminology.API.Configuration;
+    using Fabric.Terminology.SqlServer.Configuration;
+
+    using JetBrains.Annotations;
+
+    using Newtonsoft.Json;
+
     public static class TestHelper
     {
+        [CanBeNull]
         public static FileInfo GetAppConfigFile()
         {
             var fileName = $"appsettings.json";
@@ -28,6 +32,7 @@ namespace Fabric.Terminology.TestsBase
                     }
                 };
             }
+
             return JsonConvert.DeserializeObject<AppConfiguration>(File.ReadAllText(file.FullName));
         }
     }

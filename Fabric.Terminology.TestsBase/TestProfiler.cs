@@ -1,16 +1,16 @@
-﻿using System;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using Fabric.Terminology.Domain;
-using Xunit.Abstractions;
-
-namespace Fabric.Terminology.TestsBase
+﻿namespace Fabric.Terminology.TestsBase
 {
+    using System;
+    using System.Diagnostics;
+    using System.Threading.Tasks;
+    using Fabric.Terminology.Domain;
+    using Xunit.Abstractions;
+
     public class TestProfiler
     {
         public TestProfiler(ITestOutputHelper output)
         {
-            Output = output;
+            this.Output = output;
         }
 
         protected ITestOutputHelper Output { get; }
@@ -21,7 +21,7 @@ namespace Fabric.Terminology.TestsBase
             stopwatch.Start();
             var result = toWatch.Invoke();
             stopwatch.Stop();
-            OutputTimer(stopwatch, msg);
+            this.OutputTimer(stopwatch, msg);
             return result;
         }
 
@@ -31,7 +31,7 @@ namespace Fabric.Terminology.TestsBase
             stopwatch.Start();
             var result = toWatch.Invoke().Result;
             stopwatch.Stop();
-            OutputTimer(stopwatch, msg);
+            this.OutputTimer(stopwatch, msg);
 
             return result;
         }
@@ -42,13 +42,17 @@ namespace Fabric.Terminology.TestsBase
             stopwatch.Start();
             toWatch.Invoke();
             stopwatch.Stop();
-            OutputTimer(stopwatch, msg);
+            this.OutputTimer(stopwatch, msg);
         }
 
         private void OutputTimer(Stopwatch stopwatch, string msg = "")
         {
-            if (!msg.IsNullOrWhiteSpace()) msg += Environment.NewLine;
-            Output.WriteLine($"{msg}Operation completed in {stopwatch.Elapsed.TotalSeconds} seconds.");
+            if (!msg.IsNullOrWhiteSpace())
+            {
+                msg += Environment.NewLine;
+            }
+
+            this.Output.WriteLine($"{msg}Operation completed in {stopwatch.Elapsed.TotalSeconds} seconds.");
         }
     }
 }

@@ -1,19 +1,18 @@
-﻿using System.Linq;
-using Fabric.Terminology.Domain.Persistence;
-using Fabric.Terminology.IntegrationTests.Fixtures;
-using Fabric.Terminology.TestsBase;
-using Xunit;
-using Xunit.Abstractions;
-
-namespace Fabric.Terminology.IntegrationTests.Repositories
+﻿namespace Fabric.Terminology.IntegrationTests.Repositories
 {
+    using System.Linq;
+    using Fabric.Terminology.Domain.Persistence;
+    using Fabric.Terminology.IntegrationTests.Fixtures;
+    using Fabric.Terminology.TestsBase;
+    using Xunit;
+    using Xunit.Abstractions;
+
     public class SqlValueSetCodeRepositoryTests : OutputTestBase, IClassFixture<ValueSetCodeRepositoryFixture>
     {
-        
         public SqlValueSetCodeRepositoryTests(ValueSetCodeRepositoryFixture fixture, ITestOutputHelper output) 
             : base(output)
         {
-            ValueSetCodeRepository = fixture.ValueSetCodeRepository;
+            this.ValueSetCodeRepository = fixture.ValueSetCodeRepository;
         }
 
         private IValueSetCodeRepository ValueSetCodeRepository { get; }
@@ -30,8 +29,8 @@ namespace Fabric.Terminology.IntegrationTests.Repositories
             // Handled in inline data
 
             //// Act
-            var codes = Profiler.ExecuteTimed(() => ValueSetCodeRepository.GetValueSetCodes(valueSetId), $"Querying ValueSetId = {valueSetId}");
-            Output.WriteLine($"Result count: {codes.Count}");
+            var codes = this.Profiler.ExecuteTimed(() => this.ValueSetCodeRepository.GetValueSetCodes(valueSetId), $"Querying ValueSetId = {valueSetId}");
+            this.Output.WriteLine($"Result count: {codes.Count}");
 
             //// Assert
             Assert.True(codes.Any());

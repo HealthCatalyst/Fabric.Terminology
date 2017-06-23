@@ -1,10 +1,12 @@
-﻿using System.Security.Claims;
-
-namespace Fabric.Terminology.TestsBase.Mocks
+﻿namespace Fabric.Terminology.TestsBase.Mocks
 {
+    using System.Security.Claims;
+
     public class TestIdentity : ClaimsIdentity
     {
-        public TestIdentity(params Claim[] claims) : base(claims, "testauthentication")
-        { }
+        public TestIdentity(params Claim[] claims)
+            : base(claims, "testauthentication")
+        {
+        }
     }
 }

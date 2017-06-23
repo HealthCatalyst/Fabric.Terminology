@@ -1,9 +1,9 @@
-﻿using System.IO;
-using Fabric.Terminology.API.Configuration;
-using Microsoft.Extensions.Configuration;
-
-namespace Fabric.Terminology.TestsBase.Fixtures
+﻿namespace Fabric.Terminology.TestsBase.Fixtures
 {
+    using System.IO;
+    using Fabric.Terminology.API.Configuration;
+    using Microsoft.Extensions.Configuration;
+
     public class AppConfigurationFixture : TestFixtureBase
     {
         public AppConfigurationFixture()
@@ -13,10 +13,10 @@ namespace Fabric.Terminology.TestsBase.Fixtures
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile(TestHelper.GetAppConfigFile().FullName);
 
-            Configuration = builder.Build();
+            this.Configuration = builder.Build();
 
-            AppConfiguration = new AppConfiguration();
-            Configuration.Bind(AppConfiguration);
+            this.AppConfiguration = new AppConfiguration();
+            this.Configuration.Bind(this.AppConfiguration);
         }
 
         public IAppConfiguration AppConfiguration { get; }

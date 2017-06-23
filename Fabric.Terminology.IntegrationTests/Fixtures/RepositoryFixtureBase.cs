@@ -1,25 +1,28 @@
-﻿using System;
-using Fabric.Terminology.SqlServer.Caching;
-using Fabric.Terminology.SqlServer.Persistence.DataContext;
-using Fabric.Terminology.TestsBase.Fixtures;
-
-namespace Fabric.Terminology.IntegrationTests.Fixtures
+﻿namespace Fabric.Terminology.IntegrationTests.Fixtures
 {
+    using System;
+    using Fabric.Terminology.SqlServer.Caching;
+    using Fabric.Terminology.SqlServer.Persistence.DataContext;
+    using Fabric.Terminology.TestsBase.Fixtures;
+
     public abstract class RepositoryFixtureBase : AppConfigurationFixture
     {
         protected RepositoryFixtureBase()
         {
-            var factory = new SharedContextFactory(AppConfiguration.TerminologySqlSettings, Logger);
-            SharedContext = factory.Create();
-            if (SharedContext.IsInMemory) throw new InvalidOperationException();
+            var factory = new SharedContextFactory(this.AppConfiguration.TerminologySqlSettings, this.Logger);
+            this.SharedContext = factory.Create();
+            if (this.SharedContext.IsInMemory)
+            {
+                throw new InvalidOperationException();
+            }
 
-            Cache = AppConfiguration.TerminologySqlSettings.MemoryCacheEnabled ?
-                (IMemoryCacheProvider)new MemoryCacheProvider(AppConfiguration.TerminologySqlSettings) :
-                new NullMemoryCacheProvider(AppConfiguration.TerminologySqlSettings);
+            this.Cache = this.AppConfiguration.TerminologySqlSettings.MemoryCacheEnabled ?
+                (IMemoryCacheProvider)new MemoryCacheProvider(this.AppConfiguration.TerminologySqlSettings) :
+                new NullMemoryCacheProvider(this.AppConfiguration.TerminologySqlSettings);
         }
 
         internal SharedContext SharedContext { get; }
-        
+
         protected IMemoryCacheProvider Cache { get; }
     }
 }
