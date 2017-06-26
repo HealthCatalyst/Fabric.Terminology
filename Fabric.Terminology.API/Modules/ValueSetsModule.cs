@@ -1,9 +1,9 @@
-﻿using System;
-using Fabric.Terminology.Domain.Services;
-using Nancy;
-
-namespace Fabric.Terminology.API.Modules
+﻿namespace Fabric.Terminology.API.Modules
 {
+    using System;
+    using Fabric.Terminology.Domain.Services;
+    using Nancy;
+
     public sealed class ValueSetsModule : NancyModule
     {
         public ValueSetsModule(IValueSetService valueSetService)

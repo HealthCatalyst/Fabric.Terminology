@@ -8,7 +8,6 @@ namespace Fabric.Terminology.UnitTests.Modules
     // TODO remove this testfixture - this is junk for test setup
     public class HomeModuleTests : ModuleTestsBase<HomeModule>
     {
-
         [Fact]
         public void ShouldReturnOkStatusForDefaultRoute()
         {
@@ -20,6 +19,6 @@ namespace Fabric.Terminology.UnitTests.Modules
 
             // Assert
             HttpStatusCode.OK.Should().Be(result.StatusCode);
-        }        
+        }
     }
 }

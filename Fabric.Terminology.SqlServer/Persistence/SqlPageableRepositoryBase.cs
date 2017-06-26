@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Fabric.Terminology.Domain;
+
 using Fabric.Terminology.Domain.Models;
-using Fabric.Terminology.Domain.Persistence;
-using Fabric.Terminology.SqlServer.Caching;
 using Fabric.Terminology.SqlServer.Persistence.DataContext;
 using Fabric.Terminology.SqlServer.Persistence.Mapping;
 using Microsoft.EntityFrameworkCore;
@@ -36,10 +32,6 @@ namespace Fabric.Terminology.SqlServer.Persistence
         /// </summary>
         protected abstract Expression<Func<TDto, string>> SortExpression { get; }
 
-        /// <summary>
-        /// Gets a value designating the default sort direction for repository queries.
-        /// </summary>
-        protected abstract SortDirection Direction { get; }
 
         protected PagedCollection<TResult> CreatePagedCollection(IEnumerable<TDto> items, int totalCount, IPagerSettings pagerSettings, IModelMapper<TDto, TResult> mapper)
         {

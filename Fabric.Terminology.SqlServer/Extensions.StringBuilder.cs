@@ -30,7 +30,7 @@
             return builder;
         }
 
-        public static string EscapeForSqlString(string input)
+        private static string EscapeForSqlString(string input)
         {
             return input.Replace("'", "''");
         }

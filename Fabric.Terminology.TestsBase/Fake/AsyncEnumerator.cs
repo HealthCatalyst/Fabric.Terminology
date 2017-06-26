@@ -13,7 +13,9 @@
 
         public T Current => this.enumerator.Current;
 
-        public void Dispose() { }
+        public void Dispose()
+        {
+        }
 
 #pragma warning disable UseAsyncSuffix // Use Async suffix - has to implement the interface
         public Task<bool> MoveNext(CancellationToken cancellationToken) => Task.FromResult(this.enumerator.MoveNext());

@@ -114,7 +114,7 @@
             cache.GetItem(Key).Should().BeNull();
 
             // Act
-            cache.GetItem(Key, () => new TestObject {Text = "Test string", Stamp = DateTime.Now});
+            cache.GetItem(Key, () => new TestObject { Text = "Test string", Stamp = DateTime.Now });
 
             // Assert
             cache.GetItem(Key).Should().NotBeNull();

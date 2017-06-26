@@ -10,7 +10,7 @@
     {
         public void Compose(TinyIoCContainer container)
         {
-            container.Register<TerminologySqlSettings>((c,s) => c.Resolve<IAppConfiguration>().TerminologySqlSettings);
+            container.Register<TerminologySqlSettings>((c, s) => c.Resolve<IAppConfiguration>().TerminologySqlSettings);
             container.Register<SharedContextFactory>().AsSingleton();
         }
     }

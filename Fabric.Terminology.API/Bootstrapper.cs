@@ -1,6 +1,5 @@
 ﻿namespace Fabric.Terminology.API
 {
-    using System;
     using Fabric.Terminology.API.Configuration;
     using Fabric.Terminology.API.DependencyInjection;
     using Fabric.Terminology.SqlServer.Caching;

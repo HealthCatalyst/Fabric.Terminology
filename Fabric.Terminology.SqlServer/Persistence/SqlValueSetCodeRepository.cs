@@ -27,7 +27,6 @@ namespace Fabric.Terminology.SqlServer.Persistence
 
         protected override Expression<Func<ValueSetCodeDto, string>> SortExpression => sortBy => sortBy.CodeDSC;
 
-        protected override SortDirection Direction { get; } = SortDirection.Ascending;
 
         protected override DbSet<ValueSetCodeDto> DbSet => this.SharedContext.ValueSetCodes;
 
@@ -49,7 +48,7 @@ namespace Fabric.Terminology.SqlServer.Persistence
 
         public Task<PagedCollection<IValueSetCode>> GetValueSetCodes(string valueSetId, IPagerSettings settings)
         {
-            var dtos = this.DbSet.Where(dto => dto.ValueSetID == valueSetId);
+            var dtos = this.DbSet.Where(dto => dto.ValueSetID == valueSetId).OrderBy(this.SortExpression);
             return this.CreatePagedCollectionAsync(dtos, settings, new ValueSetCodeMapper());
         }
 
@@ -93,8 +92,7 @@ namespace Fabric.Terminology.SqlServer.Persistence
             //    innerSql.Append(" AND vsc.CodeSystemCD ").AppendInClause(codeSystemCodes);
             //}
 
-            var sql = new StringBuilder("SELECT vscr.BindingID, ")
-                .Append("vscr.BindingNM, ")
+            var sql = new StringBuilder("SELECT vscr.BindingID, ").Append("vscr.BindingNM, ")
                 .Append("vscr.CodeCD, ")
                 .Append("vscr.CodeDSC, ")
                 .Append("vscr.CodeSystemCD, ")
@@ -109,7 +107,8 @@ namespace Fabric.Terminology.SqlServer.Persistence
                 .Append("vscr.VersionDSC, ")
                 .Append("vscr.rownum ")
                 .AppendFormat("FROM ({0}) vscr ", innerSql.ToString())
-                .AppendFormat("WHERE vscr.rownum <= {0} ", count);
+                .AppendFormat("WHERE vscr.rownum <= {0} ", count)
+                .AppendFormat("ORDER BY vscr.CodeDSC");
 
             this.Logger.Debug(sql.ToString());
 

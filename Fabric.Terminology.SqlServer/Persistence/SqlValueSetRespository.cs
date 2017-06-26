@@ -41,7 +41,6 @@ namespace Fabric.Terminology.SqlServer.Persistence
         protected virtual IMemoryCacheProvider Cache { get; }
 
         protected override Expression<Func<ValueSetDescriptionDto, string>> SortExpression => sortBy => sortBy.ValueSetNM;
-        protected override SortDirection Direction { get; } = SortDirection.Ascending;
         protected override DbSet<ValueSetDescriptionDto> DbSet => this.SharedContext.ValueSetDescriptions;
 
         [CanBeNull]
