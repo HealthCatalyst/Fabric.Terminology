@@ -10,7 +10,7 @@
         public void Compose(TinyIoCContainer container)
         {
             container.Register<IValueSetCodeRepository, SqlValueSetCodeRepository>();
-            container.Register<IValueSetRepository, SqlValueSetRespository>();
+            container.Register<IValueSetRepository, SqlValueSetRepository>();
         }
     }
 }

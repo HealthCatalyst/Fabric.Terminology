@@ -15,33 +15,36 @@ using Serilog;
 
 namespace Fabric.Terminology.SqlServer.Persistence
 {
-    using System.Runtime.CompilerServices;
+    using Fabric.Terminology.Domain.Persistence.Mapping;
 
-    using Fabric.Terminology.SqlServer.Configuration;
-
-    internal class SqlValueSetRespository : SqlPageableRepositoryBase<ValueSetDescriptionDto, IValueSet>, IValueSetRepository
+    internal class SqlValueSetRepository : IValueSetRepository
     {
         private readonly IValueSetCodeRepository valueSetCodeRepository;
 
-        private readonly ValueSetSettings valueSetSettings;
+        private readonly IPagingStrategy<ValueSetDescriptionDto, IValueSet> pagingStrategy;
 
-        public SqlValueSetRespository(
+        public SqlValueSetRepository(
             SharedContext sharedContext, 
             IMemoryCacheProvider cache, 
             ILogger logger, 
             IValueSetCodeRepository valsetCodeRepository,
-            ValueSetSettings settings) 
-            : base(sharedContext, logger)
+            IPagingStrategy<ValueSetDescriptionDto, IValueSet> pagingStrategy)
         {
+            this.SharedContext = sharedContext;
+            this.Logger = logger;
             this.valueSetCodeRepository = valsetCodeRepository;
             this.Cache = cache;
-            this.valueSetSettings = settings;
+            this.pagingStrategy = pagingStrategy;
         }
+
+        protected SharedContext SharedContext { get; }
+
+        protected ILogger Logger { get; }
 
         protected virtual IMemoryCacheProvider Cache { get; }
 
-        protected override Expression<Func<ValueSetDescriptionDto, string>> SortExpression => sortBy => sortBy.ValueSetNM;
-        protected override DbSet<ValueSetDescriptionDto> DbSet => this.SharedContext.ValueSetDescriptions;
+        protected Expression<Func<ValueSetDescriptionDto, string>> SortExpression => sortBy => sortBy.ValueSetNM;
+        protected DbSet<ValueSetDescriptionDto> DbSet => this.SharedContext.ValueSetDescriptions;
 
         [CanBeNull]
         public IValueSet GetValueSet(string valueSetId)
@@ -81,7 +84,7 @@ namespace Fabric.Terminology.SqlServer.Persistence
 
         private async Task<PagedCollection<IValueSet>> CreatePagedCollectionAsync(IQueryable<ValueSetDescriptionDto> source, IPagerSettings pagerSettings, bool includeAllValueSetCodes = false)
         {
-            this.EnsurePagerSettings(pagerSettings);
+            this.pagingStrategy.EnsurePagerSettings(pagerSettings);
 
             var count = await source.CountAsync();
             var items = await source.OrderBy(this.SortExpression).Skip((pagerSettings.CurrentPage - 1) * pagerSettings.ItemsPerPage).Take(pagerSettings.ItemsPerPage).ToListAsync();
@@ -112,7 +115,7 @@ namespace Fabric.Terminology.SqlServer.Persistence
                     this.valueSetCodeRepository.CountValueSetCodes);
             }
 
-            return this.CreatePagedCollection(
+            return this.pagingStrategy.CreatePagedCollection(
                 items, 
                 count, 
                 pagerSettings, 
