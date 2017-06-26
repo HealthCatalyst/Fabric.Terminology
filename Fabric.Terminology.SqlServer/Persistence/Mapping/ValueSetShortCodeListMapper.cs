@@ -1,12 +1,13 @@
-﻿using System;
-using Fabric.Terminology.Domain.Models;
-using Fabric.Terminology.SqlServer.Caching;
-using Fabric.Terminology.SqlServer.Models.Dto;
-
-namespace Fabric.Terminology.SqlServer.Persistence.Mapping
+﻿namespace Fabric.Terminology.SqlServer.Persistence.Mapping
 {
     using System.Collections.Generic;
     using System.Linq;
+    using System;
+
+    using Fabric.Terminology.Domain.Models;
+    using Fabric.Terminology.SqlServer.Caching;
+    using Fabric.Terminology.SqlServer.Models.Dto;
+    using Fabric.Terminology.Domain.Persistence.Mapping;
 
     internal sealed class ValueSetShortCodeListMapper : IModelMapper<ValueSetDescriptionDto, IValueSet>
     {

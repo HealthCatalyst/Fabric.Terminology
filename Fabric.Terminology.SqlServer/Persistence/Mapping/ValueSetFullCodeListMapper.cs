@@ -2,11 +2,10 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
 
     using Fabric.Terminology.Domain.Models;
+    using Fabric.Terminology.Domain.Persistence.Mapping;
     using Fabric.Terminology.SqlServer.Caching;
-    using Fabric.Terminology.SqlServer.Configuration;
     using Fabric.Terminology.SqlServer.Models.Dto;
     internal sealed class ValueSetFullCodeListMapper : IModelMapper<ValueSetDescriptionDto, IValueSet>
     {

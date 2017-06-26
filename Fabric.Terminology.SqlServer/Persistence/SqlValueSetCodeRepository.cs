@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Fabric.Terminology.Domain;
+
 using Fabric.Terminology.Domain.Models;
 using Fabric.Terminology.Domain.Persistence;
 using Fabric.Terminology.SqlServer.Models.Dto;
@@ -16,19 +16,27 @@ namespace Fabric.Terminology.SqlServer.Persistence
 {
     using System.Text;
 
-    using Microsoft.EntityFrameworkCore.Storage;
+    using Fabric.Terminology.Domain.Persistence.Mapping;
 
-    internal class SqlValueSetCodeRepository : SqlPageableRepositoryBase<ValueSetCodeDto, IValueSetCode>, IValueSetCodeRepository
+    internal class SqlValueSetCodeRepository : IValueSetCodeRepository
     {
-        public SqlValueSetCodeRepository(SharedContext sharedContext, ILogger logger) 
-            : base(sharedContext, logger)
+        private readonly IPagingStrategy<ValueSetCodeDto, IValueSetCode> pagingStrategy;
+
+        public SqlValueSetCodeRepository(SharedContext sharedContext, ILogger logger, IPagingStrategy<ValueSetCodeDto, IValueSetCode> pagingStrategy)
         {
+            this.SharedContext = sharedContext;
+            this.Logger = logger;
+            this.pagingStrategy = pagingStrategy;
         }
 
-        protected override Expression<Func<ValueSetCodeDto, string>> SortExpression => sortBy => sortBy.CodeDSC;
+        protected SharedContext SharedContext { get; }
+
+        protected ILogger Logger { get; }
+        
+        protected Expression<Func<ValueSetCodeDto, string>> SortExpression => sortBy => sortBy.CodeDSC;
 
 
-        protected override DbSet<ValueSetCodeDto> DbSet => this.SharedContext.ValueSetCodes;
+        protected DbSet<ValueSetCodeDto> DbSet => this.SharedContext.ValueSetCodes;
 
         public int CountValueSetCodes(string valueSetId)
         {
@@ -58,7 +66,7 @@ namespace Fabric.Terminology.SqlServer.Persistence
         /// not be translated and the expression would be evaluated in the CLR after the execution (so no performance gain).
         /// </remarks>
         /// <seealso cref="https://stackoverflow.com/questions/43906840/row-number-over-partition-by-order-by-in-entity-framework"/>
-        public Task<ILookup<string, IValueSetCode>> LookupValueSetCodes(IEnumerable<string> valueSetIds, int count = 5) // TODO confirm with Cody , params string[] codeSystemCodes
+        public Task<ILookup<string, IValueSetCode>> LookupValueSetCodes(IEnumerable<string> valueSetIds, int count = 5, params string[] codeSystemCodes)
         {
             var setIds = valueSetIds as string[] ?? valueSetIds.ToArray();
             if (!setIds.Any())
@@ -68,49 +76,25 @@ namespace Fabric.Terminology.SqlServer.Persistence
 
             var mapper = new ValueSetCodeMapper();
 
-            var innerSql = new StringBuilder("SELECT vsc.BindingID, ")
-                .Append("vsc.BindingNM, ")
-                .Append("vsc.CodeCD, ")
-                .Append("vsc.CodeDSC, ")
-                .Append("vsc.CodeSystemCD, ")
-                .Append("vsc.CodeSystemNM, ")
-                .Append("vsc.CodeSystemVersionTXT, ")
-                .Append("vsc.LastLoadDTS, ")
-                .Append("vsc.RevisionDTS, ")
-                .Append("vsc.SourceDSC, ")
-                .Append("vsc.ValueSetID, ")
-                .Append("vsc.ValueSetNM, ")
-                .Append("vsc.ValueSetOID, ")
-                .Append("vsc.VersionDSC, ")
-                .Append("ROW_NUMBER() OVER (PARTITION BY vsc.ValueSetID ORDER BY vsc.ValueSetID) AS rownum ")
-                .Append("FROM [Terminology].[ValueSetCode] vsc ")
-                .Append("WHERE vsc.ValueSetID ")
-                .AppendInClause(setIds);
+            var escapedSetIds = string.Join(",", setIds.Select(EscapeForSqlString).Select(v => "'" + v + "'"));
 
-            //if (codeSystemCodes.Any())
-            //{
-            //    innerSql.Append(" AND vsc.CodeSystemCD ").AppendInClause(codeSystemCodes);
-            //}
+            var innerSql = $@"SELECT vsc.BindingID, vsc.BindingNM, vsc.CodeCD, vsc.CodeDSC, vsc.CodeSystemCD, vsc.CodeSystemNM, vsc.CodeSystemVersionTXT,
+vsc.LastLoadDTS, vsc.RevisionDTS, vsc.SourceDSC, vsc.ValueSetID, vsc.ValueSetNM, vsc.ValueSetOID, vsc.VersionDSC,
+ROW_NUMBER() OVER (PARTITION BY vsc.ValueSetID ORDER BY vsc.ValueSetID) AS rownum 
+FROM [Terminology].[ValueSetCode] vsc WHERE vsc.ValueSetID IN ({escapedSetIds})";
 
-            var sql = new StringBuilder("SELECT vscr.BindingID, ").Append("vscr.BindingNM, ")
-                .Append("vscr.CodeCD, ")
-                .Append("vscr.CodeDSC, ")
-                .Append("vscr.CodeSystemCD, ")
-                .Append("vscr.CodeSystemNM,")
-                .Append("vscr.CodeSystemVersionTXT, ")
-                .Append("vscr.LastLoadDTS, ")
-                .Append("vscr.RevisionDTS, ")
-                .Append("vscr.SourceDSC, ")
-                .Append("vscr.ValueSetID, ")
-                .Append("vscr.ValueSetNM, ")
-                .Append("vscr.ValueSetOID, ")
-                .Append("vscr.VersionDSC, ")
-                .Append("vscr.rownum ")
-                .AppendFormat("FROM ({0}) vscr ", innerSql.ToString())
-                .AppendFormat("WHERE vscr.rownum <= {0} ", count)
-                .AppendFormat("ORDER BY vscr.CodeDSC");
+            if (codeSystemCodes.Any())
+            {
+                var escapedCodes = string.Join(",", codeSystemCodes.Select(EscapeForSqlString).Select(v => "'" + v + "'"));
+                innerSql += $" AND vsc.CodeSystemCD IN ({escapedCodes})";
+            }
 
-            this.Logger.Debug(sql.ToString());
+            var sql =
+                $@"SELECT vscr.BindingID, vscr.BindingNM, vscr.CodeCD, vscr.CodeDSC, vscr.CodeSystemCD, vscr.CodeSystemNM, vscr.CodeSystemVersionTXT,
+vscr.LastLoadDTS, vscr.RevisionDTS, vscr.SourceDSC, vscr.ValueSetID, vscr.ValueSetNM, vscr.ValueSetOID, vscr.VersionDSC, vscr.rownum
+FROM ({innerSql}) vscr
+WHERE vscr.rownum <= {count}
+ORDER BY vscr.CodeDSC";
 
             return Task.Run(() => this.DbSet.FromSql(sql.ToString()).ToLookup(vsc => vsc.ValueSetID, vsc => mapper.Map(vsc)));
         }
@@ -118,12 +102,17 @@ namespace Fabric.Terminology.SqlServer.Persistence
 
         private async Task<PagedCollection<IValueSetCode>> CreatePagedCollectionAsync(IQueryable<ValueSetCodeDto> source, IPagerSettings pagerSettings, IModelMapper<ValueSetCodeDto, IValueSetCode> mapper)
         {
-            this.EnsurePagerSettings(pagerSettings);
+            this.pagingStrategy.EnsurePagerSettings(pagerSettings);
 
             var count = await source.CountAsync();
             var items = await source.OrderBy(this.SortExpression).Skip((pagerSettings.CurrentPage - 1) * pagerSettings.ItemsPerPage).Take(pagerSettings.ItemsPerPage).ToListAsync();
 
-            return this.CreatePagedCollection(items, count, pagerSettings, mapper);
+            return this.pagingStrategy.CreatePagedCollection(items, count, pagerSettings, mapper);
+        }
+
+        private static string EscapeForSqlString(string input)
+        {
+            return input.Replace("'", "''");
         }
     }
 }
