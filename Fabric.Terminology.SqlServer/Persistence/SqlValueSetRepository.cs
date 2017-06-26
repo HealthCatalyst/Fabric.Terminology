@@ -47,9 +47,9 @@ namespace Fabric.Terminology.SqlServer.Persistence
         protected DbSet<ValueSetDescriptionDto> DbSet => this.SharedContext.ValueSetDescriptions;
 
         [CanBeNull]
-        public IValueSet GetValueSet(string valueSetId)
+        public IValueSet GetValueSet(string valueSetId, params string[] codeSystemCodes)
         {
-            var cached = this.Cache.GetCachedValueSetWithAllCodes(valueSetId);
+            var cached = this.Cache.GetCachedValueSetWithAllCodes(valueSetId, codeSystemCodes);
             if (cached != null)
             {
                 return cached;
@@ -61,17 +61,17 @@ namespace Fabric.Terminology.SqlServer.Persistence
 
             if (dto == null) return null;
 
-            var mapper = new ValueSetFullCodeListMapper(this.Cache, this.valueSetCodeRepository.GetValueSetCodes);
+            var mapper = new ValueSetFullCodeListMapper(this.Cache, this.valueSetCodeRepository.GetValueSetCodes, codeSystemCodes);
             
             return mapper.Map(dto);
         }
 
-        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings pagerSettings, bool includeAllValueSetCodes = false)
+        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings pagerSettings, bool includeAllValueSetCodes = false, params string[] codeSystemCodes)
         {
             return this.FindValueSetsAsync(string.Empty, pagerSettings, includeAllValueSetCodes);
         }
 
-        public Task<PagedCollection<IValueSet>> FindValueSetsAsync(string nameFilterText, IPagerSettings pagerSettings, bool includeAllValueSetCodes = false)
+        public Task<PagedCollection<IValueSet>> FindValueSetsAsync(string nameFilterText, IPagerSettings pagerSettings, bool includeAllValueSetCodes = false, params string[] codeSystemCodes)
         {
             var dtos = this.DbSet.Where(dto => dto.PublicFLG == "Y" && dto.StatusCD == "Active");
             if (!nameFilterText.IsNullOrWhiteSpace())
@@ -82,7 +82,11 @@ namespace Fabric.Terminology.SqlServer.Persistence
             return this.CreatePagedCollectionAsync(dtos, pagerSettings, includeAllValueSetCodes);
         }
 
-        private async Task<PagedCollection<IValueSet>> CreatePagedCollectionAsync(IQueryable<ValueSetDescriptionDto> source, IPagerSettings pagerSettings, bool includeAllValueSetCodes = false)
+        private async Task<PagedCollection<IValueSet>> CreatePagedCollectionAsync(
+            IQueryable<ValueSetDescriptionDto> source, 
+            IPagerSettings pagerSettings, 
+            bool includeAllValueSetCodes = false, 
+            params string[] codeSystemCodes)
         {
             this.pagingStrategy.EnsurePagerSettings(pagerSettings);
 
@@ -95,13 +99,21 @@ namespace Fabric.Terminology.SqlServer.Persistence
             {
                 mapper = new ValueSetFullCodeListMapper(
                     this.Cache, 
-                    this.valueSetCodeRepository.GetValueSetCodes);
+                    this.valueSetCodeRepository.GetValueSetCodes,
+                    codeSystemCodes);
             }
             else
             {                
                 // remove any valueSetIds for valuesets already cached from partition query
-                var cachedValueSets = this.Cache.GetItems(valueSetIds.Select(CacheKeys.ValueSetKey).ToArray()).Select(obj => obj as IValueSet).Where(vs => vs != null);
-                valueSetIds = valueSetIds.Where(id => !cachedValueSets.Select(vs => vs.ValueSetId).Contains(id)).ToArray();
+                var cachedValueSets = this.Cache.GetItems(
+                    valueSetIds
+                    .Select(id => CacheKeys.ValueSetKey(id, codeSystemCodes)).ToArray())
+                    .Select(obj => obj as IValueSet)
+                    .Where(vs => vs != null);
+
+                valueSetIds = valueSetIds
+                                .Where(id => !cachedValueSets.Select(vs => vs.ValueSetId)
+                                .Contains(id)).ToArray();
 
                 // partition query
                 var lookup = await this.valueSetCodeRepository.LookupValueSetCodes(valueSetIds);
@@ -112,7 +124,8 @@ namespace Fabric.Terminology.SqlServer.Persistence
                     this.Cache,
                     lookup,
                     cachedValueSetDictionary,
-                    this.valueSetCodeRepository.CountValueSetCodes);
+                    this.valueSetCodeRepository.CountValueSetCodes,
+                    codeSystemCodes);
             }
 
             return this.pagingStrategy.CreatePagedCollection(

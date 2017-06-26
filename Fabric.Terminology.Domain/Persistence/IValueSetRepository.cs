@@ -8,8 +8,8 @@ namespace Fabric.Terminology.Domain.Persistence
     public interface IValueSetRepository
     {
         [CanBeNull]
-        IValueSet GetValueSet(string valueSetId);        
-        Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings pagerSettings, bool includeAllValueSetCodes = false);
-        Task<PagedCollection<IValueSet>> FindValueSetsAsync(string nameFilterText, IPagerSettings pagerSettings, bool includeAllValueSetCodes = false);
+        IValueSet GetValueSet(string valueSetId, params string[] codeSystemCodes);        
+        Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings pagerSettings,  bool includeAllValueSetCodes = false, params string[] codeSystemCodes);
+        Task<PagedCollection<IValueSet>> FindValueSetsAsync(string nameFilterText, IPagerSettings pagerSettings, bool includeAllValueSetCodes = false, params string[] codeSystemCodes);
     }
 }

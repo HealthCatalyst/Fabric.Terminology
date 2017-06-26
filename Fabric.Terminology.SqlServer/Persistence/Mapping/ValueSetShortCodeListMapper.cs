@@ -17,18 +17,22 @@
 
         private readonly IDictionary<string, IValueSet> stash;
 
-        private readonly Func<string, int> getCount;
+        private readonly Func<string, string[], int> getCount;
+
+        private readonly string[] codeSystemCds;
 
         public ValueSetShortCodeListMapper(
             IMemoryCacheProvider memCache, 
             ILookup<string, IValueSetCode> lookup, 
             IDictionary<string, IValueSet> previouslyCached,
-            Func<string, int> getCount)
+            Func<string, string[], int> getCount,
+            IEnumerable<string> codeSystemCodes)
         {
             this.cache = memCache;
             this.lookupCodes = lookup;
             this.stash = previouslyCached;
             this.getCount = getCount;
+            this.codeSystemCds = codeSystemCodes.ToArray();
         }
 
         public IValueSet Map(ValueSetDescriptionDto dto)
@@ -53,7 +57,7 @@
                         SourceDescription = dto.SourceDSC,
                         VersionDescription = dto.VersionDSC,
                         ValueSetCodes = codes,
-                        ValueSetCodesCount = this.getCount.Invoke(dto.ValueSetID)
+                        ValueSetCodesCount = this.getCount.Invoke(dto.ValueSetID, this.codeSystemCds)
                     };
                 },
                 TimeSpan.FromMinutes(this.cache.Settings.MemoryCacheMinDuration),

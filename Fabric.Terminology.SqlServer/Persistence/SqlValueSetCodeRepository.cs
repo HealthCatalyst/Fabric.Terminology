@@ -38,26 +38,28 @@ namespace Fabric.Terminology.SqlServer.Persistence
 
         protected DbSet<ValueSetCodeDto> DbSet => this.SharedContext.ValueSetCodes;
 
-        public int CountValueSetCodes(string valueSetId)
+        public int CountValueSetCodes(string valueSetId, params string[] codeSystemCodes)
         {
-            return this.DbSet.Count(dto => dto.ValueSetID == valueSetId);
+            return codeSystemCodes.Any() ?
+                this.DbSet.Count(dto => dto.ValueSetID == valueSetId && codeSystemCodes.Contains(dto.CodeSystemCD)) :
+                this.DbSet.Count(dto => dto.ValueSetID == valueSetId);
         }
 
-        public IReadOnlyCollection<IValueSetCode> GetValueSetCodes(string valueSetId)
+        public IReadOnlyCollection<IValueSetCode> GetValueSetCodes(string valueSetId, params string[] codeSystemCodes)
         {
             var dtos = this.DbSet
-                .Where(dto => dto.ValueSetID.Equals(valueSetId))
-                .OrderBy(this.SortExpression);
+                .Where(dto => dto.ValueSetID.Equals(valueSetId));
+
+            if (codeSystemCodes.Any())
+            {
+                dtos = dtos.Where(dto => codeSystemCodes.Contains(dto.CodeSystemCD));
+            }
+
+            dtos = dtos.OrderBy(this.SortExpression);
 
             var mapper = new ValueSetCodeMapper();
 
             return dtos.Select(dto => mapper.Map(dto)).ToList().AsReadOnly();
-        }
-
-        public Task<PagedCollection<IValueSetCode>> GetValueSetCodes(string valueSetId, IPagerSettings settings)
-        {
-            var dtos = this.DbSet.Where(dto => dto.ValueSetID == valueSetId).OrderBy(this.SortExpression);
-            return this.CreatePagedCollectionAsync(dtos, settings, new ValueSetCodeMapper());
         }
 
         /// <remarks>
@@ -96,7 +98,7 @@ FROM ({innerSql}) vscr
 WHERE vscr.rownum <= {count}
 ORDER BY vscr.CodeDSC";
 
-            return Task.Run(() => this.DbSet.FromSql(sql.ToString()).ToLookup(vsc => vsc.ValueSetID, vsc => mapper.Map(vsc)));
+            return Task.Run(() => this.DbSet.FromSql(sql).ToLookup(vsc => vsc.ValueSetID, vsc => mapper.Map(vsc)));
         }
 
 

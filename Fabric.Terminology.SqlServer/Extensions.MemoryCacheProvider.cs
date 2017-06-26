@@ -11,9 +11,9 @@
     public static partial class Extensions
     {
         [CanBeNull]
-        internal static IValueSet GetCachedValueSetWithAllCodes(this IMemoryCacheProvider cache, string valueSetId)
+        internal static IValueSet GetCachedValueSetWithAllCodes(this IMemoryCacheProvider cache, string valueSetId, params string[] codeSystemCodes)
         {
-            var cacheKey = CacheKeys.ValueSetKey(valueSetId);
+            var cacheKey = CacheKeys.ValueSetKey(valueSetId, codeSystemCodes);
             var fnd = (IValueSet)cache.GetItem(cacheKey);
             if (fnd != null && fnd.AllCodesLoaded)
             {
