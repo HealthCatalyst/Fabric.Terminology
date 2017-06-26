@@ -1,14 +1,15 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Fabric.Terminology.Domain.Models;
+using JetBrains.Annotations;
 
 namespace Fabric.Terminology.Domain.Persistence
 {
     public interface IValueSetRepository
     {
-        IValueSet GetValueSet(string valueSetId);
-        Task<IReadOnlyCollection<IValueSet>> GetValueSets(params string[] ids);
-        Task<PagedCollection<IValueSet>> GetValueSets(IPagerSettings pagerSettings);
-        Task<PagedCollection<IValueSet>> GetValueSets(string nameFilterText, IPagerSettings pagerSettings);
+        [CanBeNull]
+        IValueSet GetValueSet(string valueSetId, params string[] codeSystemCodes);        
+        Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings pagerSettings,  bool includeAllValueSetCodes = false, params string[] codeSystemCodes);
+        Task<PagedCollection<IValueSet>> FindValueSetsAsync(string nameFilterText, IPagerSettings pagerSettings, bool includeAllValueSetCodes = false, params string[] codeSystemCodes);
     }
 }

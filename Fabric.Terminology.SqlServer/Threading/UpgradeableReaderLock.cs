@@ -5,29 +5,29 @@ namespace Fabric.Terminology.SqlServer.Threading
 {
     internal class UpgradeableReaderLock : IDisposable
     {
-        private readonly ReaderWriterLockSlim _locker;
-        private bool _upgraded;
+        private readonly ReaderWriterLockSlim locker;
+        private bool upgraded;
 
         public UpgradeableReaderLock(ReaderWriterLockSlim locker)
         {
-            _locker = locker;
-            _locker.EnterUpgradeableReadLock();
+            this.locker = locker;
+            this.locker.EnterUpgradeableReadLock();
         }
 
         public void UpgradeToWriteLock()
         {
-            _locker.EnterWriteLock();
-            _upgraded = true;
+            this.locker.EnterWriteLock();
+            this.upgraded = true;
         }
 
         void IDisposable.Dispose()
         {
-            if (_upgraded)
+            if (this.upgraded)
             {
-                _locker.ExitWriteLock();
+                this.locker.ExitWriteLock();
             }
 
-            _locker.ExitUpgradeableReadLock();
+            this.locker.ExitUpgradeableReadLock();
         }
     }
 }

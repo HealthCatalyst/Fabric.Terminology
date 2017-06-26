@@ -1,8 +1,8 @@
-﻿using Fabric.Terminology.Domain.DependencyInjection;
-using Nancy.TinyIoc;
-
-namespace Fabric.Terminology.API
+﻿namespace Fabric.Terminology.API
 {
+    using Fabric.Terminology.Domain.DependencyInjection;
+    using Nancy.TinyIoc;
+
     /// <summary>
     /// Extension methods for Nancy's <see cref="TinyIoCContainer"/>
     /// </summary>

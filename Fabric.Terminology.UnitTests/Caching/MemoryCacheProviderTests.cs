@@ -1,121 +1,129 @@
-﻿using System;
-using Fabric.Terminology.SqlServer.Caching;
-using Xunit;
-
-namespace Fabric.Terminology.UnitTests.Caching
+﻿namespace Fabric.Terminology.UnitTests.Caching
 {
-    public class MemoryCacheProviderTests 
-    {        
-        [Fact]
-        public void GetItem_ReturnsNullWhenNotFound()
+    using System;
+    using Fabric.Terminology.SqlServer.Caching;
+    using Fabric.Terminology.TestsBase.Fixtures;
+    using FluentAssertions;
+    using Xunit;
+
+    public class MemoryCacheProviderTests : IClassFixture<AppConfigurationFixture>
+    {
+        private readonly AppConfigurationFixture fixture;
+
+        public MemoryCacheProviderTests(AppConfigurationFixture classFixture)
         {
-            //// Arrange
-            var cache = new MemoryCacheProvider();
-            var key = "key";
+            this.fixture = classFixture;
+        }
 
-            //// Act
-            var val = cache.GetItem(key);
+        [Fact]
+        public void GetItemReturnsNullWhenNotFound()
+        {
+            // Arrange
+            var cache = new MemoryCacheProvider(this.fixture.AppConfiguration.TerminologySqlSettings);
+            const string Key = "key";
 
-            //// Assert
+            // Act
+            var val = cache.GetItem(Key);
+
+            // Assert
             Assert.Null(val);
         }
 
         [Fact]
-        public void GetItem_CanAddToCache()
+        public void GetItemCanAddToCache()
         {
-            //// Arrange
-            var cache = new MemoryCacheProvider();
-            var key = "key";
+            // Arrange
+            var cache = new MemoryCacheProvider(this.fixture.AppConfiguration.TerminologySqlSettings);
+            const string Key = "key";
             var dt = DateTime.Now;
             var obj = new TestObject {Text = "Test", Stamp = dt };
 
-            //// Act           
-            var tmp = cache.GetItem(key, () => obj);
-            var cached = cache.GetItem(key) as TestObject;
+            // Act
+            var tmp = cache.GetItem(Key, () => obj);
+            var cached = cache.GetItem(Key) as TestObject;
 
-            //// Assert
+            // Assert
             Assert.NotNull(cached);
             Assert.Equal(dt, cached.Stamp);
         }
 
         [Fact]
-        public void ClearItem_ClearsSingleItem()
+        public void ClearItemClearsSingleItem()
         {
-            //// Arrange
-            var cache = new MemoryCacheProvider();
-            var key1 = "key1";
-            var key2 = "key2";
-            var key3 = "key3";
+            // Arrange
+            var cache = new MemoryCacheProvider(this.fixture.AppConfiguration.TerminologySqlSettings);
+            const string Key1 = "key1";
+            const string Key2 = "key2";
+            const string Key3 = "key3";
             var obj1 = new TestObject { Text = "Test1", Stamp = DateTime.Now };
             var obj2 = new TestObject { Text = "Test2", Stamp = DateTime.Now };
             var obj3 = new TestObject { Text = "Test3", Stamp = DateTime.Now };
 
-            cache.GetItem(key1, () => obj1);
-            cache.GetItem(key2, () => obj2);
-            cache.GetItem(key3, () => obj3);
+            cache.GetItem(Key1, () => obj1);
+            cache.GetItem(Key2, () => obj2);
+            cache.GetItem(Key3, () => obj3);
 
-            //// Act
-            Assert.NotNull(cache.GetItem(key2));
+            // Act
+            cache.GetItem(Key2).Should().NotBeNull();
+            cache.ClearItem(Key2);
 
-            cache.ClearItem(key2);
-
-            //// Assert
-            Assert.Null(cache.GetItem(key2));
-            Assert.NotNull(cache.GetItem(key1));
-            Assert.NotNull(cache.GetItem(key3));
-
+            // Assert
+            cache.GetItem(Key2).Should().BeNull();
+            cache.GetItem(Key1).Should().NotBeNull();
+            cache.GetItem(Key3).Should().NotBeNull();
         }
 
         [Fact]
-        public void ClearAll_ClearsAllCache()
+        public void ClearAllClearsAllCache()
         {
-            //// Arrange
-            var cache = new MemoryCacheProvider();
-            var key1 = "key1";
-            var key2 = "key2";
-            var key3 = "key3";
+            // Arrange
+            var cache = new MemoryCacheProvider(this.fixture.AppConfiguration.TerminologySqlSettings);
+            const string Key1 = "key1";
+            const string Key2 = "key2";
+            const string Key3 = "key3";
             var obj1 = new TestObject { Text = "Test1", Stamp = DateTime.Now };
             var obj2 = new TestObject { Text = "Test2", Stamp = DateTime.Now };
             var obj3 = new TestObject { Text = "Test3", Stamp = DateTime.Now };
 
-            cache.GetItem(key1, () => obj1);
-            cache.GetItem(key2, () => obj2);
-            cache.GetItem(key3, () => obj3);
+            cache.GetItem(Key1, () => obj1);
+            cache.GetItem(Key2, () => obj2);
+            cache.GetItem(Key3, () => obj3);
 
-            Assert.NotNull(cache.GetItem(key1));
-            Assert.NotNull(cache.GetItem(key2));
-            Assert.NotNull(cache.GetItem(key3));
+            cache.GetItem(Key1).Should().NotBeNull();
+            cache.GetItem(Key2).Should().NotBeNull();
+            cache.GetItem(Key3).Should().NotBeNull();
 
             var instanceKey = cache.InstanceKey;
 
-            //// Act
+            // Act
             cache.ClearAll();
 
-            //// Assert
-            Assert.Null(cache.GetItem(key1));
-            Assert.Null(cache.GetItem(key2));
-            Assert.Null(cache.GetItem(key2));
-            Assert.NotEqual(instanceKey, cache.InstanceKey);
+            // Assert
+            cache.GetItem(Key1).Should().BeNull();
+            cache.GetItem(Key2).Should().BeNull();
+            cache.GetItem(Key3).Should().BeNull();
+            instanceKey.Should().NotBe(cache.InstanceKey);
         }
 
         [Fact]
-        public void GetItem_AddsItemByFunction()
+        public void GetItemAddsItemByFunction()
         {
-            //// Arrange
-            var cache = new MemoryCacheProvider();
-            var key = "key";
-            Assert.Null(cache.GetItem(key));
+            // Arrange
+            var cache = new MemoryCacheProvider(this.fixture.AppConfiguration.TerminologySqlSettings);
+            const string Key = "key";
+            cache.GetItem(Key).Should().BeNull();
 
-            //// Act
-            cache.GetItem(key, () => new TestObject {Text = "Test string", Stamp = DateTime.Now});
+            // Act
+            cache.GetItem(Key, () => new TestObject { Text = "Test string", Stamp = DateTime.Now });
 
-            //// Assert
-            Assert.NotNull(cache.GetItem(key));
+            // Assert
+            cache.GetItem(Key).Should().NotBeNull();
         }
 
         private class TestObject
         {
             public string Text { get; set; }
+
             public DateTime Stamp { get; set; }
         }
     }

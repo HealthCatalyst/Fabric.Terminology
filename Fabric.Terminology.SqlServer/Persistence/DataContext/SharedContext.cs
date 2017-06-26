@@ -1,14 +1,19 @@
-﻿using Fabric.Terminology.SqlServer.Models.Dto;
+﻿using System;
+using Fabric.Terminology.SqlServer.Configuration;
+using Fabric.Terminology.SqlServer.Models.Dto;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
 
 namespace Fabric.Terminology.SqlServer.Persistence.DataContext
 {
+    using JetBrains.Annotations;
+
     internal class SharedContext : DbContext
     {        
-        public SharedContext(DbContextOptions options)
+        public SharedContext(DbContextOptions options, TerminologySqlSettings settings)
             : base(options)
         {
+            this.Settings = settings;
         }
 
         public DbSet<ValueSetCodeDto> ValueSetCodes { get; set; }
@@ -17,10 +22,12 @@ namespace Fabric.Terminology.SqlServer.Persistence.DataContext
         // Used for testing
         internal bool IsInMemory { get; set; }
 
-        internal int DefaultItemsPerPage { get; set; }
+        internal TerminologySqlSettings Settings { get; }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        protected override void OnModelCreating([NotNull] ModelBuilder modelBuilder)
         {
+            if (modelBuilder == null) throw new ArgumentNullException(nameof(modelBuilder));
+            modelBuilder.Entity<ValueSetCodeDto>().ToTable("ValueSetCode", "Terminology");
             modelBuilder.Entity<ValueSetCodeDto>().Property(e => e.BindingNM).IsUnicode(false);
             modelBuilder.Entity<ValueSetCodeDto>().HasKey(code =>
                 new
@@ -34,9 +41,9 @@ namespace Fabric.Terminology.SqlServer.Persistence.DataContext
                     code.VersionDSC
                 });
 
+            modelBuilder.Entity<ValueSetDescriptionDto>().ToTable("ValueSetDescription", "Terminology");
             modelBuilder.Entity<ValueSetDescriptionDto>().Property(e => e.BindingNM).IsUnicode(false);
-            modelBuilder.Entity<ValueSetDescriptionDto>().HasKey(
-                desc => 
+            modelBuilder.Entity<ValueSetDescriptionDto>().HasKey(desc => 
                 new
                 {
                     desc.BindingID,

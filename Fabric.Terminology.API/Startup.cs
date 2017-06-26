@@ -1,24 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using Fabric.Terminology.API.Configuration;
-using Fabric.Terminology.API.DependencyInjection;
-using Fabric.Terminology.API.Logging;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Nancy.Owin;
-using Serilog;
-using Serilog.Core;
-using Serilog.Events;
-
-namespace Fabric.Terminology.API
+﻿namespace Fabric.Terminology.API
 {
+    using Fabric.Terminology.API.Configuration;
+    using Fabric.Terminology.API.Logging;
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Logging;
+    using Nancy.Owin;
+    using Serilog;
+    using Serilog.Core;
+
     public class Startup
     {
-        public IConfigurationRoot Configuration { get; }
-
         public Startup(IHostingEnvironment env)
         {
             var builder = new ConfigurationBuilder()
@@ -26,11 +20,13 @@ namespace Fabric.Terminology.API
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json");
 
-            Configuration = builder.Build();
+            this.Configuration = builder.Build();
 
             var logger = LogFactory.CreateLogger(new LoggingLevelSwitch());
             Log.Logger = logger;
         }
+
+        public IConfigurationRoot Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
@@ -42,7 +38,7 @@ namespace Fabric.Terminology.API
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IApplicationLifetime appLifetime)
         {
             var appConfig = new AppConfiguration();
-            Configuration.Bind(appConfig);
+            this.Configuration.Bind(appConfig);
 
             loggerFactory.AddSerilog();
 
@@ -53,7 +49,7 @@ namespace Fabric.Terminology.API
                 app.UseDeveloperExceptionPage();
             }
 
-            //app.UseStaticFiles(); // <- requires Microsoft.AspNetCore.StaticFiles
+            //// app.UseStaticFiles(); // <- requires Microsoft.AspNetCore.StaticFiles
             app.UseOwin()
                 .UseNancy(opt => opt.Bootstrapper = new Bootstrapper(appConfig, Log.Logger));
 

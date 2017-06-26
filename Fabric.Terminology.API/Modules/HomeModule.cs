@@ -1,17 +1,17 @@
-﻿using Fabric.Terminology.SqlServer.Configuration;
-using Nancy;
-
-namespace Fabric.Terminology.API.Modules
+﻿namespace Fabric.Terminology.API.Modules
 {
+    using Fabric.Terminology.SqlServer.Configuration;
+    using Nancy;
+
     public sealed class HomeModule : NancyModule
     {
-        private TerminologySqlSettings _settings;
+        private readonly TerminologySqlSettings _settings;
 
         public HomeModule(TerminologySqlSettings settings)
         {
-            _settings = settings;
+            this._settings = settings;
 
             Get("/", args => _settings.ConnectionString + " " + _settings.UseInMemory.ToString());
-        }       
+        }
     }
 }
