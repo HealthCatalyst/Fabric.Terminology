@@ -10,7 +10,6 @@
         public void Compose(TinyIoCContainer container)
         {
             container.Register<SharedContext>((c, p) => c.Resolve<SharedContextFactory>().Create());
-            container.Register<IValueSetCodeService, ValueSetCodeService>().AsSingleton();
             container.Register<IValueSetService, ValueSetService>().AsSingleton();
         }
     }
