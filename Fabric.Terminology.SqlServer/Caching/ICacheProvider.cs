@@ -1,4 +1,5 @@
 ﻿using System;
+using JetBrains.Annotations;
 
 namespace Fabric.Terminology.SqlServer.Caching
 {
@@ -6,6 +7,7 @@ namespace Fabric.Terminology.SqlServer.Caching
     {
         void ClearAll();
         void ClearItem(string key);
+        [CanBeNull]
         object GetItem(string key);
         object GetItem(string key, Func<object> getItem);
     }

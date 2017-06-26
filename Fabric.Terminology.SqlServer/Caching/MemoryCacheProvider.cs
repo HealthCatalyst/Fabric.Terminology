@@ -1,52 +1,61 @@
 ﻿using System;
 using System.Threading;
+using Fabric.Terminology.SqlServer.Configuration;
 using Fabric.Terminology.SqlServer.Threading;
+using JetBrains.Annotations;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Fabric.Terminology.SqlServer.Caching
 {
+    using System.Collections.Generic;
+    using System.Linq;
+
     internal class MemoryCacheProvider : IMemoryCacheProvider
     {
-        private readonly ReaderWriterLockSlim _locker = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
-        private IMemoryCache _memCache = Create();
+        private readonly ReaderWriterLockSlim locker = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
+        private IMemoryCache memCache = Create();
 
-        public MemoryCacheProvider()
+        public MemoryCacheProvider(IMemoryCacheSettings settings)
         {
+            this.Settings = settings;
             this.InstanceKey = Guid.NewGuid();
         }
+
+        public IMemoryCacheSettings Settings { get; }
 
         /// Used in tests
         internal Guid InstanceKey { get; private set; }
 
         public void ClearAll()
         {
-            using (new SlimWriterLock(_locker))
+            using (new SlimWriterLock(this.locker))
             {
-                _memCache.Dispose();
-                _memCache = Create();
+                this.memCache.Dispose();
+                this.memCache = Create();
                 this.InstanceKey = Guid.NewGuid();
             }
         }
 
         public void ClearItem(string key)
         {
-            using (new SlimWriterLock(_locker))
+            using (new SlimWriterLock(this.locker))
             {
-                if (_memCache.Get(key) == null)
+                if (this.memCache.Get(key) == null)
                 {
                     return;
                 }
-                _memCache.Remove(key);
+                this.memCache.Remove(key);
             }
         }
 
+        [CanBeNull]
         public object GetItem(string key)
         {
             object result;
-            var success = false;
-            using (new SlimWriterLock(_locker))
+            bool success;
+            using (new SlimWriterLock(this.locker))
             {
-                success = _memCache.TryGetValue(key, out result);
+                success = this.memCache.TryGetValue(key, out result);
             }
 
             return success ? result : null;
@@ -57,9 +66,19 @@ namespace Fabric.Terminology.SqlServer.Caching
             return this.GetItem(key, getItem, TimeSpan.FromMinutes(5), false);
         }
 
+        public IEnumerable<object> GetItems(params string[] cacheKeys)
+        {
+            if (!cacheKeys.Any())
+            {
+                return Enumerable.Empty<object>();
+            }
+
+            return cacheKeys.Select(this.GetItem).Where(x => x != null);
+        }
+
         public object GetItem(string key, Func<object> getItem, TimeSpan? timeout, bool isSliding = false)
         {
-            if (!_memCache.TryGetValue(key, out object value))
+            if (!this.memCache.TryGetValue(key, out object value))
             {
                 value = getItem.Invoke();
                 if (value != null)
@@ -77,7 +96,11 @@ namespace Fabric.Terminology.SqlServer.Caching
                         }
                     }
 
-                    _memCache.Set(key, value, options);
+                    this.memCache.Set(key, value, options);
+                }
+                else
+                {
+                    throw new NullReferenceException("Attempt to cache a null object.");
                 }
             }
 

@@ -1,9 +1,21 @@
 ﻿using System;
+using Fabric.Terminology.SqlServer.Configuration;
+using JetBrains.Annotations;
 
 namespace Fabric.Terminology.SqlServer.Caching
 {
+    using System.Collections.Generic;
+    using System.Linq;
+
     public class NullMemoryCacheProvider : IMemoryCacheProvider
     {
+        public NullMemoryCacheProvider(IMemoryCacheSettings settings)
+        {
+            this.Settings = settings;
+        }
+
+        public IMemoryCacheSettings Settings { get; }
+
         public void ClearAll()
         {            
         }
@@ -12,6 +24,7 @@ namespace Fabric.Terminology.SqlServer.Caching
         {         
         }
 
+        [CanBeNull]
         public object GetItem(string key)
         {
             return null;
@@ -19,7 +32,12 @@ namespace Fabric.Terminology.SqlServer.Caching
 
         public object GetItem(string key, Func<object> getItem)
         {
-            return null;
+            return getItem.Invoke();
+        }
+
+        public IEnumerable<object> GetItems(params string[] cacheKeys)
+        {
+            return Enumerable.Empty<object>();
         }
 
         public object GetItem(string cacheKey, Func<object> getItem, TimeSpan? timeout, bool isSliding = false)

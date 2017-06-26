@@ -4,10 +4,13 @@ using Fabric.Terminology.Domain.Persistence;
 
 namespace Fabric.Terminology.Domain.Services
 {
-    public class ValueSetService : TerminologyServiceBase, IValueSetService
+    public class ValueSetService : IValueSetService
     {
-        public ValueSetService(IValueSetCodeRepository valueSetCodeRepository) : base(valueSetCodeRepository)
+        private readonly IValueSetRepository repository;
+
+        public ValueSetService(IValueSetRepository valueSetRepository)
         {
+            this.repository = valueSetRepository;
         }
 
         public IValueSet Create(string name, IEnumerable<IValueSetCodeItem> valueSetCodes)
