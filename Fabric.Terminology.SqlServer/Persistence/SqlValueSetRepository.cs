@@ -15,6 +15,8 @@ using Serilog;
 
 namespace Fabric.Terminology.SqlServer.Persistence
 {
+    using System.Collections.Generic;
+
     using Fabric.Terminology.Domain.Persistence.Mapping;
 
     internal class SqlValueSetRepository : IValueSetRepository
@@ -46,6 +48,11 @@ namespace Fabric.Terminology.SqlServer.Persistence
         protected Expression<Func<ValueSetDescriptionDto, string>> SortExpression => sortBy => sortBy.ValueSetNM;
         protected DbSet<ValueSetDescriptionDto> DbSet => this.SharedContext.ValueSetDescriptions;
 
+        public bool NameExists(string name)
+        {
+            return this.DbSet.Count(dto => dto.ValueSetNM == name) > 0;
+        }
+
         [CanBeNull]
         public IValueSet GetValueSet(string valueSetId, params string[] codeSystemCodes)
         {
@@ -71,6 +78,24 @@ namespace Fabric.Terminology.SqlServer.Persistence
             return this.FindValueSetsAsync(string.Empty, pagerSettings, includeAllValueSetCodes);
         }
 
+        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(
+            IEnumerable<string> valueSetIds,
+            IPagerSettings pagerSettings,
+            bool includeAllValueSetCodes = false,
+            params string[] codeSystemCodes)
+        {
+            var setIds = valueSetIds as string[] ?? valueSetIds.ToArray();
+            if (!setIds.Any())
+            {
+                return this.FindValueSetsAsync(string.Empty, pagerSettings, includeAllValueSetCodes);
+            }
+
+            var dtos = this.DbSet.Where(dto => dto.PublicFLG == "Y" && dto.StatusCD == "Active" && setIds.Contains(dto.ValueSetID));
+
+            return this.CreatePagedCollectionAsync(dtos, pagerSettings, includeAllValueSetCodes, codeSystemCodes);
+
+        }
+
         public Task<PagedCollection<IValueSet>> FindValueSetsAsync(string nameFilterText, IPagerSettings pagerSettings, bool includeAllValueSetCodes = false, params string[] codeSystemCodes)
         {
             var dtos = this.DbSet.Where(dto => dto.PublicFLG == "Y" && dto.StatusCD == "Active");
@@ -79,7 +104,7 @@ namespace Fabric.Terminology.SqlServer.Persistence
                 dtos = dtos.Where(dto => dto.ValueSetNM.Contains(nameFilterText));
             }
 
-            return this.CreatePagedCollectionAsync(dtos, pagerSettings, includeAllValueSetCodes);
+            return this.CreatePagedCollectionAsync(dtos, pagerSettings, includeAllValueSetCodes, codeSystemCodes);
         }
 
         private async Task<PagedCollection<IValueSet>> CreatePagedCollectionAsync(

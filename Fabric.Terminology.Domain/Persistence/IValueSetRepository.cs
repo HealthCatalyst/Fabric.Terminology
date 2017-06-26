@@ -8,9 +8,11 @@ namespace Fabric.Terminology.Domain.Persistence
     using System;
     public interface IValueSetRepository
     {
+        bool NameExists(string name);
         [CanBeNull]
-        IValueSet GetValueSet(string valueSetId, params string[] codeSystemCodes);        
+        IValueSet GetValueSet(string valueSetId, params string[] codeSystemCodes);      
         Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings pagerSettings,  bool includeAllValueSetCodes = false, params string[] codeSystemCodes);
+        Task<PagedCollection<IValueSet>> GetValueSetsAsync(IEnumerable<string> valueSetIds, IPagerSettings pagerSettings, bool includeAllValueSetCodes = false, params string[] codeSystemCodes);
         Task<PagedCollection<IValueSet>> FindValueSetsAsync(string nameFilterText, IPagerSettings pagerSettings, bool includeAllValueSetCodes = false, params string[] codeSystemCodes);
     }
 }
