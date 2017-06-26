@@ -48,7 +48,7 @@ namespace Fabric.Terminology.SqlServer.Persistence
         public IReadOnlyCollection<IValueSetCode> GetValueSetCodes(string valueSetId, params string[] codeSystemCodes)
         {
             var dtos = this.DbSet
-                .Where(dto => dto.ValueSetID.Equals(valueSetId));
+                .Where(dto => dto.ValueSetID == valueSetId);
 
             if (codeSystemCodes.Any())
             {

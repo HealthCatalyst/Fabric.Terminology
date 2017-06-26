@@ -4,6 +4,7 @@ using Fabric.Terminology.Domain.Persistence;
 
 namespace Fabric.Terminology.Domain.Services
 {
+    using System;
     public class ValueSetService : IValueSetService
     {
         private readonly IValueSetRepository repository;
@@ -42,5 +43,6 @@ namespace Fabric.Terminology.Domain.Services
         {
             throw new System.NotImplementedException();
         }
+
     }
 }

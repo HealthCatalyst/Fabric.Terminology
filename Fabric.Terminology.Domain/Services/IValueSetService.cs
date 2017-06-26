@@ -3,10 +3,11 @@ using Fabric.Terminology.Domain.Models;
 
 namespace Fabric.Terminology.Domain.Services
 {
+    using System;
     /// <summary>
     /// Represents a service for interacting with ValueSets.
     /// </summary>
-    public interface IValueSetService
+    public interface IValueSetService 
     {
         IValueSet Create(string name, IEnumerable<IValueSetCodeItem> valueSetCodes);
 
