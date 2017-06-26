@@ -5,6 +5,7 @@ using JetBrains.Annotations;
 
 namespace Fabric.Terminology.Domain.Persistence
 {
+    using System;
     public interface IValueSetRepository
     {
         [CanBeNull]
