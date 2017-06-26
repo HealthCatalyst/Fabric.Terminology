@@ -62,15 +62,31 @@ namespace Fabric.Terminology.SqlServer.Persistence
                 return cached;
             }
 
-            var dto = this.DbSet
-                        .Where(vs => vs.PublicFLG == "Y" && vs.StatusCD == "Active")
-                        .FirstOrDefault(q => q.ValueSetID == valueSetId);
+            var dto = this.DbSet.FirstOrDefault(vs => vs.PublicFLG == "Y" && vs.StatusCD == "Active" && vs.ValueSetID == valueSetId);
 
             if (dto == null) return null;
 
             var mapper = new ValueSetFullCodeListMapper(this.Cache, this.valueSetCodeRepository.GetValueSetCodes, codeSystemCodes);
             
             return mapper.Map(dto);
+        }
+
+        public IReadOnlyCollection<IValueSet> GetValueSets(IEnumerable<string> valueSetIds, bool includeAllValueSetCodes = false, params string[] codeSystemCodes)
+        {
+            var setIds = valueSetIds as string[] ?? valueSetIds.ToArray();
+            var cached = setIds.Select(vsid => this.Cache.GetCachedValueSetWithAllCodes(vsid, codeSystemCodes)).Where(vs => vs != null).ToList();
+
+            var remaining = setIds.Where(id => !cached.Select(s => s.ValueSetId).Contains(id));
+
+            var dtos = this.DbSet.Where(dto => dto.PublicFLG == "Y" && dto.StatusCD == "Active" && remaining.Contains(dto.ValueSetID)).ToList();
+
+            if (dtos.Any())
+            {
+                var mapper = new ValueSetFullCodeListMapper(this.Cache, this.valueSetCodeRepository.GetValueSetCodes, codeSystemCodes);
+                cached.AddRange(dtos.Select(mapper.Map));
+            }
+
+            return cached.OrderBy(vs => vs.Name).ToList().AsReadOnly();
         }
 
         public Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings pagerSettings, bool includeAllValueSetCodes = false, params string[] codeSystemCodes)

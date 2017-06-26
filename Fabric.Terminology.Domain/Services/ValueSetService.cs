@@ -55,7 +55,7 @@ namespace Fabric.Terminology.Domain.Services
                 return Attempt<IValueSet>.Failed(new ArgumentException($"A value set named '{name}' already exists."));
             }
 
-            if (!this.ValidateValueSetMeta(meta, out string msg))
+            if (!ValidateValueSetMeta(meta, out string msg))
             {
                 return Attempt<IValueSet>.Failed(new ArgumentException(msg));
             }
@@ -92,20 +92,25 @@ namespace Fabric.Terminology.Domain.Services
                 ValueSetCodesCount = valueSetCodeItems.Length
             };
 
+            Created?.Invoke(this, valueSet);
+
             return Attempt<IValueSet>.Successful(valueSet);
         }
 
+        // TODO need a table to insert/update
         public void Save(IValueSet valueSet)
         {
             throw new System.NotImplementedException();
         }
 
+        // TODO need a table to delete
         public void Delete(IValueSet valueSet)
         {
+            // assert is custom
             throw new System.NotImplementedException();
         }
 
-        private bool ValidateValueSetMeta(IValueSetMeta meta, out string msg)
+        private static bool ValidateValueSetMeta(IValueSetMeta meta, out string msg)
         {
             msg = string.Empty;
             msg += ValidateProperty("AuthoringSourceDescription", meta.AuthoringSourceDescription);

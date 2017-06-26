@@ -9,11 +9,11 @@ namespace Fabric.Terminology.Domain.Services
     /// </summary>
     public interface IValueSetService 
     {
-        IValueSet GetValueSet(string valueSetId);
+        IValueSet GetValueSet(string valueSetId, params string[] codeSystemCodes);
 
-        IEnumerable<IValueSet> GetValueSets(IEnumerable<string> valueSetIds);
+        IEnumerable<IValueSet> GetValueSets(IEnumerable<string> valueSetIds, params string[] codeSystemCodes);
 
-        PagedCollection<IValueSet> GetValueSets(IPagerSettings settings);
+        PagedCollection<IValueSet> GetValueSets(IPagerSettings settings, params string[] codeSystemCodes);
 
         bool NameIsUnique(string name);
 
