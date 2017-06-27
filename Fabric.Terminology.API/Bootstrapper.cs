@@ -9,6 +9,7 @@
     using JetBrains.Annotations;
 
     using Nancy;
+    using Nancy.Bootstrapper;
     using Nancy.TinyIoc;
     using Serilog;
 
@@ -21,6 +22,17 @@
         {
             this.appConfig = config;
             this.logger = log;
+        }
+
+        protected override void ApplicationStartup([NotNull] TinyIoCContainer container, [NotNull] IPipelines pipelines)
+        {
+            base.ApplicationStartup(container, pipelines);
+
+            pipelines.OnError.AddItemToEndOfPipeline((ctx, ex) =>
+                {
+                    this.logger.Error(ex, "Unhandled error on request: @{Url}. Error Message: @{Message}", ctx.Request.Url, ex.Message);
+                    return ctx.Response;
+                });
         }
 
         protected override void ConfigureApplicationContainer([NotNull] TinyIoCContainer container)
