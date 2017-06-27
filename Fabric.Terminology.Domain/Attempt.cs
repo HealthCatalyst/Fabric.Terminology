@@ -1,4 +1,4 @@
-﻿namespace Fabric.Terminology.Domain.Models
+﻿namespace Fabric.Terminology.Domain
 {
     using System;
 
@@ -30,7 +30,8 @@
             return new Attempt<T>
             {
                 Success = false,
-                Result = result
+                Result = result,
+                Exception = ex
             };
         }
     }
