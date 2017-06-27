@@ -1,11 +1,8 @@
 ﻿namespace Fabric.Terminology.API.Modules
 {
     using System;
-    using System.Net.Http.Headers;
 
     using Fabric.Terminology.API.Models;
-
-    using FluentValidation;
 
     using Nancy;
     using Nancy.Responses.Negotiation;
