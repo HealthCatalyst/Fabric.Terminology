@@ -3,6 +3,8 @@
     using System;
     using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.TestsBase.Fixtures;
+    using Fabric.Terminology.TestsBase.Mocks;
+
     using FluentAssertions;
     using Xunit;
 
@@ -118,13 +120,6 @@
 
             // Assert
             cache.GetItem(Key).Should().NotBeNull();
-        }
-
-        private class TestObject
-        {
-            public string Text { get; set; }
-
-            public DateTime Stamp { get; set; }
         }
     }
 }
