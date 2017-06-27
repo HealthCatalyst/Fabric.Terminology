@@ -1,4 +1,4 @@
-﻿namespace Fabric.Terminology.Domain.Validators
+﻿namespace Fabric.Terminology.API.Validators
 {
     using System;
 
@@ -7,7 +7,6 @@
 
     using FluentValidation;
 
-    [CLSCompliant(false)]
     public class ValueSetValidator : AbstractValidator<IValueSet>
     {
         private readonly IValueSetService service;

@@ -14,16 +14,13 @@
 
     public abstract class TerminologyModule<T> : NancyModule
     {
-        protected TerminologyModule(string path, ILogger logger, AbstractValidator<T> abstractValidator)
+        protected TerminologyModule(string path, ILogger logger)
             : base(path)
         {
             this.Logger = logger;
-            this.Validator = abstractValidator;
         }
 
         protected ILogger Logger { get; }
-
-        protected AbstractValidator<T> Validator { get; }
 
         protected Negotiator CreateSuccessfulPostResponse(IIdentifiable model)
         {

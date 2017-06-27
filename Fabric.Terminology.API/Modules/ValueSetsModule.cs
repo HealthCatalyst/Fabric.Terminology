@@ -6,13 +6,15 @@
     using System.Threading.Tasks;
 
     using Fabric.Terminology.API.Configuration;
+    using Fabric.Terminology.API.Models;
+    using Fabric.Terminology.API.Validators;
     using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Exceptions;
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Services;
-    using Fabric.Terminology.Domain.Validators;
 
     using Nancy;
+    using Nancy.ModelBinding;
 
     using Serilog;
 
@@ -22,27 +24,30 @@
 
         private readonly IAppConfiguration config;
 
+        private readonly ValueSetValidator valueSetValidator;
+
         public ValueSetsModule(IValueSetService valueSetService, IAppConfiguration config, ILogger logger, ValueSetValidator valueSetValidator)
-            : base("/api/valueset", logger, valueSetValidator)
+            : base("/api/valueset", logger)
         {
             this.valueSetService = valueSetService;
             this.config = config;
+            this.valueSetValidator = valueSetValidator;
 
             this.Get("/{valueSetId}", parameters => this.GetValueSet(parameters, false));
 
-            this.Get("/valuesets/", _ => this.GetValueSets(this.valueSetService.GetValueSets, false));
+            this.Get("/valuesets/", _ => this.GetValueSets(false));
 
             this.Get("/summary/{valueSetId}", parameters => this.GetValueSet(parameters, true));
 
-            this.Get("/summaries/", _ => this.GetValueSets(this.valueSetService.GetValueSets, true));
+            this.Get("/summaries/", _ => this.GetValueSets(true));
 
             this.Get("/paged/", _ => this.GetValueSetPage(false));
 
             this.Get("/paged/summaries/", _ => this.GetValueSetPage(true));
 
-            this.Post("/find/", parameters => "something");
+            this.Post("/find/", _ => this.Find(false));
 
-            this.Post("/find/summaries/", parameters => "somethings");
+            this.Post("/find/summaries/", _ => this.Find(true));
 
             this.Post("/", _ => this.AddValueSet());
 
@@ -73,7 +78,7 @@
             }
         }
 
-        private dynamic GetValueSets(Func<string[], string[], IEnumerable<IValueSet>> query, bool summaries = true)
+        private dynamic GetValueSets(bool summaries = true)
         {
             try
             {
@@ -86,7 +91,9 @@
 
                 var codeSystemCds = this.GetCodeSystems();
 
-                var valueSets = query.Invoke(valueSetIds, codeSystemCds);
+                var valueSets = summaries
+                                    ? this.valueSetService.GetValueSetSummaries(valueSetIds, codeSystemCds)
+                                    : this.valueSetService.GetValueSets(valueSetIds, codeSystemCds);
 
                 return valueSets.Select(vs => vs.ToValueSetApiModel(summaries, this.config.ValueSetSettings.ShortListCodeCount));
             }
@@ -121,6 +128,29 @@
             }
         }
 
+        private async Task<dynamic> Find(bool summary = true)
+        {
+            try
+            {
+                var model = this.EnsureQueryModel(this.Bind<FindByTermQuery>());
+
+                var results = await this.valueSetService.FindValueSetsAsync(
+                                  model.Term,
+                                  model.PagerSettings,
+                                  !summary,
+                                  model.CodeSystemCodes.ToArray());
+
+                return results.ToValueSetApiModelPage(summary, this.config.ValueSetSettings.ShortListCodeCount);
+            }
+            catch (Exception ex)
+            {
+                this.Logger.Error(ex, ex.Message);
+                return this.CreateFailureResponse(
+                    "Failed to find the page of value sets",
+                    HttpStatusCode.BadRequest);
+            }
+        }
+
         private dynamic AddValueSet()
         {
             return this.CreateFailureResponse("Not implemented", HttpStatusCode.NotImplemented);
@@ -140,6 +170,30 @@
                 CurrentPage = cp == 0 ? 1 : cp,
                 ItemsPerPage = count == 0 ? this.config.TerminologySqlSettings.DefaultItemsPerPage : count
             };
+        }
+
+        private FindByTermQuery EnsureQueryModel(FindByTermQuery model)
+        {
+            if (model.PagerSettings == null)
+            {
+                model.PagerSettings = new PagerSettings
+                {
+                    CurrentPage = 1,
+                    ItemsPerPage = this.config.TerminologySqlSettings.DefaultItemsPerPage
+                };
+            }
+
+            if (model.CodeSystemCodes == null)
+            {
+                model.CodeSystemCodes = Enumerable.Empty<string>();
+            }
+
+            if (model.Term == null)
+            {
+                model.Term = string.Empty;
+            }
+
+            return model;
         }
 
         private string[] CreateParameterArray(string value)
