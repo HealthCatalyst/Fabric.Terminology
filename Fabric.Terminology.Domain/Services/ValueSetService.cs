@@ -8,6 +8,9 @@ namespace Fabric.Terminology.Domain.Services
     using System.IO;
     using System.Linq;
     using System.Linq.Expressions;
+    using System.Threading.Tasks;
+
+    using JetBrains.Annotations;
 
     public class ValueSetService : IValueSetService
     {
@@ -28,19 +31,33 @@ namespace Fabric.Terminology.Domain.Services
         
         #endregion
         
-        public IValueSet GetValueSet(string valueSetId)
+        [CanBeNull]
+        public IValueSet GetValueSet(string valueSetId, params string[] codeSystemCodes)
         {
-            throw new System.NotImplementedException();
+            return this.repository.GetValueSet(valueSetId, codeSystemCodes);
         }
 
-        public IEnumerable<IValueSet> GetValueSets(IEnumerable<string> valueSetIds)
+        public IEnumerable<IValueSet> GetValueSets(IEnumerable<string> valueSetIds, params string[] codeSystemCodes)
         {
-            throw new System.NotImplementedException();
+            return this.repository.GetValueSets(valueSetIds, false, codeSystemCodes);
         }
 
-        public PagedCollection<IValueSet> GetValueSets(IPagerSettings settings)
+        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings settings, params string[] codeSystemCodes)
         {
-            throw new System.NotImplementedException();
+            return this.repository.GetValueSetsAsync(settings, false, codeSystemCodes);
+        }
+
+        public Task<PagedCollection<IValueSet>> FindValueSetsAsync(
+            string nameFilterText,
+            IPagerSettings pagerSettings,
+            bool includeAllValueSetCodes = false,
+            params string[] codeSystemCodes)
+        {
+            return this.repository.FindValueSetsAsync(
+                nameFilterText,
+                pagerSettings,
+                includeAllValueSetCodes,
+                codeSystemCodes);
         }
 
         public bool NameIsUnique(string name)

@@ -11,14 +11,15 @@
         {
             this.ValueSetService = valueSetService ?? throw new ArgumentNullException(nameof(valueSetService));
 
-            Get("/", arg => "Gets value sets");
-            Get("/summary/{valueSetId}", args => "test");
+            this.Get("/", arg => "Gets value sets");
+            this.Get("/summary/{valueSetId}", args => "test");
 
-            Get("/summaries/", args => "something");
+            this.Get("/summaries/", args => "something");
 
-            Post("/find/", _ => "something");
+            this.Post("/find/", _ => "something");
         }
 
         private IValueSetService ValueSetService { get; }
+
     }
 }

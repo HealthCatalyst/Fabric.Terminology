@@ -1,7 +1,12 @@
 ﻿namespace Fabric.Terminology.API
 {
+    using AutoMapper;
+
     using Fabric.Terminology.API.Configuration;
     using Fabric.Terminology.API.Logging;
+    using Fabric.Terminology.API.Models;
+    using Fabric.Terminology.Domain.Models;
+
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.Configuration;
@@ -49,7 +54,15 @@
                 app.UseDeveloperExceptionPage();
             }
 
-            //// app.UseStaticFiles(); // <- requires Microsoft.AspNetCore.StaticFiles
+            Log.Logger.Information("Initializing AutoMapper");
+            Mapper.Initialize(
+                cfg =>
+                    {
+                        cfg.CreateMap<IValueSet, ValueSetItem>();
+                        cfg.CreateMap<IValueSetCode, ValueSetCodeItem>()
+                            .ForMember(dest => dest.CodeSystemCode, opt => opt.MapFrom(src => src.CodeSystem.Code));
+                    });
+
             app.UseOwin()
                 .UseNancy(opt => opt.Bootstrapper = new Bootstrapper(appConfig, Log.Logger));
 
