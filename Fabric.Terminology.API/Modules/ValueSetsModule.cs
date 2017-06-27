@@ -43,6 +43,10 @@
             this.Post("/find/", parameters => "something");
 
             this.Post("/find/summaries/", parameters => "somethings");
+
+            this.Post("/", _ => this.AddValueSet());
+
+            this.Delete("/{valueSetId}", parameters => this.DeleteValueSet(parameters));
         }
 
         private dynamic GetValueSet(dynamic parameters, bool summary = true)
@@ -115,6 +119,16 @@
                     "Failed to retrieve the page of value sets",
                     HttpStatusCode.BadRequest);
             }
+        }
+
+        private dynamic AddValueSet()
+        {
+            return this.CreateFailureResponse("Not implemented", HttpStatusCode.NotImplemented);
+        }
+
+        private dynamic DeleteValueSet(dynamic parameters)
+        {
+            return this.CreateFailureResponse("Not implemented", HttpStatusCode.NotImplemented);
         }
 
         private IPagerSettings GetPagerSettings()
