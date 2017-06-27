@@ -39,10 +39,20 @@ namespace Fabric.Terminology.Domain.Services
 
         public IEnumerable<IValueSet> GetValueSets(IEnumerable<string> valueSetIds, params string[] codeSystemCodes)
         {
+            return this.repository.GetValueSets(valueSetIds, true, codeSystemCodes);
+        }
+
+        public IEnumerable<IValueSet> GetValueSetSummaries(IEnumerable<string> valueSetIds, params string[] codeSystemCodes)
+        {
             return this.repository.GetValueSets(valueSetIds, false, codeSystemCodes);
         }
 
         public Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings settings, params string[] codeSystemCodes)
+        {
+            return this.repository.GetValueSetsAsync(settings, true, codeSystemCodes);
+        }
+
+        public Task<PagedCollection<IValueSet>> GetValueSetSummariesAsync(IPagerSettings settings, params string[] codeSystemCodes)
         {
             return this.repository.GetValueSetsAsync(settings, false, codeSystemCodes);
         }

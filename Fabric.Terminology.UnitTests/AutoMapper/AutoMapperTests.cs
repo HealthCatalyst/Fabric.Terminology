@@ -74,7 +74,7 @@
             };
 
             // Act
-            var mapped = Mapper.Map<IValueSet, ValueSetItem>(valueSet);
+            var mapped = Mapper.Map<IValueSet, ValueSetApiModel>(valueSet);
 
             // Assert
             mapped.Should().NotBeNull();
@@ -86,6 +86,7 @@
             mapped.ValueSetCodesCount.ShouldBeEquivalentTo(valueSet.ValueSetCodesCount);
             mapped.AllCodesLoaded.ShouldBeEquivalentTo(valueSet.AllCodesLoaded);
             mapped.ValueSetCodes.Count.Should().Be(3);
+            mapped.Identifier.ShouldBeEquivalentTo(valueSet.ValueSetId);
 
             // code assertions
             var code1 = mapped.ValueSetCodes.FirstOrDefault(code => code.Code == "code1");

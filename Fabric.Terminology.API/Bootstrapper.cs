@@ -2,6 +2,7 @@
 {
     using Fabric.Terminology.API.Configuration;
     using Fabric.Terminology.API.DependencyInjection;
+    using Fabric.Terminology.Domain.Validators;
     using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Configuration;
 
@@ -51,6 +52,7 @@
 
             container.ComposeFrom<SqlRequestComposition>();
             container.ComposeFrom<ServicesRequestComposition>();
+            container.Register<ValueSetValidator>();
         }
     }
 }

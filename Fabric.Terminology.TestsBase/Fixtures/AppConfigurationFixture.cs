@@ -17,8 +17,8 @@
             Mapper.Initialize(
                 cfg =>
                     {
-                        cfg.CreateMap<IValueSet, ValueSetItem>();
-                        cfg.CreateMap<IValueSetCode, ValueSetCodeItem>()
+                        cfg.CreateMap<IValueSet, ValueSetApiModel>();
+                        cfg.CreateMap<IValueSetCode, ValueSetCodeApiModel>()
                             .ForMember(dest => dest.CodeSystemCode, opt => opt.MapFrom(src => src.CodeSystem.Code));
                     });
 

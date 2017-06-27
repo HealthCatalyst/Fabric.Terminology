@@ -1,6 +1,6 @@
 ﻿namespace Fabric.Terminology.API.Models
 {
-    public class ValueSetCodeItem
+    public class ValueSetCodeApiModel
     {
         public string Code { get; set; }
 

@@ -2,10 +2,10 @@
 {
     using System.Collections.Generic;
 
-    using Fabric.Terminology.Domain.Models;
-
-    public class ValueSetItem
+    public class ValueSetApiModel : IIdentifiable
     {
+        public string Identifier { get; set; }
+
         public string AuthoringSourceDescription { get; set; }
 
         public string PurposeDescription { get; set; }
@@ -24,6 +24,6 @@
 
         public int ValueSetCodesCount { get; set; }
 
-        public IReadOnlyCollection<ValueSetCodeItem> ValueSetCodes { get; set; }
+        public IReadOnlyCollection<ValueSetCodeApiModel> ValueSetCodes { get; set; }
     }
 }
