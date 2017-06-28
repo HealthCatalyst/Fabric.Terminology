@@ -33,25 +33,25 @@
             this.config = config;
             this.valueSetValidator = valueSetValidator;
 
-            this.Get("/{valueSetId}", parameters => this.GetValueSet(parameters, false));
+            this.Get("/{valueSetId}", parameters => this.GetValueSet(parameters, false), null, "GetValueSet");
 
-            this.Get("/valuesets/", _ => this.GetValueSets(false));
+            this.Get("/valuesets/", _ => this.GetValueSets(false), null, "GetValueSets");
 
-            this.Get("/summary/{valueSetId}", parameters => this.GetValueSet(parameters, true));
+            this.Get("/summary/{valueSetId}", parameters => this.GetValueSet(parameters, true), null, "GetSummary");
 
-            this.Get("/summaries/", _ => this.GetValueSets(true));
+            this.Get("/summaries/", _ => this.GetValueSets(true), null, "GetSummaries");
 
-            this.Get("/paged/", _ => this.GetValueSetPage(false));
+            this.Get("/paged/", _ => this.GetValueSetPage(false), null, "GetPaged");
 
-            this.Get("/paged/summaries/", _ => this.GetValueSetPage(true));
+            this.Get("/paged/summaries/", _ => this.GetValueSetPage(true), null, "GetPagedSummaries");
 
-            this.Post("/find/", _ => this.Find(false));
+            this.Post("/find/", _ => this.Find(false), null, "Find");
 
-            this.Post("/find/summaries/", _ => this.Find(true));
+            this.Post("/find/summaries/", _ => this.Find(true), null, "FindSummaries");
 
-            this.Post("/", _ => this.AddValueSet());
+            this.Post("/", _ => this.AddValueSet(), null, "AddValueSet");
 
-            this.Delete("/{valueSetId}", parameters => this.DeleteValueSet(parameters));
+            this.Delete("/{valueSetId}", parameters => this.DeleteValueSet(parameters), null, "DeleteValueSet");
         }
 
         private dynamic GetValueSet(dynamic parameters, bool summary = true)

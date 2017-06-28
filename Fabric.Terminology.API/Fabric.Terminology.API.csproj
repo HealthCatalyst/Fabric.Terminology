@@ -36,6 +36,7 @@
     <Folder Include="wwwroot\" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Fabric.Terminology.API.Swagger\Fabric.Terminology.API.Swagger.csproj" />
     <ProjectReference Include="..\Fabric.Terminology.Domain\Fabric.Terminology.Domain.csproj" />
     <ProjectReference Include="..\Fabric.Terminology.SqlServer\Fabric.Terminology.SqlServer.csproj" />
   </ItemGroup>
