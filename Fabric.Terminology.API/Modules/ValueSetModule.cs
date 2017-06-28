@@ -18,7 +18,7 @@
 
     using Serilog;
 
-    public sealed class ValueSetsModule : TerminologyModule<IValueSet>
+    public sealed class ValueSetModule : TerminologyModule<IValueSet>
     {
         private readonly IValueSetService valueSetService;
 
@@ -26,8 +26,8 @@
 
         private readonly ValueSetValidator valueSetValidator;
 
-        public ValueSetsModule(IValueSetService valueSetService, IAppConfiguration config, ILogger logger, ValueSetValidator valueSetValidator)
-            : base("/api/valueset", logger)
+        public ValueSetModule(IValueSetService valueSetService, IAppConfiguration config, ILogger logger, ValueSetValidator valueSetValidator)
+            : base($"/{TerminologyVersion.Route}/valueset", logger)
         {
             this.valueSetService = valueSetService;
             this.config = config;

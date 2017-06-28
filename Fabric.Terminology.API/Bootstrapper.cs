@@ -6,10 +6,14 @@
     using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Configuration;
 
+    using global::Swagger.ObjectModel;
+
     using JetBrains.Annotations;
 
     using Nancy;
     using Nancy.Bootstrapper;
+    using Nancy.Conventions;
+    using Nancy.Swagger.Services;
     using Nancy.TinyIoc;
     using Serilog;
 
@@ -26,6 +30,11 @@
 
         protected override void ApplicationStartup([NotNull] TinyIoCContainer container, [NotNull] IPipelines pipelines)
         {
+            SwaggerMetadataProvider.SetInfo("Shared Terminology Data Services", TerminologyVersion.SemanticVersion.ToString(), "Shared Terminology Data Services - Fabric.Terminology.API", new Contact()
+            {
+                EmailAddress = "terminology-api@healthcatalyst.com"
+            });
+
             base.ApplicationStartup(container, pipelines);
 
             pipelines.OnError.AddItemToEndOfPipeline((ctx, ex) =>
@@ -33,6 +42,13 @@
                     this.logger.Error(ex, "Unhandled error on request: @{Url}. Error Message: @{Message}", ctx.Request.Url, ex.Message);
                     return ctx.Response;
                 });
+        }
+
+        protected override void ConfigureConventions([NotNull] NancyConventions nancyConventions)
+        {
+            base.ConfigureConventions(nancyConventions);
+
+            nancyConventions.StaticContentsConventions.AddDirectory("/swagger");
         }
 
         protected override void ConfigureApplicationContainer([NotNull] TinyIoCContainer container)
@@ -65,6 +81,13 @@
             container.ComposeFrom<SqlRequestComposition>();
             container.ComposeFrom<ServicesRequestComposition>();
             container.Register<ValueSetValidator>();
+        }
+
+        protected override void RequestStartup([NotNull] TinyIoCContainer container, [NotNull] IPipelines pipelines, [NotNull] NancyContext context)
+        {
+            base.RequestStartup(container, pipelines, context);
+
+            pipelines.AfterRequest.AddItemToEndOfPipeline(x => x.Response.Headers.Add("Access-Control-Allow-Origin", "*"));
         }
     }
 }
