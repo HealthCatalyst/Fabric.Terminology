@@ -1,7 +1,6 @@
 ﻿namespace Fabric.Terminology.API.Modules
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
 
@@ -94,7 +93,7 @@
                                     ? this.valueSetService.GetValueSetSummaries(valueSetIds, codeSystemCds)
                                     : this.valueSetService.GetValueSets(valueSetIds, codeSystemCds);
 
-                return valueSets.Select(vs => vs.ToValueSetApiModel(summaries, this.config.ValueSetSettings.ShortListCodeCount));
+                return valueSets.Select(vs => vs.ToValueSetApiModel(summaries, this.config.ValueSetSettings.ShortListCodeCount)).ToList();
             }
             catch (Exception ex)
             {
