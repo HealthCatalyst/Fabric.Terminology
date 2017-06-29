@@ -54,7 +54,7 @@
             this.Delete("/{valueSetId}", parameters => this.DeleteValueSet(parameters));
         }
 
-        private dynamic GetValueSet(dynamic parameters, bool summary = true)
+        private object GetValueSet(dynamic parameters, bool summary = true)
         {
             try
             {
@@ -78,7 +78,7 @@
             }
         }
 
-        private dynamic GetValueSets(bool summaries = true)
+        private object GetValueSets(bool summaries = true)
         {
             try
             {
@@ -106,7 +106,7 @@
             }
         }
 
-        private async Task<dynamic> GetValueSetPage(bool summary = true)
+        private async Task<object> GetValueSetPage(bool summary = true)
         {
             try
             {
@@ -128,7 +128,7 @@
             }
         }
 
-        private async Task<dynamic> Find(bool summary = true)
+        private async Task<object> Find(bool summary = true)
         {
             try
             {
@@ -151,12 +151,12 @@
             }
         }
 
-        private dynamic AddValueSet()
+        private object AddValueSet()
         {
             return this.CreateFailureResponse("Not implemented", HttpStatusCode.NotImplemented);
         }
 
-        private dynamic DeleteValueSet(dynamic parameters)
+        private object DeleteValueSet(dynamic parameters)
         {
             return this.CreateFailureResponse("Not implemented", HttpStatusCode.NotImplemented);
         }
