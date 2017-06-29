@@ -1,21 +1,19 @@
-using System.Collections.Generic;
-using Fabric.Terminology.Domain.Models;
-using Fabric.Terminology.Domain.Persistence;
-
 namespace Fabric.Terminology.Domain.Services
 {
     using System;
-    using System.IO;
+    using System.Collections.Generic;
     using System.Linq;
-    using System.Linq.Expressions;
     using System.Threading.Tasks;
+
+    using Fabric.Terminology.Domain.Models;
+    using Fabric.Terminology.Domain.Persistence;
 
     using JetBrains.Annotations;
 
     public class ValueSetService : IValueSetService
     {
         private readonly IValueSetRepository repository;
-        
+
         public ValueSetService(IValueSetRepository valueSetRepository)
         {
             this.repository = valueSetRepository;
@@ -24,35 +22,43 @@ namespace Fabric.Terminology.Domain.Services
         #region Events
 
         public static event EventHandler<IValueSet> Created;
+
         public static event EventHandler<IValueSet> Saving;
+
         public static event EventHandler<IValueSet> Saved;
+
         public static event EventHandler<IValueSet> Deleting;
-        public static event EventHandler<IValueSet> Deleted; 
-        
+
+        public static event EventHandler<IValueSet> Deleted;
+
         #endregion
-        
+
         [CanBeNull]
         public IValueSet GetValueSet(string valueSetId, params string[] codeSystemCodes)
         {
             return this.repository.GetValueSet(valueSetId, codeSystemCodes);
         }
 
-        public IEnumerable<IValueSet> GetValueSets(IEnumerable<string> valueSetIds, params string[] codeSystemCodes)
+        public IEnumerable<IValueSet> GetValueSets(IReadOnlyCollection<string> valueSetIds, params string[] codeSystemCodes)
         {
             return this.repository.GetValueSets(valueSetIds, true, codeSystemCodes);
         }
 
-        public IEnumerable<IValueSet> GetValueSetSummaries(IEnumerable<string> valueSetIds, params string[] codeSystemCodes)
+        public IEnumerable<IValueSet> GetValueSetSummaries(IReadOnlyCollection<string> valueSetIds, params string[] codeSystemCodes)
         {
             return this.repository.GetValueSets(valueSetIds, false, codeSystemCodes);
         }
 
-        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings settings, params string[] codeSystemCodes)
+        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(
+            IPagerSettings settings,
+            params string[] codeSystemCodes)
         {
             return this.repository.GetValueSetsAsync(settings, true, codeSystemCodes);
         }
 
-        public Task<PagedCollection<IValueSet>> GetValueSetSummariesAsync(IPagerSettings settings, params string[] codeSystemCodes)
+        public Task<PagedCollection<IValueSet>> GetValueSetSummariesAsync(
+            IPagerSettings settings,
+            params string[] codeSystemCodes)
         {
             return this.repository.GetValueSetsAsync(settings, false, codeSystemCodes);
         }
@@ -103,18 +109,18 @@ namespace Fabric.Terminology.Domain.Services
                 PurposeDescription = meta.PurposeDescription,
                 SourceDescription = meta.SourceDescription,
                 VersionDescription = meta.VersionDescription,
-                ValueSetCodes = valueSetCodeItems
-                    .Select(
-                        code => new ValueSetCode
-                        {
-                            Code = code.Code,
-                            CodeSystem = new ValueSetCodeSystem { Code = code.CodeSystemCode },
-                            Name = code.Name,
-                            RevisionDate = null,
-                            ValueSetId = valueSetId
-                        })
-                    .ToList()
-                    .AsReadOnly(),
+                ValueSetCodes =
+                    valueSetCodeItems.Select(
+                            code => new ValueSetCode
+                            {
+                                Code = code.Code,
+                                CodeSystem = new ValueSetCodeSystem { Code = code.CodeSystemCode },
+                                Name = code.Name,
+                                RevisionDate = null,
+                                ValueSetId = valueSetId
+                            })
+                        .ToList()
+                        .AsReadOnly(),
                 IsCustom = true,
                 ValueSetCodesCount = valueSetCodeItems.Length
             };

@@ -11,10 +11,7 @@
         {
             this.Describe["Ping"] = description => description.AsSwagger(
                 with => with.Operation(
-                    op => op.OperationId("Ping")
-                        .Tag("BaseApi")
-                        .Summary("Ping")
-                        .Response(r => r.Description("OK"))));
+                    op => op.OperationId("Ping").Tag("BaseApi").Summary("Ping").Response(r => r.Description("OK"))));
         }
     }
 }

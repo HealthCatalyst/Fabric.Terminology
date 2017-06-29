@@ -1,10 +1,10 @@
-﻿using System;
-using System.Data.SqlClient;
-
-using Fabric.Terminology.Domain;
-
-namespace Fabric.Terminology.SqlServer.Persistence
+﻿namespace Fabric.Terminology.SqlServer.Persistence
 {
+    using System;
+    using System.Data.SqlClient;
+
+    using Fabric.Terminology.Domain;
+
     internal class SqlConnectionFactory : ISqlConnectionFactory
     {
         private readonly string connString;
