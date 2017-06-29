@@ -16,9 +16,9 @@ namespace Fabric.Terminology.Domain.Services
         [CanBeNull]
         IValueSet GetValueSet(string valueSetId, params string[] codeSystemCodes);
 
-        IEnumerable<IValueSet> GetValueSets(IEnumerable<string> valueSetIds, params string[] codeSystemCodes);
+        IEnumerable<IValueSet> GetValueSets(IReadOnlyCollection<string> valueSetIds, params string[] codeSystemCodes);
 
-        IEnumerable<IValueSet> GetValueSetSummaries(IEnumerable<string> valueSetIds, params string[] codeSystemCodes);
+        IEnumerable<IValueSet> GetValueSetSummaries(IReadOnlyCollection<string> valueSetIds, params string[] codeSystemCodes);
 
         Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings settings, params string[] codeSystemCodes);
 
