@@ -16,9 +16,9 @@ namespace Fabric.Terminology.Domain.Services
         [CanBeNull]
         IValueSet GetValueSet(string valueSetId, params string[] codeSystemCodes);
 
-        IEnumerable<IValueSet> GetValueSets(IReadOnlyCollection<string> valueSetIds, params string[] codeSystemCodes);
+        IReadOnlyCollection<IValueSet> GetValueSets(IReadOnlyCollection<string> valueSetIds, params string[] codeSystemCodes);
 
-        IEnumerable<IValueSet> GetValueSetSummaries(IReadOnlyCollection<string> valueSetIds, params string[] codeSystemCodes);
+        IReadOnlyCollection<IValueSet> GetValueSetSummaries(IReadOnlyCollection<string> valueSetIds, params string[] codeSystemCodes);
 
         Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings settings, params string[] codeSystemCodes);
 
@@ -28,7 +28,7 @@ namespace Fabric.Terminology.Domain.Services
 
         bool NameIsUnique(string name);
 
-        Attempt<IValueSet> Create(string name, IValueSetMeta meta, IEnumerable<IValueSetCodeItem> valueSetCodes);
+        Attempt<IValueSet> Create(string name, IValueSetMeta meta, IReadOnlyCollection<IValueSetCodeItem> valueSetCodes);
 
         void Save(IValueSet valueSet);
 
