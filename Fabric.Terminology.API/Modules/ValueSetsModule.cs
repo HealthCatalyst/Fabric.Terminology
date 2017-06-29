@@ -202,7 +202,7 @@
             }
 
             var cds = value.Split(',');
-            return cds.Select(cd => cd.Trim()).ToArray();
+            return cds.Select(cd => cd.Trim()).Where(cd => !cd.IsNullOrWhiteSpace()).ToArray();
         }
 
         private string[] GetCodeSystems()
