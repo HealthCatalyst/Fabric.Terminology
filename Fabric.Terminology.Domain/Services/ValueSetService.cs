@@ -139,13 +139,15 @@ namespace Fabric.Terminology.Domain.Services
 
         private static bool ValidateValueSetMeta(IValueSetMeta meta, out string msg)
         {
-            msg = string.Empty;
-            msg += ValidateProperty("AuthoringSourceDescription", meta.AuthoringSourceDescription);
-            msg += ValidateProperty("PurposeDescription", meta.PurposeDescription);
-            msg += ValidateProperty("SourceDescription", meta.SourceDescription);
-            msg += ValidateProperty("VersionDescription", meta.VersionDescription);
+            var errors = new List<string>
+            {
+                ValidateProperty(nameof(meta.AuthoringSourceDescription), meta.AuthoringSourceDescription),
+                ValidateProperty(nameof(meta.PurposeDescription), meta.PurposeDescription),
+                ValidateProperty(nameof(meta.SourceDescription), meta.SourceDescription),
+                ValidateProperty(nameof(meta.VersionDescription), meta.VersionDescription)
+            };
 
-            msg = msg.Trim();
+            msg = string.Join(", ", errors.Where(x => !x.IsNullOrWhiteSpace()));
 
             return msg.IsNullOrWhiteSpace();
         }
