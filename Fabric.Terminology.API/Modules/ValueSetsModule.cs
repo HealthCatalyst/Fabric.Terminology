@@ -67,7 +67,7 @@
                     return valueSet.ToValueSetApiModel(summary, this.config.ValueSetSettings.ShortListCodeCount);
                 }
 
-                throw new NullReferenceException();
+                throw new ValueSetNotFoundException();
             }
             catch (ValueSetNotFoundException ex)
             {
