@@ -8,7 +8,6 @@
     {
         public bool Success { get; private set; }
 
-        // TODO replace with Maybe?
         [CanBeNull]
         public T Result { get; private set; }
 
