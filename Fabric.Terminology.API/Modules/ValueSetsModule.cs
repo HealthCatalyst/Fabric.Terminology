@@ -33,11 +33,11 @@
             this.config = config;
             this.valueSetValidator = valueSetValidator;
 
-            this.Get("/{valueSetId}", parameters => this.GetValueSet(parameters, false));
+            this.Get("/{valueSetId}", parameters => this.GetValueSet(parameters.valueSetId, false));
 
             this.Get("/valuesets/", _ => this.GetValueSets(false));
 
-            this.Get("/summary/{valueSetId}", parameters => this.GetValueSet(parameters, true));
+            this.Get("/summary/{valueSetId}", parameters => this.GetValueSet(parameters.valueSetId, true));
 
             this.Get("/summaries/", _ => this.GetValueSets(true));
 
@@ -54,11 +54,10 @@
             this.Delete("/{valueSetId}", parameters => this.DeleteValueSet(parameters));
         }
 
-        private object GetValueSet(dynamic parameters, bool summary = true)
+        private object GetValueSet(string valueSetId, bool summary = true)
         {
             try
             {
-                var valueSetId = parameters.valueSetId.ToString();
                 var codeSystems = this.GetCodeSystems();
 
                 IValueSet valueSet = this.valueSetService.GetValueSet(valueSetId, codeSystems);
@@ -71,9 +70,9 @@
             }
             catch (ValueSetNotFoundException ex)
             {
-                this.Logger.Error(ex, ex.Message, parameters.valueSetId);
+                this.Logger.Error(ex, ex.Message, valueSetId);
                 return this.CreateFailureResponse(
-                    $"The ValueSet with id: {parameters.valueSetId} was not found.",
+                    $"The ValueSet with id: {valueSetId} was not found.",
                     HttpStatusCode.BadRequest);
             }
         }
