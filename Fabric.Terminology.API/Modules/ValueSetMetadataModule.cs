@@ -1,8 +1,10 @@
 ﻿namespace Fabric.Terminology.API.Modules
 {
-    using Fabric.Terminology.API.Configuration;
+    using System.Collections.Generic;
+
     using Fabric.Terminology.API.MetaData;
     using Fabric.Terminology.API.Models;
+    using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.SqlServer.Configuration;
 
     using Nancy.Swagger;
@@ -10,14 +12,12 @@
     using Nancy.Swagger.Services;
     using Nancy.Swagger.Services.RouteUtils;
 
-    using Swagger.ObjectModel;
-
     public class ValueSetMetadataModule : SwaggerMetadataModule
     {
         public ValueSetMetadataModule(ISwaggerModelCatalog modelCatalog, ISwaggerTagCatalog tagCatalog, TerminologySqlSettings settings)
             : base(modelCatalog, tagCatalog)
         {
-            modelCatalog.AddModels(typeof(ValueSetApiModel), typeof(ValueSetCodeApiModel));
+            modelCatalog.AddModels(typeof(ValueSetApiModel), typeof(ValueSetCodeApiModel), typeof(FindByTermQuery), typeof(PagerSettings), typeof(PagedCollection<ValueSetApiModel>));
 
             // /{valueSetId}
             this.RouteDescriber.DescribeRouteWithParams(
@@ -26,7 +26,7 @@
                 "Gets a ValueSet by it's ValueSetId",
                 new[]
                 {
-                    new HttpResponseMetadata { Code = 200, Message = "OK" },
+                    new HttpResponseMetadata<ValueSetApiModel> { Code = 200, Message = "OK" },
                     new HttpResponseMetadata { Code = 400, Message = "Bad Request" }
                 },
                 new[]
@@ -46,7 +46,7 @@
                 "Gets a ValueSet Summary by it's ValueSetId",
                 new[]
                 {
-                   new HttpResponseMetadata { Code = 200, Message = "OK" },
+                   new HttpResponseMetadata<ValueSetApiModel> { Code = 200, Message = "OK" },
                    new HttpResponseMetadata { Code = 400, Message = "Bad Request" }
                 },
                 new[]
@@ -66,7 +66,7 @@
                 "Gets a collection of ValueSets by an array of ValueSetId(s)",
                 new[]
                 {
-                    new HttpResponseMetadata { Code = 200, Message = "OK" },
+                    new HttpResponseMetadata<IEnumerable<ValueSetApiModel>> { Code = 200, Message = "OK" },
                     new HttpResponseMetadata { Code = 400, Message = "Bad Request" }
                 },
                 new[]
@@ -86,7 +86,7 @@
                 "Gets a collection of ValueSet Summaries by an array of ValueSetId(s)",
                 new[]
                 {
-                    new HttpResponseMetadata { Code = 200, Message = "OK" },
+                    new HttpResponseMetadata<IEnumerable<ValueSetApiModel>> { Code = 200, Message = "OK" },
                     new HttpResponseMetadata { Code = 400, Message = "Bad Request" }
                 },
                 new[]
@@ -105,7 +105,7 @@
                 "Gets a paged collection of ValueSets",
                 new[]
                 {
-                    new HttpResponseMetadata { Code = 200, Message = "OK" },
+                    new HttpResponseMetadata<PagedCollection<ValueSetApiModel>> { Code = 200, Message = "OK" },
                     new HttpResponseMetadata { Code = 400, Message = "Bad Request" }
                 },
                 new[]
@@ -125,7 +125,7 @@
                 "Gets a paged collection of ValueSet summaries",
                 new[]
                 {
-                    new HttpResponseMetadata { Code = 200, Message = "OK" },
+                    new HttpResponseMetadata<PagedCollection<ValueSetApiModel>> { Code = 200, Message = "OK" },
                     new HttpResponseMetadata { Code = 400, Message = "Bad Request" }
                 },
                 new[]
@@ -137,6 +137,42 @@
                 new[]
                 {
                     TagsFactory.GetValueSetPagedTag()
+                });
+
+            this.RouteDescriber.DescribeRouteWithParams(
+                "Find",
+                "Search by 'Name' of ValueSet operation",
+                "Gets a paged collection of ValueSet's matching the 'Name' filter",
+                new[]
+                {
+                    new HttpResponseMetadata<PagedCollection<ValueSetApiModel>> { Code = 200, Message = "OK" },
+                    new HttpResponseMetadata { Code = 400, Message = "Bad Request" }
+                },
+                new[]
+                {
+                    new BodyParameter<FindByTermQuery>(modelCatalog) { Required = false }
+                },
+                new[]
+                {
+                    TagsFactory.GetValueSetFindTag()
+                });
+
+            this.RouteDescriber.DescribeRouteWithParams(
+                "FindSummaries",
+                "Search by 'Name' of ValueSet operation",
+                "Gets a paged collection of ValueSet summaries matching the 'Name' filter",
+                new[]
+                {
+                    new HttpResponseMetadata<PagedCollection<ValueSetApiModel>> { Code = 200, Message = "OK" },
+                    new HttpResponseMetadata { Code = 400, Message = "Bad Request" }
+                },
+                new[]
+                {
+                    new BodyParameter<FindByTermQuery>(modelCatalog) { Required = false }
+                },
+                new[]
+                {
+                    TagsFactory.GetValueSetFindTag()
                 });
         }
     }

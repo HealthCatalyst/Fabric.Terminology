@@ -26,9 +26,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="wwwroot\index.html">
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
     <Content Include="wwwroot\swagger\favicon-16x16.png" />
     <Content Include="wwwroot\swagger\favicon-32x32.png" />
     <Content Include="wwwroot\swagger\index.html" />

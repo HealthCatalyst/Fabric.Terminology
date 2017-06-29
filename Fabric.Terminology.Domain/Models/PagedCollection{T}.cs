@@ -6,7 +6,7 @@ namespace Fabric.Terminology.Domain.Models
     public class PagedCollection<T> 
     {
         public int TotalItems { get; set; } = 0;
-        public IPagerSettings PagerSettings { get; set; } = new PagerSettings();
+        public PagerSettings PagerSettings { get; set; } = new PagerSettings();
         public int TotalPages { get; set; } = 0;
         public IReadOnlyCollection<T> Items { get; set; } = new List<T>().AsReadOnly();
 
