@@ -46,6 +46,7 @@ namespace Fabric.Terminology.SqlServer.Persistence
         protected virtual IMemoryCacheProvider Cache { get; }
 
         protected Expression<Func<ValueSetDescriptionDto, string>> SortExpression => sortBy => sortBy.ValueSetNM;
+
         protected DbSet<ValueSetDescriptionDto> DbSet => this.SharedContext.ValueSetDescriptions;
 
         public bool NameExists(string name)
@@ -62,7 +63,7 @@ namespace Fabric.Terminology.SqlServer.Persistence
                 return cached;
             }
 
-            var dto = this.DbSet.FirstOrDefault(vs => vs.PublicFLG == "Y" && vs.StatusCD == "Active" && vs.ValueSetID == valueSetId);
+            var dto = this.DbSet.Where(GetBaseExpression()).FirstOrDefault(vs => vs.ValueSetID == valueSetId);
 
             if (dto == null) return null;
 
@@ -78,7 +79,7 @@ namespace Fabric.Terminology.SqlServer.Persistence
 
             var remaining = setIds.Where(id => !cached.Select(s => s.ValueSetId).Contains(id));
 
-            var dtos = this.DbSet.Where(dto => dto.PublicFLG == "Y" && dto.StatusCD == "Active" && remaining.Contains(dto.ValueSetID)).ToList();
+            var dtos = this.DbSet.Where(GetBaseExpression()).Where(dto => remaining.Contains(dto.ValueSetID)).ToList();
 
             if (dtos.Any())
             {
@@ -106,7 +107,7 @@ namespace Fabric.Terminology.SqlServer.Persistence
                 return this.FindValueSetsAsync(string.Empty, pagerSettings, includeAllValueSetCodes);
             }
 
-            var dtos = this.DbSet.Where(dto => dto.PublicFLG == "Y" && dto.StatusCD == "Active" && setIds.Contains(dto.ValueSetID));
+            var dtos = this.DbSet.Where(GetBaseExpression()).Where(dto => setIds.Contains(dto.ValueSetID));
 
             return this.CreatePagedCollectionAsync(dtos, pagerSettings, includeAllValueSetCodes, codeSystemCodes);
 
@@ -114,7 +115,7 @@ namespace Fabric.Terminology.SqlServer.Persistence
 
         public Task<PagedCollection<IValueSet>> FindValueSetsAsync(string nameFilterText, IPagerSettings pagerSettings, bool includeAllValueSetCodes = false, params string[] codeSystemCodes)
         {
-            var dtos = this.DbSet.Where(dto => dto.PublicFLG == "Y" && dto.StatusCD == "Active");
+            var dtos = this.DbSet.Where(GetBaseExpression());
             if (!nameFilterText.IsNullOrWhiteSpace())
             {
                 dtos = dtos.Where(dto => dto.ValueSetNM.Contains(nameFilterText));
@@ -123,7 +124,12 @@ namespace Fabric.Terminology.SqlServer.Persistence
             return this.CreatePagedCollectionAsync(dtos, pagerSettings, includeAllValueSetCodes, codeSystemCodes);
         }
 
-        private async Task<PagedCollection<IValueSet>> CreatePagedCollectionAsync(
+        private static Expression<Func<ValueSetDescriptionDto, bool>> GetBaseExpression()
+        {
+            return baseSql => baseSql.PublicFLG == "Y" && baseSql.StatusCD == "Active";
+        }
+
+private async Task<PagedCollection<IValueSet>> CreatePagedCollectionAsync(
             IQueryable<ValueSetDescriptionDto> source, 
             IPagerSettings pagerSettings, 
             bool includeAllValueSetCodes = false, 
