@@ -14,17 +14,29 @@ namespace Fabric.Terminology.Domain.Services
     public interface IValueSetService 
     {
         [CanBeNull]
-        IValueSet GetValueSet(string valueSetId, params string[] codeSystemCodes);
+        IValueSet GetValueSet(string valueSetId);
 
-        IReadOnlyCollection<IValueSet> GetValueSets(IReadOnlyCollection<string> valueSetIds, params string[] codeSystemCodes);
+        [CanBeNull]
+        IValueSet GetValueSet(string valueSetId, IReadOnlyCollection<string> codeSystemCodes);
+        IReadOnlyCollection<IValueSet> GetValueSets(IReadOnlyCollection<string> valueSetIds);
 
-        IReadOnlyCollection<IValueSet> GetValueSetSummaries(IReadOnlyCollection<string> valueSetIds, params string[] codeSystemCodes);
+        IReadOnlyCollection<IValueSet> GetValueSets(IReadOnlyCollection<string> valueSetIds, IReadOnlyCollection<string> codeSystemCodes);
 
-        Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings settings, params string[] codeSystemCodes);
+        IReadOnlyCollection<IValueSet> GetValueSetSummaries(IReadOnlyCollection<string> valueSetIds);
 
-        Task<PagedCollection<IValueSet>> GetValueSetSummariesAsync(IPagerSettings settings, params string[] codeSystemCodes);
+        IReadOnlyCollection<IValueSet> GetValueSetSummaries(IReadOnlyCollection<string> valueSetIds, IReadOnlyCollection<string> codeSystemCodes);
 
-        Task<PagedCollection<IValueSet>> FindValueSetsAsync(string nameFilterText, IPagerSettings pagerSettings, bool includeAllValueSetCodes = false, params string[] codeSystemCodes);
+        Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings settings);
+
+        Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings settings, IReadOnlyCollection<string> codeSystemCodes);
+
+        Task<PagedCollection<IValueSet>> GetValueSetSummariesAsync(IPagerSettings settings);
+
+        Task<PagedCollection<IValueSet>> GetValueSetSummariesAsync(IPagerSettings settings, IReadOnlyCollection<string> codeSystemCodes);
+
+        Task<PagedCollection<IValueSet>> FindValueSetsAsync(string nameFilterText, IPagerSettings pagerSettings, bool includeAllValueSetCodes = false);
+
+        Task<PagedCollection<IValueSet>> FindValueSetsAsync(string nameFilterText, IPagerSettings pagerSettings, IReadOnlyCollection<string> codeSystemCodes, bool includeAllValueSetCodes = false);
 
         bool NameIsUnique(string name);
 

@@ -59,7 +59,7 @@
             {
                 var codeSystems = this.GetCodeSystems();
 
-                IValueSet valueSet = this.valueSetService.GetValueSet(valueSetId, codeSystems);
+                var valueSet = this.valueSetService.GetValueSet(valueSetId, codeSystems);
                 if (valueSet != null)
                 {
                     return valueSet.ToValueSetApiModel(summary, this.config.ValueSetSettings.ShortListCodeCount);
@@ -135,8 +135,8 @@
                 var results = await this.valueSetService.FindValueSetsAsync(
                                   model.Term,
                                   model.PagerSettings,
-                                  !summary,
-                                  model.CodeSystemCodes.ToArray());
+                                  model.CodeSystemCodes.ToArray(),
+                                  !summary);
 
                 return results.ToValueSetApiModelPage(summary, this.config.ValueSetSettings.ShortListCodeCount);
             }

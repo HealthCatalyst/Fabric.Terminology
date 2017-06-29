@@ -34,46 +34,77 @@ namespace Fabric.Terminology.Domain.Services
         #endregion
 
         [CanBeNull]
-        public IValueSet GetValueSet(string valueSetId, params string[] codeSystemCodes)
+        public IValueSet GetValueSet(string valueSetId)
+        {
+            return this.GetValueSet(valueSetId, new string[] { });
+        }
+
+        [CanBeNull]
+        public IValueSet GetValueSet(string valueSetId, IReadOnlyCollection<string> codeSystemCodes)
         {
             return this.repository.GetValueSet(valueSetId, codeSystemCodes);
         }
 
-        public IReadOnlyCollection<IValueSet> GetValueSets(IReadOnlyCollection<string> valueSetIds, params string[] codeSystemCodes)
+        public IReadOnlyCollection<IValueSet> GetValueSets(IReadOnlyCollection<string> valueSetIds)
         {
-            return this.repository.GetValueSets(valueSetIds, true, codeSystemCodes);
+            return this.GetValueSets(valueSetIds, new string[] { });
         }
 
-        public IReadOnlyCollection<IValueSet> GetValueSetSummaries(IReadOnlyCollection<string> valueSetIds, params string[] codeSystemCodes)
+        public IReadOnlyCollection<IValueSet> GetValueSets(IReadOnlyCollection<string> valueSetIds, IReadOnlyCollection<string> codeSystemCodes)
         {
-            return this.repository.GetValueSets(valueSetIds, false, codeSystemCodes);
+            return this.repository.GetValueSets(valueSetIds, codeSystemCodes, true);
+        }
+
+        public IReadOnlyCollection<IValueSet> GetValueSetSummaries(IReadOnlyCollection<string> valueSetIds)
+        {
+            return this.GetValueSetSummaries(valueSetIds, new string[] { });
+        }
+
+        public IReadOnlyCollection<IValueSet> GetValueSetSummaries(IReadOnlyCollection<string> valueSetIds, IReadOnlyCollection<string> codeSystemCodes)
+        {
+            return this.repository.GetValueSets(valueSetIds, codeSystemCodes, false);
+        }
+
+        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings settings)
+        {
+            return this.GetValueSetsAsync(settings, new string[] { });
         }
 
         public Task<PagedCollection<IValueSet>> GetValueSetsAsync(
             IPagerSettings settings,
-            params string[] codeSystemCodes)
+            IReadOnlyCollection<string> codeSystemCodes)
         {
-            return this.repository.GetValueSetsAsync(settings, true, codeSystemCodes);
+            return this.repository.GetValueSetsAsync(settings, codeSystemCodes, true);
+        }
+
+        public Task<PagedCollection<IValueSet>> GetValueSetSummariesAsync(IPagerSettings settings)
+        {
+            return this.GetValueSetSummariesAsync(settings, new string[] { });
         }
 
         public Task<PagedCollection<IValueSet>> GetValueSetSummariesAsync(
             IPagerSettings settings,
-            params string[] codeSystemCodes)
+            IReadOnlyCollection<string> codeSystemCodes)
         {
-            return this.repository.GetValueSetsAsync(settings, false, codeSystemCodes);
+            return this.repository.GetValueSetsAsync(settings, codeSystemCodes, false);
+        }
+
+        public Task<PagedCollection<IValueSet>> FindValueSetsAsync(string nameFilterText, IPagerSettings pagerSettings, bool includeAllValueSetCodes = false)
+        {
+            return this.FindValueSetsAsync(nameFilterText, pagerSettings, new string[] { }, includeAllValueSetCodes);
         }
 
         public Task<PagedCollection<IValueSet>> FindValueSetsAsync(
             string nameFilterText,
             IPagerSettings pagerSettings,
-            bool includeAllValueSetCodes = false,
-            params string[] codeSystemCodes)
+            IReadOnlyCollection<string> codeSystemCodes,
+            bool includeAllValueSetCodes = false)
         {
             return this.repository.FindValueSetsAsync(
                 nameFilterText,
                 pagerSettings,
-                includeAllValueSetCodes,
-                codeSystemCodes);
+                codeSystemCodes,
+                includeAllValueSetCodes);
         }
 
         public bool NameIsUnique(string name)
