@@ -77,7 +77,7 @@ namespace Fabric.Terminology.SqlServer.Persistence
             var setIds = valueSetIds as string[] ?? valueSetIds.ToArray();
             var cached = setIds.Select(vsid => this.Cache.GetCachedValueSetWithAllCodes(vsid, codeSystemCodes)).Where(vs => vs != null).ToList();
 
-            var remaining = setIds.Where(id => !cached.Select(s => s.ValueSetId).Contains(id));
+            var remaining = setIds.Except(cached.Select(s => s.ValueSetId));
 
             var dtos = this.DbSet.Where(GetBaseExpression()).Where(dto => remaining.Contains(dto.ValueSetID)).ToList();
 
