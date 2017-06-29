@@ -50,7 +50,7 @@ namespace Fabric.Terminology.SqlServer.Persistence
 
         public bool NameExists(string name)
         {
-            return this.DbSet.Count(dto => dto.ValueSetNM == name) > 0;
+            return this.DbSet.Any(dto => dto.ValueSetNM == name);
         }
 
         [CanBeNull]
