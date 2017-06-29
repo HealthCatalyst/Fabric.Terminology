@@ -78,23 +78,17 @@
 
             // Assert
             mapped.Should().NotBeNull();
-            mapped.Name.ShouldBeEquivalentTo(valueSet.Name);
-            mapped.AuthoringSourceDescription.ShouldBeEquivalentTo(valueSet.AuthoringSourceDescription);
-            mapped.IsCustom.ShouldBeEquivalentTo(valueSet.IsCustom);
-            mapped.PurposeDescription.ShouldBeEquivalentTo(valueSet.PurposeDescription);
-            mapped.SourceDescription.ShouldBeEquivalentTo(valueSet.SourceDescription);
-            mapped.ValueSetCodesCount.ShouldBeEquivalentTo(valueSet.ValueSetCodesCount);
-            mapped.AllCodesLoaded.ShouldBeEquivalentTo(valueSet.AllCodesLoaded);
-            mapped.ValueSetCodes.Count.Should().Be(3);
+            mapped.ShouldBeEquivalentTo(valueSet, o => o.Excluding(p => p.Identifier).Excluding(p => p.ValueSetCodes));
             mapped.Identifier.ShouldBeEquivalentTo(valueSet.ValueSetId);
 
-            // code assertions
-            var code1 = mapped.ValueSetCodes.FirstOrDefault(code => code.Code == "code1");
-            code1.Should().NotBeNull();
-            code1.Code.ShouldBeEquivalentTo("code1");
-            code1.CodeSystemCode.ShouldBeEquivalentTo("cd1");
-            code1.Name.ShouldBeEquivalentTo("code1");
-            code1.ValueSetId.ShouldBeEquivalentTo(valueSet.ValueSetId);
+            var codes = valueSet.ValueSetCodes.ToArray();
+            var mappedCodes = mapped.ValueSetCodes.ToArray();
+            for (var i = 0; i < codes.Length; i++)
+            {
+                var code = codes[i];
+                mappedCodes[i].ShouldBeEquivalentTo(code, o => o.ExcludingMissingMembers());
+                mappedCodes[i].CodeSystemCode.Should().Be(code.CodeSystem.Code);
+            }
         }
     }
 }
