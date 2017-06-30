@@ -1,5 +1,6 @@
 ﻿namespace Fabric.Terminology.TestsBase
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
 
@@ -24,11 +25,40 @@
                                     .Select(code => code)
                                     .ToList()
                                     .AsReadOnly();
-
                             }
-
                             return vs.ValueSetCodes.Any() ? vs : null;
                         });
+            return mockService;
+        }
+
+
+        public static Mock<IValueSetService> SetupGetValueSets(this Mock<IValueSetService> mockService, IEnumerable<IValueSet> valueSets)
+        {
+            mockService.Setup(
+                    srv => srv.GetValueSets(new string[] { It.IsAny<string>() }, new string[] { It.IsAny<string>() }))
+                .Returns(() => valueSets.ToList().AsReadOnly());
+
+            return mockService;
+        }
+
+        public static Mock<IValueSetService> SetupAsyncGetValueSets(this Mock<IValueSetService> mockService, PagedCollection<IValueSet> pagedCollection)
+        {
+            mockService.Setup(
+                    srv => srv.GetValueSetsAsync(It.IsAny<IPagerSettings>(), new string[] { It.IsAny<string>() }))
+                .ReturnsAsync(() => pagedCollection);
+
+            return mockService;
+        }
+
+        public static Mock<IValueSetService> SetupAsyncFindValueSets(this Mock<IValueSetService> mockService, PagedCollection<IValueSet> pagedCollection)
+        {
+            mockService.Setup(
+                    srv => srv.FindValueSetsAsync(
+                        It.IsAny<string>(),
+                        It.IsAny<IPagerSettings>(),
+                        new string[] { It.IsAny<string>() },
+                        It.IsAny<bool>()))
+                .ReturnsAsync(() => pagedCollection);
 
             return mockService;
         }
