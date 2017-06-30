@@ -6,6 +6,7 @@
 
     using Fabric.Terminology.API.Models;
     using Fabric.Terminology.Domain.Models;
+    using Fabric.Terminology.TestsBase;
     using Fabric.Terminology.TestsBase.Fixtures;
 
     using FluentAssertions;
@@ -29,49 +30,7 @@
         public void CanMapValueSetToValueSetItem()
         {
             // Arrange
-            var valueSetId = "value.set.id.1";
-
-            var valueSet = new ValueSet
-            {
-                ValueSetId = valueSetId,
-                AuthoringSourceDescription = "author",
-                IsCustom = true,
-                Name = "test",
-                PurposeDescription = "purpose",
-                SourceDescription = "source",
-                ValueSetCodesCount = 3,
-                VersionDescription = "version",
-                ValueSetCodes = new List<IValueSetCode>
-                {
-                    new ValueSetCode
-                    {
-                        Code = "code1",
-                        CodeSystem = new ValueSetCodeSystem { Code = "cd1", Name = "cd1", Version = "cd1version" },
-                        Name = "code1",
-                        RevisionDate = null,
-                        ValueSetId = valueSetId,
-                        VersionDescription = "version"
-                    },
-                    new ValueSetCode
-                    {
-                        Code = "code2",
-                        CodeSystem = new ValueSetCodeSystem { Code = "cd1", Name = "cd1", Version = "cd1version" },
-                        Name = "code1",
-                        RevisionDate = null,
-                        ValueSetId = valueSetId,
-                        VersionDescription = "version"
-                    },
-                    new ValueSetCode
-                    {
-                        Code = "code3",
-                        CodeSystem = new ValueSetCodeSystem { Code = "cd1", Name = "cd1", Version = "cd1version" },
-                        Name = "code1",
-                        RevisionDate = null,
-                        ValueSetId = valueSetId,
-                        VersionDescription = "version"
-                    }
-                }
-            };
+            var valueSet = DataHelper.SingleValueSet("1", 3);
 
             // Act
             var mapped = Mapper.Map<IValueSet, ValueSetApiModel>(valueSet);

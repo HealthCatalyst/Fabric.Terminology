@@ -33,7 +33,7 @@
             this.mockValueSetService = new Mock<IValueSetService>();
         }
 
-        //[Theory]
+        [Fact]
         public void GetValueSetShouldReturnOk()
         {
             // Arrange
@@ -43,9 +43,7 @@
             throw new NotImplementedException();
         }
 
-        protected override ConfigurableBootstrapper.ConfigurableBootstrapperConfigurator ConfigureBootstrapper(
-            ConfigurableBootstrapper configurableBootstrapper,
-            params Claim[] claims)
+        protected override ConfigurableBootstrapper.ConfigurableBootstrapperConfigurator ConfigureBootstrapper(ConfigurableBootstrapper configurableBootstrapper, params Claim[] claims)
         {
             return base.ConfigureBootstrapper(configurableBootstrapper, claims);
         }
