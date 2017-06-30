@@ -20,7 +20,7 @@
     // TODO - JJ review comment - Is there a better response for some of the errors thana bad request?
     // There are several opportunities for exceptions to be thrown that aren’t due to the request being bad.
 
-    public sealed class ValueSetsModule : TerminologyModule<IValueSet>
+    public sealed class ValueSetModule : TerminologyModule<IValueSet>
     {
         private readonly IValueSetService valueSetService;
 
@@ -28,32 +28,32 @@
 
         private readonly ValueSetValidator valueSetValidator;
 
-        public ValueSetsModule(IValueSetService valueSetService, IAppConfiguration config, ILogger logger, ValueSetValidator valueSetValidator)
-            : base("/api/valueset", logger)
+        public ValueSetModule(IValueSetService valueSetService, IAppConfiguration config, ILogger logger, ValueSetValidator valueSetValidator)
+            : base($"/{TerminologyVersion.Route}/valueset", logger)
         {
             this.valueSetService = valueSetService;
             this.config = config;
             this.valueSetValidator = valueSetValidator;
 
-            this.Get("/{valueSetId}", parameters => this.GetValueSet(parameters.valueSetId, false));
+            this.Get("/{valueSetId}", parameters => this.GetValueSet(parameters.valueSetId, false), null, "GetValueSet");
 
-            this.Get("/valuesets/", _ => this.GetValueSets(false));
+            this.Get("/valuesets/", _ => this.GetValueSets(false), null, "GetValueSets");
 
-            this.Get("/summary/{valueSetId}", parameters => this.GetValueSet(parameters.valueSetId, true));
+            this.Get("/summary/{valueSetId}", parameters => this.GetValueSet(parameters.valueSetId, true), null, "GetSummary");
 
-            this.Get("/summaries/", _ => this.GetValueSets(true));
+            this.Get("/summaries/", _ => this.GetValueSets(true), null, "GetSummaries");
 
-            this.Get("/paged/", _ => this.GetValueSetPage(false));
+            this.Get("/paged/", _ => this.GetValueSetPage(false), null, "GetPaged");
 
-            this.Get("/paged/summaries/", _ => this.GetValueSetPage(true));
+            this.Get("/paged/summaries/", _ => this.GetValueSetPage(true), null, "GetPagedSummaries");
 
-            this.Post("/find/", _ => this.Find(false));
+            this.Post("/find/", _ => this.Find(false), null, "Find");
 
-            this.Post("/find/summaries/", _ => this.Find(true));
+            this.Post("/find/summaries/", _ => this.Find(true), null, "FindSummaries");
 
-            this.Post("/", _ => this.AddValueSet());
+            this.Post("/", _ => this.AddValueSet(), null, "AddValueSet");
 
-            this.Delete("/{valueSetId}", parameters => this.DeleteValueSet(parameters));
+            this.Delete("/{valueSetId}", parameters => this.DeleteValueSet(parameters), null, "DeleteValueSet");
         }
 
         private object GetValueSet(string valueSetId, bool summary = true)
