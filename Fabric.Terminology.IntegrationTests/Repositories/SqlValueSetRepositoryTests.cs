@@ -63,5 +63,51 @@
             valueSets.TotalItems.Should().BeGreaterThan(0);
             valueSets.TotalPages.Should().BeGreaterThan(0);
         }
+
+        [Theory]
+        [InlineData("2.16.840.1.113883.3.464.1003.108.12.1011", "2.16.840.1.113883.6.103-nope")]
+        public void ValueSetWillReturnNullIfIdExistsButCodeSystemsDontMatch(string valueSetId, string codeSystemCd)
+        {
+            // Arrange
+            var cds = new string[] { codeSystemCd };
+
+            // Act
+            var valueSet = this.valueSetRepository.GetValueSet(valueSetId, cds);
+
+            // Assert
+            valueSet.Should().BeNull();
+        }
+
+        [Fact]
+        public void WillNotBeAnEmptyCollectionIfCodesDontMatchFilter()
+        {
+            // Arrange
+            var pagerSettings = new PagerSettings { CurrentPage = 1, ItemsPerPage = 20 };
+            var cds = new string[] { "2.16.840.1.113883.6.103-nope" };
+
+            // Act
+            var collection = this.Profiler.ExecuteTimed(() => this.valueSetRepository.GetValueSetsAsync(pagerSettings, cds));
+
+            // Assert
+            collection.TotalItems.Should().Be(0);
+
+            var cached = this.Profiler.ExecuteTimed(() => this.valueSetRepository.GetValueSetsAsync(pagerSettings, cds));
+        }
+
+        [Fact]
+        public void WillReturnACollectionIfCodesMatchFilter()
+        {
+            // Arrange
+            var pagerSettings = new PagerSettings { CurrentPage = 1, ItemsPerPage = 20 };
+            var cds = new string[] { "2.16.840.1.113883.6.103" };
+
+            // Act
+            var collection = this.Profiler.ExecuteTimed(() => this.valueSetRepository.GetValueSetsAsync(pagerSettings, cds));
+
+            // Assert
+            collection.TotalItems.Should().BeGreaterThan(0);
+
+            var cached = this.Profiler.ExecuteTimed(() => this.valueSetRepository.GetValueSetsAsync(pagerSettings, cds));
+        }
     }
 }

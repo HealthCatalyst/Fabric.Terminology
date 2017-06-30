@@ -8,6 +8,9 @@
     using Fabric.Terminology.Domain.Persistence.Mapping;
     using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Models.Dto;
+
+    using JetBrains.Annotations;
+
     internal sealed class ValueSetFullCodeListMapper : IModelMapper<ValueSetDescriptionDto, IValueSet>
     {
         private readonly IMemoryCacheProvider cache;
@@ -23,6 +26,7 @@
             this.codeSystemCodes = codeSystemCDs;
         }
 
+        [CanBeNull]
         public IValueSet Map(ValueSetDescriptionDto dto)
         {
             // Ensure not already cached with full codes list
@@ -36,23 +40,26 @@
             var cacheKey = CacheKeys.ValueSetKey(dto.ValueSetID, this.codeSystemCodes.ToArray());
             this.cache.ClearItem(cacheKey);
 
+            // ValueSet must have codes
+            var codes = this.fetch.Invoke(dto.ValueSetID, this.codeSystemCodes.ToArray());
+            if (!codes.Any())
+            {
+                return null;
+            }
+
             return (IValueSet)this.cache.GetItem(
-                cacheKey, () =>
-                    {
-                        var codes = this.fetch.Invoke(dto.ValueSetID, this.codeSystemCodes.ToArray());
-                        return new ValueSet
-                        {
-                            ValueSetId = dto.ValueSetID,
-                            AuthoringSourceDescription = dto.AuthoringSourceDSC,
-                            Name = dto.ValueSetNM,
-                            IsCustom = false,
-                            PurposeDescription = dto.PurposeDSC,
-                            SourceDescription = dto.SourceDSC,
-                            VersionDescription = dto.VersionDSC,
-                            ValueSetCodes = codes,
-                            ValueSetCodesCount = codes.Count
-                        };
-                    },
+                cacheKey, () => new ValueSet
+                {
+                    ValueSetId = dto.ValueSetID,
+                    AuthoringSourceDescription = dto.AuthoringSourceDSC,
+                    Name = dto.ValueSetNM,
+                    IsCustom = false,
+                    PurposeDescription = dto.PurposeDSC,
+                    SourceDescription = dto.SourceDSC,
+                    VersionDescription = dto.VersionDSC,
+                    ValueSetCodes = codes,
+                    ValueSetCodesCount = codes.Count
+                },
                 TimeSpan.FromMinutes(this.cache.Settings.MemoryCacheMinDuration),
                 this.cache.Settings.MemoryCacheSliding);
         }

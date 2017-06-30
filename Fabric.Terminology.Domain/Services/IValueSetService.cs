@@ -18,6 +18,7 @@ namespace Fabric.Terminology.Domain.Services
 
         [CanBeNull]
         IValueSet GetValueSet(string valueSetId, IReadOnlyCollection<string> codeSystemCodes);
+
         IReadOnlyCollection<IValueSet> GetValueSets(IReadOnlyCollection<string> valueSetIds);
 
         IReadOnlyCollection<IValueSet> GetValueSets(IReadOnlyCollection<string> valueSetIds, IReadOnlyCollection<string> codeSystemCodes);
