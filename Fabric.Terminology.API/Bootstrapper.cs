@@ -2,12 +2,14 @@
 {
     using Fabric.Terminology.API.Configuration;
     using Fabric.Terminology.API.DependencyInjection;
+    using Fabric.Terminology.API.Validators;
     using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Configuration;
 
     using JetBrains.Annotations;
 
     using Nancy;
+    using Nancy.Bootstrapper;
     using Nancy.TinyIoc;
     using Serilog;
 
@@ -20,6 +22,17 @@
         {
             this.appConfig = config;
             this.logger = log;
+        }
+
+        protected override void ApplicationStartup([NotNull] TinyIoCContainer container, [NotNull] IPipelines pipelines)
+        {
+            base.ApplicationStartup(container, pipelines);
+
+            pipelines.OnError.AddItemToEndOfPipeline((ctx, ex) =>
+                {
+                    this.logger.Error(ex, "Unhandled error on request: @{Url}. Error Message: @{Message}", ctx.Request.Url, ex.Message);
+                    return ctx.Response;
+                });
         }
 
         protected override void ConfigureApplicationContainer([NotNull] TinyIoCContainer container)
@@ -51,6 +64,7 @@
 
             container.ComposeFrom<SqlRequestComposition>();
             container.ComposeFrom<ServicesRequestComposition>();
+            container.Register<ValueSetValidator>();
         }
     }
 }

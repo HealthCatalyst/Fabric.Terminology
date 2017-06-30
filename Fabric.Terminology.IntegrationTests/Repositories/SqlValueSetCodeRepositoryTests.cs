@@ -40,7 +40,7 @@
             // Handled in inline data
 
             // Act
-            var codes = this.Profiler.ExecuteTimed(() => this.ValueSetCodeRepository.GetValueSetCodes(valueSetId), $"Querying ValueSetId = {valueSetId}");
+            var codes = this.Profiler.ExecuteTimed(() => this.ValueSetCodeRepository.GetValueSetCodes(valueSetId, new string[] { }), $"Querying ValueSetId = {valueSetId}");
             this.Output.WriteLine($"Result count: {codes.Count}");
 
             // Assert
@@ -63,7 +63,7 @@
             var mockDbSet = builder.Build(ids);
 
             // Act
-            var lookup = this.Profiler.ExecuteTimed(() => this.ValueSetCodeRepository.LookupValueSetCodes(mockDbSet.Object));
+            var lookup = this.Profiler.ExecuteTimed(() => this.ValueSetCodeRepository.LookupValueSetCodes(mockDbSet.Object.ToList(), new string[] { }));
 
             // Assert
             lookup.Should().NotBeNull();

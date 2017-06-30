@@ -5,6 +5,9 @@
     using Fabric.Terminology.IntegrationTests.Fixtures;
     using Fabric.Terminology.TestsBase;
     using FluentAssertions;
+
+    using Microsoft.Extensions.Primitives;
+
     using Xunit;
     using Xunit.Abstractions;
 
@@ -30,7 +33,7 @@
             var pagerSettings = new PagerSettings { CurrentPage = currentPage, ItemsPerPage = itemsPerPage };
 
             // Act
-            var valueSets = this.Profiler.ExecuteTimed(() => this.valueSetRepository.GetValueSetsAsync(pagerSettings));
+            var valueSets = this.Profiler.ExecuteTimed(() => this.valueSetRepository.GetValueSetsAsync(pagerSettings, new string[] { }));
             this.Output.WriteLine($"Total Items {valueSets.TotalItems}");
             this.Output.WriteLine($"Total Pages {valueSets.TotalPages}");
 
@@ -40,7 +43,7 @@
             valueSets.TotalPages.Should().BeGreaterThan(0);
 
             // Call again - to time cached
-            var cached = this.Profiler.ExecuteTimed(() => this.valueSetRepository.GetValueSetsAsync(pagerSettings), "Cached time: ");
+            var cached = this.Profiler.ExecuteTimed(() => this.valueSetRepository.GetValueSetsAsync(pagerSettings, new string[] { }), "Cached time: ");
         }
 
         [Theory]
@@ -53,7 +56,7 @@
             var pagerSettings = new PagerSettings { CurrentPage = 1, ItemsPerPage = 20 };
 
             // Act
-            var valueSets = this.Profiler.ExecuteTimed(() => this.valueSetRepository.FindValueSetsAsync(nameFilter, pagerSettings));
+            var valueSets = this.Profiler.ExecuteTimed(() => this.valueSetRepository.FindValueSetsAsync(nameFilter, pagerSettings, new string[] { }));
 
             // Assert
             valueSets.Should().NotBeNull();

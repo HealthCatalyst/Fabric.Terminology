@@ -9,10 +9,10 @@ namespace Fabric.Terminology.Domain.Persistence
 
     public interface IValueSetCodeRepository
     {
-        int CountValueSetCodes(string valueSetId, params string[] codeSystemCodes);
+        int CountValueSetCodes(string valueSetId, IReadOnlyCollection<string> codeSystemCodes);
 
-        IReadOnlyCollection<IValueSetCode> GetValueSetCodes(string valueSetId, params string[] codeSystemCodes);
+        IReadOnlyCollection<IValueSetCode> GetValueSetCodes(string valueSetId, IReadOnlyCollection<string> codeSystemCodes);
 
-        Task<ILookup<string, IValueSetCode>> LookupValueSetCodes(IEnumerable<string> valueSetIds, int count = 5, params string[] codeSystemCodes);
+        Task<ILookup<string, IValueSetCode>> LookupValueSetCodes(IReadOnlyCollection<string> valueSetIds, IReadOnlyCollection<string> codeSystemCodes, int count = 5);
     }
 }

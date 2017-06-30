@@ -1,28 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
-
-using Fabric.Terminology.Domain.Models;
-using Fabric.Terminology.Domain.Persistence;
-using Fabric.Terminology.SqlServer.Models.Dto;
-using Fabric.Terminology.SqlServer.Persistence.DataContext;
-using Fabric.Terminology.SqlServer.Persistence.Mapping;
-using Microsoft.EntityFrameworkCore;
-using Serilog;
-
-namespace Fabric.Terminology.SqlServer.Persistence
+﻿namespace Fabric.Terminology.SqlServer.Persistence
 {
-    using System.Text;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Linq.Expressions;
+    using System.Threading.Tasks;
 
+    using Fabric.Terminology.Domain.Models;
+    using Fabric.Terminology.Domain.Persistence;
     using Fabric.Terminology.Domain.Persistence.Mapping;
+    using Fabric.Terminology.SqlServer.Models.Dto;
+    using Fabric.Terminology.SqlServer.Persistence.DataContext;
+    using Fabric.Terminology.SqlServer.Persistence.Mapping;
+
+    using Microsoft.EntityFrameworkCore;
+
+    using Serilog;
 
     internal class SqlValueSetCodeRepository : IValueSetCodeRepository
     {
         private readonly IPagingStrategy<ValueSetCodeDto, IValueSetCode> pagingStrategy;
 
-        public SqlValueSetCodeRepository(SharedContext sharedContext, ILogger logger, IPagingStrategy<ValueSetCodeDto, IValueSetCode> pagingStrategy)
+        public SqlValueSetCodeRepository(
+            SharedContext sharedContext,
+            ILogger logger,
+            IPagingStrategy<ValueSetCodeDto, IValueSetCode> pagingStrategy)
         {
             this.SharedContext = sharedContext;
             this.Logger = logger;
@@ -32,23 +34,24 @@ namespace Fabric.Terminology.SqlServer.Persistence
         protected SharedContext SharedContext { get; }
 
         protected ILogger Logger { get; }
-        
-        protected Expression<Func<ValueSetCodeDto, string>> SortExpression => sortBy => sortBy.CodeDSC;
 
+        protected Expression<Func<ValueSetCodeDto, string>> SortExpression => sortBy => sortBy.CodeDSC;
 
         protected DbSet<ValueSetCodeDto> DbSet => this.SharedContext.ValueSetCodes;
 
-        public int CountValueSetCodes(string valueSetId, params string[] codeSystemCodes)
+        public int CountValueSetCodes(string valueSetId, IReadOnlyCollection<string> codeSystemCodes)
         {
-            return codeSystemCodes.Any() ?
-                this.DbSet.Count(dto => dto.ValueSetID == valueSetId && codeSystemCodes.Contains(dto.CodeSystemCD)) :
-                this.DbSet.Count(dto => dto.ValueSetID == valueSetId);
+            return codeSystemCodes.Any()
+                       ? this.DbSet.Count(
+                           dto => dto.ValueSetID == valueSetId && codeSystemCodes.Contains(dto.CodeSystemCD))
+                       : this.DbSet.Count(dto => dto.ValueSetID == valueSetId);
         }
 
-        public IReadOnlyCollection<IValueSetCode> GetValueSetCodes(string valueSetId, params string[] codeSystemCodes)
+        public IReadOnlyCollection<IValueSetCode> GetValueSetCodes(
+            string valueSetId,
+            IReadOnlyCollection<string> codeSystemCodes)
         {
-            var dtos = this.DbSet
-                .Where(dto => dto.ValueSetID == valueSetId);
+            var dtos = this.DbSet.Where(dto => dto.ValueSetID == valueSetId);
 
             if (codeSystemCodes.Any())
             {
@@ -68,7 +71,10 @@ namespace Fabric.Terminology.SqlServer.Persistence
         /// not be translated and the expression would be evaluated in the CLR after the execution (so no performance gain).
         /// </remarks>
         /// <seealso cref="https://stackoverflow.com/questions/43906840/row-number-over-partition-by-order-by-in-entity-framework"/>
-        public Task<ILookup<string, IValueSetCode>> LookupValueSetCodes(IEnumerable<string> valueSetIds, int count = 5, params string[] codeSystemCodes)
+        public Task<ILookup<string, IValueSetCode>> LookupValueSetCodes(
+            IReadOnlyCollection<string> valueSetIds,
+            IReadOnlyCollection<string> codeSystemCodes,
+            int count = 5)
         {
             var setIds = valueSetIds as string[] ?? valueSetIds.ToArray();
             if (!setIds.Any())
@@ -80,14 +86,17 @@ namespace Fabric.Terminology.SqlServer.Persistence
 
             var escapedSetIds = string.Join(",", setIds.Select(EscapeForSqlString).Select(v => "'" + v + "'"));
 
-            var innerSql = $@"SELECT vsc.BindingID, vsc.BindingNM, vsc.CodeCD, vsc.CodeDSC, vsc.CodeSystemCD, vsc.CodeSystemNM, vsc.CodeSystemVersionTXT,
+            var innerSql =
+                $@"SELECT vsc.BindingID, vsc.BindingNM, vsc.CodeCD, vsc.CodeDSC, vsc.CodeSystemCD, vsc.CodeSystemNM, vsc.CodeSystemVersionTXT,
 vsc.LastLoadDTS, vsc.RevisionDTS, vsc.SourceDSC, vsc.ValueSetID, vsc.ValueSetNM, vsc.ValueSetOID, vsc.VersionDSC,
 ROW_NUMBER() OVER (PARTITION BY vsc.ValueSetID ORDER BY vsc.ValueSetID) AS rownum 
 FROM [Terminology].[ValueSetCode] vsc WHERE vsc.ValueSetID IN ({escapedSetIds})";
 
             if (codeSystemCodes.Any())
             {
-                var escapedCodes = string.Join(",", codeSystemCodes.Select(EscapeForSqlString).Select(v => "'" + v + "'"));
+                var escapedCodes = string.Join(
+                    ",",
+                    codeSystemCodes.Select(EscapeForSqlString).Select(v => "'" + v + "'"));
                 innerSql += $" AND vsc.CodeSystemCD IN ({escapedCodes})";
             }
 
@@ -101,13 +110,18 @@ ORDER BY vscr.CodeDSC";
             return Task.Run(() => this.DbSet.FromSql(sql).ToLookup(vsc => vsc.ValueSetID, vsc => mapper.Map(vsc)));
         }
 
-
-        private async Task<PagedCollection<IValueSetCode>> CreatePagedCollectionAsync(IQueryable<ValueSetCodeDto> source, IPagerSettings pagerSettings, IModelMapper<ValueSetCodeDto, IValueSetCode> mapper)
+        private async Task<PagedCollection<IValueSetCode>> CreatePagedCollectionAsync(
+            IQueryable<ValueSetCodeDto> source,
+            IPagerSettings pagerSettings,
+            IModelMapper<ValueSetCodeDto, IValueSetCode> mapper)
         {
             this.pagingStrategy.EnsurePagerSettings(pagerSettings);
 
             var count = await source.CountAsync();
-            var items = await source.OrderBy(this.SortExpression).Skip((pagerSettings.CurrentPage - 1) * pagerSettings.ItemsPerPage).Take(pagerSettings.ItemsPerPage).ToListAsync();
+            var items = await source.OrderBy(this.SortExpression)
+                            .Skip((pagerSettings.CurrentPage - 1) * pagerSettings.ItemsPerPage)
+                            .Take(pagerSettings.ItemsPerPage)
+                            .ToListAsync();
 
             return this.pagingStrategy.CreatePagedCollection(items, count, pagerSettings, mapper);
         }
