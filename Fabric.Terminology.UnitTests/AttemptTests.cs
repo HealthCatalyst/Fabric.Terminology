@@ -59,7 +59,7 @@
             attempt.Exception.Should().NotBeNull();
             attempt.Result.Should().NotBeNull();
             attempt.Exception.ShouldBeEquivalentTo(argEx);
-            attempt.Result.ShouldBeEquivalentTo(obj);
+            attempt.Result.Should().BeSameAs(obj);
         }
     }
 }

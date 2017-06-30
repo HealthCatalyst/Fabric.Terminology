@@ -20,5 +20,9 @@
   <ItemGroup>
     <ProjectReference Include="..\Fabric.Terminology.API\Fabric.Terminology.API.csproj" />
   </ItemGroup>
-
+  <ItemGroup>
+    <Compile Update="Extensions.*.cs">
+      <DependentUpon>Extensions.cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
 </Project>

@@ -1,23 +1,25 @@
-﻿using System;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
-using Fabric.Terminology.Domain;
-using Fabric.Terminology.Domain.Models;
-using Fabric.Terminology.Domain.Persistence;
-using Fabric.Terminology.SqlServer.Caching;
-using Fabric.Terminology.SqlServer.Models.Dto;
-using Fabric.Terminology.SqlServer.Persistence.DataContext;
-using Fabric.Terminology.SqlServer.Persistence.Mapping;
-using JetBrains.Annotations;
-using Microsoft.EntityFrameworkCore;
-using Serilog;
-
-namespace Fabric.Terminology.SqlServer.Persistence
+﻿namespace Fabric.Terminology.SqlServer.Persistence
 {
+    using System;
     using System.Collections.Generic;
+    using System.Linq;
+    using System.Linq.Expressions;
+    using System.Threading.Tasks;
 
+    using Fabric.Terminology.Domain;
+    using Fabric.Terminology.Domain.Models;
+    using Fabric.Terminology.Domain.Persistence;
     using Fabric.Terminology.Domain.Persistence.Mapping;
+    using Fabric.Terminology.SqlServer.Caching;
+    using Fabric.Terminology.SqlServer.Models.Dto;
+    using Fabric.Terminology.SqlServer.Persistence.DataContext;
+    using Fabric.Terminology.SqlServer.Persistence.Mapping;
+
+    using JetBrains.Annotations;
+
+    using Microsoft.EntityFrameworkCore;
+
+    using Serilog;
 
     internal class SqlValueSetRepository : IValueSetRepository
     {
@@ -26,9 +28,9 @@ namespace Fabric.Terminology.SqlServer.Persistence
         private readonly IPagingStrategy<ValueSetDescriptionDto, IValueSet> pagingStrategy;
 
         public SqlValueSetRepository(
-            SharedContext sharedContext, 
-            IMemoryCacheProvider cache, 
-            ILogger logger, 
+            SharedContext sharedContext,
+            IMemoryCacheProvider cache,
+            ILogger logger,
             IValueSetCodeRepository valsetCodeRepository,
             IPagingStrategy<ValueSetDescriptionDto, IValueSet> pagingStrategy)
         {
@@ -46,15 +48,16 @@ namespace Fabric.Terminology.SqlServer.Persistence
         protected virtual IMemoryCacheProvider Cache { get; }
 
         protected Expression<Func<ValueSetDescriptionDto, string>> SortExpression => sortBy => sortBy.ValueSetNM;
+
         protected DbSet<ValueSetDescriptionDto> DbSet => this.SharedContext.ValueSetDescriptions;
 
         public bool NameExists(string name)
         {
-            return this.DbSet.Count(dto => dto.ValueSetNM == name) > 0;
+            return this.DbSet.Any(dto => dto.ValueSetNM == name);
         }
 
         [CanBeNull]
-        public IValueSet GetValueSet(string valueSetId, params string[] codeSystemCodes)
+        public IValueSet GetValueSet(string valueSetId, IReadOnlyCollection<string> codeSystemCodes)
         {
             var cached = this.Cache.GetCachedValueSetWithAllCodes(valueSetId, codeSystemCodes);
             if (cached != null)
@@ -62,102 +65,124 @@ namespace Fabric.Terminology.SqlServer.Persistence
                 return cached;
             }
 
-            var dto = this.DbSet.FirstOrDefault(vs => vs.PublicFLG == "Y" && vs.StatusCD == "Active" && vs.ValueSetID == valueSetId);
+            var dto = this.DbSet.Where(GetBaseExpression()).FirstOrDefault(vs => vs.ValueSetID == valueSetId);
 
             if (dto == null) return null;
 
-            var mapper = new ValueSetFullCodeListMapper(this.Cache, this.valueSetCodeRepository.GetValueSetCodes, codeSystemCodes);
-            
+            var mapper = new ValueSetFullCodeListMapper(
+                this.Cache,
+                this.valueSetCodeRepository.GetValueSetCodes,
+                codeSystemCodes);
+
             return mapper.Map(dto);
         }
 
-        public IReadOnlyCollection<IValueSet> GetValueSets(IEnumerable<string> valueSetIds, bool includeAllValueSetCodes = false, params string[] codeSystemCodes)
+        public IReadOnlyCollection<IValueSet> GetValueSets(
+            IReadOnlyCollection<string> valueSetIds,
+            IReadOnlyCollection<string> codeSystemCodes,
+            bool includeAllValueSetCodes = false)
         {
             var setIds = valueSetIds as string[] ?? valueSetIds.ToArray();
-            var cached = setIds.Select(vsid => this.Cache.GetCachedValueSetWithAllCodes(vsid, codeSystemCodes)).Where(vs => vs != null).ToList();
+            var cached = setIds.Select(vsid => this.Cache.GetCachedValueSetWithAllCodes(vsid, codeSystemCodes))
+                .Where(vs => vs != null)
+                .ToList();
 
-            var remaining = setIds.Where(id => !cached.Select(s => s.ValueSetId).Contains(id));
+            var remaining = setIds.Except(cached.Select(s => s.ValueSetId));
 
-            var dtos = this.DbSet.Where(dto => dto.PublicFLG == "Y" && dto.StatusCD == "Active" && remaining.Contains(dto.ValueSetID)).ToList();
+            var dtos = this.DbSet.Where(GetBaseExpression()).Where(dto => remaining.Contains(dto.ValueSetID)).ToList();
 
             if (dtos.Any())
             {
-                var mapper = new ValueSetFullCodeListMapper(this.Cache, this.valueSetCodeRepository.GetValueSetCodes, codeSystemCodes);
+                var mapper = new ValueSetFullCodeListMapper(
+                    this.Cache,
+                    this.valueSetCodeRepository.GetValueSetCodes,
+                    codeSystemCodes);
                 cached.AddRange(dtos.Select(mapper.Map));
             }
 
             return cached.OrderBy(vs => vs.Name).ToList().AsReadOnly();
         }
 
-        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings pagerSettings, bool includeAllValueSetCodes = false, params string[] codeSystemCodes)
+        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(
+            IPagerSettings pagerSettings,
+            IReadOnlyCollection<string> codeSystemCodes,
+            bool includeAllValueSetCodes = false)
         {
-            return this.FindValueSetsAsync(string.Empty, pagerSettings, includeAllValueSetCodes);
+            return this.FindValueSetsAsync(string.Empty, pagerSettings, codeSystemCodes, includeAllValueSetCodes);
         }
 
         public Task<PagedCollection<IValueSet>> GetValueSetsAsync(
-            IEnumerable<string> valueSetIds,
+            IReadOnlyCollection<string> valueSetIds,
             IPagerSettings pagerSettings,
-            bool includeAllValueSetCodes = false,
-            params string[] codeSystemCodes)
+            IReadOnlyCollection<string> codeSystemCodes,
+            bool includeAllValueSetCodes = false)
         {
-            var setIds = valueSetIds as string[] ?? valueSetIds.ToArray();
-            if (!setIds.Any())
+            if (!valueSetIds.Any())
             {
-                return this.FindValueSetsAsync(string.Empty, pagerSettings, includeAllValueSetCodes);
+                return this.FindValueSetsAsync(string.Empty, pagerSettings, codeSystemCodes, includeAllValueSetCodes);
             }
 
-            var dtos = this.DbSet.Where(dto => dto.PublicFLG == "Y" && dto.StatusCD == "Active" && setIds.Contains(dto.ValueSetID));
+            var dtos = this.DbSet.Where(GetBaseExpression()).Where(dto => valueSetIds.Contains(dto.ValueSetID));
 
-            return this.CreatePagedCollectionAsync(dtos, pagerSettings, includeAllValueSetCodes, codeSystemCodes);
-
+            return this.CreatePagedCollectionAsync(dtos, pagerSettings, codeSystemCodes, includeAllValueSetCodes);
         }
 
-        public Task<PagedCollection<IValueSet>> FindValueSetsAsync(string nameFilterText, IPagerSettings pagerSettings, bool includeAllValueSetCodes = false, params string[] codeSystemCodes)
+        public Task<PagedCollection<IValueSet>> FindValueSetsAsync(
+            string nameFilterText,
+            IPagerSettings pagerSettings,
+            IReadOnlyCollection<string> codeSystemCodes,
+            bool includeAllValueSetCodes = false)
         {
-            var dtos = this.DbSet.Where(dto => dto.PublicFLG == "Y" && dto.StatusCD == "Active");
+            var dtos = this.DbSet.Where(GetBaseExpression());
             if (!nameFilterText.IsNullOrWhiteSpace())
             {
                 dtos = dtos.Where(dto => dto.ValueSetNM.Contains(nameFilterText));
             }
 
-            return this.CreatePagedCollectionAsync(dtos, pagerSettings, includeAllValueSetCodes, codeSystemCodes);
+            return this.CreatePagedCollectionAsync(dtos, pagerSettings, codeSystemCodes, includeAllValueSetCodes);
+        }
+
+        private static Expression<Func<ValueSetDescriptionDto, bool>> GetBaseExpression()
+        {
+            return baseSql => baseSql.PublicFLG == "Y" && baseSql.StatusCD == "Active";
         }
 
         private async Task<PagedCollection<IValueSet>> CreatePagedCollectionAsync(
-            IQueryable<ValueSetDescriptionDto> source, 
-            IPagerSettings pagerSettings, 
-            bool includeAllValueSetCodes = false, 
-            params string[] codeSystemCodes)
+            IQueryable<ValueSetDescriptionDto> source,
+            IPagerSettings pagerSettings,
+            IReadOnlyCollection<string> codeSystemCodes,
+            bool includeAllValueSetCodes = false)
         {
             this.pagingStrategy.EnsurePagerSettings(pagerSettings);
 
             var count = await source.CountAsync();
-            var items = await source.OrderBy(this.SortExpression).Skip((pagerSettings.CurrentPage - 1) * pagerSettings.ItemsPerPage).Take(pagerSettings.ItemsPerPage).ToListAsync();
+            var items = await source.OrderBy(this.SortExpression)
+                            .Skip((pagerSettings.CurrentPage - 1) * pagerSettings.ItemsPerPage)
+                            .Take(pagerSettings.ItemsPerPage)
+                            .ToListAsync();
             var valueSetIds = items.Select(item => item.ValueSetID).ToArray();
 
             IModelMapper<ValueSetDescriptionDto, IValueSet> mapper;
             if (includeAllValueSetCodes)
             {
                 mapper = new ValueSetFullCodeListMapper(
-                    this.Cache, 
+                    this.Cache,
                     this.valueSetCodeRepository.GetValueSetCodes,
                     codeSystemCodes);
             }
             else
-            {                
+            {
                 // remove any valueSetIds for valuesets already cached from partition query
-                var cachedValueSets = this.Cache.GetItems(
-                    valueSetIds
-                    .Select(id => CacheKeys.ValueSetKey(id, codeSystemCodes)).ToArray())
+                var cachedValueSets = this.Cache
+                    .GetItems(valueSetIds.Select(id => CacheKeys.ValueSetKey(id, codeSystemCodes)).ToArray())
                     .Select(obj => obj as IValueSet)
                     .Where(vs => vs != null);
 
-                valueSetIds = valueSetIds
-                                .Where(id => !cachedValueSets.Select(vs => vs.ValueSetId)
-                                .Contains(id)).ToArray();
+                valueSetIds = valueSetIds.Where(id => !cachedValueSets.Select(vs => vs.ValueSetId).Contains(id))
+                    .ToArray();
 
                 // partition query
-                var lookup = await this.valueSetCodeRepository.LookupValueSetCodes(valueSetIds);
+                var lookup = await this.valueSetCodeRepository.LookupValueSetCodes(valueSetIds, codeSystemCodes);
 
                 var cachedValueSetDictionary = cachedValueSets.ToDictionary(vs => vs.ValueSetId, vs => vs);
 
@@ -169,11 +194,7 @@ namespace Fabric.Terminology.SqlServer.Persistence
                     codeSystemCodes);
             }
 
-            return this.pagingStrategy.CreatePagedCollection(
-                items, 
-                count, 
-                pagerSettings, 
-                mapper);
+            return this.pagingStrategy.CreatePagedCollection(items, count, pagerSettings, mapper);
         }
     }
 }

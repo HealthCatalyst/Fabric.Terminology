@@ -5,7 +5,7 @@
     using Nancy;
     using Xunit;
 
-    // TODO remove this testfixture - this is junk for test setup
+    //// TODO implement this in Nancy Swagger branch.
     //public class HomeModuleTests : ModuleTestsBase<HomeModule>
     //{
     //    [Fact]

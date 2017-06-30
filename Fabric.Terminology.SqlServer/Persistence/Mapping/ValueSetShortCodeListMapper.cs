@@ -26,7 +26,7 @@
             ILookup<string, IValueSetCode> lookup, 
             IDictionary<string, IValueSet> previouslyCached,
             Func<string, string[], int> getCount,
-            IEnumerable<string> codeSystemCodes)
+            IReadOnlyCollection<string> codeSystemCodes)
         {
             this.cache = memCache;
             this.lookupCodes = lookup;
@@ -42,7 +42,7 @@
                 return this.stash[dto.ValueSetID];
             }
 
-            var cacheKey = CacheKeys.ValueSetKey(dto.ValueSetID);
+            var cacheKey = CacheKeys.ValueSetKey(dto.ValueSetID, this.codeSystemCds);
             return (IValueSet)this.cache.GetItem(
                 cacheKey, () =>
                 {

@@ -1,7 +1,6 @@
 ﻿namespace Fabric.Terminology.API.Modules
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
 
@@ -18,7 +17,10 @@
 
     using Serilog;
 
-    public sealed class ValueSetModule : TerminologyModule<IValueSet>
+    // TODO - JJ review comment - Is there a better response for some of the errors thana bad request?
+    // There are several opportunities for exceptions to be thrown that aren’t due to the request being bad.
+
+    public sealed class ValueSetsModule : TerminologyModule<IValueSet>
     {
         private readonly IValueSetService valueSetService;
 
@@ -26,54 +28,53 @@
 
         private readonly ValueSetValidator valueSetValidator;
 
-        public ValueSetModule(IValueSetService valueSetService, IAppConfiguration config, ILogger logger, ValueSetValidator valueSetValidator)
-            : base($"/{TerminologyVersion.Route}/valueset", logger)
+        public ValueSetsModule(IValueSetService valueSetService, IAppConfiguration config, ILogger logger, ValueSetValidator valueSetValidator)
+            : base("/api/valueset", logger)
         {
             this.valueSetService = valueSetService;
             this.config = config;
             this.valueSetValidator = valueSetValidator;
 
-            this.Get("/{valueSetId}", parameters => this.GetValueSet(parameters, false), null, "GetValueSet");
+            this.Get("/{valueSetId}", parameters => this.GetValueSet(parameters.valueSetId, false));
 
-            this.Get("/valuesets/", _ => this.GetValueSets(false), null, "GetValueSets");
+            this.Get("/valuesets/", _ => this.GetValueSets(false));
 
-            this.Get("/summary/{valueSetId}", parameters => this.GetValueSet(parameters, true), null, "GetSummary");
+            this.Get("/summary/{valueSetId}", parameters => this.GetValueSet(parameters.valueSetId, true));
 
-            this.Get("/summaries/", _ => this.GetValueSets(true), null, "GetSummaries");
+            this.Get("/summaries/", _ => this.GetValueSets(true));
 
-            this.Get("/paged/", _ => this.GetValueSetPage(false), null, "GetPaged");
+            this.Get("/paged/", _ => this.GetValueSetPage(false));
 
-            this.Get("/paged/summaries/", _ => this.GetValueSetPage(true), null, "GetPagedSummaries");
+            this.Get("/paged/summaries/", _ => this.GetValueSetPage(true));
 
-            this.Post("/find/", _ => this.Find(false), null, "Find");
+            this.Post("/find/", _ => this.Find(false));
 
-            this.Post("/find/summaries/", _ => this.Find(true), null, "FindSummaries");
+            this.Post("/find/summaries/", _ => this.Find(true));
 
-            this.Post("/", _ => this.AddValueSet(), null, "AddValueSet");
+            this.Post("/", _ => this.AddValueSet());
 
-            this.Delete("/{valueSetId}", parameters => this.DeleteValueSet(parameters), null, "DeleteValueSet");
+            this.Delete("/{valueSetId}", parameters => this.DeleteValueSet(parameters));
         }
 
-        private object GetValueSet(dynamic parameters, bool summary = true)
+        private object GetValueSet(string valueSetId, bool summary = true)
         {
             try
             {
-                var valueSetId = parameters.valueSetId.ToString();
                 var codeSystems = this.GetCodeSystems();
 
-                IValueSet valueSet = this.valueSetService.GetValueSet(valueSetId, codeSystems);
+                var valueSet = this.valueSetService.GetValueSet(valueSetId, codeSystems);
                 if (valueSet != null)
                 {
                     return valueSet.ToValueSetApiModel(summary, this.config.ValueSetSettings.ShortListCodeCount);
                 }
 
-                throw new NullReferenceException();
+                throw new ValueSetNotFoundException();
             }
             catch (ValueSetNotFoundException ex)
             {
-                this.Logger.Error(ex, ex.Message, parameters.valueSetId);
+                this.Logger.Error(ex, ex.Message, valueSetId);
                 return this.CreateFailureResponse(
-                    $"The ValueSet with id: {parameters.valueSetId} was not found.",
+                    $"The ValueSet with id: {valueSetId} was not found.",
                     HttpStatusCode.BadRequest);
             }
         }
@@ -95,7 +96,7 @@
                                     ? this.valueSetService.GetValueSetSummaries(valueSetIds, codeSystemCds)
                                     : this.valueSetService.GetValueSets(valueSetIds, codeSystemCds);
 
-                return valueSets.Select(vs => vs.ToValueSetApiModel(summaries, this.config.ValueSetSettings.ShortListCodeCount));
+                return valueSets.Select(vs => vs.ToValueSetApiModel(summaries, this.config.ValueSetSettings.ShortListCodeCount)).ToList();
             }
             catch (Exception ex)
             {
@@ -137,8 +138,8 @@
                 var results = await this.valueSetService.FindValueSetsAsync(
                                   model.Term,
                                   model.PagerSettings,
-                                  !summary,
-                                  model.CodeSystemCodes.ToArray());
+                                  model.CodeSystemCodes.ToArray(),
+                                  !summary);
 
                 return results.ToValueSetApiModelPage(summary, this.config.ValueSetSettings.ShortListCodeCount);
             }
@@ -204,7 +205,7 @@
             }
 
             var cds = value.Split(',');
-            return cds.Select(cd => cd.Trim()).ToArray();
+            return cds.Select(cd => cd.Trim()).Where(cd => !cd.IsNullOrWhiteSpace()).ToArray();
         }
 
         private string[] GetCodeSystems()

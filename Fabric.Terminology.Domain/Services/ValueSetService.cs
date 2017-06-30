@@ -34,46 +34,77 @@ namespace Fabric.Terminology.Domain.Services
         #endregion
 
         [CanBeNull]
-        public IValueSet GetValueSet(string valueSetId, params string[] codeSystemCodes)
+        public IValueSet GetValueSet(string valueSetId)
+        {
+            return this.GetValueSet(valueSetId, new string[] { });
+        }
+
+        [CanBeNull]
+        public IValueSet GetValueSet(string valueSetId, IReadOnlyCollection<string> codeSystemCodes)
         {
             return this.repository.GetValueSet(valueSetId, codeSystemCodes);
         }
 
-        public IEnumerable<IValueSet> GetValueSets(IReadOnlyCollection<string> valueSetIds, params string[] codeSystemCodes)
+        public IReadOnlyCollection<IValueSet> GetValueSets(IReadOnlyCollection<string> valueSetIds)
         {
-            return this.repository.GetValueSets(valueSetIds, true, codeSystemCodes);
+            return this.GetValueSets(valueSetIds, new string[] { });
         }
 
-        public IEnumerable<IValueSet> GetValueSetSummaries(IReadOnlyCollection<string> valueSetIds, params string[] codeSystemCodes)
+        public IReadOnlyCollection<IValueSet> GetValueSets(IReadOnlyCollection<string> valueSetIds, IReadOnlyCollection<string> codeSystemCodes)
         {
-            return this.repository.GetValueSets(valueSetIds, false, codeSystemCodes);
+            return this.repository.GetValueSets(valueSetIds, codeSystemCodes, true);
+        }
+
+        public IReadOnlyCollection<IValueSet> GetValueSetSummaries(IReadOnlyCollection<string> valueSetIds)
+        {
+            return this.GetValueSetSummaries(valueSetIds, new string[] { });
+        }
+
+        public IReadOnlyCollection<IValueSet> GetValueSetSummaries(IReadOnlyCollection<string> valueSetIds, IReadOnlyCollection<string> codeSystemCodes)
+        {
+            return this.repository.GetValueSets(valueSetIds, codeSystemCodes, false);
+        }
+
+        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings settings)
+        {
+            return this.GetValueSetsAsync(settings, new string[] { });
         }
 
         public Task<PagedCollection<IValueSet>> GetValueSetsAsync(
             IPagerSettings settings,
-            params string[] codeSystemCodes)
+            IReadOnlyCollection<string> codeSystemCodes)
         {
-            return this.repository.GetValueSetsAsync(settings, true, codeSystemCodes);
+            return this.repository.GetValueSetsAsync(settings, codeSystemCodes, true);
+        }
+
+        public Task<PagedCollection<IValueSet>> GetValueSetSummariesAsync(IPagerSettings settings)
+        {
+            return this.GetValueSetSummariesAsync(settings, new string[] { });
         }
 
         public Task<PagedCollection<IValueSet>> GetValueSetSummariesAsync(
             IPagerSettings settings,
-            params string[] codeSystemCodes)
+            IReadOnlyCollection<string> codeSystemCodes)
         {
-            return this.repository.GetValueSetsAsync(settings, false, codeSystemCodes);
+            return this.repository.GetValueSetsAsync(settings, codeSystemCodes, false);
+        }
+
+        public Task<PagedCollection<IValueSet>> FindValueSetsAsync(string nameFilterText, IPagerSettings pagerSettings, bool includeAllValueSetCodes = false)
+        {
+            return this.FindValueSetsAsync(nameFilterText, pagerSettings, new string[] { }, includeAllValueSetCodes);
         }
 
         public Task<PagedCollection<IValueSet>> FindValueSetsAsync(
             string nameFilterText,
             IPagerSettings pagerSettings,
-            bool includeAllValueSetCodes = false,
-            params string[] codeSystemCodes)
+            IReadOnlyCollection<string> codeSystemCodes,
+            bool includeAllValueSetCodes = false)
         {
             return this.repository.FindValueSetsAsync(
                 nameFilterText,
                 pagerSettings,
-                includeAllValueSetCodes,
-                codeSystemCodes);
+                codeSystemCodes,
+                includeAllValueSetCodes);
         }
 
         public bool NameIsUnique(string name)
@@ -81,7 +112,7 @@ namespace Fabric.Terminology.Domain.Services
             return this.repository.NameExists(name);
         }
 
-        public Attempt<IValueSet> Create(string name, IValueSetMeta meta, IEnumerable<IValueSetCodeItem> valueSetCodes)
+        public Attempt<IValueSet> Create(string name, IValueSetMeta meta, IReadOnlyCollection<IValueSetCodeItem> valueSetCodes)
         {
             if (!this.NameIsUnique(name))
             {
@@ -93,8 +124,7 @@ namespace Fabric.Terminology.Domain.Services
                 return Attempt<IValueSet>.Failed(new ArgumentException(msg));
             }
 
-            var valueSetCodeItems = valueSetCodes as IValueSetCodeItem[] ?? valueSetCodes.ToArray();
-            if (!valueSetCodeItems.Any())
+            if (!valueSetCodes.Any())
             {
                 return Attempt<IValueSet>.Failed(new ArgumentException("A value set must include at least one code."));
             }
@@ -110,7 +140,7 @@ namespace Fabric.Terminology.Domain.Services
                 SourceDescription = meta.SourceDescription,
                 VersionDescription = meta.VersionDescription,
                 ValueSetCodes =
-                    valueSetCodeItems.Select(
+                    valueSetCodes.Select(
                             code => new ValueSetCode
                             {
                                 Code = code.Code,
@@ -122,7 +152,7 @@ namespace Fabric.Terminology.Domain.Services
                         .ToList()
                         .AsReadOnly(),
                 IsCustom = true,
-                ValueSetCodesCount = valueSetCodeItems.Length
+                ValueSetCodesCount = valueSetCodes.Count
             };
 
             Created?.Invoke(this, valueSet);
