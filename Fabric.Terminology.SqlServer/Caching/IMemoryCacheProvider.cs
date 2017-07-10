@@ -1,10 +1,9 @@
-﻿using System;
-using Fabric.Terminology.SqlServer.Configuration;
-using JetBrains.Annotations;
-
-namespace Fabric.Terminology.SqlServer.Caching
+﻿namespace Fabric.Terminology.SqlServer.Caching
 {
+    using System;
     using System.Collections.Generic;
+
+    using Fabric.Terminology.SqlServer.Configuration;
 
     public interface IMemoryCacheProvider : ICacheProvider
     {

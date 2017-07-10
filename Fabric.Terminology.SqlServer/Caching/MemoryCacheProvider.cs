@@ -1,18 +1,21 @@
-﻿using System;
-using System.Threading;
-using Fabric.Terminology.SqlServer.Configuration;
-using Fabric.Terminology.SqlServer.Threading;
-using JetBrains.Annotations;
-using Microsoft.Extensions.Caching.Memory;
-
-namespace Fabric.Terminology.SqlServer.Caching
+﻿namespace Fabric.Terminology.SqlServer.Caching
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading;
+
+    using Fabric.Terminology.SqlServer.Configuration;
+    using Fabric.Terminology.SqlServer.Threading;
+
+    using JetBrains.Annotations;
+
+    using Microsoft.Extensions.Caching.Memory;
 
     internal class MemoryCacheProvider : IMemoryCacheProvider
     {
         private readonly ReaderWriterLockSlim locker = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
+
         private IMemoryCache memCache = Create();
 
         public MemoryCacheProvider(IMemoryCacheSettings settings)
@@ -109,11 +112,7 @@ namespace Fabric.Terminology.SqlServer.Caching
 
         private static IMemoryCache Create()
         {
-            return new MemoryCache(
-                new MemoryCacheOptions
-                {
-                    ExpirationScanFrequency = TimeSpan.FromMinutes(5)
-                });
+            return new MemoryCache(new MemoryCacheOptions { ExpirationScanFrequency = TimeSpan.FromMinutes(5) });
         }
     }
 }

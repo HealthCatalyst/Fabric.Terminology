@@ -3,11 +3,16 @@
   <PropertyGroup>    
     <TargetFramework>netcoreapp1.1</TargetFramework>    
     <PreBuildEvent></PreBuildEvent>
+    <CodeAnalysisRuleSet>..\Catalyst.TestRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DocumentationFile></DocumentationFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Modules\ValueSetModuleTests.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <Content Include="appsettings.json">

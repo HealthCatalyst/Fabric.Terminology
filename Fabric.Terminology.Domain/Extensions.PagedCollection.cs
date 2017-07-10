@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Fabric.Terminology.Domain
+﻿namespace Fabric.Terminology.Domain
 {
     using Fabric.Terminology.Domain.Models;
 
@@ -18,7 +14,7 @@ namespace Fabric.Terminology.Domain
 
         public static bool IsLastPage<T>(this PagedCollection<T> collection)
         {
-            return  collection.PagerSettings.CurrentPage >= collection.TotalPages;
+            return collection.PagerSettings.CurrentPage >= collection.TotalPages;
         }
     }
 }

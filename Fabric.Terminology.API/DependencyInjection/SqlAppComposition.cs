@@ -7,6 +7,7 @@
     using Fabric.Terminology.SqlServer.Configuration;
     using Fabric.Terminology.SqlServer.Models.Dto;
     using Fabric.Terminology.SqlServer.Persistence.DataContext;
+
     using Nancy.TinyIoc;
 
     public class SqlAppComposition : IContainerComposition<TinyIoCContainer>
@@ -17,10 +18,12 @@
             container.Register<SharedContextFactory>().AsSingleton();
 
             container.Register<IPagingStrategy<ValueSetCodeDto, IValueSetCode>>(
-                                (c, s) => new DefaultPagingStrategy<ValueSetCodeDto, IValueSetCode>(c.Resolve<TerminologySqlSettings>().DefaultItemsPerPage));
+                (c, s) => new DefaultPagingStrategy<ValueSetCodeDto, IValueSetCode>(
+                    c.Resolve<TerminologySqlSettings>().DefaultItemsPerPage));
 
             container.Register<IPagingStrategy<ValueSetDescriptionDto, IValueSet>>(
-                    (c, s) => new DefaultPagingStrategy<ValueSetDescriptionDto, IValueSet>(c.Resolve<TerminologySqlSettings>().DefaultItemsPerPage));
+                (c, s) => new DefaultPagingStrategy<ValueSetDescriptionDto, IValueSet>(
+                    c.Resolve<TerminologySqlSettings>().DefaultItemsPerPage));
         }
     }
 }

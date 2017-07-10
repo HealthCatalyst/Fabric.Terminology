@@ -18,7 +18,7 @@
 
     using Xunit;
 
-    public class ValueSetModuleTests : ModuleTestsBase<ValueSetsModule>, IClassFixture<AppConfigurationFixture>
+    public class ValueSetModuleTests : ModuleTestsBase<ValueSetModule>, IClassFixture<AppConfigurationFixture>
     {
         private readonly IAppConfiguration appConfig;
         private readonly ILogger logger;

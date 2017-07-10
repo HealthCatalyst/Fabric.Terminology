@@ -97,7 +97,7 @@
                     this.Cache,
                     this.valueSetCodeRepository.GetValueSetCodes,
                     codeSystemCodes);
-                cached.AddRange(dtos.Select(mapper.Map));
+                cached.AddRange(dtos.Select(mapper.Map).Where(mapped => mapped != null));
             }
 
             return cached.OrderBy(vs => vs.Name).ToList().AsReadOnly();
@@ -137,6 +137,16 @@
             if (!nameFilterText.IsNullOrWhiteSpace())
             {
                 dtos = dtos.Where(dto => dto.ValueSetNM.Contains(nameFilterText));
+            }
+
+            if (codeSystemCodes.Any())
+            {
+                var codevsid = this.SharedContext.ValueSetCodes
+                    .Where(code => codeSystemCodes.Contains(code.CodeSystemCD))
+                    .Select(code => code.ValueSetID)
+                    .Distinct();
+
+                dtos = dtos.Join(codevsid, id => id.ValueSetID, sa => sa, (id, sa) => id);
             }
 
             return this.CreatePagedCollectionAsync(dtos, pagerSettings, codeSystemCodes, includeAllValueSetCodes);

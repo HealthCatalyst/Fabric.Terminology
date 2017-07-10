@@ -1,11 +1,12 @@
-﻿using System;
-using System.Threading;
-
-namespace Fabric.Terminology.SqlServer.Threading
+﻿namespace Fabric.Terminology.SqlServer.Threading
 {
+    using System;
+    using System.Threading;
+
     internal class UpgradeableReaderLock : IDisposable
     {
         private readonly ReaderWriterLockSlim locker;
+
         private bool upgraded;
 
         public UpgradeableReaderLock(ReaderWriterLockSlim locker)

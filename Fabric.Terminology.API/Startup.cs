@@ -73,7 +73,8 @@
                             .ForMember(dest => dest.CodeSystemCode, opt => opt.MapFrom(src => src.CodeSystem.Code));
                     });
 
-            app.UseOwin()
+            app.UseStaticFiles()
+                .UseOwin()
                 .UseNancy(opt => opt.Bootstrapper = new Bootstrapper(appConfig, Log.Logger));
 
             Log.Logger.Information("Fabric.Terminology.API started!");

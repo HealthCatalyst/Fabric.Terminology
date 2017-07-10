@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-
-namespace Fabric.Terminology.SqlServer.Caching
+﻿namespace Fabric.Terminology.SqlServer.Caching
 {
+    using System.Collections.Generic;
+
     internal interface ICachePolicy<TItem>
     {
         void AddToCache(string cacheKey, TItem item);

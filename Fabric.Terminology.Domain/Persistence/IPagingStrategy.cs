@@ -10,7 +10,11 @@
     {
         int DefaultItemsPerPage { get; }
 
-        PagedCollection<TResult> CreatePagedCollection(IEnumerable<TSrc> items, int totalCount, IPagerSettings pagerSettings, IModelMapper<TSrc, TResult> mapper);
+        PagedCollection<TResult> CreatePagedCollection(
+            IEnumerable<TSrc> items,
+            int totalCount,
+            IPagerSettings pagerSettings,
+            IModelMapper<TSrc, TResult> mapper);
 
         void EnsurePagerSettings(IPagerSettings pagerSettings);
     }

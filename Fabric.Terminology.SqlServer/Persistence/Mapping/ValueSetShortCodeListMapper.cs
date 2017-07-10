@@ -9,6 +9,8 @@
     using Fabric.Terminology.SqlServer.Models.Dto;
     using Fabric.Terminology.Domain.Persistence.Mapping;
 
+    using JetBrains.Annotations;
+
     internal sealed class ValueSetShortCodeListMapper : IModelMapper<ValueSetDescriptionDto, IValueSet>
     {
         private readonly IMemoryCacheProvider cache;
@@ -35,6 +37,7 @@
             this.codeSystemCds = codeSystemCodes.ToArray();
         }
 
+        [CanBeNull]
         public IValueSet Map(ValueSetDescriptionDto dto)
         {
             if (this.stash.ContainsKey(dto.ValueSetID))

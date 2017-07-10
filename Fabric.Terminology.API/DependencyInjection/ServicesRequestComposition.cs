@@ -3,6 +3,7 @@
     using Fabric.Terminology.Domain.DependencyInjection;
     using Fabric.Terminology.Domain.Services;
     using Fabric.Terminology.SqlServer.Persistence.DataContext;
+
     using Nancy.TinyIoc;
 
     public class ServicesRequestComposition : IContainerComposition<TinyIoCContainer>

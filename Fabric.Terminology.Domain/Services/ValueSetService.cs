@@ -50,7 +50,9 @@ namespace Fabric.Terminology.Domain.Services
             return this.GetValueSets(valueSetIds, new string[] { });
         }
 
-        public IReadOnlyCollection<IValueSet> GetValueSets(IReadOnlyCollection<string> valueSetIds, IReadOnlyCollection<string> codeSystemCodes)
+        public IReadOnlyCollection<IValueSet> GetValueSets(
+            IReadOnlyCollection<string> valueSetIds,
+            IReadOnlyCollection<string> codeSystemCodes)
         {
             return this.repository.GetValueSets(valueSetIds, codeSystemCodes, true);
         }
@@ -60,7 +62,9 @@ namespace Fabric.Terminology.Domain.Services
             return this.GetValueSetSummaries(valueSetIds, new string[] { });
         }
 
-        public IReadOnlyCollection<IValueSet> GetValueSetSummaries(IReadOnlyCollection<string> valueSetIds, IReadOnlyCollection<string> codeSystemCodes)
+        public IReadOnlyCollection<IValueSet> GetValueSetSummaries(
+            IReadOnlyCollection<string> valueSetIds,
+            IReadOnlyCollection<string> codeSystemCodes)
         {
             return this.repository.GetValueSets(valueSetIds, codeSystemCodes, false);
         }
@@ -89,7 +93,10 @@ namespace Fabric.Terminology.Domain.Services
             return this.repository.GetValueSetsAsync(settings, codeSystemCodes, false);
         }
 
-        public Task<PagedCollection<IValueSet>> FindValueSetsAsync(string nameFilterText, IPagerSettings pagerSettings, bool includeAllValueSetCodes = false)
+        public Task<PagedCollection<IValueSet>> FindValueSetsAsync(
+            string nameFilterText,
+            IPagerSettings pagerSettings,
+            bool includeAllValueSetCodes = false)
         {
             return this.FindValueSetsAsync(nameFilterText, pagerSettings, new string[] { }, includeAllValueSetCodes);
         }
@@ -112,7 +119,10 @@ namespace Fabric.Terminology.Domain.Services
             return this.repository.NameExists(name);
         }
 
-        public Attempt<IValueSet> Create(string name, IValueSetMeta meta, IReadOnlyCollection<IValueSetCodeItem> valueSetCodes)
+        public Attempt<IValueSet> Create(
+            string name,
+            IValueSetMeta meta,
+            IReadOnlyCollection<IValueSetCodeItem> valueSetCodes)
         {
             if (!this.NameIsUnique(name))
             {
@@ -140,7 +150,8 @@ namespace Fabric.Terminology.Domain.Services
                 SourceDescription = meta.SourceDescription,
                 VersionDescription = meta.VersionDescription,
                 ValueSetCodes =
-                    valueSetCodes.Select(
+                    valueSetCodes
+                        .Select(
                             code => new ValueSetCode
                             {
                                 Code = code.Code,
@@ -175,13 +186,15 @@ namespace Fabric.Terminology.Domain.Services
 
         private static bool ValidateValueSetMeta(IValueSetMeta meta, out string msg)
         {
-            msg = string.Empty;
-            msg += ValidateProperty("AuthoringSourceDescription", meta.AuthoringSourceDescription);
-            msg += ValidateProperty("PurposeDescription", meta.PurposeDescription);
-            msg += ValidateProperty("SourceDescription", meta.SourceDescription);
-            msg += ValidateProperty("VersionDescription", meta.VersionDescription);
+            var errors = new List<string>
+            {
+                ValidateProperty("AuthoringSourceDescription", meta.AuthoringSourceDescription),
+                ValidateProperty("PurposeDescription", meta.PurposeDescription),
+                ValidateProperty("SourceDescription", meta.SourceDescription),
+                ValidateProperty("VersionDescription", meta.VersionDescription)
+            };
 
-            msg = msg.Trim();
+            msg = string.Join(", ", errors.Where(m => !m.IsNullOrWhiteSpace()));
 
             return msg.IsNullOrWhiteSpace();
         }

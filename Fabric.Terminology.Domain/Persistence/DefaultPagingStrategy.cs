@@ -17,12 +17,21 @@
 
         public int DefaultItemsPerPage { get; }
 
-        public PagedCollection<TResult> CreatePagedCollection(IEnumerable<TSrc> items, int totalCount, IPagerSettings pagerSettings, IModelMapper<TSrc, TResult> mapper)
+        public PagedCollection<TResult> CreatePagedCollection(
+            IEnumerable<TSrc> items,
+            int totalCount,
+            IPagerSettings pagerSettings,
+            IModelMapper<TSrc, TResult> mapper)
         {
             return new PagedCollection<TResult>
             {
                 TotalItems = totalCount,
-                PagerSettings = new PagerSettings { CurrentPage = pagerSettings.CurrentPage, ItemsPerPage = pagerSettings.ItemsPerPage },
+                PagerSettings =
+                    new PagerSettings
+                    {
+                        CurrentPage = pagerSettings.CurrentPage,
+                        ItemsPerPage = pagerSettings.ItemsPerPage
+                    },
                 TotalPages = (int)Math.Ceiling((double)totalCount / pagerSettings.ItemsPerPage),
                 Items = items.Select(mapper.Map).ToList().AsReadOnly()
             };
