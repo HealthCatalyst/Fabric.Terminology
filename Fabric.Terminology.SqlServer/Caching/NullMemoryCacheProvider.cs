@@ -1,11 +1,12 @@
-﻿using System;
-using Fabric.Terminology.SqlServer.Configuration;
-using JetBrains.Annotations;
-
-namespace Fabric.Terminology.SqlServer.Caching
+﻿namespace Fabric.Terminology.SqlServer.Caching
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
+
+    using Fabric.Terminology.SqlServer.Configuration;
+
+    using JetBrains.Annotations;
 
     public class NullMemoryCacheProvider : IMemoryCacheProvider
     {
@@ -17,11 +18,11 @@ namespace Fabric.Terminology.SqlServer.Caching
         public IMemoryCacheSettings Settings { get; }
 
         public void ClearAll()
-        {            
+        {
         }
 
         public void ClearItem(string key)
-        {         
+        {
         }
 
         [CanBeNull]

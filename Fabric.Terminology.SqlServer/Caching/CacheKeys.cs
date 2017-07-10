@@ -1,8 +1,8 @@
-﻿using Fabric.Terminology.Domain.Models;
-
-namespace Fabric.Terminology.SqlServer.Caching
+﻿namespace Fabric.Terminology.SqlServer.Caching
 {
     using System.Collections.Generic;
+
+    using Fabric.Terminology.Domain.Models;
 
     internal static class CacheKeys
     {

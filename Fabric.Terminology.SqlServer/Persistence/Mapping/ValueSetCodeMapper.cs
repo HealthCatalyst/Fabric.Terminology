@@ -1,12 +1,14 @@
-﻿using Fabric.Terminology.Domain.Models;
-using Fabric.Terminology.SqlServer.Models.Dto;
-
-namespace Fabric.Terminology.SqlServer.Persistence.Mapping
+﻿namespace Fabric.Terminology.SqlServer.Persistence.Mapping
 {
+    using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence.Mapping;
+    using Fabric.Terminology.SqlServer.Models.Dto;
 
-    internal sealed class ValueSetCodeMapper : IModelMapper<ValueSetCodeDto,IValueSetCode>
+    using JetBrains.Annotations;
+
+    internal sealed class ValueSetCodeMapper : IModelMapper<ValueSetCodeDto, IValueSetCode>
     {
+        [CanBeNull]
         public IValueSetCode Map(ValueSetCodeDto dto)
         {
             var codeSystem = new ValueSetCodeSystem
