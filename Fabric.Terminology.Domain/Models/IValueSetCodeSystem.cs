@@ -9,7 +9,9 @@
         /// Maps to Terminology.ValueSetCode field CodeSystemCD Field
         /// </remarks>
         string Code { get; }
+
         string Name { get; }
+
         string Version { get; }
     }
 }

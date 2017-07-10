@@ -14,10 +14,18 @@
 
     public class ValueSetMetadataModule : SwaggerMetadataModule
     {
-        public ValueSetMetadataModule(ISwaggerModelCatalog modelCatalog, ISwaggerTagCatalog tagCatalog, TerminologySqlSettings settings)
+        public ValueSetMetadataModule(
+            ISwaggerModelCatalog modelCatalog,
+            ISwaggerTagCatalog tagCatalog,
+            TerminologySqlSettings settings)
             : base(modelCatalog, tagCatalog)
         {
-            modelCatalog.AddModels(typeof(ValueSetApiModel), typeof(ValueSetCodeApiModel), typeof(FindByTermQuery), typeof(PagerSettings), typeof(PagedCollection<ValueSetApiModel>));
+            modelCatalog.AddModels(
+                typeof(ValueSetApiModel),
+                typeof(ValueSetCodeApiModel),
+                typeof(FindByTermQuery),
+                typeof(PagerSettings),
+                typeof(PagedCollection<ValueSetApiModel>));
 
             // /{valueSetId}
             this.RouteDescriber.DescribeRouteWithParams(
@@ -29,15 +37,8 @@
                     new HttpResponseMetadata<ValueSetApiModel> { Code = 200, Message = "OK" },
                     new HttpResponseMetadata { Code = 400, Message = "Bad Request" }
                 },
-                new[]
-                {
-                    ParameterFactory.GetValueSetId(),
-                    ParameterFactory.GetCodeSystemCodesArray()
-                },
-                new[]
-                {
-                    TagsFactory.GetValueSetTag()
-                });
+                new[] { ParameterFactory.GetValueSetId(), ParameterFactory.GetCodeSystemCodesArray() },
+                new[] { TagsFactory.GetValueSetTag() });
 
             // /summary/{valueSetId}
             this.RouteDescriber.DescribeRouteWithParams(
@@ -46,18 +47,11 @@
                 "Gets a ValueSet Summary by it's ValueSetId",
                 new[]
                 {
-                   new HttpResponseMetadata<ValueSetApiModel> { Code = 200, Message = "OK" },
-                   new HttpResponseMetadata { Code = 400, Message = "Bad Request" }
+                    new HttpResponseMetadata<ValueSetApiModel> { Code = 200, Message = "OK" },
+                    new HttpResponseMetadata { Code = 400, Message = "Bad Request" }
                 },
-                new[]
-                {
-                    ParameterFactory.GetValueSetId(),
-                    ParameterFactory.GetCodeSystemCodesArray()
-                },
-                new[]
-                {
-                    TagsFactory.GetValueSetTag()
-                });
+                new[] { ParameterFactory.GetValueSetId(), ParameterFactory.GetCodeSystemCodesArray() },
+                new[] { TagsFactory.GetValueSetTag() });
 
             // /valuesets/?valuesetid=....
             this.RouteDescriber.DescribeRouteWithParams(
@@ -69,15 +63,8 @@
                     new HttpResponseMetadata<IEnumerable<ValueSetApiModel>> { Code = 200, Message = "OK" },
                     new HttpResponseMetadata { Code = 400, Message = "Bad Request" }
                 },
-                new[]
-                {
-                    ParameterFactory.GetValueSetIdArray(),
-                    ParameterFactory.GetCodeSystemCodesArray()
-                },
-                new[]
-                {
-                    TagsFactory.GetValueSetTag()
-                });
+                new[] { ParameterFactory.GetValueSetIdArray(), ParameterFactory.GetCodeSystemCodesArray() },
+                new[] { TagsFactory.GetValueSetTag() });
 
             // /summaries/?valuesetid=....
             this.RouteDescriber.DescribeRouteWithParams(
@@ -89,15 +76,8 @@
                     new HttpResponseMetadata<IEnumerable<ValueSetApiModel>> { Code = 200, Message = "OK" },
                     new HttpResponseMetadata { Code = 400, Message = "Bad Request" }
                 },
-                new[]
-                {
-                    ParameterFactory.GetValueSetIdArray(),
-                    ParameterFactory.GetCodeSystemCodesArray()
-                },
-                new[]
-                {
-                    TagsFactory.GetValueSetTag()
-                });
+                new[] { ParameterFactory.GetValueSetIdArray(), ParameterFactory.GetCodeSystemCodesArray() },
+                new[] { TagsFactory.GetValueSetTag() });
 
             this.RouteDescriber.DescribeRouteWithParams(
                 "GetPaged",
@@ -114,10 +94,7 @@
                     ParameterFactory.GetItemsPerPage(settings.DefaultItemsPerPage),
                     ParameterFactory.GetCodeSystemCodesArray()
                 },
-                new[]
-                {
-                    TagsFactory.GetValueSetPagedTag()
-                });
+                new[] { TagsFactory.GetValueSetPagedTag() });
 
             this.RouteDescriber.DescribeRouteWithParams(
                 "GetPagedSummaries",
@@ -134,10 +111,7 @@
                     ParameterFactory.GetItemsPerPage(settings.DefaultItemsPerPage),
                     ParameterFactory.GetCodeSystemCodesArray()
                 },
-                new[]
-                {
-                    TagsFactory.GetValueSetPagedTag()
-                });
+                new[] { TagsFactory.GetValueSetPagedTag() });
 
             this.RouteDescriber.DescribeRouteWithParams(
                 "Find",
@@ -148,14 +122,8 @@
                     new HttpResponseMetadata<PagedCollection<ValueSetApiModel>> { Code = 200, Message = "OK" },
                     new HttpResponseMetadata { Code = 400, Message = "Bad Request" }
                 },
-                new[]
-                {
-                    new BodyParameter<FindByTermQuery>(modelCatalog) { Required = false }
-                },
-                new[]
-                {
-                    TagsFactory.GetValueSetFindTag()
-                });
+                new[] { new BodyParameter<FindByTermQuery>(modelCatalog) { Required = false } },
+                new[] { TagsFactory.GetValueSetFindTag() });
 
             this.RouteDescriber.DescribeRouteWithParams(
                 "FindSummaries",
@@ -166,14 +134,8 @@
                     new HttpResponseMetadata<PagedCollection<ValueSetApiModel>> { Code = 200, Message = "OK" },
                     new HttpResponseMetadata { Code = 400, Message = "Bad Request" }
                 },
-                new[]
-                {
-                    new BodyParameter<FindByTermQuery>(modelCatalog) { Required = false }
-                },
-                new[]
-                {
-                    TagsFactory.GetValueSetFindTag()
-                });
+                new[] { new BodyParameter<FindByTermQuery>(modelCatalog) { Required = false } },
+                new[] { TagsFactory.GetValueSetFindTag() });
         }
     }
 }

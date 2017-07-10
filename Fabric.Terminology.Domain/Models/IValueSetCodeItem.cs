@@ -6,8 +6,11 @@
     public interface IValueSetCodeItem
     {
         string Code { get; }
+
         string ValueSetId { get; }
+
         string Name { get; }
+
         string CodeSystemCode { get; }
     }
 }

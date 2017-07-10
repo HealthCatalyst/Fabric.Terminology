@@ -1,16 +1,23 @@
-﻿using System.Collections.Generic;
-
-namespace Fabric.Terminology.Domain.Models
+﻿namespace Fabric.Terminology.Domain.Models
 {
+    using System.Collections.Generic;
+
     public class ValueSet : IValueSet
     {
         public string ValueSetId { get; set; }
+
         public string Name { get; set; }
+
         public bool IsCustom { get; set; }
+
         public string AuthoringSourceDescription { get; set; }
+
         public string PurposeDescription { get; set; }
+
         public string SourceDescription { get; set; }
-        public string VersionDescription { get;set; }
+
+        public string VersionDescription { get; set; }
+
         public bool AllCodesLoaded => this.ValueSetCodesCount == this.ValueSetCodes.Count;
 
         /// <summary>
@@ -21,6 +28,7 @@ namespace Fabric.Terminology.Domain.Models
         /// this count correct for representation in the UI.
         /// </remarks>
         public int ValueSetCodesCount { get; set; }
-        public IReadOnlyCollection<IValueSetCode> ValueSetCodes { get; set; } = new IValueSetCode[]{};        
+
+        public IReadOnlyCollection<IValueSetCode> ValueSetCodes { get; set; } = new IValueSetCode[] { };
     }
 }

@@ -19,7 +19,6 @@
 
     // TODO - JJ review comment - Is there a better response for some of the errors thana bad request?
     // There are several opportunities for exceptions to be thrown that aren’t due to the request being bad.
-
     public sealed class ValueSetModule : TerminologyModule<IValueSet>
     {
         private readonly IValueSetService valueSetService;

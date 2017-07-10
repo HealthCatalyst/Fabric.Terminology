@@ -1,7 +1,7 @@
-﻿using System.Linq;
-
-namespace Fabric.Terminology.API
+﻿namespace Fabric.Terminology.API
 {
+    using System.Linq;
+
     using AutoMapper;
 
     using Fabric.Terminology.API.Models;
@@ -11,7 +11,10 @@ namespace Fabric.Terminology.API
 
     public static partial class Extensions
     {
-        public static ValueSetApiModel ToValueSetApiModel(this IValueSet valueSet, bool summary = true, int shortListCount = 5)
+        public static ValueSetApiModel ToValueSetApiModel(
+            this IValueSet valueSet,
+            bool summary = true,
+            int shortListCount = 5)
         {
             var apiModel = Mapper.Map<IValueSet, ValueSetApiModel>(valueSet);
             if (!summary)
@@ -19,14 +22,15 @@ namespace Fabric.Terminology.API
                 return apiModel;
             }
 
-            apiModel.ValueSetCodes = apiModel.ValueSetCodes.Take(shortListCount)
-                .ToList()
-                .AsReadOnly();
+            apiModel.ValueSetCodes = apiModel.ValueSetCodes.Take(shortListCount).ToList().AsReadOnly();
 
             return apiModel;
         }
 
-        public static PagedCollection<ValueSetApiModel> ToValueSetApiModelPage(this PagedCollection<IValueSet> valuesets, bool summaries = true, int shortListCount = 5)
+        public static PagedCollection<ValueSetApiModel> ToValueSetApiModelPage(
+            this PagedCollection<IValueSet> valuesets,
+            bool summaries = true,
+            int shortListCount = 5)
         {
             return new PagedCollection<ValueSetApiModel>
             {
@@ -40,12 +44,13 @@ namespace Fabric.Terminology.API
         // acquired from Fabric.Authorization.Domain
         public static Error ToError(this ValidationResult validationResult)
         {
-            var details = validationResult.Errors.Select(validationResultError => new Error
-                {
-                    Code = validationResultError.ErrorCode,
-                    Message = validationResultError.ErrorMessage,
-                    Target = validationResultError.PropertyName
-                })
+            var details = validationResult.Errors.Select(
+                    validationResultError => new Error
+                    {
+                        Code = validationResultError.ErrorCode,
+                        Message = validationResultError.ErrorMessage,
+                        Target = validationResultError.PropertyName
+                    })
                 .ToList();
 
             var error = new Error

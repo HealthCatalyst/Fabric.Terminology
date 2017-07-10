@@ -1,6 +1,7 @@
 ﻿namespace Fabric.Terminology.API
 {
     using Fabric.Terminology.Domain.DependencyInjection;
+
     using Nancy.TinyIoc;
 
     /// <summary>

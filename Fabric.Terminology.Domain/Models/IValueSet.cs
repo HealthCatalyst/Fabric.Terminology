@@ -1,14 +1,14 @@
-﻿using System.Collections.Generic;
-
-namespace Fabric.Terminology.Domain.Models
+﻿namespace Fabric.Terminology.Domain.Models
 {
+    using System.Collections.Generic;
+
     public interface IValueSet : IValueSetMeta
     {
         string ValueSetId { get; set; }
 
         string Name { get; set; }
 
-        bool IsCustom { get; }      
+        bool IsCustom { get; }
 
         bool AllCodesLoaded { get; }
 
