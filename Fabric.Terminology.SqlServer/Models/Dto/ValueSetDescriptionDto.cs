@@ -22,6 +22,8 @@ namespace Fabric.Terminology.SqlServer.Models.Dto
 
         public string PublicFLG { get; set; }
 
+        public string LatestVersionFLG { get; set; }
+
         public string PurposeDSC { get; set; }
 
         public DateTime? RevisionDTS { get; set; }
