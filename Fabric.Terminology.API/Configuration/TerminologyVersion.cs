@@ -17,7 +17,7 @@
 
         public static string AssemblyVersion => Current.ToString();
 
-        public static string Route => $"v{Current.Major}";
+        public static string Route => $"v{Current.Major}.{Current.Minor}";
 
         public static SemVersion SemanticVersion => new SemVersion(
             Current.Major,
