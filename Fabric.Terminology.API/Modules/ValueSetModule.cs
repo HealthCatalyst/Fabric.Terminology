@@ -67,14 +67,14 @@
                     return valueSet.ToValueSetApiModel(summary, this.config.ValueSetSettings.ShortListCodeCount);
                 }
 
-                throw new ValueSetNotFoundException();
+                return this.CreateFailureResponse("ValueSet with matching ID was not found", HttpStatusCode.NotFound);
             }
             catch (ValueSetNotFoundException ex)
             {
                 this.Logger.Error(ex, ex.Message, valueSetId);
                 return this.CreateFailureResponse(
                     $"The ValueSet with id: {valueSetId} was not found.",
-                    HttpStatusCode.BadRequest);
+                    HttpStatusCode.InternalServerError);
             }
         }
 
@@ -86,7 +86,7 @@
 
                 if (!valueSetIds.Any())
                 {
-                    throw new ArgumentException("An array of value set ids is required.");
+                    return this.CreateFailureResponse("An array of value set ids is required.", HttpStatusCode.BadRequest);
                 }
 
                 var codeSystemCds = this.GetCodeSystems();
@@ -102,7 +102,7 @@
                 this.Logger.Error(ex, ex.Message);
                 return this.CreateFailureResponse(
                     "Failed to retrieve the list of value sets",
-                    HttpStatusCode.BadRequest);
+                    HttpStatusCode.InternalServerError);
             }
         }
 
@@ -124,7 +124,7 @@
                 this.Logger.Error(ex, ex.Message);
                 return this.CreateFailureResponse(
                     "Failed to retrieve the page of value sets",
-                    HttpStatusCode.BadRequest);
+                    HttpStatusCode.InternalServerError);
             }
         }
 
@@ -147,7 +147,7 @@
                 this.Logger.Error(ex, ex.Message);
                 return this.CreateFailureResponse(
                     "Failed to find the page of value sets",
-                    HttpStatusCode.BadRequest);
+                    HttpStatusCode.InternalServerError);
             }
         }
 

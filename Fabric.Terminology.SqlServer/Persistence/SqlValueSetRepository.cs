@@ -154,7 +154,7 @@
 
         private static Expression<Func<ValueSetDescriptionDto, bool>> GetBaseExpression()
         {
-            return baseSql => baseSql.PublicFLG == "Y" && baseSql.StatusCD == "Active";
+            return baseSql => baseSql.PublicFLG == "Y" && baseSql.StatusCD == "Active" && baseSql.LatestVersionFLG == "Y";
         }
 
         private async Task<PagedCollection<IValueSet>> CreatePagedCollectionAsync(
