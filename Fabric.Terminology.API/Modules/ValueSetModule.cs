@@ -158,11 +158,11 @@
 
         private IPagerSettings GetPagerSettings()
         {
-            var cp = (int)this.Request.Query["$skip"];
+            var skip = (int)this.Request.Query["$skip"];
             var count = (int)this.Request.Query["$top"];
             return new PagerSettings
             {
-                CurrentPage = cp == 0 ? 1 : cp,
+                CurrentPage = skip == 0 ? 1 : skip + 1,
                 ItemsPerPage = count == 0 ? this.config.TerminologySqlSettings.DefaultItemsPerPage : count
             };
         }

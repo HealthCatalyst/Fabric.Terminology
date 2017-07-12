@@ -50,7 +50,7 @@
                 Description = "Skip 'X' number of pages for the 'current' page",
                 In = ParameterIn.Query,
                 Required = false,
-                Default = 1,
+                Default = 0,
                 Type = "integer"
             };
         }
