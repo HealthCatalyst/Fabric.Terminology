@@ -17,8 +17,6 @@
 
     using Serilog;
 
-    // TODO - JJ review comment - Is there a better response for some of the errors thana bad request?
-    // There are several opportunities for exceptions to be thrown that aren’t due to the request being bad.
     public sealed class ValueSetModule : TerminologyModule<IValueSet>
     {
         private readonly IValueSetService valueSetService;
@@ -28,27 +26,17 @@
         private readonly ValueSetValidator valueSetValidator;
 
         public ValueSetModule(IValueSetService valueSetService, IAppConfiguration config, ILogger logger, ValueSetValidator valueSetValidator)
-            : base($"/{TerminologyVersion.Route}/valueset", logger)
+            : base($"/{TerminologyVersion.Route}/valuesets", logger)
         {
             this.valueSetService = valueSetService;
             this.config = config;
             this.valueSetValidator = valueSetValidator;
 
-            this.Get("/{valueSetId}", parameters => this.GetValueSet(parameters.valueSetId, false), null, "GetValueSet");
+            this.Get("/", _ => this.GetValueSetPage(), null, "GetPaged");
 
-            this.Get("/valuesets/", _ => this.GetValueSets(false), null, "GetValueSets");
+            this.Get("/{valueSetIds}", parameters => this.GetValueSets(parameters.valueSetIds), null, "GetValueSet");
 
-            this.Get("/summary/{valueSetId}", parameters => this.GetValueSet(parameters.valueSetId, true), null, "GetSummary");
-
-            this.Get("/summaries/", _ => this.GetValueSets(true), null, "GetSummaries");
-
-            this.Get("/paged/", _ => this.GetValueSetPage(false), null, "GetPaged");
-
-            this.Get("/paged/summaries/", _ => this.GetValueSetPage(true), null, "GetPagedSummaries");
-
-            this.Post("/find/", _ => this.Find(false), null, "Find");
-
-            this.Post("/find/summaries/", _ => this.Find(true), null, "FindSummaries");
+            this.Post("/find/", _ => this.Find(), null, "Find");
 
             this.Post("/", _ => this.AddValueSet(), null, "AddValueSet");
 
@@ -78,11 +66,17 @@
             }
         }
 
-        private object GetValueSets(bool summaries = true)
+        private object GetValueSets(string valueSetIds)
         {
             try
             {
-                var valueSetIds = this.GetValueSetIds();
+                var summary = this.GetSummarySetting();
+
+                var ids = this.GetValueSetIds(valueSetIds);
+                if (ids.Length == 1)
+                {
+                    return this.GetValueSet(ids[0], summary);
+                }
 
                 if (!valueSetIds.Any())
                 {
@@ -91,25 +85,26 @@
 
                 var codeSystemCds = this.GetCodeSystems();
 
-                var valueSets = summaries
-                                    ? this.valueSetService.GetValueSetSummaries(valueSetIds, codeSystemCds)
-                                    : this.valueSetService.GetValueSets(valueSetIds, codeSystemCds);
+                var valueSets = summary
+                                    ? this.valueSetService.GetValueSetSummaries(ids, codeSystemCds)
+                                    : this.valueSetService.GetValueSets(ids, codeSystemCds);
 
-                return valueSets.Select(vs => vs.ToValueSetApiModel(summaries, this.config.ValueSetSettings.ShortListCodeCount)).ToList();
+                return valueSets.Select(vs => vs.ToValueSetApiModel(summary, this.config.ValueSetSettings.ShortListCodeCount)).ToList();
             }
             catch (Exception ex)
             {
                 this.Logger.Error(ex, ex.Message);
                 return this.CreateFailureResponse(
-                    "Failed to retrieve the list of value sets",
+                    "Failed to retrieve value sets",
                     HttpStatusCode.InternalServerError);
             }
         }
 
-        private async Task<object> GetValueSetPage(bool summary = true)
+        private async Task<object> GetValueSetPage()
         {
             try
             {
+                var summary = this.GetSummarySetting();
                 var pagerSettings = this.GetPagerSettings();
                 var codeSystemCds = this.GetCodeSystems();
 
@@ -128,7 +123,7 @@
             }
         }
 
-        private async Task<object> Find(bool summary = true)
+        private async Task<object> Find()
         {
             try
             {
@@ -138,9 +133,9 @@
                                   model.Term,
                                   model.PagerSettings,
                                   model.CodeSystemCodes.ToArray(),
-                                  !summary);
+                                  !model.Summary);
 
-                return results.ToValueSetApiModelPage(summary, this.config.ValueSetSettings.ShortListCodeCount);
+                return results.ToValueSetApiModelPage(model.Summary, this.config.ValueSetSettings.ShortListCodeCount);
             }
             catch (Exception ex)
             {
@@ -163,13 +158,21 @@
 
         private IPagerSettings GetPagerSettings()
         {
-            var cp = (int)this.Request.Query.@p;
-            var count = (int)this.Request.Query.@count;
+            var cp = (int)this.Request.Query["$skip"];
+            var count = (int)this.Request.Query["$top"];
             return new PagerSettings
             {
                 CurrentPage = cp == 0 ? 1 : cp,
                 ItemsPerPage = count == 0 ? this.config.TerminologySqlSettings.DefaultItemsPerPage : count
             };
+        }
+
+        private bool GetSummarySetting()
+        {
+            var val = (string)this.Request.Query["$summary"];
+            bool ret;
+            bool.TryParse(val, out ret);
+            return val.IsNullOrWhiteSpace() || ret;
         }
 
         private FindByTermQuery EnsureQueryModel(FindByTermQuery model)
@@ -209,7 +212,12 @@
 
         private string[] GetCodeSystems()
         {
-            return this.CreateParameterArray((string)this.Request.Query.@codesystem);
+            return this.CreateParameterArray((string)this.Request.Query["$codesytems"]);
+        }
+
+        private string[] GetValueSetIds(string valueSetIds)
+        {
+            return this.CreateParameterArray(valueSetIds);
         }
 
         private string[] GetValueSetIds()
