@@ -52,8 +52,8 @@
                 },
                 new[]
                 {
-                    ParameterFactory.GetPageNumber(),
-                    ParameterFactory.GetItemsPerPage(settings.DefaultItemsPerPage),
+                    ParameterFactory.GetSkip(),
+                    ParameterFactory.GetTop(settings.DefaultItemsPerPage),
                     ParameterFactory.GetSummary(),
                     ParameterFactory.GetCodeSystemCodesArray()
                 },

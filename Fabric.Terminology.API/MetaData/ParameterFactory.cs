@@ -42,7 +42,7 @@
             };
         }
 
-        public static Parameter GetPageNumber()
+        public static Parameter GetSkip()
         {
             return new Parameter
             {
@@ -55,7 +55,7 @@
             };
         }
 
-        public static Parameter GetItemsPerPage(int defaultItemsPerPage = 20)
+        public static Parameter GetTop(int defaultItemsPerPage = 20)
         {
             return new Parameter
             {
