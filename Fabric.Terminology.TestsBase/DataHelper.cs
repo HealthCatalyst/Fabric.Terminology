@@ -67,7 +67,7 @@
                 TotalItems = valueSets.Count,
                 PagerSettings = new PagerSettings { CurrentPage = currentPage, ItemsPerPage = itemsPerPage },
                 TotalPages = (int)Math.Ceiling((double)valueSets.Count / itemsPerPage),
-                Items = valueSets.Take(itemsPerPage).ToList().AsReadOnly()
+                Values = valueSets.Take(itemsPerPage).ToList().AsReadOnly()
             };
         }
     }

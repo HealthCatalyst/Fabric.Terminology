@@ -10,7 +10,7 @@
 
         public int TotalPages { get; set; } = 0;
 
-        public IReadOnlyCollection<T> Items { get; set; } = new List<T>().AsReadOnly();
+        public IReadOnlyCollection<T> Values { get; set; } = new List<T>().AsReadOnly();
 
         public static PagedCollection<T> Empty()
         {

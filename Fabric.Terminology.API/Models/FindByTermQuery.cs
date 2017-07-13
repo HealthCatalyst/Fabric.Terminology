@@ -11,5 +11,7 @@
         public PagerSettings PagerSettings { get; set; }
 
         public IEnumerable<string> CodeSystemCodes { get; set; }
+
+        public bool Summary { get; set; } = true;
     }
 }

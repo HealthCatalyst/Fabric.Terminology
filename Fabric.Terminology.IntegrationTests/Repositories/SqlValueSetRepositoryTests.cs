@@ -34,7 +34,7 @@
 
             // Act
             var valueSets = this.Profiler.ExecuteTimed(() => this.valueSetRepository.GetValueSetsAsync(pagerSettings, new string[] { }));
-            this.Output.WriteLine($"Total Items {valueSets.TotalItems}");
+            this.Output.WriteLine($"Total Values {valueSets.TotalItems}");
             this.Output.WriteLine($"Total Pages {valueSets.TotalPages}");
 
             // Assert

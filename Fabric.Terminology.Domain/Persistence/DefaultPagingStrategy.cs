@@ -33,7 +33,7 @@
                         ItemsPerPage = pagerSettings.ItemsPerPage
                     },
                 TotalPages = (int)Math.Ceiling((double)totalCount / pagerSettings.ItemsPerPage),
-                Items = items.Select(mapper.Map).ToList().AsReadOnly()
+                Values = items.Select(mapper.Map).ToList().AsReadOnly()
             };
         }
 

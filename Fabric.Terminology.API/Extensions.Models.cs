@@ -37,7 +37,7 @@
                 PagerSettings = valuesets.PagerSettings,
                 TotalItems = valuesets.TotalItems,
                 TotalPages = valuesets.TotalPages,
-                Items = valuesets.Items.Select(vs => vs.ToValueSetApiModel(summaries, shortListCount)).ToList()
+                Values = valuesets.Values.Select(vs => vs.ToValueSetApiModel(summaries, shortListCount)).ToList()
             };
         }
 

@@ -30,53 +30,15 @@
             // /{valueSetId}
             this.RouteDescriber.DescribeRouteWithParams(
                 "GetValueSet",
-                "Returns a single ValueSet",
-                "Gets a ValueSet by it's ValueSetId",
+                "Returns one or more ValueSet(s) by ValueSetId(s)",
+                "Gets a ValueSet by it's ValueSetId or a collection of ValueSets by CSV of ValueSetId(s)",
                 new[]
                 {
                     new HttpResponseMetadata<ValueSetApiModel> { Code = 200, Message = "OK" },
-                    new HttpResponseMetadata { Code = 400, Message = "Bad Request" }
+                    new HttpResponseMetadata { Code = 404, Message = "Not Found" },
+                    new HttpResponseMetadata { Code = 500, Message = "Internal Server Error" }
                 },
-                new[] { ParameterFactory.GetValueSetId(), ParameterFactory.GetCodeSystemCodesArray() },
-                new[] { TagsFactory.GetValueSetTag() });
-
-            // /summary/{valueSetId}
-            this.RouteDescriber.DescribeRouteWithParams(
-                "GetSummary",
-                "Returns a single ValueSet Summary",
-                "Gets a ValueSet Summary by it's ValueSetId",
-                new[]
-                {
-                    new HttpResponseMetadata<ValueSetApiModel> { Code = 200, Message = "OK" },
-                    new HttpResponseMetadata { Code = 400, Message = "Bad Request" }
-                },
-                new[] { ParameterFactory.GetValueSetId(), ParameterFactory.GetCodeSystemCodesArray() },
-                new[] { TagsFactory.GetValueSetTag() });
-
-            // /valuesets/?valuesetid=....
-            this.RouteDescriber.DescribeRouteWithParams(
-                "GetValueSets",
-                "Returns multiple ValueSets",
-                "Gets a collection of ValueSets by an array of ValueSetId(s)",
-                new[]
-                {
-                    new HttpResponseMetadata<IEnumerable<ValueSetApiModel>> { Code = 200, Message = "OK" },
-                    new HttpResponseMetadata { Code = 400, Message = "Bad Request" }
-                },
-                new[] { ParameterFactory.GetValueSetIdArray(), ParameterFactory.GetCodeSystemCodesArray() },
-                new[] { TagsFactory.GetValueSetTag() });
-
-            // /summaries/?valuesetid=....
-            this.RouteDescriber.DescribeRouteWithParams(
-                "GetSummaries",
-                "Returns multiple ValueSet Summaries",
-                "Gets a collection of ValueSet Summaries by an array of ValueSetId(s)",
-                new[]
-                {
-                    new HttpResponseMetadata<IEnumerable<ValueSetApiModel>> { Code = 200, Message = "OK" },
-                    new HttpResponseMetadata { Code = 400, Message = "Bad Request" }
-                },
-                new[] { ParameterFactory.GetValueSetIdArray(), ParameterFactory.GetCodeSystemCodesArray() },
+                new[] { ParameterFactory.GetValueSetIdArray(), ParameterFactory.GetSummary(), ParameterFactory.GetCodeSystemCodesArray() },
                 new[] { TagsFactory.GetValueSetTag() });
 
             this.RouteDescriber.DescribeRouteWithParams(
@@ -86,32 +48,17 @@
                 new[]
                 {
                     new HttpResponseMetadata<PagedCollection<ValueSetApiModel>> { Code = 200, Message = "OK" },
-                    new HttpResponseMetadata { Code = 400, Message = "Bad Request" }
+                    new HttpResponseMetadata { Code = 500, Message = "Internal Server Error" }
                 },
                 new[]
                 {
-                    ParameterFactory.GetPageNumber(),
-                    ParameterFactory.GetItemsPerPage(settings.DefaultItemsPerPage),
+                    ParameterFactory.GetSkip(),
+                    ParameterFactory.GetTop(settings.DefaultItemsPerPage),
+                    ParameterFactory.GetSummary(),
                     ParameterFactory.GetCodeSystemCodesArray()
                 },
-                new[] { TagsFactory.GetValueSetPagedTag() });
+                new[] { TagsFactory.GetValueSetTag() });
 
-            this.RouteDescriber.DescribeRouteWithParams(
-                "GetPagedSummaries",
-                "Returns a paged list of ValueSet summaries",
-                "Gets a paged collection of ValueSet summaries",
-                new[]
-                {
-                    new HttpResponseMetadata<PagedCollection<ValueSetApiModel>> { Code = 200, Message = "OK" },
-                    new HttpResponseMetadata { Code = 400, Message = "Bad Request" }
-                },
-                new[]
-                {
-                    ParameterFactory.GetPageNumber(),
-                    ParameterFactory.GetItemsPerPage(settings.DefaultItemsPerPage),
-                    ParameterFactory.GetCodeSystemCodesArray()
-                },
-                new[] { TagsFactory.GetValueSetPagedTag() });
 
             this.RouteDescriber.DescribeRouteWithParams(
                 "Find",
@@ -120,19 +67,7 @@
                 new[]
                 {
                     new HttpResponseMetadata<PagedCollection<ValueSetApiModel>> { Code = 200, Message = "OK" },
-                    new HttpResponseMetadata { Code = 400, Message = "Bad Request" }
-                },
-                new[] { new BodyParameter<FindByTermQuery>(modelCatalog) { Required = false } },
-                new[] { TagsFactory.GetValueSetFindTag() });
-
-            this.RouteDescriber.DescribeRouteWithParams(
-                "FindSummaries",
-                "Search by 'Name' of ValueSet operation",
-                "Gets a paged collection of ValueSet summaries matching the 'Name' filter",
-                new[]
-                {
-                    new HttpResponseMetadata<PagedCollection<ValueSetApiModel>> { Code = 200, Message = "OK" },
-                    new HttpResponseMetadata { Code = 400, Message = "Bad Request" }
+                    new HttpResponseMetadata { Code = 500, Message = "Internal Server Error" }
                 },
                 new[] { new BodyParameter<FindByTermQuery>(modelCatalog) { Required = false } },
                 new[] { TagsFactory.GetValueSetFindTag() });

@@ -20,16 +20,7 @@
             return new Tag
             {
                 Description = "Operations related to Shared Terminology Value Sets",
-                Name = $"{TerminologyVersion.Route}/valueset"
-            };
-        }
-
-        public static Tag GetValueSetPagedTag()
-        {
-            return new Tag
-            {
-                Description = "Operations relating to paged lists of ValueSets",
-                Name = $"{TerminologyVersion.Route}/valueset/paged"
+                Name = $"{TerminologyVersion.Route}/valuesets"
             };
         }
 
@@ -38,7 +29,7 @@
             return new Tag
             {
                 Description = "Search operations relating to ValueSets",
-                Name = $"{TerminologyVersion.Route}/valueset/find"
+                Name = $"{TerminologyVersion.Route}/valuesets/find"
             };
         }
     }

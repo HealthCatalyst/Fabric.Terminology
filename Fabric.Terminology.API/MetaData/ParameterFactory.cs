@@ -4,18 +4,6 @@
 
     internal static class ParameterFactory
     {
-        public static Parameter GetValueSetId()
-        {
-            return new Parameter
-            {
-                Name = "valueSetId",
-                In = ParameterIn.Path,
-                Required = true,
-                Description = "The Id of the ValueSet - typically ValueSetId",
-                Type = "string"
-            };
-        }
-
         public static Parameter GetValueSetIdArray()
         {
             return new Parameter
@@ -24,7 +12,7 @@
                 In = ParameterIn.Query,
                 Required = true,
                 CollectionFormat = CollectionFormats.Csv,
-                Description = "An array of ValueSetIds",
+                Description = "A CSV string of ValueSetIds",
                 Type = "string"
             };
         }
@@ -33,7 +21,7 @@
         {
             return new Parameter
             {
-                Name = "codesystem",
+                Name = "$codesystems",
                 In = ParameterIn.Query,
                 Required = false,
                 CollectionFormat = CollectionFormats.Csv,
@@ -42,24 +30,36 @@
             };
         }
 
-        public static Parameter GetPageNumber()
+        public static Parameter GetSummary()
         {
             return new Parameter
             {
-                Name = "p",
-                Description = "The page number for the 'current' page",
+                Name = "$summary",
+                Description = "Indicates ValueSets returned should be partial summaries - e.g. codes listing is not complete and intended to be used for presentation.",
+                Required = false,
+                Type = "boolean",
+                Default = true
+            };
+        }
+
+        public static Parameter GetSkip()
+        {
+            return new Parameter
+            {
+                Name = "$skip",
+                Description = "Skip 'X' number of pages for the 'current' page",
                 In = ParameterIn.Query,
                 Required = false,
-                Default = 1,
+                Default = 0,
                 Type = "integer"
             };
         }
 
-        public static Parameter GetItemsPerPage(int defaultItemsPerPage = 20)
+        public static Parameter GetTop(int defaultItemsPerPage = 20)
         {
             return new Parameter
             {
-                Name = "count",
+                Name = "$top",
                 Description = "The number of items to be included in a page",
                 In = ParameterIn.Query,
                 Required = false,
