@@ -1,0 +1,66 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+    <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
+    <CodeAnalysisRuleSet>..\Catalyst.MostRules.Error.ruleset</CodeAnalysisRuleSet>
+ </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile></DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Logs\**" />
+    <Compile Remove="Properties\PublishProfiles\**" />
+    <Compile Remove="wwwroot\swagger\dist\**" />
+    <Content Remove="Logs\**" />
+    <Content Remove="Properties\PublishProfiles\**" />
+    <Content Remove="wwwroot\swagger\dist\**" />
+    <EmbeddedResource Remove="Logs\**" />
+    <EmbeddedResource Remove="Properties\PublishProfiles\**" />
+    <EmbeddedResource Remove="wwwroot\swagger\dist\**" />
+    <None Remove="Logs\**" />
+    <None Remove="Properties\PublishProfiles\**" />
+    <None Remove="wwwroot\swagger\dist\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="wwwroot\swagger\favicon-16x16.png" />
+    <Content Include="wwwroot\swagger\favicon-32x32.png" />
+    <Content Include="wwwroot\swagger\index.html" />
+    <Content Include="wwwroot\swagger\oauth2-redirect.html" />
+    <Content Include="wwwroot\swagger\swagger-ui-bundle.js" />
+    <Content Include="wwwroot\swagger\swagger-ui-bundle.js.map" />
+    <Content Include="wwwroot\swagger\swagger-ui-standalone-preset.js" />
+    <Content Include="wwwroot\swagger\swagger-ui-standalone-preset.js.map" />
+    <Content Include="wwwroot\swagger\swagger-ui.css" />
+    <Content Include="wwwroot\swagger\swagger-ui.css.map" />
+    <Content Include="wwwroot\swagger\swagger-ui.js" />
+    <Content Include="wwwroot\swagger\swagger-ui.js.map" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="automapper" Version="6.1.0" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore" Version="1.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Owin" Version="1.1.2" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="1.1.2" />
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.3.0-beta1" />
+    <PackageReference Include="Nancy" Version="2.0.0-clinteastwood" />
+    <PackageReference Include="Nancy.Swagger" Version="2.2.0-alpha" />
+    <PackageReference Include="semver" Version="2.0.4" />
+    <PackageReference Include="Serilog" Version="2.4.0" />
+    <PackageReference Include="Serilog.Sinks.Literate" Version="2.1.0" />
+    <PackageReference Include="Serilog.Sinks.RollingFile" Version="3.3.0" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.0.2" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Fabric.Terminology.Domain\Fabric.Terminology.Domain.csproj" />
+    <ProjectReference Include="..\Fabric.Terminology.SqlServer\Fabric.Terminology.SqlServer.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+	<Compile Update="Extensions.*.cs">
+		<DependentUpon>Extensions.cs</DependentUpon>
+	</Compile>
+	</ItemGroup>
+</Project>
