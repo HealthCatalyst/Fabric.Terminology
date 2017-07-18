@@ -57,9 +57,10 @@
         }
 
         [CanBeNull]
-        public IValueSet GetValueSet(string valueSetId, IReadOnlyCollection<string> codeSystemCodes)
+        public IValueSet GetValueSet(string valueSetId, IEnumerable<string> codeSystemCodes)
         {
-            var cached = this.Cache.GetCachedValueSetWithAllCodes(valueSetId, codeSystemCodes);
+            var codeSystemCDs = codeSystemCodes as string[] ?? codeSystemCodes.ToArray();
+            var cached = this.Cache.GetCachedValueSetWithAllCodes(valueSetId, codeSystemCDs);
             if (cached != null)
             {
                 return cached;
@@ -72,14 +73,14 @@
             var mapper = new ValueSetFullCodeListMapper(
                 this.Cache,
                 this.valueSetCodeRepository.GetValueSetCodes,
-                codeSystemCodes);
+                codeSystemCDs);
 
             return mapper.Map(dto);
         }
 
         public IReadOnlyCollection<IValueSet> GetValueSets(
-            IReadOnlyCollection<string> valueSetIds,
-            IReadOnlyCollection<string> codeSystemCodes,
+            IEnumerable<string> valueSetIds,
+            IEnumerable<string> codeSystemCodes,
             bool includeAllValueSetCodes = false)
         {
             var setIds = valueSetIds as string[] ?? valueSetIds.ToArray();
@@ -105,7 +106,7 @@
 
         public Task<PagedCollection<IValueSet>> GetValueSetsAsync(
             IPagerSettings pagerSettings,
-            IReadOnlyCollection<string> codeSystemCodes,
+            IEnumerable<string> codeSystemCodes,
             bool includeAllValueSetCodes = false)
         {
             return this.FindValueSetsAsync(string.Empty, pagerSettings, codeSystemCodes, includeAllValueSetCodes);
@@ -114,7 +115,7 @@
         public Task<PagedCollection<IValueSet>> GetValueSetsAsync(
             IReadOnlyCollection<string> valueSetIds,
             IPagerSettings pagerSettings,
-            IReadOnlyCollection<string> codeSystemCodes,
+            IEnumerable<string> codeSystemCodes,
             bool includeAllValueSetCodes = false)
         {
             if (!valueSetIds.Any())
@@ -130,7 +131,7 @@
         public Task<PagedCollection<IValueSet>> FindValueSetsAsync(
             string nameFilterText,
             IPagerSettings pagerSettings,
-            IReadOnlyCollection<string> codeSystemCodes,
+            IEnumerable<string> codeSystemCodes,
             bool includeAllValueSetCodes = false)
         {
             var dtos = this.DbSet.Where(GetBaseExpression());
@@ -139,17 +140,18 @@
                 dtos = dtos.Where(dto => dto.ValueSetNM.Contains(nameFilterText));
             }
 
-            if (codeSystemCodes.Any())
+            var systemCodes = codeSystemCodes as string[] ?? codeSystemCodes.ToArray();
+            if (systemCodes.Any())
             {
                 var codevsid = this.SharedContext.ValueSetCodes
-                    .Where(code => codeSystemCodes.Contains(code.CodeSystemCD))
+                    .Where(code => systemCodes.Contains(code.CodeSystemCD))
                     .Select(code => code.ValueSetID)
                     .Distinct();
 
                 dtos = dtos.Join(codevsid, id => id.ValueSetID, sa => sa, (id, sa) => id);
             }
 
-            return this.CreatePagedCollectionAsync(dtos, pagerSettings, codeSystemCodes, includeAllValueSetCodes);
+            return this.CreatePagedCollectionAsync(dtos, pagerSettings, systemCodes, includeAllValueSetCodes);
         }
 
         private static Expression<Func<ValueSetDescriptionDto, bool>> GetBaseExpression()
@@ -160,7 +162,7 @@
         private async Task<PagedCollection<IValueSet>> CreatePagedCollectionAsync(
             IQueryable<ValueSetDescriptionDto> source,
             IPagerSettings pagerSettings,
-            IReadOnlyCollection<string> codeSystemCodes,
+            IEnumerable<string> codeSystemCodes,
             bool includeAllValueSetCodes = false)
         {
             this.pagingStrategy.EnsurePagerSettings(pagerSettings);
@@ -192,7 +194,8 @@
                     .ToArray();
 
                 // partition query
-                var lookup = await this.valueSetCodeRepository.LookupValueSetCodes(valueSetIds, codeSystemCodes);
+                var systemCodes = codeSystemCodes as string[] ?? codeSystemCodes.ToArray();
+                var lookup = await this.valueSetCodeRepository.LookupValueSetCodes(valueSetIds, systemCodes);
 
                 var cachedValueSetDictionary = cachedValueSets.ToDictionary(vs => vs.ValueSetId, vs => vs);
 
@@ -201,7 +204,7 @@
                     lookup,
                     cachedValueSetDictionary,
                     this.valueSetCodeRepository.CountValueSetCodes,
-                    codeSystemCodes);
+                    systemCodes);
             }
 
             return this.pagingStrategy.CreatePagedCollection(items, count, pagerSettings, mapper);

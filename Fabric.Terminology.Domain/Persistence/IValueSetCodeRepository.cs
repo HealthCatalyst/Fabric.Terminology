@@ -8,15 +8,15 @@
 
     public interface IValueSetCodeRepository
     {
-        int CountValueSetCodes(string valueSetId, IReadOnlyCollection<string> codeSystemCodes);
+        int CountValueSetCodes(string valueSetId, IEnumerable<string> codeSystemCodes);
 
         IReadOnlyCollection<IValueSetCode> GetValueSetCodes(
             string valueSetId,
-            IReadOnlyCollection<string> codeSystemCodes);
+            IEnumerable<string> codeSystemCodes);
 
         Task<ILookup<string, IValueSetCode>> LookupValueSetCodes(
-            IReadOnlyCollection<string> valueSetIds,
-            IReadOnlyCollection<string> codeSystemCodes,
+            IEnumerable<string> valueSetIds,
+            IEnumerable<string> codeSystemCodes,
             int count = 5);
     }
 }

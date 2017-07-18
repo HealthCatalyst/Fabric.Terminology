@@ -40,31 +40,31 @@ namespace Fabric.Terminology.Domain.Services
         }
 
         [CanBeNull]
-        public IValueSet GetValueSet(string valueSetId, IReadOnlyCollection<string> codeSystemCodes)
+        public IValueSet GetValueSet(string valueSetId, IEnumerable<string> codeSystemCodes)
         {
             return this.repository.GetValueSet(valueSetId, codeSystemCodes);
         }
 
-        public IReadOnlyCollection<IValueSet> GetValueSets(IReadOnlyCollection<string> valueSetIds)
+        public IReadOnlyCollection<IValueSet> GetValueSets(IEnumerable<string> valueSetIds)
         {
             return this.GetValueSets(valueSetIds, new string[] { });
         }
 
         public IReadOnlyCollection<IValueSet> GetValueSets(
-            IReadOnlyCollection<string> valueSetIds,
-            IReadOnlyCollection<string> codeSystemCodes)
+            IEnumerable<string> valueSetIds,
+            IEnumerable<string> codeSystemCodes)
         {
             return this.repository.GetValueSets(valueSetIds, codeSystemCodes, true);
         }
 
-        public IReadOnlyCollection<IValueSet> GetValueSetSummaries(IReadOnlyCollection<string> valueSetIds)
+        public IReadOnlyCollection<IValueSet> GetValueSetSummaries(IEnumerable<string> valueSetIds)
         {
             return this.GetValueSetSummaries(valueSetIds, new string[] { });
         }
 
         public IReadOnlyCollection<IValueSet> GetValueSetSummaries(
-            IReadOnlyCollection<string> valueSetIds,
-            IReadOnlyCollection<string> codeSystemCodes)
+            IEnumerable<string> valueSetIds,
+            IEnumerable<string> codeSystemCodes)
         {
             return this.repository.GetValueSets(valueSetIds, codeSystemCodes, false);
         }
@@ -76,7 +76,7 @@ namespace Fabric.Terminology.Domain.Services
 
         public Task<PagedCollection<IValueSet>> GetValueSetsAsync(
             IPagerSettings settings,
-            IReadOnlyCollection<string> codeSystemCodes)
+            IEnumerable<string> codeSystemCodes)
         {
             return this.repository.GetValueSetsAsync(settings, codeSystemCodes, true);
         }
@@ -88,7 +88,7 @@ namespace Fabric.Terminology.Domain.Services
 
         public Task<PagedCollection<IValueSet>> GetValueSetSummariesAsync(
             IPagerSettings settings,
-            IReadOnlyCollection<string> codeSystemCodes)
+            IEnumerable<string> codeSystemCodes)
         {
             return this.repository.GetValueSetsAsync(settings, codeSystemCodes, false);
         }
@@ -104,7 +104,7 @@ namespace Fabric.Terminology.Domain.Services
         public Task<PagedCollection<IValueSet>> FindValueSetsAsync(
             string nameFilterText,
             IPagerSettings pagerSettings,
-            IReadOnlyCollection<string> codeSystemCodes,
+            IEnumerable<string> codeSystemCodes,
             bool includeAllValueSetCodes = false)
         {
             return this.repository.FindValueSetsAsync(
@@ -122,7 +122,7 @@ namespace Fabric.Terminology.Domain.Services
         public Attempt<IValueSet> Create(
             string name,
             IValueSetMeta meta,
-            IReadOnlyCollection<IValueSetCodeItem> valueSetCodes)
+            IEnumerable<IValueSetCodeItem> valueSetCodes)
         {
             if (!this.NameIsUnique(name))
             {
@@ -134,7 +134,8 @@ namespace Fabric.Terminology.Domain.Services
                 return Attempt<IValueSet>.Failed(new ArgumentException(msg));
             }
 
-            if (!valueSetCodes.Any())
+            var valueSetCodeItems = valueSetCodes as IValueSetCodeItem[] ?? valueSetCodes.ToArray();
+            if (!valueSetCodeItems.Any())
             {
                 return Attempt<IValueSet>.Failed(new ArgumentException("A value set must include at least one code."));
             }
@@ -150,7 +151,7 @@ namespace Fabric.Terminology.Domain.Services
                 SourceDescription = meta.SourceDescription,
                 VersionDescription = meta.VersionDescription,
                 ValueSetCodes =
-                    valueSetCodes
+                    valueSetCodeItems
                         .Select(
                             code => new ValueSetCode
                             {
@@ -163,7 +164,7 @@ namespace Fabric.Terminology.Domain.Services
                         .ToList()
                         .AsReadOnly(),
                 IsCustom = true,
-                ValueSetCodesCount = valueSetCodes.Count
+                ValueSetCodesCount = valueSetCodeItems.Count()
             };
 
             Created?.Invoke(this, valueSet);

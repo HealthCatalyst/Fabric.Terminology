@@ -12,22 +12,22 @@
         bool NameExists(string name);
 
         [CanBeNull]
-        IValueSet GetValueSet(string valueSetId, IReadOnlyCollection<string> codeSystemCodes);
+        IValueSet GetValueSet(string valueSetId, IEnumerable<string> codeSystemCodes);
 
         IReadOnlyCollection<IValueSet> GetValueSets(
-            IReadOnlyCollection<string> valueSetIds,
-            IReadOnlyCollection<string> codeSystemCodes,
+            IEnumerable<string> valueSetIds,
+            IEnumerable<string> codeSystemCodes,
             bool includeAllValueSetCodes = false);
 
         Task<PagedCollection<IValueSet>> GetValueSetsAsync(
             IPagerSettings pagerSettings,
-            IReadOnlyCollection<string> codeSystemCodes,
+            IEnumerable<string> codeSystemCodes,
             bool includeAllValueSetCodes = false);
 
         Task<PagedCollection<IValueSet>> FindValueSetsAsync(
             string nameFilterText,
             IPagerSettings pagerSettings,
-            IReadOnlyCollection<string> codeSystemCodes,
+            IEnumerable<string> codeSystemCodes,
             bool includeAllValueSetCodes = false);
     }
 }

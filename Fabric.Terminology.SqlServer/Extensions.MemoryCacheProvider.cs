@@ -13,7 +13,7 @@
     public static partial class Extensions
     {
         [CanBeNull]
-        internal static IValueSet GetCachedValueSetWithAllCodes(this IMemoryCacheProvider cache, string valueSetId, IReadOnlyCollection<string> codeSystemCodes)
+        internal static IValueSet GetCachedValueSetWithAllCodes(this IMemoryCacheProvider cache, string valueSetId, IEnumerable<string> codeSystemCodes)
         {
             var cacheKey = CacheKeys.ValueSetKey(valueSetId, codeSystemCodes);
             var fnd = (IValueSet)cache.GetItem(cacheKey);
