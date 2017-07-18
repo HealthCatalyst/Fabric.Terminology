@@ -28,7 +28,7 @@
             ILookup<string, IValueSetCode> lookup, 
             IDictionary<string, IValueSet> previouslyCached,
             Func<string, string[], int> getCount,
-            IReadOnlyCollection<string> codeSystemCodes)
+            IEnumerable<string> codeSystemCodes)
         {
             this.cache = memCache;
             this.lookupCodes = lookup;

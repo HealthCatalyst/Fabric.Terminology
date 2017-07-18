@@ -39,23 +39,25 @@
 
         protected DbSet<ValueSetCodeDto> DbSet => this.SharedContext.ValueSetCodes;
 
-        public int CountValueSetCodes(string valueSetId, IReadOnlyCollection<string> codeSystemCodes)
+        public int CountValueSetCodes(string valueSetId, IEnumerable<string> codeSystemCodes)
         {
-            return codeSystemCodes.Any()
+            var systemCodes = codeSystemCodes as string[] ?? codeSystemCodes.ToArray();
+            return systemCodes.Any()
                        ? this.DbSet.Count(
-                           dto => dto.ValueSetID == valueSetId && codeSystemCodes.Contains(dto.CodeSystemCD))
+                           dto => dto.ValueSetID == valueSetId && systemCodes.Contains(dto.CodeSystemCD))
                        : this.DbSet.Count(dto => dto.ValueSetID == valueSetId);
         }
 
         public IReadOnlyCollection<IValueSetCode> GetValueSetCodes(
             string valueSetId,
-            IReadOnlyCollection<string> codeSystemCodes)
+            IEnumerable<string> codeSystemCodes)
         {
             var dtos = this.DbSet.Where(dto => dto.ValueSetID == valueSetId);
 
-            if (codeSystemCodes.Any())
+            var systemCodes = codeSystemCodes as string[] ?? codeSystemCodes.ToArray();
+            if (systemCodes.Any())
             {
-                dtos = dtos.Where(dto => codeSystemCodes.Contains(dto.CodeSystemCD));
+                dtos = dtos.Where(dto => systemCodes.Contains(dto.CodeSystemCD));
             }
 
             dtos = dtos.OrderBy(this.SortExpression);
@@ -72,8 +74,8 @@
         /// </remarks>
         /// <seealso cref="https://stackoverflow.com/questions/43906840/row-number-over-partition-by-order-by-in-entity-framework"/>
         public Task<ILookup<string, IValueSetCode>> LookupValueSetCodes(
-            IReadOnlyCollection<string> valueSetIds,
-            IReadOnlyCollection<string> codeSystemCodes,
+            IEnumerable<string> valueSetIds,
+            IEnumerable<string> codeSystemCodes,
             int count = 5)
         {
             var setIds = valueSetIds as string[] ?? valueSetIds.ToArray();
@@ -92,11 +94,12 @@ vsc.LastLoadDTS, vsc.RevisionDTS, vsc.SourceDSC, vsc.ValueSetID, vsc.ValueSetNM,
 ROW_NUMBER() OVER (PARTITION BY vsc.ValueSetID ORDER BY vsc.ValueSetID) AS rownum 
 FROM [Terminology].[ValueSetCode] vsc WHERE vsc.ValueSetID IN ({escapedSetIds})";
 
-            if (codeSystemCodes.Any())
+            var systemCodes = codeSystemCodes as string[] ?? codeSystemCodes.ToArray();
+            if (systemCodes.Any())
             {
                 var escapedCodes = string.Join(
                     ",",
-                    codeSystemCodes.Select(EscapeForSqlString).Select(v => "'" + v + "'"));
+                    systemCodes.Select(EscapeForSqlString).Select(v => "'" + v + "'"));
                 innerSql += $" AND vsc.CodeSystemCD IN ({escapedCodes})";
             }
 

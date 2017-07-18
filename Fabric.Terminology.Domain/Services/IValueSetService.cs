@@ -16,31 +16,31 @@
         IValueSet GetValueSet(string valueSetId);
 
         [CanBeNull]
-        IValueSet GetValueSet(string valueSetId, IReadOnlyCollection<string> codeSystemCodes);
+        IValueSet GetValueSet(string valueSetId, IEnumerable<string> codeSystemCodes);
 
-        IReadOnlyCollection<IValueSet> GetValueSets(IReadOnlyCollection<string> valueSetIds);
+        IReadOnlyCollection<IValueSet> GetValueSets(IEnumerable<string> valueSetIds);
 
         IReadOnlyCollection<IValueSet> GetValueSets(
-            IReadOnlyCollection<string> valueSetIds,
-            IReadOnlyCollection<string> codeSystemCodes);
+            IEnumerable<string> valueSetIds,
+            IEnumerable<string> codeSystemCodes);
 
-        IReadOnlyCollection<IValueSet> GetValueSetSummaries(IReadOnlyCollection<string> valueSetIds);
+        IReadOnlyCollection<IValueSet> GetValueSetSummaries(IEnumerable<string> valueSetIds);
 
         IReadOnlyCollection<IValueSet> GetValueSetSummaries(
-            IReadOnlyCollection<string> valueSetIds,
-            IReadOnlyCollection<string> codeSystemCodes);
+            IEnumerable<string> valueSetIds,
+            IEnumerable<string> codeSystemCodes);
 
         Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings settings);
 
         Task<PagedCollection<IValueSet>> GetValueSetsAsync(
             IPagerSettings settings,
-            IReadOnlyCollection<string> codeSystemCodes);
+            IEnumerable<string> codeSystemCodes);
 
         Task<PagedCollection<IValueSet>> GetValueSetSummariesAsync(IPagerSettings settings);
 
         Task<PagedCollection<IValueSet>> GetValueSetSummariesAsync(
             IPagerSettings settings,
-            IReadOnlyCollection<string> codeSystemCodes);
+            IEnumerable<string> codeSystemCodes);
 
         Task<PagedCollection<IValueSet>> FindValueSetsAsync(
             string nameFilterText,
@@ -50,7 +50,7 @@
         Task<PagedCollection<IValueSet>> FindValueSetsAsync(
             string nameFilterText,
             IPagerSettings pagerSettings,
-            IReadOnlyCollection<string> codeSystemCodes,
+            IEnumerable<string> codeSystemCodes,
             bool includeAllValueSetCodes = false);
 
         bool NameIsUnique(string name);
@@ -58,7 +58,7 @@
         Attempt<IValueSet> Create(
             string name,
             IValueSetMeta meta,
-            IReadOnlyCollection<IValueSetCodeItem> valueSetCodes);
+            IEnumerable<IValueSetCodeItem> valueSetCodes);
 
         void Save(IValueSet valueSet);
 
