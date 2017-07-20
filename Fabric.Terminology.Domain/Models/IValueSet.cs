@@ -4,6 +4,8 @@
 
     public interface IValueSet : IValueSetMeta
     {
+        string ValueSetUniqueId { get; set; }
+
         string ValueSetId { get; set; }
 
         string Name { get; set; }

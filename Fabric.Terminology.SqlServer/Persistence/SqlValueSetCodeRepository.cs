@@ -90,7 +90,7 @@
 
             var innerSql =
                 $@"SELECT vsc.BindingID, vsc.BindingNM, vsc.CodeCD, vsc.CodeDSC, vsc.CodeSystemCD, vsc.CodeSystemNM, vsc.CodeSystemVersionTXT,
-vsc.LastLoadDTS, vsc.RevisionDTS, vsc.SourceDSC, vsc.ValueSetID, vsc.ValueSetNM, vsc.ValueSetOID, vsc.VersionDSC,
+vsc.LastLoadDTS, vsc.RevisionDTS, vsc.SourceDSC, vsc.ValueSetUniqueID, vsc.ValueSetID, vsc.ValueSetNM, vsc.ValueSetOID, vsc.VersionDSC,
 ROW_NUMBER() OVER (PARTITION BY vsc.ValueSetID ORDER BY vsc.ValueSetID) AS rownum 
 FROM [Terminology].[ValueSetCode] vsc WHERE vsc.ValueSetID IN ({escapedSetIds})";
 
@@ -105,7 +105,7 @@ FROM [Terminology].[ValueSetCode] vsc WHERE vsc.ValueSetID IN ({escapedSetIds})"
 
             var sql =
                 $@"SELECT vscr.BindingID, vscr.BindingNM, vscr.CodeCD, vscr.CodeDSC, vscr.CodeSystemCD, vscr.CodeSystemNM, vscr.CodeSystemVersionTXT,
-vscr.LastLoadDTS, vscr.RevisionDTS, vscr.SourceDSC, vscr.ValueSetID, vscr.ValueSetNM, vscr.ValueSetOID, vscr.VersionDSC, vscr.rownum
+vscr.LastLoadDTS, vscr.RevisionDTS, vscr.SourceDSC, vscr.ValueSetUniqueID, vscr.ValueSetID, vscr.ValueSetNM, vscr.ValueSetOID, vscr.VersionDSC, vscr.rownum
 FROM ({innerSql}) vscr
 WHERE vscr.rownum <= {count}
 ORDER BY vscr.CodeDSC";

@@ -50,6 +50,7 @@
             return (IValueSet)this.cache.GetItem(
                 cacheKey, () => new ValueSet
                 {
+                    ValueSetUniqueId = dto.ValueSetUniqueID,
                     ValueSetId = dto.ValueSetID,
                     AuthoringSourceDescription = dto.AuthoringSourceDSC,
                     Name = dto.ValueSetNM,

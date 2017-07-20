@@ -20,6 +20,7 @@
 
             return new ValueSetCode
             {
+                ValueSetUniqueId = dto.ValueSetUniqueID,
                 ValueSetId = dto.ValueSetID,
                 Code = dto.CodeCD,
                 CodeSystem = codeSystem,

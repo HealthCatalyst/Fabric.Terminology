@@ -34,6 +34,8 @@ namespace Fabric.Terminology.SqlServer.Models.Dto
 
         public string TypeDSC { get; set; }
 
+        public string ValueSetUniqueID { get; set; }
+
         public string ValueSetID { get; set; }
 
         public string ValueSetNM { get; set; }
