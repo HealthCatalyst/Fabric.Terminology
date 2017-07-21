@@ -26,6 +26,8 @@ namespace Fabric.Terminology.SqlServer.Models.Dto
 
         public string SourceDSC { get; set; }
 
+        public string ValueSetUniqueID { get; set; }
+
         public string ValueSetID { get; set; }
 
         public string ValueSetNM { get; set; }

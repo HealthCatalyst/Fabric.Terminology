@@ -52,6 +52,7 @@
                     var codes = this.lookupCodes[dto.ValueSetID].ToArray();
                     return new ValueSet
                     {
+                        ValueSetUniqueId = dto.ValueSetUniqueID,
                         ValueSetId = dto.ValueSetID,
                         AuthoringSourceDescription = dto.AuthoringSourceDSC,
                         Name = dto.ValueSetNM,

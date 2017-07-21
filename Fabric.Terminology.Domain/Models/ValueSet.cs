@@ -4,6 +4,8 @@
 
     public class ValueSet : IValueSet
     {
+        public string ValueSetUniqueId { get; set; }
+
         public string ValueSetId { get; set; }
 
         public string Name { get; set; }

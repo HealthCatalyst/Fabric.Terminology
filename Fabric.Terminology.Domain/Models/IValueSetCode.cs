@@ -6,6 +6,8 @@
     {
         string Code { get; }
 
+        string ValueSetUniqueId { get; }
+
         string ValueSetId { get; }
 
         string Name { get; }
