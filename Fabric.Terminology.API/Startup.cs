@@ -12,7 +12,6 @@
 
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
-    using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
     using Nancy.Owin;
@@ -21,20 +20,15 @@
 
     public class Startup
     {
+        private readonly IAppConfiguration appConfig;
+
         public Startup(IHostingEnvironment env)
         {
-            var builder = new ConfigurationBuilder()
-                .AddEnvironmentVariables()
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json");
-
-            this.Configuration = builder.Build();
+            this.appConfig = new TerminologyConfigurationProvider().GetAppConfiguration(env.ContentRootPath);
 
             var logger = LogFactory.CreateLogger(new LoggingLevelSwitch());
             Log.Logger = logger;
         }
-
-        public IConfigurationRoot Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
@@ -45,9 +39,6 @@
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IApplicationLifetime appLifetime)
         {
-            var appConfig = new AppConfiguration();
-            this.Configuration.Bind(appConfig);
-
             loggerFactory.AddSerilog();
 
             Log.Logger.Information("Fabric.Terminology.API starting.");
@@ -75,7 +66,7 @@
 
             app.UseStaticFiles()
                 .UseOwin()
-                .UseNancy(opt => opt.Bootstrapper = new Bootstrapper(appConfig, Log.Logger));
+                .UseNancy(opt => opt.Bootstrapper = new Bootstrapper(this.appConfig, Log.Logger));
 
             Log.Logger.Information("Fabric.Terminology.API started!");
         }

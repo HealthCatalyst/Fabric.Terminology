@@ -7,5 +7,7 @@
         public TerminologySqlSettings TerminologySqlSettings { get; set; }
 
         public ValueSetSettings ValueSetSettings { get; set; }
+
+        public HostingOptions HostingOptions { get; set; }
     }
 }
