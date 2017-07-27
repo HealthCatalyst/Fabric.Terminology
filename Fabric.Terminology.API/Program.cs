@@ -7,10 +7,12 @@
     {
         public static void Main(string[] args)
         {
+            var appConfig = new Configuration.TerminologyConfigurationProvider().GetAppConfiguration(Directory.GetCurrentDirectory());
+
             var host = new WebHostBuilder()
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration() // this is required for the IIS Express button
+                .UseIisIntegrationIfConfigured(appConfig) // this is required for the IIS Express button
                 .UseStartup<Startup>()
                 .UseApplicationInsights()
                 .Build();
