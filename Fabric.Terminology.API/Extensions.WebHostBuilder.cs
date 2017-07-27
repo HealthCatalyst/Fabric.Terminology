@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace Fabric.Terminology.API
+﻿namespace Fabric.Terminology.API
 {
     using Fabric.Terminology.API.Configuration;
 
