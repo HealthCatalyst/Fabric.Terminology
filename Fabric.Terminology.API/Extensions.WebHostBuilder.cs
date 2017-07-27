@@ -11,7 +11,7 @@ namespace Fabric.Terminology.API
 
     public static partial class Extensions
     {
-        public static IWebHostBuilder UseIisIntegrationIfConfigured(this IWebHostBuilder builder, IAppConfiguration appConfiguration)
+        internal static IWebHostBuilder UseIisIntegrationIfConfigured(this IWebHostBuilder builder, IAppConfiguration appConfiguration)
         {
             if (appConfiguration.HostingOptions != null && appConfiguration.HostingOptions.UseIis)
             {
