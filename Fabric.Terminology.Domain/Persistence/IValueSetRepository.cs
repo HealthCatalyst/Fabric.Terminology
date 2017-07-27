@@ -25,7 +25,7 @@
             bool includeAllValueSetCodes = false);
 
         Task<PagedCollection<IValueSet>> FindValueSetsAsync(
-            string nameFilterText,
+            string filterText,
             IPagerSettings pagerSettings,
             IEnumerable<string> codeSystemCodes,
             bool includeAllValueSetCodes = false);

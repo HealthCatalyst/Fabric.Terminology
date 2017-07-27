@@ -129,15 +129,15 @@
         }
 
         public Task<PagedCollection<IValueSet>> FindValueSetsAsync(
-            string nameFilterText,
+            string filterText,
             IPagerSettings pagerSettings,
             IEnumerable<string> codeSystemCodes,
             bool includeAllValueSetCodes = false)
         {
             var dtos = this.DbSet.Where(GetBaseExpression());
-            if (!nameFilterText.IsNullOrWhiteSpace())
+            if (!filterText.IsNullOrWhiteSpace())
             {
-                dtos = dtos.Where(dto => dto.ValueSetNM.Contains(nameFilterText));
+                dtos = dtos.Where(dto => dto.ValueSetNM.Contains(filterText) || dto.ValueSetOID.Contains(filterText));
             }
 
             var systemCodes = codeSystemCodes as string[] ?? codeSystemCodes.ToArray();
