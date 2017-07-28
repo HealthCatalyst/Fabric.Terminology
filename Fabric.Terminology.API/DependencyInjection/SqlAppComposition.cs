@@ -16,6 +16,7 @@
         {
             container.Register<TerminologySqlSettings>((c, s) => c.Resolve<IAppConfiguration>().TerminologySqlSettings);
             container.Register<SharedContextFactory>().AsSingleton();
+            container.Register<ClientTermContextFactory>().AsSingleton();
 
             container.Register<IPagingStrategy<ValueSetCodeDto, IValueSetCode>>(
                 (c, s) => new DefaultPagingStrategy<ValueSetCodeDto, IValueSetCode>(

@@ -23,17 +23,21 @@
 
     internal class SqlValueSetRepository : IValueSetRepository
     {
+        private readonly Lazy<ClientTermContext> clientTermContext;
+
         private readonly IValueSetCodeRepository valueSetCodeRepository;
 
         private readonly IPagingStrategy<ValueSetDescriptionDto, IValueSet> pagingStrategy;
 
         public SqlValueSetRepository(
             SharedContext sharedContext,
+            Lazy<ClientTermContext> clientTermContext,
             IMemoryCacheProvider cache,
             ILogger logger,
             IValueSetCodeRepository valsetCodeRepository,
             IPagingStrategy<ValueSetDescriptionDto, IValueSet> pagingStrategy)
         {
+            this.clientTermContext = clientTermContext;
             this.SharedContext = sharedContext;
             this.Logger = logger;
             this.valueSetCodeRepository = valsetCodeRepository;
@@ -42,6 +46,8 @@
         }
 
         protected SharedContext SharedContext { get; }
+
+        protected ClientTermContext ClientTermContext => this.clientTermContext.Value;
 
         protected ILogger Logger { get; }
 
