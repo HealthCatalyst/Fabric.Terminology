@@ -57,9 +57,11 @@
 
         protected DbSet<ValueSetDescriptionDto> DbSet => this.SharedContext.ValueSetDescriptions;
 
+        protected DbSet<ValueSetDescriptionDto> CustomDbSet => this.ClientTermContext.ValueSetDescriptions;
+
         public bool NameExists(string name)
         {
-            return this.DbSet.Any(dto => dto.ValueSetNM == name);
+            return this.DbSet.Any(dto => dto.ValueSetNM == name) || this.CustomDbSet.Any(dto => dto.ValueSetNM == name);
         }
 
         [CanBeNull]
@@ -149,8 +151,7 @@
             var systemCodes = codeSystemCodes as string[] ?? codeSystemCodes.ToArray();
             if (systemCodes.Any())
             {
-                var codevsid = this.SharedContext.ValueSetCodes
-                    .Where(code => systemCodes.Contains(code.CodeSystemCD))
+                var codevsid = this.SharedContext.ValueSetCodes.Where(code => systemCodes.Contains(code.CodeSystemCD))
                     .Select(code => code.ValueSetID)
                     .Distinct();
 
@@ -162,7 +163,9 @@
 
         private static Expression<Func<ValueSetDescriptionDto, bool>> GetBaseExpression()
         {
-            return baseSql => baseSql.PublicFLG == "Y" && baseSql.StatusCD == "Active" && baseSql.LatestVersionFLG == "Y";
+            return baseSql => baseSql.PublicFLG == "Y"
+                              && baseSql.StatusCD == "Active"
+                              && baseSql.LatestVersionFLG == "Y";
         }
 
         private async Task<PagedCollection<IValueSet>> CreatePagedCollectionAsync(
