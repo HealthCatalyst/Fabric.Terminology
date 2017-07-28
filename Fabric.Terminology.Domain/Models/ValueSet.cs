@@ -8,6 +8,8 @@
 
         public string ValueSetId { get; set; }
 
+        public string ValueSetOId { get; set; }
+
         public string Name { get; set; }
 
         public bool IsCustom { get; set; }

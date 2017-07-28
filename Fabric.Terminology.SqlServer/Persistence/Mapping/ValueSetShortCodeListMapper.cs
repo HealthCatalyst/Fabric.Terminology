@@ -54,6 +54,7 @@
                     {
                         ValueSetUniqueId = dto.ValueSetUniqueID,
                         ValueSetId = dto.ValueSetID,
+                        ValueSetOId = dto.ValueSetOID,
                         AuthoringSourceDescription = dto.AuthoringSourceDSC,
                         Name = dto.ValueSetNM,
                         IsCustom = false,
