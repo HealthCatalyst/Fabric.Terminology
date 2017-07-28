@@ -141,10 +141,13 @@ namespace Fabric.Terminology.Domain.Services
             }
 
             // TODO discuss key gen
+            // TODO code system code gen
             var valueSetId = Guid.NewGuid().ToString();
             var valueSet = new ValueSet
             {
                 ValueSetId = valueSetId,
+                ValueSetOId = valueSetId,
+                ValueSetUniqueId = valueSetId,
                 Name = name,
                 AuthoringSourceDescription = meta.AuthoringSourceDescription,
                 PurposeDescription = meta.PurposeDescription,
