@@ -137,7 +137,7 @@
             var dtos = this.DbSet.Where(GetBaseExpression());
             if (!filterText.IsNullOrWhiteSpace())
             {
-                dtos = dtos.Where(dto => dto.ValueSetNM.Contains(filterText) || dto.ValueSetOID.Contains(filterText));
+                dtos = dtos.Where(dto => dto.ValueSetNM.Contains(filterText) || dto.ValueSetOID.StartsWith(filterText));
             }
 
             var systemCodes = codeSystemCodes as string[] ?? codeSystemCodes.ToArray();
