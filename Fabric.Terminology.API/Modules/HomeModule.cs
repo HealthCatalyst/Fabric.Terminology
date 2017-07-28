@@ -17,8 +17,9 @@
 
         private Response GetSwaggerUrl()
         {
+            var hostName = this.Request.Url.HostName;
             var port = this.Request.Url.Port ?? 80;
-            return this.Response.AsRedirect($"http://localhost:{port}/swagger/index.html?url=http://localhost:{port}/api-docs");
+            return this.Response.AsRedirect($"http://{hostName}:{port}/swagger/index.html?url=http://{hostName}:{port}/api-docs");
         }
     }
 }
