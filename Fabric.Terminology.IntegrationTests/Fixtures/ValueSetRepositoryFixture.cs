@@ -22,6 +22,7 @@
 
             this.ValueSetRepository = new SqlValueSetRepository(
                                         this.SharedContext,
+                                        this.ClientTermContext,
                                         this.Cache,
                                         this.Logger,
                                         valueSetCodeRepository,

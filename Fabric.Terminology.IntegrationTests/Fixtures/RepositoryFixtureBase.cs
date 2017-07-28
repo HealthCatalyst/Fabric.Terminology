@@ -10,7 +10,9 @@
         protected RepositoryFixtureBase()
         {
             var factory = new SharedContextFactory(this.AppConfiguration.TerminologySqlSettings, this.Logger);
+            var clientTermFactory = new ClientTermContextFactory(this.AppConfiguration.TerminologySqlSettings, this.Logger);
             this.SharedContext = factory.Create();
+            this.ClientTermContext = clientTermFactory.CreateLazy();
             if (this.SharedContext.IsInMemory)
             {
                 throw new InvalidOperationException();
@@ -22,6 +24,8 @@
         }
 
         internal SharedContext SharedContext { get; }
+
+        internal Lazy<ClientTermContext> ClientTermContext { get; }
 
         protected override bool EnableLogging => true;
 
