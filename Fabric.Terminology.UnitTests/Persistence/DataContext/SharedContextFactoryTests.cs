@@ -19,11 +19,10 @@
         {
             // Arrange
             var settings = this.fixture.AppConfiguration.TerminologySqlSettings;
-            settings.UseInMemory = true;
 
             // Act
             var factory = new SharedContextFactory(settings, this.fixture.Logger);
-            var context = factory.Create();
+            var context = factory.Create(true);
 
             // Assert
             context.Should().NotBeNull();
@@ -35,11 +34,10 @@
         {
             // Arrange
             var settings = this.fixture.AppConfiguration.TerminologySqlSettings;
-            settings.UseInMemory = false;
 
             // Act
             var factory = new SharedContextFactory(settings, this.fixture.Logger);
-            var context = factory.Create();
+            var context = factory.Create(false);
 
             // Assert
             context.Should().NotBeNull();
