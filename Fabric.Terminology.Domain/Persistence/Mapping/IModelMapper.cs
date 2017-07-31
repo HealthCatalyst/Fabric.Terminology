@@ -2,10 +2,12 @@
 {
     using JetBrains.Annotations;
 
-    public interface IModelMapper<in TSrc, out TResult>
-        where TSrc : class
+    public interface IModelMapper<TDto, TResult>
+        where TDto : class
     {
         [CanBeNull]
-        TResult Map(TSrc dto);
+        TResult Map(TDto dto);
+
+        //TDto Map(TResult result);
     }
 }

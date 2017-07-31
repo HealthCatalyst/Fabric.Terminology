@@ -161,6 +161,41 @@
             return this.CreatePagedCollectionAsync(dtos, pagerSettings, systemCodes, includeAllValueSetCodes);
         }
 
+        public Attempt<IValueSet> Add(IValueSet valueSet)
+        {
+            // TODO discuss key gen
+            // TODO code system code gen
+            if (!valueSet.IsCustom)
+            {                
+                return Attempt<IValueSet>.Failed(new InvalidOperationException("Only custom Value Sets may be created or updated."));
+            }
+            
+            throw new NotImplementedException();
+        }
+
+        public void Delete(IValueSet valueSet)
+        {
+            if (!valueSet.IsCustom)
+            {
+                return;
+            }
+        }
+
+        [CanBeNull]
+        internal IValueSet GetCustomValueSet(string valueSetId)
+        {
+            var dto = this.CustomDbSet.Where(GetBaseExpression()).FirstOrDefault(vs => vs.ValueSetID == valueSetId);
+
+            if (dto == null) return null;
+
+            var mapper = new ValueSetFullCodeListMapper(
+                this.Cache,
+                ((SqlValueSetCodeRepository)this.valueSetCodeRepository).GetCustomValueSetCodes,
+                Enumerable.Empty<string>());
+
+            return mapper.Map(dto);
+        }
+
         private static Expression<Func<ValueSetDescriptionDto, bool>> GetBaseExpression()
         {
             return baseSql => baseSql.PublicFLG == "Y"

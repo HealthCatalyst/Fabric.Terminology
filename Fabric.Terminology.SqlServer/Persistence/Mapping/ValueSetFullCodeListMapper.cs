@@ -11,7 +11,7 @@
 
     using JetBrains.Annotations;
 
-    internal sealed class ValueSetFullCodeListMapper : IModelMapper<ValueSetDescriptionDto, IValueSet>
+    internal sealed class ValueSetFullCodeListMapper :ValueSetMapperBase, IModelMapper<ValueSetDescriptionDto, IValueSet>
     {
         private readonly IMemoryCacheProvider cache;
 
@@ -48,22 +48,11 @@
             }
 
             return (IValueSet)this.cache.GetItem(
-                cacheKey, () => new ValueSet
-                {
-                    ValueSetUniqueId = dto.ValueSetUniqueID,
-                    ValueSetId = dto.ValueSetID,
-                    ValueSetOId = dto.ValueSetOID,
-                    AuthoringSourceDescription = dto.AuthoringSourceDSC,
-                    Name = dto.ValueSetNM,
-                    IsCustom = false,
-                    PurposeDescription = dto.PurposeDSC,
-                    SourceDescription = dto.SourceDSC,
-                    VersionDescription = dto.VersionDSC,
-                    ValueSetCodes = codes,
-                    ValueSetCodesCount = codes.Count
-                },
+                cacheKey, () => this.Build(dto, codes, codes.Count),
                 TimeSpan.FromMinutes(this.cache.Settings.MemoryCacheMinDuration),
                 this.cache.Settings.MemoryCacheSliding);
         }
+
+
     }
 }

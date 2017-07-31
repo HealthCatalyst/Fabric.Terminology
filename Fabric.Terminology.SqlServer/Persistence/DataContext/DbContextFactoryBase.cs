@@ -67,7 +67,7 @@
         {
             var builder = new DbContextOptionsBuilder<TDbContext>();
             builder.UseInMemoryDatabase();
-            var context = this.GetInstance(builder);
+            var context = this.GetInstance(builder, true);
             this.SeededDatabaseInitializer?.Initialize(context);
             return context;
         }

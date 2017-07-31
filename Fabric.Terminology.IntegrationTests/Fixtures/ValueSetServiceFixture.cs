@@ -3,6 +3,7 @@
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence;
     using Fabric.Terminology.Domain.Services;
+    using Fabric.Terminology.Domain.Strategy;
     using Fabric.Terminology.SqlServer.Models.Dto;
     using Fabric.Terminology.SqlServer.Persistence;
 
@@ -17,7 +18,7 @@
 
         private void Initialize()
         {
-            var valueSetCodeRepository = new SqlValueSetCodeRepository(this.SharedContext, this.Logger, new DefaultPagingStrategy<ValueSetCodeDto, IValueSetCode>(100));
+            var valueSetCodeRepository = new SqlValueSetCodeRepository(this.SharedContext, this.ClientTermContext, this.Logger, new DefaultPagingStrategy<ValueSetCodeDto, IValueSetCode>(100));
 
             var valueSetRepository = new SqlValueSetRepository(
                 this.SharedContext,
@@ -27,7 +28,7 @@
                 valueSetCodeRepository,
                 new DefaultPagingStrategy<ValueSetDescriptionDto, IValueSet>(20));
 
-            this.ValueSetService = new ValueSetService(valueSetRepository);
+            this.ValueSetService = new ValueSetService(valueSetRepository, new ValueSetValidationStrategy());
         }
     }
 }

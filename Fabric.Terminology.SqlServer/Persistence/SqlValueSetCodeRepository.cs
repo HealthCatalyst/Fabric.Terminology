@@ -19,14 +19,18 @@
 
     internal class SqlValueSetCodeRepository : IValueSetCodeRepository
     {
-        private readonly IPagingStrategy<ValueSetCodeDto, IValueSetCode> pagingStrategy;
+        private readonly Lazy<ClientTermContext> clientTermContext;
+
+        private readonly IPagingStrategy<ValueSetCodeDto, IValueSetCode> pagingStrategy;        
 
         public SqlValueSetCodeRepository(
             SharedContext sharedContext,
+            Lazy<ClientTermContext> clientTermContext,
             ILogger logger,
             IPagingStrategy<ValueSetCodeDto, IValueSetCode> pagingStrategy)
         {
             this.SharedContext = sharedContext;
+            this.clientTermContext = clientTermContext;
             this.Logger = logger;
             this.pagingStrategy = pagingStrategy;
         }
@@ -38,6 +42,8 @@
         protected Expression<Func<ValueSetCodeDto, string>> SortExpression => sortBy => sortBy.CodeDSC;
 
         protected DbSet<ValueSetCodeDto> DbSet => this.SharedContext.ValueSetCodes;
+
+        protected DbSet<ValueSetCodeDto> CustomDbSet => this.clientTermContext.Value.ValueSetCodes;
 
         public int CountValueSetCodes(string valueSetId, IEnumerable<string> codeSystemCodes)
         {
@@ -111,6 +117,16 @@ WHERE vscr.rownum <= {count}
 ORDER BY vscr.CodeDSC";
 
             return Task.Run(() => this.DbSet.FromSql(sql).ToLookup(vsc => vsc.ValueSetID, vsc => mapper.Map(vsc)));
+        }
+
+        //// Used for testing.  codeSystemCodes parameter not used by required for mapper.
+        internal IReadOnlyCollection<IValueSetCode> GetCustomValueSetCodes(string valueSetId, IEnumerable<string> codeSystemCodes)
+        {
+            var dtos = this.CustomDbSet.Where(dto => dto.ValueSetID == valueSetId).OrderBy(this.SortExpression);
+
+            var mapper = new ValueSetCodeMapper();
+
+            return dtos.Select(dto => mapper.Map(dto)).ToList().AsReadOnly();
         }
 
         private async Task<PagedCollection<IValueSetCode>> CreatePagedCollectionAsync(

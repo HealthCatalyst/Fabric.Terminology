@@ -7,6 +7,7 @@ namespace Fabric.Terminology.Domain.Services
 
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence;
+    using Fabric.Terminology.Domain.Strategy;
 
     using JetBrains.Annotations;
 
@@ -14,9 +15,12 @@ namespace Fabric.Terminology.Domain.Services
     {
         private readonly IValueSetRepository repository;
 
-        public ValueSetService(IValueSetRepository valueSetRepository)
+        private readonly IValueSetValidationStrategy validationStrategy;
+
+        public ValueSetService(IValueSetRepository valueSetRepository, IValueSetValidationStrategy validationStrategy)
         {
             this.repository = valueSetRepository;
+            this.validationStrategy = validationStrategy;
         }
 
         #region Events
@@ -140,8 +144,6 @@ namespace Fabric.Terminology.Domain.Services
                 return Attempt<IValueSet>.Failed(new ArgumentException("A value set must include at least one code."));
             }
 
-            // TODO discuss key gen
-            // TODO code system code gen
             var valueSetId = Guid.NewGuid().ToString();
             var valueSet = new ValueSet
             {
@@ -175,17 +177,32 @@ namespace Fabric.Terminology.Domain.Services
             return Attempt<IValueSet>.Successful(valueSet);
         }
 
-        // TODO need a table to insert/update
+        /// <summary>
+        /// Saves a <see cref="IValueSet"/>
+        /// </summary>
+        /// <param name="valueSet">The <see cref="IValueSet"/> to be saved</param>
+        /// <remarks>
+        /// At this point, we can only save "new" value sets.  Updates are out of scope at the moment - To be discussed.
+        /// </remarks>
         public void Save(IValueSet valueSet)
         {
-            throw new System.NotImplementedException();
+            if (this.validationStrategy.EnsureIsCustom(valueSet))
+            {             
+            }
+
+            throw new InvalidOperationException("ValueSet was not a custom value set and cannot be saved.");
         }
 
         // TODO need a table to delete
         public void Delete(IValueSet valueSet)
         {
+            if (this.validationStrategy.EnsureIsCustom(valueSet))
+            {
+
+            }
+
             // assert is custom
-            throw new System.NotImplementedException();
+            throw new InvalidOperationException("ValueSet was not a custom value set and cannot be saved.");
         }
 
         private static bool ValidateValueSetMeta(IValueSetMeta meta, out string msg)

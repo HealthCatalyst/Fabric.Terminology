@@ -18,15 +18,19 @@
 
         private void Initialize()
         {
-            var valueSetCodeRepository = new SqlValueSetCodeRepository(this.SharedContext, this.Logger, new DefaultPagingStrategy<ValueSetCodeDto, IValueSetCode>(100));
+            var valueSetCodeRepository = new SqlValueSetCodeRepository(
+                this.SharedContext,
+                this.ClientTermContext,
+                this.Logger,
+                new DefaultPagingStrategy<ValueSetCodeDto, IValueSetCode>(100));
 
             this.ValueSetRepository = new SqlValueSetRepository(
-                                        this.SharedContext,
-                                        this.ClientTermContext,
-                                        this.Cache,
-                                        this.Logger,
-                                        valueSetCodeRepository,
-                                        new DefaultPagingStrategy<ValueSetDescriptionDto, IValueSet>(20));
+                this.SharedContext,
+                this.ClientTermContext,
+                this.Cache,
+                this.Logger,
+                valueSetCodeRepository,
+                new DefaultPagingStrategy<ValueSetDescriptionDto, IValueSet>(20));
         }
     }
 }

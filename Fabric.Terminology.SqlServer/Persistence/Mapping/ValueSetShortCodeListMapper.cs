@@ -11,7 +11,7 @@
 
     using JetBrains.Annotations;
 
-    internal sealed class ValueSetShortCodeListMapper : IModelMapper<ValueSetDescriptionDto, IValueSet>
+    internal sealed class ValueSetShortCodeListMapper : ValueSetMapperBase, IModelMapper<ValueSetDescriptionDto, IValueSet>
     {
         private readonly IMemoryCacheProvider cache;
 
@@ -50,20 +50,7 @@
                 cacheKey, () =>
                 {
                     var codes = this.lookupCodes[dto.ValueSetID].ToArray();
-                    return new ValueSet
-                    {
-                        ValueSetUniqueId = dto.ValueSetUniqueID,
-                        ValueSetId = dto.ValueSetID,
-                        ValueSetOId = dto.ValueSetOID,
-                        AuthoringSourceDescription = dto.AuthoringSourceDSC,
-                        Name = dto.ValueSetNM,
-                        IsCustom = false,
-                        PurposeDescription = dto.PurposeDSC,
-                        SourceDescription = dto.SourceDSC,
-                        VersionDescription = dto.VersionDSC,
-                        ValueSetCodes = codes,
-                        ValueSetCodesCount = this.getCount.Invoke(dto.ValueSetID, this.codeSystemCds)
-                    };
+                    return this.Build(dto, codes, this.getCount.Invoke(dto.ValueSetID, this.codeSystemCds));
                 },
                 TimeSpan.FromMinutes(this.cache.Settings.MemoryCacheMinDuration),
                 this.cache.Settings.MemoryCacheSliding);

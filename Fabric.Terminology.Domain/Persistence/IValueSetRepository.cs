@@ -29,5 +29,9 @@
             IPagerSettings pagerSettings,
             IEnumerable<string> codeSystemCodes,
             bool includeAllValueSetCodes = false);
+
+        Attempt<IValueSet> Add(IValueSet valueSet);
+
+        void Delete(IValueSet valueSet);
     }
 }
