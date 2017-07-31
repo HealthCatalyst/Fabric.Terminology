@@ -1,4 +1,4 @@
-﻿namespace Fabric.Terminology.SqlServer.Configuration
+﻿namespace Fabric.Terminology.Domain.Configuration
 {
     public class ValueSetSettings
     {
