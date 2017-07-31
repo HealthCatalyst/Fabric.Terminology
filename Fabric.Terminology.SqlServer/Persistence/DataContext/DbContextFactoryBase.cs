@@ -33,9 +33,9 @@
         [CanBeNull]
         protected ISeededDatabaseInitializer<TDbContext> SeededDatabaseInitializer { get; }
 
-        public TDbContext Create()
+        public TDbContext Create(bool useInMemory = false)
         {
-            var context = this.Settings.UseInMemory ? this.CreateInMemory() : this.CreateAttached();
+            var context = useInMemory ? this.CreateInMemory() : this.CreateAttached();
 
             // Shared Terminology data is read only so there is no reason to ever track the entities.
             context.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
@@ -43,9 +43,9 @@
             return context;
         }
 
-        public Lazy<TDbContext> CreateLazy()
+        public Lazy<TDbContext> CreateLazy(bool useInMemory = false)
         {
-            return new Lazy<TDbContext>(this.Create);
+            return new Lazy<TDbContext>(() => this.Create(useInMemory));
         }
 
         protected abstract TDbContext GetInstance(DbContextOptionsBuilder<TDbContext> builder, bool isInMemory = false);
