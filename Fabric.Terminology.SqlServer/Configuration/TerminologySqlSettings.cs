@@ -3,9 +3,7 @@
     public class TerminologySqlSettings : IMemoryCacheSettings
     {
         public string ConnectionString { get; set; }
-
-        public bool UseInMemory { get; set; } = false;
-
+        
         public bool LogGeneratedSql { get; set; } = false;
 
         public bool MemoryCacheEnabled { get; set; } = true;
