@@ -16,7 +16,7 @@
 
         private void Initialize()
         {
-            this.ValueSetCodeRepository = new SqlValueSetCodeRepository(this.SharedContext, this.ClientTermContext, this.Logger, new DefaultPagingStrategy<ValueSetCodeDto, IValueSetCode>(20));
+            this.ValueSetCodeRepository = new SqlValueSetCodeRepository(this.SharedContext,  this.ClientTermContext.AsLazy(), this.Logger, new DefaultPagingStrategy<ValueSetCodeDto, IValueSetCode>(20));
         }
     }
 }

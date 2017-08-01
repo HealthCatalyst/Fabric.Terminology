@@ -20,13 +20,13 @@
         {
             var valueSetCodeRepository = new SqlValueSetCodeRepository(
                 this.SharedContext,
-                this.ClientTermContext,
+                this.ClientTermContext.AsLazy(),
                 this.Logger,
                 new DefaultPagingStrategy<ValueSetCodeDto, IValueSetCode>(100));
 
             this.ValueSetRepository = new SqlValueSetRepository(
                 this.SharedContext,
-                this.ClientTermContext,
+                this.ClientTermContext.AsLazy(),
                 this.Cache,
                 this.Logger,
                 valueSetCodeRepository,

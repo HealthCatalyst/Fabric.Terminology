@@ -10,7 +10,7 @@ namespace Fabric.Terminology.SqlServer.Models
     /// </summary>
     internal class EmptySamdBinding
     {
-        public string BindingID => "0000";
+        public int BindingID => -1000;
 
         public string BindingNM => "ValueSetCodeClient";
 
