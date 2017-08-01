@@ -2,8 +2,21 @@
 {
     using System.Collections.Generic;
 
+    using Fabric.Terminology.Domain.Services;
+
     public class ValueSet : IValueSet
     {
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ValueSet"/> class.
+        /// </summary>
+        /// <remarks>
+        /// Prevents public construction to force creation via <see cref="IValueSetService"/>
+        /// </remarks>
+        internal ValueSet()
+        {            
+        }
+
         public string ValueSetUniqueId { get; set; }
 
         public string ValueSetId { get; set; }

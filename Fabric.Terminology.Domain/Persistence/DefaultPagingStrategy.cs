@@ -8,7 +8,7 @@
     using Fabric.Terminology.Domain.Persistence.Mapping;
 
     public class DefaultPagingStrategy<TSrc, TResult> : IPagingStrategy<TSrc, TResult>
-        where TSrc : class
+        where TSrc : class, new()
     {
         public DefaultPagingStrategy(int defaultItemsPerPage)
         {

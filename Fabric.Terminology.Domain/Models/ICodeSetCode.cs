@@ -10,8 +10,12 @@ namespace Fabric.Terminology.Domain.Models
 
         string VersionDescription { get; }
 
+        string SourceDescription { get; }
+
         DateTime? RevisionDate { get; }
 
-        IValueSetCodeSystem CodeSystem { get; }
+        ICodeSystem CodeSystem { get; }
+
+        DateTime LastLoadDate { get; }
     }
 }

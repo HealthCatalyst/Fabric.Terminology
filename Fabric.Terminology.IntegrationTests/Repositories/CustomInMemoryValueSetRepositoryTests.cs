@@ -3,6 +3,7 @@
     using Fabric.Terminology.IntegrationTests.Fixtures;
     using Fabric.Terminology.SqlServer.Persistence;
     using Fabric.Terminology.TestsBase;
+    using Fabric.Terminology.TestsBase.Mocks;
 
     using FluentAssertions;
 
@@ -30,6 +31,12 @@
 
             // Assert
             vs.Should().NotBeNull();
+        }
+
+        public void CanAddCustomValueSet()
+        {
+            // Arrange
+            
         }
     }
 }

@@ -126,7 +126,7 @@ namespace Fabric.Terminology.Domain.Services
         public Attempt<IValueSet> Create(
             string name,
             IValueSetMeta meta,
-            IEnumerable<IValueSetCodeItem> valueSetCodes)
+            IEnumerable<IValueSetCode> valueSetCodes)
         {
             if (!this.NameIsUnique(name))
             {
@@ -138,8 +138,8 @@ namespace Fabric.Terminology.Domain.Services
                 return Attempt<IValueSet>.Failed(new ArgumentException(msg));
             }
 
-            var valueSetCodeItems = valueSetCodes as IValueSetCodeItem[] ?? valueSetCodes.ToArray();
-            if (!valueSetCodeItems.Any())
+            var setCodes = valueSetCodes as IValueSetCode[] ?? valueSetCodes.ToArray();
+            if (!setCodes.Any())
             {
                 return Attempt<IValueSet>.Failed(new ArgumentException("A value set must include at least one code."));
             }
@@ -155,21 +155,11 @@ namespace Fabric.Terminology.Domain.Services
                 PurposeDescription = meta.PurposeDescription,
                 SourceDescription = meta.SourceDescription,
                 VersionDescription = meta.VersionDescription,
-                ValueSetCodes =
-                    valueSetCodeItems
-                        .Select(
-                            code => new ValueSetCode
-                            {
-                                Code = code.Code,
-                                CodeSystem = new ValueSetCodeSystem { Code = code.CodeSystemCode },
-                                Name = code.Name,
-                                RevisionDate = null,
-                                ValueSetId = valueSetId
-                            })
+                ValueSetCodes = setCodes                    
                         .ToList()
                         .AsReadOnly(),
                 IsCustom = true,
-                ValueSetCodesCount = valueSetCodeItems.Count()
+                ValueSetCodesCount = setCodes.Count()
             };
 
             Created?.Invoke(this, valueSet);

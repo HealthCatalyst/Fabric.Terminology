@@ -7,28 +7,42 @@
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence.Mapping;
     using Fabric.Terminology.SqlServer.Caching;
+    using Fabric.Terminology.SqlServer.Models;
     using Fabric.Terminology.SqlServer.Models.Dto;
 
     using JetBrains.Annotations;
 
     internal sealed class ValueSetFullCodeListMapper :ValueSetMapperBase, IModelMapper<ValueSetDescriptionDto, IValueSet>
     {
+        private static readonly EmptySamdBinding EmptyBinding = new EmptySamdBinding();
+
         private readonly IMemoryCacheProvider cache;
 
         private readonly Func<string, string[], IReadOnlyCollection<IValueSetCode>> fetch;
 
         private readonly IEnumerable<string> codeSystemCodes;
 
-        public ValueSetFullCodeListMapper(IMemoryCacheProvider memCache, Func<string, string[], IReadOnlyCollection<IValueSetCode>> fetchCodes, IEnumerable<string> codeSystemCDs)
+        public ValueSetFullCodeListMapper(
+            IMemoryCacheProvider memCache, 
+            Func<string, string[], IReadOnlyCollection<IValueSetCode>> fetchCodes, 
+            IEnumerable<string> codeSystemCDs)
         {
             this.cache = memCache;
             this.fetch = fetchCodes;
             this.codeSystemCodes = codeSystemCDs;
+            this.IsReady = true;
         }
+
+        public bool IsReady { get; } = false;
 
         [CanBeNull]
         public IValueSet Map(ValueSetDescriptionDto dto)
         {
+            if (!this.IsReady)
+            {
+                throw new ArgumentException("The default constructor may not be used to map IValueSet");
+            }
+
             // Ensure not already cached with full codes list
             var found = this.cache.GetCachedValueSetWithAllCodes(dto.ValueSetID, this.codeSystemCodes.ToArray());
             if (found != null)
@@ -52,7 +66,5 @@
                 TimeSpan.FromMinutes(this.cache.Settings.MemoryCacheMinDuration),
                 this.cache.Settings.MemoryCacheSliding);
         }
-
-
     }
 }

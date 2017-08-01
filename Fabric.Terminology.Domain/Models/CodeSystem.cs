@@ -1,6 +1,6 @@
 ﻿namespace Fabric.Terminology.Domain.Models
 {
-    public class ValueSetCodeSystem : IValueSetCodeSystem
+    public class CodeSystem : ICodeSystem
     {
         public string Code { get; set; }
 

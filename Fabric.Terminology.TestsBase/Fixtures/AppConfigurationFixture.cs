@@ -27,8 +27,7 @@
                                                ? Guid.NewGuid().ToString()
                                                : src.ValueSetId));
 
-                        cfg.CreateMap<IValueSetCode, ValueSetCodeApiModel>()
-                            .ForMember(dest => dest.CodeSystemCode, opt => opt.MapFrom(src => src.CodeSystem.Code));
+                        cfg.CreateMap<IValueSetCode, ValueSetCodeApiModel>();
                     });
 
             var builder = new ConfigurationBuilder()

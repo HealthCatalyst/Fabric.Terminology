@@ -163,14 +163,41 @@
 
         public Attempt<IValueSet> Add(IValueSet valueSet)
         {
-            // TODO discuss key gen
-            // TODO code system code gen
             if (!valueSet.IsCustom)
             {                
                 return Attempt<IValueSet>.Failed(new InvalidOperationException("Only custom Value Sets may be created or updated."));
             }
-            
-            throw new NotImplementedException();
+
+            valueSet.ReadyForCustomInsert();
+
+            var valueSetDto = valueSet.AsDto();
+            var codeDtos = valueSet.ValueSetCodes.Select(code => code.AsDto());
+
+            this.ClientTermContext.ChangeTracker.AutoDetectChangesEnabled = false;
+            using (var transaction = this.ClientTermContext.Database.BeginTransaction())
+            {
+                try
+                {
+                    this.ClientTermContext.ValueSetDescriptions.Add(valueSetDto);
+                    this.ClientTermContext.ValueSetCodes.AddRange(codeDtos);
+                    this.ClientTermContext.SaveChanges();
+
+                    transaction.Commit();
+                    this.ClientTermContext.ChangeTracker.AutoDetectChangesEnabled = true;
+                }
+                catch (Exception ex)
+                {
+                    this.Logger.Error(ex, "Failed to save a custom ValueSet");
+                    this.ClientTermContext.ChangeTracker.AutoDetectChangesEnabled = true;
+                    return Attempt<IValueSet>.Failed(ex, valueSet);
+                }               
+            }
+           
+            // Get the updated ValueSet
+            var added = this.GetValueSet(valueSetDto.ValueSetID, Enumerable.Empty<string>());
+            return added == null ?
+                Attempt<IValueSet>.Failed(new NullReferenceException("Could not retrieved newly saved ValueSet")) : 
+                Attempt<IValueSet>.Successful(added);
         }
 
         public void Delete(IValueSet valueSet)

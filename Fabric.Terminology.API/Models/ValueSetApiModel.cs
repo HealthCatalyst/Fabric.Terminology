@@ -2,17 +2,9 @@
 {
     using System.Collections.Generic;
 
-    public class ValueSetApiModel : IIdentifiable
+    public class ValueSetApiModel : ValueSetMetaApiModel, IIdentifiable
     {
         public string Identifier { get; set; }
-
-        public string AuthoringSourceDescription { get; set; }
-
-        public string PurposeDescription { get; set; }
-
-        public string SourceDescription { get; set; }
-
-        public string VersionDescription { get; set; }
 
         public string ValueSetUniqueId { get; set; }
 

@@ -57,14 +57,14 @@
                 valueSetDto,
                 codeCd,
                 codeDsc,
-                new ValueSetCodeSystem { Code = "TEST", Name = "TEST-CODE-SYSTEM", Version = "TEST-VERSION" });
+                new CodeSystem { Code = "TEST", Name = "TEST-CODE-SYSTEM", Version = "TEST-VERSION" });
         }
 
         internal static ValueSetCodeDto BuildValueSetCodeDto(
             ValueSetDescriptionDto valueSetDto,
             string codeCd,
             string codeDsc,
-            IValueSetCodeSystem codeSystem)
+            ICodeSystem codeSystem)
         {
             return new ValueSetCodeDto
             {

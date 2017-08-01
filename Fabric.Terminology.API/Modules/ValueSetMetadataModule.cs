@@ -25,7 +25,8 @@
                 typeof(ValueSetCodeApiModel),
                 typeof(FindByTermQuery),
                 typeof(PagerSettings),
-                typeof(PagedCollection<ValueSetApiModel>));
+                typeof(PagedCollection<ValueSetApiModel>),
+                typeof(CodeSystem));
 
             // /{valueSetId}
             this.RouteDescriber.DescribeRouteWithParams(

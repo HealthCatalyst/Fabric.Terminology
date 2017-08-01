@@ -1,7 +1,5 @@
 ﻿namespace Fabric.Terminology.UnitTests.AutoMapper
 {
-    using System;
-    using System.Collections.Generic;
     using System.Linq;
 
     using Fabric.Terminology.API.Models;
@@ -12,8 +10,6 @@
     using FluentAssertions;
 
     using global::AutoMapper;
-
-    using JetBrains.Annotations;
 
     using Xunit;
 
@@ -46,7 +42,7 @@
             {
                 var code = codes[i];
                 mappedCodes[i].ShouldBeEquivalentTo(code, o => o.ExcludingMissingMembers());
-                mappedCodes[i].CodeSystemCode.Should().Be(code.CodeSystem.Code);
+                mappedCodes[i].CodeSystem.Code.Should().Be(code.CodeSystem.Code);
             }
         }
     }
