@@ -182,9 +182,9 @@
         }
 
         [CanBeNull]
-        internal IValueSet GetCustomValueSet(string valueSetId)
+        internal IValueSet GetCustomValueSet(string valueSetUniqueId)
         {
-            var dto = this.CustomDbSet.Where(GetBaseExpression()).FirstOrDefault(vs => vs.ValueSetID == valueSetId);
+            var dto = this.CustomDbSet.Where(GetBaseExpression(false)).FirstOrDefault(vs => vs.ValueSetUniqueID == valueSetUniqueId);
 
             if (dto == null) return null;
 
@@ -196,11 +196,14 @@
             return mapper.Map(dto);
         }
 
-        private static Expression<Func<ValueSetDescriptionDto, bool>> GetBaseExpression()
+        private static Expression<Func<ValueSetDescriptionDto, bool>> GetBaseExpression(bool useStatusCd = true)
         {
-            return baseSql => baseSql.PublicFLG == "Y"
-                              && baseSql.StatusCD == "Active"
-                              && baseSql.LatestVersionFLG == "Y";
+            return baseSql => useStatusCd
+                                  ? baseSql.PublicFLG == "Y"
+                                    && baseSql.StatusCD == "Active"
+                                    && baseSql.LatestVersionFLG == "Y"
+                                  : baseSql.PublicFLG == "Y" && baseSql.LatestVersionFLG == "Y";
+
         }
 
         private async Task<PagedCollection<IValueSet>> CreatePagedCollectionAsync(

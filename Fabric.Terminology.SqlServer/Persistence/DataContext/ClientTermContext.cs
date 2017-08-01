@@ -47,17 +47,7 @@
             modelBuilder.Entity<ValueSetDescriptionDto>().ToTable("ValueSetDescriptionBASE", "ClientTerm");
             modelBuilder.Entity<ValueSetDescriptionDto>().Property(e => e.BindingNM).IsUnicode(false);
             modelBuilder.Entity<ValueSetDescriptionDto>()
-                .HasKey(
-                    desc => new
-                    {
-                        desc.BindingID,
-                        desc.BindingNM,
-                        desc.LastLoadDTS,
-                        desc.PublicFLG,
-                        desc.SourceDSC,
-                        desc.ValueSetID,
-                        desc.VersionDSC
-                    });
+                .HasKey(e => e.ValueSetUniqueID);
             base.OnModelCreating(modelBuilder);
         }
     }

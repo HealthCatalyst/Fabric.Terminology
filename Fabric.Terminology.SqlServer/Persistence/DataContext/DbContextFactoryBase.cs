@@ -60,7 +60,9 @@
                 lf.AddSerilog(this.Logger);
                 builder.UseLoggerFactory(lf);
             }
-            return this.GetInstance(builder);
+            var context = this.GetInstance(builder);
+            this.SeededDatabaseInitializer?.Initialize(context);
+            return context;
         }
 
         protected virtual TDbContext CreateInMemory()

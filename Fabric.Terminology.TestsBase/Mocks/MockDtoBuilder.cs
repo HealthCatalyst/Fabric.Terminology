@@ -23,6 +23,8 @@
                 AuthoringSourceDSC = "TEST-SRC",
                 CreatedByNM = "TESTBASE",
                 DefinitionDSC = "TEST DECRIPTION",
+                SourceDSC = "UNIT OR INTEGRATION TEST",
+                VersionDSC = "CURRENT TEST VERSION",
                 BindingDSC = string.Empty,
                 LatestVersionFLG = "Y",
                 PublicFLG = "Y",
