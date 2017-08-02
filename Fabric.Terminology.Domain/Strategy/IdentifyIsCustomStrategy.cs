@@ -9,7 +9,7 @@
         public bool Execute(IValueSet valueSet)
         {
             // TODO - relates to GH issue # 13
-            return Guid.TryParse(valueSet.ValueSetId, out Guid empty) && empty.Equals(Guid.Empty);
+            return Guid.TryParse(valueSet.ValueSetUniqueId, out Guid _);
         }
 
         public void SetIsCustom(IValueSet valueSet)

@@ -58,7 +58,7 @@
         Attempt<IValueSet> Create(
             string name,
             IValueSetMeta meta,
-            IEnumerable<IValueSetCode> valueSetCodes);
+            IEnumerable<ICodeSetCode> valueSetCodes);
 
         void Save(IValueSet valueSet);
 

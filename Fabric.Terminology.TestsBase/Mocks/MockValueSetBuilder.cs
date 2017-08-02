@@ -26,19 +26,3 @@
         }
     }
 }
-
-//BindingID = EmptyBinding.BindingID,
-//BindingNM = EmptyBinding.BindingNM,
-//LastLoadDTS = EmptyBinding.GetLastLoadDTS(),
-//RevisionDTS = null,
-//SourceDSC = "TestBase",
-//VersionDSC = "Current Test Version",
-//CodeCD = codeCd,
-//CodeDSC = codeDsc,
-//CodeSystemCD = codeSystem.Code,
-//CodeSystemNM = codeSystem.Name,
-//CodeSystemVersionTXT = "CURRENT",
-//ValueSetOID = valueSetDto.ValueSetOID,
-//ValueSetID = valueSetDto.ValueSetID,
-//ValueSetUniqueID = valueSetDto.ValueSetUniqueID,
-//ValueSetNM = valueSetDto.ValueSetNM

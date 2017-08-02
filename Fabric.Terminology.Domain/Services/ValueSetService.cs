@@ -126,7 +126,7 @@ namespace Fabric.Terminology.Domain.Services
         public Attempt<IValueSet> Create(
             string name,
             IValueSetMeta meta,
-            IEnumerable<IValueSetCode> valueSetCodes)
+            IEnumerable<ICodeSetCode> codeSetCodes)
         {
             if (!this.NameIsUnique(name))
             {
@@ -138,28 +138,25 @@ namespace Fabric.Terminology.Domain.Services
                 return Attempt<IValueSet>.Failed(new ArgumentException(msg));
             }
 
-            var setCodes = valueSetCodes as IValueSetCode[] ?? valueSetCodes.ToArray();
+            var setCodes = codeSetCodes as IValueSetCode[] ?? codeSetCodes.ToArray();
             if (!setCodes.Any())
             {
                 return Attempt<IValueSet>.Failed(new ArgumentException("A value set must include at least one code."));
             }
 
-            var valueSetId = Guid.NewGuid().ToString();
-            var valueSet = new ValueSet
+            var emptyId = Guid.NewGuid().ToString();
+
+            var valueSet = new ValueSet(
+                emptyId,
+                name,
+                meta.AuthoringSourceDescription,
+                meta.PurposeDescription,
+                meta.SourceDescription,
+                meta.VersionDescription,
+                setCodes.Select(code => code.AsCodeForValueSet(emptyId, name)).ToList().AsReadOnly())
             {
-                ValueSetId = valueSetId,
-                ValueSetOId = valueSetId,
-                ValueSetUniqueId = valueSetId,
-                Name = name,
-                AuthoringSourceDescription = meta.AuthoringSourceDescription,
-                PurposeDescription = meta.PurposeDescription,
-                SourceDescription = meta.SourceDescription,
-                VersionDescription = meta.VersionDescription,
-                ValueSetCodes = setCodes                    
-                        .ToList()
-                        .AsReadOnly(),
-                IsCustom = true,
-                ValueSetCodesCount = setCodes.Count()
+                ValueSetCodesCount = setCodes.Length,
+                IsCustom = true
             };
 
             Created?.Invoke(this, valueSet);
@@ -176,8 +173,9 @@ namespace Fabric.Terminology.Domain.Services
         /// </remarks>
         public void Save(IValueSet valueSet)
         {
-            if (this.identifyIsCustom.Execute(valueSet))
-            {             
+            if (this.identifyIsCustom.Execute(valueSet) && valueSet.IsNew())
+            {
+                this.repository.Add(valueSet)
             }
 
             throw new InvalidOperationException("ValueSet was not a custom value set and cannot be saved.");

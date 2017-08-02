@@ -171,7 +171,7 @@
         public Attempt<IValueSet> Add(IValueSet valueSet)
         {
             if (!valueSet.IsCustom)
-            {                
+            {
                 return Attempt<IValueSet>.Failed(new InvalidOperationException("Only custom Value Sets may be created or updated."));
             }
 
@@ -197,9 +197,9 @@
                     this.Logger.Error(ex, "Failed to save a custom ValueSet");
                     this.ClientTermContext.ChangeTracker.AutoDetectChangesEnabled = true;
                     return Attempt<IValueSet>.Failed(ex, valueSet);
-                }               
+                }
             }
-           
+
             // Get the updated ValueSet
             var added = this.GetValueSet(valueSetDto.ValueSetID, Enumerable.Empty<string>());
             return added == null ?
