@@ -7,6 +7,7 @@
     using System.Threading.Tasks;
 
     using Fabric.Terminology.Domain;
+    using Fabric.Terminology.Domain.Exceptions;
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence;
     using Fabric.Terminology.Domain.Persistence.Mapping;
@@ -172,7 +173,7 @@
         {
             if (!valueSet.IsCustom)
             {
-                return Attempt<IValueSet>.Failed(new InvalidOperationException("Only custom Value Sets may be created or updated."));
+                return Attempt<IValueSet>.Failed(new ValueSetOperationException("Only custom Value Sets may be created or updated."));
             }
 
             valueSet.SetIdsForCustomInsert();
@@ -196,14 +197,14 @@
                 {
                     this.Logger.Error(ex, "Failed to save a custom ValueSet");
                     this.ClientTermContext.ChangeTracker.AutoDetectChangesEnabled = true;
-                    return Attempt<IValueSet>.Failed(ex, valueSet);
+                    return Attempt<IValueSet>.Failed(new ValueSetOperationException("Failed to save a custom ValueSet", ex ), valueSet);
                 }
             }
 
             // Get the updated ValueSet
             var added = this.GetValueSet(valueSetDto.ValueSetID, Enumerable.Empty<string>());
             return added == null ?
-                Attempt<IValueSet>.Failed(new NullReferenceException("Could not retrieved newly saved ValueSet")) : 
+                Attempt<IValueSet>.Failed(new ValueSetNotFoundException("Could not retrieved newly saved ValueSet")) :
                 Attempt<IValueSet>.Successful(added);
         }
 
@@ -220,7 +221,10 @@
         {
             var dto = this.CustomDbSet.Where(GetBaseExpression(false)).FirstOrDefault(vs => vs.ValueSetUniqueID == valueSetUniqueId);
 
-            if (dto == null) return null;
+            if (dto == null)
+            {
+                return null;
+            }
 
             var mapper = new ValueSetFullCodeListMapper(
                 this.identifyIsCustom,

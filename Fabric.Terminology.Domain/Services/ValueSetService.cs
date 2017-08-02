@@ -5,6 +5,7 @@ namespace Fabric.Terminology.Domain.Services
     using System.Linq;
     using System.Threading.Tasks;
 
+    using Fabric.Terminology.Domain.Exceptions;
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence;
     using Fabric.Terminology.Domain.Strategy;
@@ -173,9 +174,19 @@ namespace Fabric.Terminology.Domain.Services
         /// </remarks>
         public void Save(IValueSet valueSet)
         {
+            Saving?.Invoke(this, valueSet);
+
             if (this.identifyIsCustom.Execute(valueSet) && valueSet.IsNew())
             {
-                this.repository.Add(valueSet)
+                var attempt = this.repository.Add(valueSet);
+                if (attempt.Success)
+                {
+                    Saved?.Invoke(this, attempt.Result);
+                    return;
+                }
+
+                throw attempt.Exception
+                      ?? new ValueSetOperationException("An exception was not returned by the attempt to save a ValueSet but the save failed.");
             }
 
             throw new InvalidOperationException("ValueSet was not a custom value set and cannot be saved.");
