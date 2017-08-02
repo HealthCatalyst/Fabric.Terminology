@@ -10,6 +10,7 @@
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence;
     using Fabric.Terminology.Domain.Persistence.Mapping;
+    using Fabric.Terminology.Domain.Strategy;
     using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Models.Dto;
     using Fabric.Terminology.SqlServer.Persistence.DataContext;
@@ -29,13 +30,16 @@
 
         private readonly IPagingStrategy<ValueSetDescriptionDto, IValueSet> pagingStrategy;
 
+        private readonly IIdentifyIsCustomStrategy identifyIsCustom;
+
         public SqlValueSetRepository(
             SharedContext sharedContext,
             Lazy<ClientTermContext> clientTermContext,
             IMemoryCacheProvider cache,
             ILogger logger,
             IValueSetCodeRepository valsetCodeRepository,
-            IPagingStrategy<ValueSetDescriptionDto, IValueSet> pagingStrategy)
+            IPagingStrategy<ValueSetDescriptionDto, IValueSet> pagingStrategy,
+            IIdentifyIsCustomStrategy identifyIsCustomStrategy)
         {
             this.clientTermContext = clientTermContext;
             this.SharedContext = sharedContext;
@@ -43,6 +47,7 @@
             this.valueSetCodeRepository = valsetCodeRepository;
             this.Cache = cache;
             this.pagingStrategy = pagingStrategy;
+            this.identifyIsCustom = identifyIsCustomStrategy;
         }
 
         protected SharedContext SharedContext { get; }
@@ -79,6 +84,7 @@
             if (dto == null) return null;
 
             var mapper = new ValueSetFullCodeListMapper(
+                this.identifyIsCustom,
                 this.Cache,
                 this.valueSetCodeRepository.GetValueSetCodes,
                 codeSystemCDs);
@@ -103,6 +109,7 @@
             if (dtos.Any())
             {
                 var mapper = new ValueSetFullCodeListMapper(
+                    this.identifyIsCustom,
                     this.Cache,
                     this.valueSetCodeRepository.GetValueSetCodes,
                     codeSystemCodes);
@@ -168,7 +175,7 @@
                 return Attempt<IValueSet>.Failed(new InvalidOperationException("Only custom Value Sets may be created or updated."));
             }
 
-            valueSet.ReadyForCustomInsert();
+            valueSet.SetIdsForCustomInsert();
 
             var valueSetDto = valueSet.AsDto();
             var codeDtos = valueSet.ValueSetCodes.Select(code => code.AsDto());
@@ -216,6 +223,7 @@
             if (dto == null) return null;
 
             var mapper = new ValueSetFullCodeListMapper(
+                this.identifyIsCustom,
                 this.Cache,
                 ((SqlValueSetCodeRepository)this.valueSetCodeRepository).GetCustomValueSetCodes,
                 Enumerable.Empty<string>());
@@ -252,6 +260,7 @@
             if (includeAllValueSetCodes)
             {
                 mapper = new ValueSetFullCodeListMapper(
+                    this.identifyIsCustom,
                     this.Cache,
                     this.valueSetCodeRepository.GetValueSetCodes,
                     codeSystemCodes);
@@ -274,6 +283,7 @@
                 var cachedValueSetDictionary = cachedValueSets.ToDictionary(vs => vs.ValueSetId, vs => vs);
 
                 mapper = new ValueSetShortCodeListMapper(
+                    this.identifyIsCustom,
                     this.Cache,
                     lookup,
                     cachedValueSetDictionary,

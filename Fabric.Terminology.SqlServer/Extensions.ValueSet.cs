@@ -10,23 +10,6 @@
     {
         private static readonly EmptySamdBinding EmptyBinding = new EmptySamdBinding();
 
-        internal static void ReadyForCustomInsert(this IValueSet valueSet)
-        {
-            var sequentialGuid = GuidComb.GenerateComb().ToString();
-
-            valueSet.ValueSetUniqueId = sequentialGuid;
-            valueSet.ValueSetId = sequentialGuid;
-            valueSet.ValueSetOId = sequentialGuid;
-
-            foreach (var code in valueSet.ValueSetCodes)
-            {
-                ((ValueSetCode)code).ValueSetUniqueId = sequentialGuid;
-                ((ValueSetCode)code).ValueSetId = sequentialGuid;
-                ((ValueSetCode)code).ValueSetOId = sequentialGuid;
-                ((ValueSetCode)code).ValueSetName = valueSet.Name;
-            }
-        }
-
         internal static ValueSetDescriptionDto AsDto(this IValueSet valueSet)
         {
             return new ValueSetDescriptionDto

@@ -8,6 +8,7 @@
     using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Models.Dto;
     using Fabric.Terminology.Domain.Persistence.Mapping;
+    using Fabric.Terminology.Domain.Strategy;
 
     using JetBrains.Annotations;
 
@@ -24,11 +25,13 @@
         private readonly string[] codeSystemCds;
 
         public ValueSetShortCodeListMapper(
+            IIdentifyIsCustomStrategy identifyIsCustom,
             IMemoryCacheProvider memCache, 
             ILookup<string, IValueSetCode> lookup, 
             IDictionary<string, IValueSet> previouslyCached,
             Func<string, string[], int> getCount,
             IEnumerable<string> codeSystemCodes)
+            : base(identifyIsCustom)
         {
             this.cache = memCache;
             this.lookupCodes = lookup;

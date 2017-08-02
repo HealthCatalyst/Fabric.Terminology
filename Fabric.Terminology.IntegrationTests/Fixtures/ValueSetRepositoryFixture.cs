@@ -4,6 +4,7 @@
 
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence;
+    using Fabric.Terminology.Domain.Strategy;
     using Fabric.Terminology.SqlServer.Models.Dto;
     using Fabric.Terminology.SqlServer.Persistence;
 
@@ -30,7 +31,8 @@
                 this.Cache,
                 this.Logger,
                 valueSetCodeRepository,
-                new DefaultPagingStrategy<ValueSetDescriptionDto, IValueSet>(20));
+                new DefaultPagingStrategy<ValueSetDescriptionDto, IValueSet>(20),
+                new IdentifyIsCustomStrategy());
         }
     }
 }

@@ -4,12 +4,17 @@
 
     using Fabric.Terminology.Domain.Models;
 
-    public class ValueSetValidationStrategy : IValueSetValidationStrategy
+    public class IdentifyIsCustomStrategy : IIdentifyIsCustomStrategy
     {
-        public bool EnsureIsCustom(IValueSet valueSet)
+        public bool Execute(IValueSet valueSet)
         {
             // TODO - relates to GH issue # 13
             return Guid.TryParse(valueSet.ValueSetId, out Guid empty) && empty.Equals(Guid.Empty);
+        }
+
+        public void SetIsCustom(IValueSet valueSet)
+        {
+            ((ValueSet)valueSet).IsCustom = this.Execute(valueSet);
         }
     }
 }

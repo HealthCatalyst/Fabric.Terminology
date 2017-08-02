@@ -6,6 +6,7 @@
 
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence.Mapping;
+    using Fabric.Terminology.Domain.Strategy;
     using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Models;
     using Fabric.Terminology.SqlServer.Models.Dto;
@@ -23,9 +24,11 @@
         private readonly IEnumerable<string> codeSystemCodes;
 
         public ValueSetFullCodeListMapper(
+            IIdentifyIsCustomStrategy identifyIsCustom,
             IMemoryCacheProvider memCache, 
             Func<string, string[], IReadOnlyCollection<IValueSetCode>> fetchCodes, 
             IEnumerable<string> codeSystemCDs)
+            : base(identifyIsCustom)
         {
             this.cache = memCache;
             this.fetch = fetchCodes;

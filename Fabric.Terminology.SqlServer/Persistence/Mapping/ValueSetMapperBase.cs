@@ -3,26 +3,36 @@
     using System.Collections.Generic;
 
     using Fabric.Terminology.Domain.Models;
+    using Fabric.Terminology.Domain.Strategy;
     using Fabric.Terminology.SqlServer.Models.Dto;
 
     internal abstract class ValueSetMapperBase
     {
+        private readonly IIdentifyIsCustomStrategy identifyIsCustom;
+
+        protected ValueSetMapperBase(IIdentifyIsCustomStrategy identifyIsCustomStrategy)
+        {
+            this.identifyIsCustom = identifyIsCustomStrategy;
+        }
+
         protected IValueSet Build(ValueSetDescriptionDto dto, IReadOnlyCollection<IValueSetCode> codes, int codeCount)
         {
-            return new ValueSet
+            var valueSet = new ValueSet(
+                dto.ValueSetID,
+                dto.ValueSetUniqueID,
+                dto.ValueSetOID,
+                dto.ValueSetNM,
+                dto.AuthoringSourceDSC,
+                dto.PurposeDSC,
+                dto.VersionDSC,
+                codes)
             {
-                ValueSetUniqueId = dto.ValueSetUniqueID,
-                ValueSetId = dto.ValueSetID,
-                ValueSetOId = dto.ValueSetOID,
-                AuthoringSourceDescription = dto.AuthoringSourceDSC,
-                Name = dto.ValueSetNM,
-                IsCustom = false,
-                PurposeDescription = dto.PurposeDSC,
-                SourceDescription = dto.SourceDSC,
-                VersionDescription = dto.VersionDSC,
-                ValueSetCodes = codes,
-                ValueSetCodesCount = codeCount
+                ValueSetCodesCount = codeCount                
             };
+
+            this.identifyIsCustom.SetIsCustom(valueSet);
+
+            return valueSet;
         }
     }
 }

@@ -4,13 +4,13 @@
 
     public interface IValueSet : IValueSetMeta
     {
-        string ValueSetUniqueId { get; set; }
+        string ValueSetUniqueId { get; }
 
-        string ValueSetId { get; set; }
+        string ValueSetId { get; }
 
-        string ValueSetOId { get; set; }
+        string ValueSetOId { get; }
 
-        string Name { get; set; }
+        string Name { get;  }
 
         bool IsCustom { get; }
 

@@ -9,8 +9,6 @@
 
     internal sealed class ValueSetCodeMapper : IModelMapper<ValueSetCodeDto, IValueSetCode>
     {
-        private static readonly EmptySamdBinding EmptyBinding = new EmptySamdBinding();
-
         [CanBeNull]
         public IValueSetCode Map(ValueSetCodeDto dto)
         {
@@ -21,18 +19,15 @@
                 Version = dto.CodeSystemVersionTXT
             };
 
-            return new ValueSetCode
-            {
-                ValueSetUniqueId = dto.ValueSetUniqueID,
-                ValueSetId = dto.ValueSetID,
-                Code = dto.CodeCD,
-                CodeSystem = codeSystem,
-                Name = dto.CodeDSC,
-                RevisionDate = dto.RevisionDTS,
-                VersionDescription = dto.VersionDSC,
-                LastLoadDate = dto.LastLoadDTS,
-                ValueSetName = dto.ValueSetNM
-            };
+            return new ValueSetCode(
+                dto.ValueSetID,
+                dto.ValueSetNM,
+                dto.CodeCD,
+                codeSystem,
+                dto.VersionDSC,
+                dto.SourceDSC,
+                dto.LastLoadDTS,
+                dto.RevisionDTS);
         }
     }
 }

@@ -15,12 +15,12 @@ namespace Fabric.Terminology.Domain.Services
     {
         private readonly IValueSetRepository repository;
 
-        private readonly IValueSetValidationStrategy validationStrategy;
+        private readonly IIdentifyIsCustomStrategy identifyIsCustom;
 
-        public ValueSetService(IValueSetRepository valueSetRepository, IValueSetValidationStrategy validationStrategy)
+        public ValueSetService(IValueSetRepository valueSetRepository, IIdentifyIsCustomStrategy identifyIsCustom)
         {
             this.repository = valueSetRepository;
-            this.validationStrategy = validationStrategy;
+            this.identifyIsCustom = identifyIsCustom;
         }
 
         #region Events
@@ -176,7 +176,7 @@ namespace Fabric.Terminology.Domain.Services
         /// </remarks>
         public void Save(IValueSet valueSet)
         {
-            if (this.validationStrategy.EnsureIsCustom(valueSet))
+            if (this.identifyIsCustom.Execute(valueSet))
             {             
             }
 
@@ -186,7 +186,7 @@ namespace Fabric.Terminology.Domain.Services
         // TODO need a table to delete
         public void Delete(IValueSet valueSet)
         {
-            if (this.validationStrategy.EnsureIsCustom(valueSet))
+            if (this.identifyIsCustom.Execute(valueSet))
             {
 
             }

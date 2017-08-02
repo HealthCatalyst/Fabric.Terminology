@@ -30,9 +30,10 @@
                 this.Cache,
                 this.Logger,
                 valueSetCodeRepository,
-                new DefaultPagingStrategy<ValueSetDescriptionDto, IValueSet>(20));
+                new DefaultPagingStrategy<ValueSetDescriptionDto, IValueSet>(20),
+                new IdentifyIsCustomStrategy());
 
-            this.ValueSetService = new ValueSetService(valueSetRepository, new ValueSetValidationStrategy());
+            this.ValueSetService = new ValueSetService(valueSetRepository, new IdentifyIsCustomStrategy());
         }
     }
 }
