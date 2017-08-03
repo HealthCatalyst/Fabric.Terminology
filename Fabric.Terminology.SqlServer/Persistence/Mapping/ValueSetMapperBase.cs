@@ -8,11 +8,11 @@
 
     internal abstract class ValueSetMapperBase
     {
-        private readonly IIdentifyIsCustomStrategy identifyIsCustom;
+        private readonly IIsCustomValueStrategy isCustomValue;
 
-        protected ValueSetMapperBase(IIdentifyIsCustomStrategy identifyIsCustomStrategy)
+        protected ValueSetMapperBase(IIsCustomValueStrategy isCustomValueStrategy)
         {
-            this.identifyIsCustom = identifyIsCustomStrategy;
+            this.isCustomValue = isCustomValueStrategy;
         }
 
         protected IValueSet Build(ValueSetDescriptionDto dto, IReadOnlyCollection<IValueSetCode> codes, int codeCount)
@@ -30,7 +30,7 @@
                 ValueSetCodesCount = codeCount                
             };
 
-            this.identifyIsCustom.SetIsCustom(valueSet);
+            this.isCustomValue.Set(valueSet);
 
             return valueSet;
         }

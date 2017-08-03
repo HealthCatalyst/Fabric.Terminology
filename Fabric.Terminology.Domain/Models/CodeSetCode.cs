@@ -6,6 +6,7 @@ namespace Fabric.Terminology.Domain.Models
     {
         public CodeSetCode(
             string code,
+            string name,
             ICodeSystem codeSystem,
             string versionDescription,
             string sourceDescription,
@@ -13,6 +14,7 @@ namespace Fabric.Terminology.Domain.Models
             DateTime? revisionDate)
         {
             this.Code = code;
+            this.Name = name;
             this.CodeSystem = codeSystem;
             this.VersionDescription = versionDescription;
             this.SourceDescription = sourceDescription;

@@ -16,12 +16,12 @@ namespace Fabric.Terminology.Domain.Services
     {
         private readonly IValueSetRepository repository;
 
-        private readonly IIdentifyIsCustomStrategy identifyIsCustom;
+        private readonly IIsCustomValueStrategy isCustomValue;
 
-        public ValueSetService(IValueSetRepository valueSetRepository, IIdentifyIsCustomStrategy identifyIsCustom)
+        public ValueSetService(IValueSetRepository valueSetRepository, IIsCustomValueStrategy isCustomValue)
         {
             this.repository = valueSetRepository;
-            this.identifyIsCustom = identifyIsCustom;
+            this.isCustomValue = isCustomValue;
         }
 
         #region Events
@@ -121,7 +121,7 @@ namespace Fabric.Terminology.Domain.Services
 
         public bool NameIsUnique(string name)
         {
-            return this.repository.NameExists(name);
+            return !this.repository.NameExists(name);
         }
 
         public Attempt<IValueSet> Create(
@@ -145,7 +145,7 @@ namespace Fabric.Terminology.Domain.Services
                 return Attempt<IValueSet>.Failed(new ArgumentException("A value set must include at least one code."));
             }
 
-            var emptyId = Guid.NewGuid().ToString();
+            var emptyId = Guid.Empty.ToString();
 
             var valueSet = new ValueSet(
                 emptyId,
@@ -174,10 +174,10 @@ namespace Fabric.Terminology.Domain.Services
         /// </remarks>
         public void Save(IValueSet valueSet)
         {
-            Saving?.Invoke(this, valueSet);
-
-            if (this.identifyIsCustom.Execute(valueSet) && valueSet.IsNew())
+            if (valueSet.IsCustom && this.isCustomValue.Get(valueSet) && valueSet.IsNew())
             {
+                Saving?.Invoke(this, valueSet);
+
                 var attempt = this.repository.Add(valueSet);
                 if (attempt.Success)
                 {
@@ -192,16 +192,20 @@ namespace Fabric.Terminology.Domain.Services
             throw new InvalidOperationException("ValueSet was not a custom value set and cannot be saved.");
         }
 
-        // TODO need a table to delete
         public void Delete(IValueSet valueSet)
         {
-            if (this.identifyIsCustom.Execute(valueSet))
+            if (valueSet.IsCustom && this.isCustomValue.Get(valueSet) && !valueSet.IsNew())
             {
+                Deleting?.Invoke(this, valueSet);
 
+                this.repository.Delete(valueSet);
+
+                Deleted?.Invoke(this, valueSet);
+
+                return;
             }
 
-            // assert is custom
-            throw new InvalidOperationException("ValueSet was not a custom value set and cannot be saved.");
+            throw new InvalidOperationException("ValueSet was not a custom value set and cannot be deleted.");
         }
 
         private static bool ValidateValueSetMeta(IValueSetMeta meta, out string msg)

@@ -28,7 +28,7 @@
                 (c, s) => new DefaultPagingStrategy<ValueSetDescriptionDto, IValueSet>(
                     c.Resolve<TerminologySqlSettings>().DefaultItemsPerPage));
 
-            container.Register<IIdentifyIsCustomStrategy, IdentifyIsCustomStrategy>();
+            container.Register<IIsCustomValueStrategy, IsCustomValueStrategy>();
 
             container.Register<EmptySamdBinding>().AsSingleton();
         }

@@ -8,6 +8,7 @@
             string valueSetId,
             string valueSetName,
             string code,
+            string name,
             ICodeSystem codeSystem,
             string versionDescription,
             string sourceDescription,
@@ -18,6 +19,7 @@
                 valueSetId,
                 valueSetName,
                 code,
+                name,
                 codeSystem,
                 versionDescription,
                 sourceDescription,
@@ -31,6 +33,7 @@
             string valueSetUniqueId,
             string valueSetName,
             string code,
+            string name,
             ICodeSystem codeSystem,
             string versionDescription,
             string sourceDescription,
@@ -42,6 +45,7 @@
                 valueSetUniqueId,
                 valueSetName,
                 code,
+                name,
                 codeSystem,
                 versionDescription,
                 sourceDescription,
@@ -56,12 +60,13 @@
             string valueSetOId,
             string valueSetName,
             string code,
+            string name,
             ICodeSystem codeSystem,
             string versionDescription,
             string sourceDescription,
             DateTime lastLoadDate,
             DateTime? revisionDate)
-            : base(code, codeSystem, versionDescription, sourceDescription, lastLoadDate, revisionDate)
+            : base(code, name, codeSystem, versionDescription, sourceDescription, lastLoadDate, revisionDate)
         {
             this.ValueSetId = valueSetId;
             this.ValueSetUniqueId = valueSetUniqueId;

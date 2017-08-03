@@ -4,17 +4,17 @@
 
     using Fabric.Terminology.Domain.Models;
 
-    public class IdentifyIsCustomStrategy : IIdentifyIsCustomStrategy
+    public class IsCustomValueStrategy : IIsCustomValueStrategy
     {
-        public bool Execute(IValueSet valueSet)
+        public bool Get(IValueSet valueSet)
         {
             // TODO - relates to GH issue # 13
             return Guid.TryParse(valueSet.ValueSetUniqueId, out Guid _);
         }
 
-        public void SetIsCustom(IValueSet valueSet)
+        public void Set(IValueSet valueSet)
         {
-            ((ValueSet)valueSet).IsCustom = this.Execute(valueSet);
+            ((ValueSet)valueSet).IsCustom = this.Get(valueSet);
         }
     }
 }

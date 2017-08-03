@@ -2,7 +2,6 @@
 {
     using System;
 
-    using Fabric.Terminology.Domain.Configuration;
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence;
 

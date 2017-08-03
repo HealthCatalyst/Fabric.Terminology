@@ -30,6 +30,7 @@
                 valueSetId,
                 valueSetName,
                 codeSetCode.Code,
+                codeSetCode.Name,
                 codeSetCode.CodeSystem,
                 codeSetCode.VersionDescription,
                 codeSetCode.SourceDescription,

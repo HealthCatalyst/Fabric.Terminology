@@ -1,6 +1,8 @@
 ﻿namespace Fabric.Terminology.API.Models
 {
-    public class ValueSetMetaApiModel
+    using Fabric.Terminology.Domain.Models;
+
+    public class ValueSetMetaApiModel : IValueSetMeta
     {
         public string AuthoringSourceDescription { get; set; }
 

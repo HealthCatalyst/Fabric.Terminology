@@ -11,6 +11,7 @@
             string name,
             string authoringSourceDescription,
             string purposeDescription,
+            string sourceDescription,
             string versionDescription,
             IReadOnlyCollection<IValueSetCode> valueSetCodes)
             : this(
@@ -19,6 +20,7 @@
                 name,
                 authoringSourceDescription,
                 purposeDescription,
+                sourceDescription,
                 versionDescription,
                 valueSetCodes)
         {
@@ -30,6 +32,7 @@
             string name,
             string authoringSourceDescription,
             string purposeDescription,
+            string sourceDescription,
             string versionDescription,
             IReadOnlyCollection<IValueSetCode> valueSetCodes)
             : this(
@@ -39,6 +42,7 @@
                 name,
                 authoringSourceDescription,
                 purposeDescription,
+                sourceDescription,
                 versionDescription,
                 valueSetCodes)
         {
@@ -51,6 +55,7 @@
             string name,
             string authoringSourceDescription,
             string purposeDescription,
+            string sourceDescription,
             string versionDescription,
             IReadOnlyCollection<IValueSetCode> valueSetCodes)
         {
@@ -60,6 +65,7 @@
             this.Name = name;
             this.AuthoringSourceDescription = authoringSourceDescription;
             this.PurposeDescription = purposeDescription;
+            this.SourceDescription = sourceDescription;
             this.VersionDescription = versionDescription;
             this.ValueSetCodes = valueSetCodes;
             this.IsCustom = true;

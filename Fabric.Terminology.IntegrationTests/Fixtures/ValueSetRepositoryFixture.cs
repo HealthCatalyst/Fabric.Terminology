@@ -32,7 +32,7 @@
                 this.Logger,
                 valueSetCodeRepository,
                 new DefaultPagingStrategy<ValueSetDescriptionDto, IValueSet>(20),
-                new IdentifyIsCustomStrategy());
+                new IsCustomValueStrategy());
         }
     }
 }

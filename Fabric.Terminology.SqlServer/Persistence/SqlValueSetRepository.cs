@@ -31,7 +31,7 @@
 
         private readonly IPagingStrategy<ValueSetDescriptionDto, IValueSet> pagingStrategy;
 
-        private readonly IIdentifyIsCustomStrategy identifyIsCustom;
+        private readonly IIsCustomValueStrategy isCustomValue;
 
         public SqlValueSetRepository(
             SharedContext sharedContext,
@@ -40,7 +40,7 @@
             ILogger logger,
             IValueSetCodeRepository valsetCodeRepository,
             IPagingStrategy<ValueSetDescriptionDto, IValueSet> pagingStrategy,
-            IIdentifyIsCustomStrategy identifyIsCustomStrategy)
+            IIsCustomValueStrategy isCustomValueStrategy)
         {
             this.clientTermContext = clientTermContext;
             this.SharedContext = sharedContext;
@@ -48,7 +48,7 @@
             this.valueSetCodeRepository = valsetCodeRepository;
             this.Cache = cache;
             this.pagingStrategy = pagingStrategy;
-            this.identifyIsCustom = identifyIsCustomStrategy;
+            this.isCustomValue = isCustomValueStrategy;
         }
 
         protected SharedContext SharedContext { get; }
@@ -63,11 +63,14 @@
 
         protected DbSet<ValueSetDescriptionDto> DbSet => this.SharedContext.ValueSetDescriptions;
 
-        protected DbSet<ValueSetDescriptionDto> CustomDbSet => this.ClientTermContext.ValueSetDescriptions;
+        private bool IsTest => this.SharedContext.IsInMemory || this.ClientTermContext.IsInMemory;
 
         public bool NameExists(string name)
         {
-            return this.DbSet.Any(dto => dto.ValueSetNM == name) || this.CustomDbSet.Any(dto => dto.ValueSetNM == name);
+            return !this.IsTest
+                       ? this.DbSet.Any(dto => dto.ValueSetNM == name)
+                         || this.ClientTermContext.ValueSetDescriptions.Any(dto => dto.ValueSetNM == name)
+                       : this.ClientTermContext.ValueSetDescriptions.Any(dto => dto.ValueSetNM == name);
         }
 
         [CanBeNull]
@@ -82,10 +85,13 @@
 
             var dto = this.DbSet.Where(GetBaseExpression()).FirstOrDefault(vs => vs.ValueSetID == valueSetId);
 
-            if (dto == null) return null;
+            if (dto == null)
+            {
+                return null;
+            }
 
             var mapper = new ValueSetFullCodeListMapper(
-                this.identifyIsCustom,
+                this.isCustomValue,
                 this.Cache,
                 this.valueSetCodeRepository.GetValueSetCodes,
                 codeSystemCDs);
@@ -110,7 +116,7 @@
             if (dtos.Any())
             {
                 var mapper = new ValueSetFullCodeListMapper(
-                    this.identifyIsCustom,
+                    this.isCustomValue,
                     this.Cache,
                     this.valueSetCodeRepository.GetValueSetCodes,
                     codeSystemCodes);
@@ -202,7 +208,10 @@
             }
 
             // Get the updated ValueSet
-            var added = this.GetValueSet(valueSetDto.ValueSetID, Enumerable.Empty<string>());
+            var added = !this.IsTest ?
+                this.GetValueSet(valueSetDto.ValueSetID, Enumerable.Empty<string>()) :
+                this.GetCustomValueSet(valueSetDto.ValueSetUniqueID);
+
             return added == null ?
                 Attempt<IValueSet>.Failed(new ValueSetNotFoundException("Could not retrieved newly saved ValueSet")) :
                 Attempt<IValueSet>.Successful(added);
@@ -214,12 +223,42 @@
             {
                 return;
             }
+
+            var valueSetDto = this.ClientTermContext.ValueSetDescriptions.Find(valueSet.ValueSetUniqueId);
+            if (valueSetDto == null)
+            {
+                throw new ValueSetNotFoundException($"ValueSet with UniqueID {valueSet.ValueSetUniqueId} was not found.");
+            }
+
+            var codes = this.ClientTermContext.ValueSetCodes.Where(code => code.ValueSetUniqueID == valueSetDto.ValueSetUniqueID);
+            using (var transaction = this.ClientTermContext.Database.BeginTransaction())
+            {
+                try
+                {
+                    this.ClientTermContext.ValueSetCodes.RemoveRange(codes);
+                    this.ClientTermContext.ValueSetDescriptions.Remove(valueSetDto);
+                    this.ClientTermContext.SaveChanges();
+
+                    transaction.Commit();
+
+                    this.Cache.ClearItem(CacheKeys.ValueSetKey(valueSet.ValueSetId));
+
+                    // FYI - brittle point here as we may (albeit unlikely) have cached valuesets with codesystem filters applied - thus still stored in cache.
+                    // Current caching mechanism does not allow for searching keys for key pattern so we have to rely on 
+                    // the cache expiration (default 5 mins).
+                }
+                catch (Exception ex)
+                {
+                    this.Logger.Error(ex, "Failed to delete custom ValueSet");
+                    throw;
+                }
+            }
         }
 
         [CanBeNull]
         internal IValueSet GetCustomValueSet(string valueSetUniqueId)
         {
-            var dto = this.CustomDbSet.Where(GetBaseExpression(false)).FirstOrDefault(vs => vs.ValueSetUniqueID == valueSetUniqueId);
+            var dto = this.ClientTermContext.ValueSetDescriptions.AsNoTracking().SingleOrDefault(x => x.ValueSetUniqueID == valueSetUniqueId);
 
             if (dto == null)
             {
@@ -227,7 +266,7 @@
             }
 
             var mapper = new ValueSetFullCodeListMapper(
-                this.identifyIsCustom,
+                this.isCustomValue,
                 this.Cache,
                 ((SqlValueSetCodeRepository)this.valueSetCodeRepository).GetCustomValueSetCodes,
                 Enumerable.Empty<string>());
@@ -235,14 +274,9 @@
             return mapper.Map(dto);
         }
 
-        private static Expression<Func<ValueSetDescriptionDto, bool>> GetBaseExpression(bool useStatusCd = true)
+        private static Expression<Func<ValueSetDescriptionDto, bool>> GetBaseExpression()
         {
-            return baseSql => useStatusCd
-                                  ? baseSql.PublicFLG == "Y"
-                                    && baseSql.StatusCD == "Active"
-                                    && baseSql.LatestVersionFLG == "Y"
-                                  : baseSql.PublicFLG == "Y" && baseSql.LatestVersionFLG == "Y";
-
+            return baseSql => baseSql.PublicFLG == "Y" && baseSql.StatusCD == "Active" && baseSql.LatestVersionFLG == "Y";
         }
 
         private async Task<PagedCollection<IValueSet>> CreatePagedCollectionAsync(
@@ -264,7 +298,7 @@
             if (includeAllValueSetCodes)
             {
                 mapper = new ValueSetFullCodeListMapper(
-                    this.identifyIsCustom,
+                    this.isCustomValue,
                     this.Cache,
                     this.valueSetCodeRepository.GetValueSetCodes,
                     codeSystemCodes);
@@ -287,7 +321,7 @@
                 var cachedValueSetDictionary = cachedValueSets.ToDictionary(vs => vs.ValueSetId, vs => vs);
 
                 mapper = new ValueSetShortCodeListMapper(
-                    this.identifyIsCustom,
+                    this.isCustomValue,
                     this.Cache,
                     lookup,
                     cachedValueSetDictionary,

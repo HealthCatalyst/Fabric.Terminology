@@ -11,7 +11,7 @@
     {
         private static readonly EmptySamdBinding EmptyBinding = new EmptySamdBinding();
 
-        internal static ValueSetDescriptionDto BuildValueSetDescriptionDto(
+        internal static ValueSetDescriptionDto ValueSetDescriptionDto(
             string valueSetId,
             string valueSetNm)
         {
@@ -26,6 +26,7 @@
                 SourceDSC = "UNIT OR INTEGRATION TEST",
                 VersionDSC = "CURRENT TEST VERSION",
                 BindingDSC = string.Empty,
+                StatusCD = "Active",
                 LatestVersionFLG = "Y",
                 PublicFLG = "Y",
                 PurposeDSC = "UNIT or INTEGRATION TESTING",
@@ -38,29 +39,29 @@
         }
 
 
-        internal static IEnumerable<ValueSetCodeDto> BuildValueSetCodeDtoCollection(
+        internal static IEnumerable<ValueSetCodeDto> ValueSetCodeDtoCollection(
             ValueSetDescriptionDto valueSetDto,
             int count = 10)
         {
-            for (var i = 0; i < 10; i++)
+            for (var i = 0; i < count; i++)
             {
-                yield return BuildValueSetCodeDto(valueSetDto, "TEST" + i.ToString(), "TEST" + i.ToString() + " DESC");
+                yield return ValueSetCodeDto(valueSetDto, "TEST" + i.ToString(), "TEST" + i.ToString() + " DESC");
             }
         }
 
-        internal static ValueSetCodeDto BuildValueSetCodeDto(
+        internal static ValueSetCodeDto ValueSetCodeDto(
             ValueSetDescriptionDto valueSetDto,
             string codeCd,
             string codeDsc)
         {
-            return BuildValueSetCodeDto(
+            return ValueSetCodeDto(
                 valueSetDto,
                 codeCd,
                 codeDsc,
                 new CodeSystem { Code = "TEST", Name = "TEST-CODE-SYSTEM", Version = "TEST-VERSION" });
         }
 
-        internal static ValueSetCodeDto BuildValueSetCodeDto(
+        internal static ValueSetCodeDto ValueSetCodeDto(
             ValueSetDescriptionDto valueSetDto,
             string codeCd,
             string codeDsc,

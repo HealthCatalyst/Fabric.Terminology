@@ -120,9 +120,11 @@ ORDER BY vscr.CodeDSC";
         }
 
         //// Used for testing.  codeSystemCodes parameter not used by required for mapper.
-        internal IReadOnlyCollection<IValueSetCode> GetCustomValueSetCodes(string valueSetId, IEnumerable<string> codeSystemCodes)
+        internal IReadOnlyCollection<IValueSetCode> GetCustomValueSetCodes(string valueSetUniqueId, IEnumerable<string> codeSystemCodes)
         {
-            var dtos = this.CustomDbSet.Where(dto => dto.ValueSetID == valueSetId).OrderBy(this.SortExpression);
+            var all = this.CustomDbSet.ToList();
+
+            var dtos = this.CustomDbSet.Where(dto => dto.ValueSetUniqueID == valueSetUniqueId).OrderBy(this.SortExpression).ToList();
 
             var mapper = new ValueSetCodeMapper();
 

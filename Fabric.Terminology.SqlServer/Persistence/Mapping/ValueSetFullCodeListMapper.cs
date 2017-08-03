@@ -24,11 +24,11 @@
         private readonly IEnumerable<string> codeSystemCodes;
 
         public ValueSetFullCodeListMapper(
-            IIdentifyIsCustomStrategy identifyIsCustom,
+            IIsCustomValueStrategy isCustomValue,
             IMemoryCacheProvider memCache, 
             Func<string, string[], IReadOnlyCollection<IValueSetCode>> fetchCodes, 
             IEnumerable<string> codeSystemCDs)
-            : base(identifyIsCustom)
+            : base(isCustomValue)
         {
             this.cache = memCache;
             this.fetch = fetchCodes;

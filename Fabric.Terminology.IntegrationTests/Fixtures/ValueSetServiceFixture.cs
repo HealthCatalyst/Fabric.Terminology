@@ -31,9 +31,9 @@
                 this.Logger,
                 valueSetCodeRepository,
                 new DefaultPagingStrategy<ValueSetDescriptionDto, IValueSet>(20),
-                new IdentifyIsCustomStrategy());
+                new IsCustomValueStrategy());
 
-            this.ValueSetService = new ValueSetService(valueSetRepository, new IdentifyIsCustomStrategy());
+            this.ValueSetService = new ValueSetService(valueSetRepository, new IsCustomValueStrategy());
         }
     }
 }

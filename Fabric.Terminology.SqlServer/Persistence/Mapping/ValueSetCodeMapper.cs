@@ -23,6 +23,7 @@
                 dto.ValueSetID,
                 dto.ValueSetNM,
                 dto.CodeCD,
+                dto.CodeDSC,
                 codeSystem,
                 dto.VersionDSC,
                 dto.SourceDSC,

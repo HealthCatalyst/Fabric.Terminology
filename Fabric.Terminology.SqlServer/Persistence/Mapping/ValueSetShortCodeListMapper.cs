@@ -25,13 +25,13 @@
         private readonly string[] codeSystemCds;
 
         public ValueSetShortCodeListMapper(
-            IIdentifyIsCustomStrategy identifyIsCustom,
+            IIsCustomValueStrategy isCustomValue,
             IMemoryCacheProvider memCache, 
             ILookup<string, IValueSetCode> lookup, 
             IDictionary<string, IValueSet> previouslyCached,
             Func<string, string[], int> getCount,
             IEnumerable<string> codeSystemCodes)
-            : base(identifyIsCustom)
+            : base(isCustomValue)
         {
             this.cache = memCache;
             this.lookupCodes = lookup;
