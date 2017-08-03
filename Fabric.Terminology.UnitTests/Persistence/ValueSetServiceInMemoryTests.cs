@@ -1,33 +1,34 @@
-﻿namespace Fabric.Terminology.IntegrationTests.Repositories
+﻿namespace Fabric.Terminology.UnitTests.Persistence
 {
     using System;
+    using System.Linq;
 
     using Fabric.Terminology.API;
+    using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Services;
-    using Fabric.Terminology.IntegrationTests.Fixtures;
     using Fabric.Terminology.SqlServer.Persistence;
     using Fabric.Terminology.TestsBase;
+    using Fabric.Terminology.TestsBase.Fixtures;
     using Fabric.Terminology.TestsBase.Mocks;
 
     using FluentAssertions;
 
     using Xunit;
     using Xunit.Abstractions;
-    using Fabric.Terminology.Domain;
 
-    public class CustomInMemoryValueSetRepositoryTests : OutputTestBase, IClassFixture<CustomValueSetFixture>
+    public class ValueSetServiceInMemoryTests : OutputTestBase, IClassFixture<CustomValueSetFixture>
     {
         private readonly SqlValueSetRepository valueSetRepository;
 
         private readonly SqlValueSetCodeRepository valueSetCodeRepository;
 
-        private readonly IValueSetService valueService;
+        private readonly IValueSetService valueSetService;
 
-        public CustomInMemoryValueSetRepositoryTests(ITestOutputHelper output, CustomValueSetFixture fixture)
+        public ValueSetServiceInMemoryTests(ITestOutputHelper output, CustomValueSetFixture fixture)
             : base(output)
         {
             this.valueSetRepository = fixture.ValueSetRepository;
-            this.valueService = fixture.ValueSetService;
+            this.valueSetService = fixture.ValueSetService;
             this.valueSetCodeRepository = fixture.ValueSetCodeRepository;
         }
 
@@ -52,7 +53,7 @@
             var emptyId = Guid.Empty.ToString();
 
             // Act
-            var attempt = this.valueService.Create(apiModel);
+            var attempt = this.valueSetService.Create(apiModel);
 
             // Assert
             attempt.Success.Should().BeTrue();
@@ -81,14 +82,14 @@
         {
             // Arrange
             var apiModel = MockApiModelBuilder.ValueSetCreationApiModel(name, codeCount);
-            var attempt = this.valueService.Create(apiModel);
+            var attempt = this.valueSetService.Create(apiModel);
             attempt.Success.Should().BeTrue();
             attempt.Result.HasValue.Should().BeTrue();
 
             var vs = attempt.Result.Single();
 
             // Act
-            this.Profiler.ExecuteTimed(() => this.valueService.Save(vs));
+            this.Profiler.ExecuteTimed(() => this.valueSetService.Save(vs));
 
             // Assert
             vs.ValueSetUniqueId.Should().NotBe(Guid.Empty.ToString());
@@ -101,24 +102,26 @@
         {
             // Arrange
             var apiModel = MockApiModelBuilder.ValueSetCreationApiModel("VS FOR DELETE", 25);
-            var attempt = this.valueService.Create(apiModel);
+            var attempt = this.valueSetService.Create(apiModel);
             attempt.Success.Should().BeTrue();
             attempt.Result.HasValue.Should().BeTrue();
 
             var vs = attempt.Result.Single();
-            this.Profiler.ExecuteTimed(() => this.valueService.Save(vs), "ValueSet Save");
+            this.Profiler.ExecuteTimed(() => this.valueSetService.Save(vs), "ValueSet Save");
 
             vs.ValueSetUniqueId.Should().NotBe(Guid.Empty.ToString());
             vs.IsNew().Should().BeFalse();
             var uid = vs.ValueSetUniqueId;
 
             // Act
-            this.valueService.Delete(vs);
+            this.valueSetService.Delete(vs);
 
             // Assert
             var retreived = this.valueSetRepository.GetCustomValueSet(uid);
+            var codes = this.valueSetCodeRepository.GetCustomValueSetCodes(uid, Enumerable.Empty<string>());
 
             retreived.HasValue.Should().BeFalse();
+            codes.Any().Should().BeFalse();
         }
     }
 }

@@ -4,6 +4,7 @@
     using Fabric.Terminology.Domain.Persistence;
     using Fabric.Terminology.SqlServer.Models.Dto;
     using Fabric.Terminology.SqlServer.Persistence;
+    using Fabric.Terminology.TestsBase.Fixtures;
 
     public class ValueSetCodeRepositoryFixture : RepositoryFixtureBase
     {

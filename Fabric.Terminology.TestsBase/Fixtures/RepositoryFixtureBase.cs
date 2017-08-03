@@ -1,9 +1,9 @@
-﻿namespace Fabric.Terminology.IntegrationTests.Fixtures
+﻿namespace Fabric.Terminology.TestsBase.Fixtures
 {
     using System;
+
     using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Persistence.DataContext;
-    using Fabric.Terminology.TestsBase.Fixtures;
     using Fabric.Terminology.TestsBase.Seeding;
 
     public abstract class RepositoryFixtureBase : AppConfigurationFixture

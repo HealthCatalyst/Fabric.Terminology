@@ -1,11 +1,15 @@
 ﻿namespace Fabric.Terminology.IntegrationTests.Fixtures
 {
+    using System.Collections;
+    using System.Collections.Generic;
+
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence;
     using Fabric.Terminology.Domain.Services;
     using Fabric.Terminology.Domain.Strategy;
     using Fabric.Terminology.SqlServer.Models.Dto;
     using Fabric.Terminology.SqlServer.Persistence;
+    using Fabric.Terminology.TestsBase.Fixtures;
 
     public class ValueSetServiceFixture : RepositoryFixtureBase
     {
@@ -15,7 +19,7 @@
         }
 
         public IValueSetService ValueSetService { get; private set; }
-
+        
         private void Initialize()
         {
             var valueSetCodeRepository = new SqlValueSetCodeRepository(

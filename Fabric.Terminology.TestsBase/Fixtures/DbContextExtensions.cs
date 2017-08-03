@@ -1,4 +1,4 @@
-﻿namespace Fabric.Terminology.IntegrationTests.Fixtures
+﻿namespace Fabric.Terminology.TestsBase.Fixtures
 {
     using System;
 

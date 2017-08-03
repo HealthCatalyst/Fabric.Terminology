@@ -4,9 +4,8 @@
     using Fabric.Terminology.Domain.Persistence;
     using Fabric.Terminology.IntegrationTests.Fixtures;
     using Fabric.Terminology.TestsBase;
-    using FluentAssertions;
 
-    using Microsoft.Extensions.Primitives;
+    using FluentAssertions;
 
     using Xunit;
     using Xunit.Abstractions;
@@ -33,7 +32,8 @@
             var pagerSettings = new PagerSettings { CurrentPage = currentPage, ItemsPerPage = itemsPerPage };
 
             // Act
-            var valueSets = this.Profiler.ExecuteTimed(() => this.valueSetRepository.GetValueSetsAsync(pagerSettings, new string[] { }));
+            var valueSets = this.Profiler.ExecuteTimed(
+                () => this.valueSetRepository.GetValueSetsAsync(pagerSettings, new string[] { }));
             this.Output.WriteLine($"Total Values {valueSets.TotalItems}");
             this.Output.WriteLine($"Total Pages {valueSets.TotalPages}");
 
@@ -43,7 +43,9 @@
             valueSets.TotalPages.Should().BeGreaterThan(0);
 
             // Call again - to time cached
-            var cached = this.Profiler.ExecuteTimed(() => this.valueSetRepository.GetValueSetsAsync(pagerSettings, new string[] { }), "Cached time: ");
+            var cached = this.Profiler.ExecuteTimed(
+                () => this.valueSetRepository.GetValueSetsAsync(pagerSettings, new string[] { }),
+                "Cached time: ");
         }
 
         [Theory]
@@ -56,7 +58,8 @@
             var pagerSettings = new PagerSettings { CurrentPage = 1, ItemsPerPage = 20 };
 
             // Act
-            var valueSets = this.Profiler.ExecuteTimed(() => this.valueSetRepository.FindValueSetsAsync(nameFilter, pagerSettings, new string[] { }));
+            var valueSets = this.Profiler.ExecuteTimed(
+                () => this.valueSetRepository.FindValueSetsAsync(nameFilter, pagerSettings, new string[] { }));
 
             // Assert
             valueSets.Should().NotBeNull();
@@ -86,12 +89,14 @@
             var cds = new string[] { "2.16.840.1.113883.6.103-nope" };
 
             // Act
-            var collection = this.Profiler.ExecuteTimed(() => this.valueSetRepository.GetValueSetsAsync(pagerSettings, cds));
+            var collection = this.Profiler.ExecuteTimed(
+                () => this.valueSetRepository.GetValueSetsAsync(pagerSettings, cds));
 
             // Assert
             collection.TotalItems.Should().Be(0);
 
-            var cached = this.Profiler.ExecuteTimed(() => this.valueSetRepository.GetValueSetsAsync(pagerSettings, cds));
+            var cached =
+                this.Profiler.ExecuteTimed(() => this.valueSetRepository.GetValueSetsAsync(pagerSettings, cds));
         }
 
         [Fact]
@@ -102,12 +107,14 @@
             var cds = new string[] { "2.16.840.1.113883.6.103" };
 
             // Act
-            var collection = this.Profiler.ExecuteTimed(() => this.valueSetRepository.GetValueSetsAsync(pagerSettings, cds));
+            var collection = this.Profiler.ExecuteTimed(
+                () => this.valueSetRepository.GetValueSetsAsync(pagerSettings, cds));
 
             // Assert
             collection.TotalItems.Should().BeGreaterThan(0);
 
-            var cached = this.Profiler.ExecuteTimed(() => this.valueSetRepository.GetValueSetsAsync(pagerSettings, cds));
+            var cached =
+                this.Profiler.ExecuteTimed(() => this.valueSetRepository.GetValueSetsAsync(pagerSettings, cds));
         }
     }
 }

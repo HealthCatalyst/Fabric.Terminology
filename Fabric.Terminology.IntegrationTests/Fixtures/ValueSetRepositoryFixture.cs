@@ -7,6 +7,7 @@
     using Fabric.Terminology.Domain.Strategy;
     using Fabric.Terminology.SqlServer.Models.Dto;
     using Fabric.Terminology.SqlServer.Persistence;
+    using Fabric.Terminology.TestsBase.Fixtures;
 
     public class ValueSetRepositoryFixture : RepositoryFixtureBase, IDisposable
     {
