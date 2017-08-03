@@ -75,7 +75,7 @@
             var valueSet = this.valueSetRepository.GetValueSet(valueSetId, cds);
 
             // Assert
-            valueSet.Should().BeNull();
+            valueSet.HasValue.Should().BeFalse();
         }
 
         [Fact]

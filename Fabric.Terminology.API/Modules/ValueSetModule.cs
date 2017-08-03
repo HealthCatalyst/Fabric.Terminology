@@ -50,9 +50,9 @@
                 var codeSystems = this.GetCodeSystems();
 
                 var valueSet = this.valueSetService.GetValueSet(valueSetId, codeSystems);
-                if (valueSet != null)
+                if (valueSet.HasValue)
                 {
-                    return valueSet.ToValueSetApiModel(summary, this.config.ValueSetSettings.ShortListCodeCount);
+                    return valueSet.Single().ToValueSetApiModel(summary, this.config.ValueSetSettings.ShortListCodeCount);
                 }
 
                 return this.CreateFailureResponse("ValueSet with matching ID was not found", HttpStatusCode.NotFound);
@@ -170,8 +170,7 @@
         private bool GetSummarySetting()
         {
             var val = (string)this.Request.Query["$summary"];
-            bool ret;
-            bool.TryParse(val, out ret);
+            bool.TryParse(val, out bool ret);
             return val.IsNullOrWhiteSpace() || ret;
         }
 

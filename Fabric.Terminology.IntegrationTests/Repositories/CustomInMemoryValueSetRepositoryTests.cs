@@ -53,10 +53,11 @@
 
             // Act
             var attempt = this.valueService.Create(apiModel);
-            var valueSet = attempt.Result;
 
             // Assert
             attempt.Success.Should().BeTrue();
+            attempt.Result.HasValue.Should().BeTrue();
+            var valueSet = attempt.Result.Single();
             valueSet.Should().NotBeNull();
             valueSet.IsCustom.Should().BeTrue();
             valueSet.ValueSetUniqueId.Should().Be(emptyId);
@@ -82,8 +83,9 @@
             var apiModel = MockApiModelBuilder.ValueSetCreationApiModel(name, codeCount);
             var attempt = this.valueService.Create(apiModel);
             attempt.Success.Should().BeTrue();
+            attempt.Result.HasValue.Should().BeTrue();
 
-            var vs = attempt.Result;
+            var vs = attempt.Result.Single();
 
             // Act
             this.Profiler.ExecuteTimed(() => this.valueService.Save(vs));
@@ -101,7 +103,9 @@
             var apiModel = MockApiModelBuilder.ValueSetCreationApiModel("VS FOR DELETE", 25);
             var attempt = this.valueService.Create(apiModel);
             attempt.Success.Should().BeTrue();
-            var vs = attempt.Result;
+            attempt.Result.HasValue.Should().BeTrue();
+
+            var vs = attempt.Result.Single();
             this.Profiler.ExecuteTimed(() => this.valueService.Save(vs), "ValueSet Save");
 
             vs.ValueSetUniqueId.Should().NotBe(Guid.Empty.ToString());
@@ -114,7 +118,7 @@
             // Assert
             var retreived = this.valueSetRepository.GetCustomValueSet(uid);
 
-            retreived.Should().BeNull();
+            retreived.HasValue.Should().BeFalse();
         }
     }
 }

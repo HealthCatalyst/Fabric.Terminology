@@ -3,6 +3,8 @@
     using System.Collections.Generic;
     using System.Threading.Tasks;
 
+    using CallMeMaybe;
+
     using Fabric.Terminology.Domain.Models;
 
     using JetBrains.Annotations;
@@ -12,11 +14,9 @@
     /// </summary>
     public interface IValueSetService
     {
-        [CanBeNull]
-        IValueSet GetValueSet(string valueSetId);
+        Maybe<IValueSet> GetValueSet(string valueSetId);
 
-        [CanBeNull]
-        IValueSet GetValueSet(string valueSetId, IEnumerable<string> codeSystemCodes);
+        Maybe<IValueSet> GetValueSet(string valueSetId, IEnumerable<string> codeSystemCodes);
 
         IReadOnlyCollection<IValueSet> GetValueSets(IEnumerable<string> valueSetIds);
 

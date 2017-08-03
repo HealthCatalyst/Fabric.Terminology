@@ -6,6 +6,8 @@
     using System.Linq.Expressions;
     using System.Threading.Tasks;
 
+    using CallMeMaybe;
+
     using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Exceptions;
     using Fabric.Terminology.Domain.Models;
@@ -73,21 +75,20 @@
                        : this.ClientTermContext.ValueSetDescriptions.Any(dto => dto.ValueSetNM == name);
         }
 
-        [CanBeNull]
-        public IValueSet GetValueSet(string valueSetId, IEnumerable<string> codeSystemCodes)
+        public Maybe<IValueSet> GetValueSet(string valueSetId, IEnumerable<string> codeSystemCodes)
         {
             var codeSystemCDs = codeSystemCodes as string[] ?? codeSystemCodes.ToArray();
             var cached = this.Cache.GetCachedValueSetWithAllCodes(valueSetId, codeSystemCDs);
             if (cached != null)
             {
-                return cached;
+                return Maybe.From(cached);
             }
 
             var dto = this.DbSet.Where(GetBaseExpression()).FirstOrDefault(vs => vs.ValueSetID == valueSetId);
 
             if (dto == null)
             {
-                return null;
+                return Maybe<IValueSet>.Not;
             }
 
             var mapper = new ValueSetFullCodeListMapper(
@@ -96,7 +97,7 @@
                 this.valueSetCodeRepository.GetValueSetCodes,
                 codeSystemCDs);
 
-            return mapper.Map(dto);
+            return Maybe.From(mapper.Map(dto));
         }
 
         public IReadOnlyCollection<IValueSet> GetValueSets(
@@ -212,9 +213,9 @@
                 this.GetValueSet(valueSetDto.ValueSetID, Enumerable.Empty<string>()) :
                 this.GetCustomValueSet(valueSetDto.ValueSetUniqueID);
 
-            return added == null ?
+            return !added.HasValue ?
                 Attempt<IValueSet>.Failed(new ValueSetNotFoundException("Could not retrieved newly saved ValueSet")) :
-                Attempt<IValueSet>.Successful(added);
+                Attempt<IValueSet>.Successful(added.Single());
         }
 
         public void Delete(IValueSet valueSet)
@@ -255,14 +256,13 @@
             }
         }
 
-        [CanBeNull]
-        internal IValueSet GetCustomValueSet(string valueSetUniqueId)
+        internal Maybe<IValueSet> GetCustomValueSet(string valueSetUniqueId)
         {
             var dto = this.ClientTermContext.ValueSetDescriptions.AsNoTracking().SingleOrDefault(x => x.ValueSetUniqueID == valueSetUniqueId);
 
             if (dto == null)
             {
-                return null;
+                return Maybe<IValueSet>.Not;
             }
 
             var mapper = new ValueSetFullCodeListMapper(
@@ -271,7 +271,7 @@
                 ((SqlValueSetCodeRepository)this.valueSetCodeRepository).GetCustomValueSetCodes,
                 Enumerable.Empty<string>());
 
-            return mapper.Map(dto);
+            return Maybe.From(mapper.Map(dto));
         }
 
         private static Expression<Func<ValueSetDescriptionDto, bool>> GetBaseExpression()

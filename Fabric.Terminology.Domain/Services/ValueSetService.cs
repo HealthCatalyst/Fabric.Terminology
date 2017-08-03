@@ -5,6 +5,8 @@ namespace Fabric.Terminology.Domain.Services
     using System.Linq;
     using System.Threading.Tasks;
 
+    using CallMeMaybe;
+
     using Fabric.Terminology.Domain.Exceptions;
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence;
@@ -38,14 +40,12 @@ namespace Fabric.Terminology.Domain.Services
 
         #endregion
 
-        [CanBeNull]
-        public IValueSet GetValueSet(string valueSetId)
+        public Maybe<IValueSet> GetValueSet(string valueSetId)
         {
             return this.GetValueSet(valueSetId, new string[] { });
         }
 
-        [CanBeNull]
-        public IValueSet GetValueSet(string valueSetId, IEnumerable<string> codeSystemCodes)
+        public Maybe<IValueSet> GetValueSet(string valueSetId, IEnumerable<string> codeSystemCodes)
         {
             return this.repository.GetValueSet(valueSetId, codeSystemCodes);
         }
@@ -179,14 +179,19 @@ namespace Fabric.Terminology.Domain.Services
                 Saving?.Invoke(this, valueSet);
 
                 var attempt = this.repository.Add(valueSet);
-                if (attempt.Success)
+                if (attempt.Success && attempt.Result.HasValue)
                 {
-                    Saved?.Invoke(this, attempt.Result);
+                    Saved?.Invoke(this, attempt.Result.Single());
                     return;
                 }
 
-                throw attempt.Exception
-                      ?? new ValueSetOperationException("An exception was not returned by the attempt to save a ValueSet but the save failed.");
+                if (!attempt.Exception.HasValue)
+                {
+                    throw new ValueSetOperationException(
+                        "An exception was not returned by the attempt to save a ValueSet but the save failed.");
+                }
+
+                throw attempt.Exception.Single();
             }
 
             throw new InvalidOperationException("ValueSet was not a custom value set and cannot be saved.");
