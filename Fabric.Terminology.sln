@@ -28,7 +28,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Analyzers", "Analyzers", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{D92C1446-06EC-4E96-8CDD-CDDDFE23EC44}"
 	ProjectSection(SolutionItems) = preProject
-		Tools\SetVersion.ps1 = Tools\SetVersion.ps1
+		Tools\gulpfile.js = Tools\gulpfile.js
 	EndProjectSection
 EndProject
 Global
