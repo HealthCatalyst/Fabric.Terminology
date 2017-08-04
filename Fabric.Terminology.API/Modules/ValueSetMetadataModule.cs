@@ -21,12 +21,14 @@
             : base(modelCatalog, tagCatalog)
         {
             modelCatalog.AddModels(
+                typeof(CodeSetCodeApiModel),
+                typeof(CodeSystem),
+                typeof(FindByTermQuery),
+                typeof(PagedCollection<ValueSetApiModel>),
+                typeof(PagerSettings),
                 typeof(ValueSetApiModel),
                 typeof(ValueSetCodeApiModel),
-                typeof(FindByTermQuery),
-                typeof(PagerSettings),
-                typeof(PagedCollection<ValueSetApiModel>),
-                typeof(CodeSystem));
+                typeof(ValueSetCreationApiModel));
 
             // /{valueSetId}
             this.RouteDescriber.DescribeRouteWithParams(
