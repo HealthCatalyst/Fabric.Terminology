@@ -1,4 +1,4 @@
-﻿namespace Fabric.Terminology.API.Configuration
+namespace Fabric.Terminology.API.Configuration
 {
     using System;
     using System.Reflection;
@@ -14,7 +14,7 @@
         public static Version Current { get; } = new AssemblyName(typeof(TerminologyVersion).GetAssembly().FullName).Version;
 
         // TODO update this with CI Build -> build number
-        public static string CurrentComment => "alpha002";
+        public static string CurrentComment => "alpha";
 
         public static string AssemblyVersion => Current.ToString();
 

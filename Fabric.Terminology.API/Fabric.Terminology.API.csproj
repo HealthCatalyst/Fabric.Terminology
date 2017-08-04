@@ -1,15 +1,23 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
-
+<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFramework>netcoreapp1.1</TargetFramework>
     <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
     <CodeAnalysisRuleSet>..\Catalyst.MostRules.Error.ruleset</CodeAnalysisRuleSet>
- </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile></DocumentationFile>
+    <AssemblyVersion>0.1.2.0</AssemblyVersion>
+    <FileVersion>0.1.2.0</FileVersion>
+    <Description>Service to provide shared healthcare terminology data</Description>
+    <Company>Health Catalyst</Company>
+    <PackageLicenseUrl>https://github.com/HealthCatalyst/Fabric.Terminology/blob/develop/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/HealthCatalyst/Fabric.Terminology</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/HealthCatalyst/Fabric.Terminology</RepositoryUrl>
+    <RepositoryType>GIT</RepositoryType>
+    <Authors>Health Catalyst</Authors>
+    <Version>0.1.2</Version>
   </PropertyGroup>
-
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>
+    </DocumentationFile>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Logs\**" />
     <Compile Remove="Properties\PublishProfiles\**" />
@@ -24,7 +32,6 @@
     <None Remove="Properties\PublishProfiles\**" />
     <None Remove="wwwroot\swagger\dist\**" />
   </ItemGroup>
-
   <ItemGroup>
     <Content Include="wwwroot\swagger\favicon-16x16.png" />
     <Content Include="wwwroot\swagger\favicon-32x32.png" />
@@ -59,8 +66,8 @@
     <ProjectReference Include="..\Fabric.Terminology.SqlServer\Fabric.Terminology.SqlServer.csproj" />
   </ItemGroup>
   <ItemGroup>
-	<Compile Update="Extensions.*.cs">
-		<DependentUpon>Extensions.cs</DependentUpon>
-	</Compile>
-	</ItemGroup>
+    <Compile Update="Extensions.*.cs">
+      <DependentUpon>Extensions.cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
 </Project>
