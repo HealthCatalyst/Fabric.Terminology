@@ -8,8 +8,8 @@
         {
             return new Parameter
             {
-                Name = "valueSetId",
-                In = ParameterIn.Query,
+                Name = "valueSetUniqueId",
+                In = ParameterIn.Path,
                 Required = true,
                 CollectionFormat = CollectionFormats.Csv,
                 Description = "A CSV string of ValueSetIds",

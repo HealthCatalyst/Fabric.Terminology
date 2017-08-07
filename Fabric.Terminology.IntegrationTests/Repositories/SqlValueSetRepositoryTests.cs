@@ -68,14 +68,14 @@
         }
 
         [Theory]
-        [InlineData("2.16.840.1.113883.3.464.1003.108.12.1011", "2.16.840.1.113883.6.103-nope")]
-        public void ValueSetWillReturnNullIfIdExistsButCodeSystemsDontMatch(string valueSetId, string codeSystemCd)
+        [InlineData("413B430E-42EC-41B2-939A-4A4E757124DD", "2.16.840.1.113883.6.103-nope")]
+        public void ValueSetWillReturnNullIfIdExistsButCodeSystemsDontMatch(string valueSetUniqueId, string codeSystemCd)
         {
             // Arrange
             var cds = new string[] { codeSystemCd };
 
             // Act
-            var valueSet = this.valueSetRepository.GetValueSet(valueSetId, cds);
+            var valueSet = this.valueSetRepository.GetValueSet(valueSetUniqueId, cds);
 
             // Assert
             valueSet.HasValue.Should().BeFalse();

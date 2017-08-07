@@ -34,51 +34,51 @@
 
             this.Get("/", _ => this.GetValueSetPage(), null, "GetPaged");
 
-            this.Get("/{valueSetIds}", parameters => this.GetValueSets(parameters.valueSetIds), null, "GetValueSet");
+            this.Get("/{valueSetUniqueId}", parameters => this.GetValueSets(parameters.valueSetUniqueId), null, "GetValueSet");
 
             this.Post("/find/", _ => this.Find(), null, "Find");
 
             this.Post("/", _ => this.AddValueSet(), null, "AddValueSet");
 
-            this.Delete("/{valueSetId}", parameters => this.DeleteValueSet(parameters), null, "DeleteValueSet");
+            this.Delete("/{valueSetUniqueId}", parameters => this.DeleteValueSet(parameters), null, "DeleteValueSet");
         }
 
-        private object GetValueSet(string valueSetId, bool summary = true)
+        private object GetValueSet(string valueSetUniqueId, bool summary = true)
         {
             try
             {
                 var codeSystems = this.GetCodeSystems();
 
-                var valueSet = this.valueSetService.GetValueSet(valueSetId, codeSystems);
-                if (valueSet.HasValue)
+                var valueSet = this.valueSetService.GetValueSet(valueSetUniqueId, codeSystems);
+                if (valueSet != null)
                 {
-                    return valueSet.Single().ToValueSetApiModel(summary, this.config.ValueSetSettings.ShortListCodeCount);
+                    return valueSet.ToValueSetApiModel(summary, this.config.ValueSetSettings.ShortListCodeCount);
                 }
 
                 return this.CreateFailureResponse("ValueSet with matching ID was not found", HttpStatusCode.NotFound);
             }
             catch (ValueSetNotFoundException ex)
             {
-                this.Logger.Error(ex, ex.Message, valueSetId);
+                this.Logger.Error(ex, ex.Message, valueSetUniqueId);
                 return this.CreateFailureResponse(
-                    $"The ValueSet with id: {valueSetId} was not found.",
+                    $"The ValueSet with id: {valueSetUniqueId} was not found.",
                     HttpStatusCode.InternalServerError);
             }
         }
 
-        private object GetValueSets(string valueSetIds)
+        private object GetValueSets(string valueSetUniqueIds)
         {
             try
             {
                 var summary = this.GetSummarySetting();
 
-                var ids = this.GetValueSetIds(valueSetIds);
+                var ids = this.GetValueSetIds(valueSetUniqueIds);
                 if (ids.Length == 1)
                 {
                     return this.GetValueSet(ids[0], summary);
                 }
 
-                if (!valueSetIds.Any())
+                if (!valueSetUniqueIds.Any())
                 {
                     return this.CreateFailureResponse("An array of value set ids is required.", HttpStatusCode.BadRequest);
                 }
@@ -148,26 +148,7 @@
 
         private object AddValueSet()
         {
-            try
-            {
-                var model = this.Bind<ValueSetCreationApiModel>();
-                var attempt = this.valueSetService.Create(model);
-                if (attempt.Success && attempt.Result.HasValue)
-                {
-                    var valueSet = attempt.Result.Single();
-                    this.valueSetService.Save(valueSet);
-                    return valueSet.ToValueSetApiModel(false);
-                }
-
-                throw attempt.Exception.HasValue ? attempt.Exception.Single() : new ArgumentException("Failed to add value set.");
-            }
-            catch (Exception ex)
-            {
-                this.Logger.Error(ex, ex.Message);
-                return this.CreateFailureResponse(
-                    "Failed to create a value set",
-                    HttpStatusCode.InternalServerError);
-            }
+            return this.CreateFailureResponse("Not implemented", HttpStatusCode.NotImplemented);
         }
 
         private object DeleteValueSet(dynamic parameters)
@@ -189,7 +170,8 @@
         private bool GetSummarySetting()
         {
             var val = (string)this.Request.Query["$summary"];
-            bool.TryParse(val, out bool ret);
+            bool ret;
+            bool.TryParse(val, out ret);
             return val.IsNullOrWhiteSpace() || ret;
         }
 
