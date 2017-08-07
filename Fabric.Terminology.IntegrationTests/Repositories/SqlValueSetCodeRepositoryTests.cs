@@ -30,17 +30,17 @@
 
         [Theory]
         [Trait(TestTraits.Category, TestCategory.LongRunning)]
-        [InlineData("2.16.840.1.113883.3.464.1003.108.12.1011")]
-        [InlineData("2.16.840.1.113762.1.4.1045.36")]
-        [InlineData("2.16.840.1.113883.3.526.3.1459")]
-        [InlineData("2.16.840.1.113883.3.67.1.101.1.278")]
-        public void GetValueSetCodes(string valueSetId)
+        [InlineData("413B430E-42EC-41B2-939A-4A4E757124DD")]
+        [InlineData("5389CD6C-10E2-443E-A7A9-E0C1C6A0325F")]
+        [InlineData("E729FD76-77FA-4897-B855-DDCB67E8B648")]
+        [InlineData("93E5CCB3-6937-4391-A7E8-64D7E8683384")]
+        public void GetValueSetCodes(string valueSetUniqueId)
         {
             // Arrange
             // Handled in inline data
 
             // Act
-            var codes = this.Profiler.ExecuteTimed(() => this.ValueSetCodeRepository.GetValueSetCodes(valueSetId, new string[] { }), $"Querying ValueSetId = {valueSetId}");
+            var codes = this.Profiler.ExecuteTimed(() => this.ValueSetCodeRepository.GetValueSetCodes(valueSetUniqueId, new string[] { }), $"Querying ValueSetId = {valueSetUniqueId}");
             this.Output.WriteLine($"Result count: {codes.Count}");
 
             // Assert
@@ -53,10 +53,10 @@
             // Arrange
             var ids = new List<string>
             {
-                "2.16.840.1.113883.3.464.1003.108.12.1011",
-                "2.16.840.1.113762.1.4.1045.36",
-                "2.16.840.1.113883.3.526.3.1459",
-                "2.16.840.1.113883.3.67.1.101.1.278"
+                "413B430E-42EC-41B2-939A-4A4E757124DD",
+                "5389CD6C-10E2-443E-A7A9-E0C1C6A0325F",
+                "E729FD76-77FA-4897-B855-DDCB67E8B648",
+                "93E5CCB3-6937-4391-A7E8-64D7E8683384"
             };
 
             var builder = new MockDbSetBuilder<string>();

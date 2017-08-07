@@ -30,8 +30,8 @@
             // /{valueSetId}
             this.RouteDescriber.DescribeRouteWithParams(
                 "GetValueSet",
-                "Returns one or more ValueSet(s) by ValueSetId(s)",
-                "Gets a ValueSet by it's ValueSetId or a collection of ValueSets by CSV of ValueSetId(s)",
+                "Returns one or more ValueSet(s) by ValueSetUniqueId(s)",
+                "Gets a ValueSet by it's ValueSetUniqueId or a collection of ValueSets by CSV of ValueSetUniqueId(s)",
                 new[]
                 {
                     new HttpResponseMetadata<ValueSetApiModel> { Code = 200, Message = "OK" },
