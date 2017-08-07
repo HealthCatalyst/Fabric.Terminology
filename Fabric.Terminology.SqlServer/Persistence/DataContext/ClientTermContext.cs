@@ -39,13 +39,8 @@
                 .HasKey(
                     code => new
                     {
-                        code.BindingID,
-                        code.BindingNM,
                         code.CodeCD,
-                        code.LastLoadDTS,
-                        code.SourceDSC,
-                        code.ValueSetID,
-                        code.VersionDSC
+                        code.ValueSetUniqueID
                     });
 
             modelBuilder.Entity<ValueSetDescriptionDto>().ToTable("ValueSetDescriptionBASE", "ClientTerm");

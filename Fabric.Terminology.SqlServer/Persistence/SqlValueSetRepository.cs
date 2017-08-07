@@ -210,7 +210,7 @@
 
             // Get the updated ValueSet
             var added = !this.IsTest ?
-                this.GetValueSet(valueSetDto.ValueSetID, Enumerable.Empty<string>()) :
+                this.GetValueSet(valueSetDto.ValueSetUniqueID, Enumerable.Empty<string>()) :
                 this.GetCustomValueSet(valueSetDto.ValueSetUniqueID);
 
             return !added.HasValue ?
@@ -292,7 +292,7 @@
                             .Skip((pagerSettings.CurrentPage - 1) * pagerSettings.ItemsPerPage)
                             .Take(pagerSettings.ItemsPerPage)
                             .ToListAsync();
-            var valueSetIds = items.Select(item => item.ValueSetID).ToArray();
+            var valueSetUniqueIds = items.Select(item => item.ValueSetUniqueID).ToArray();
 
             IModelMapper<ValueSetDescriptionDto, IValueSet> mapper;
             if (includeAllValueSetCodes)
@@ -307,18 +307,18 @@
             {
                 // remove any valueSetIds for valuesets already cached from partition query
                 var cachedValueSets = this.Cache
-                    .GetItems(valueSetIds.Select(id => CacheKeys.ValueSetKey(id, codeSystemCodes)).ToArray())
+                    .GetItems(valueSetUniqueIds.Select(id => CacheKeys.ValueSetKey(id, codeSystemCodes)).ToArray())
                     .Select(obj => obj as IValueSet)
                     .Where(vs => vs != null);
 
-                valueSetIds = valueSetIds.Where(id => !cachedValueSets.Select(vs => vs.ValueSetId).Contains(id))
+                valueSetUniqueIds = valueSetUniqueIds.Where(id => !cachedValueSets.Select(vs => vs.ValueSetUniqueId).Contains(id))
                     .ToArray();
 
                 // partition query
                 var systemCodes = codeSystemCodes as string[] ?? codeSystemCodes.ToArray();
-                var lookup = await this.valueSetCodeRepository.LookupValueSetCodes(valueSetIds, systemCodes);
+                var lookup = await this.valueSetCodeRepository.LookupValueSetCodes(valueSetUniqueIds, systemCodes);
 
-                var cachedValueSetDictionary = cachedValueSets.ToDictionary(vs => vs.ValueSetId, vs => vs);
+                var cachedValueSetDictionary = cachedValueSets.ToDictionary(vs => vs.ValueSetUniqueId, vs => vs);
 
                 mapper = new ValueSetShortCodeListMapper(
                     this.isCustomValue,

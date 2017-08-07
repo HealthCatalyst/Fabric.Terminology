@@ -21,6 +21,8 @@
 
             return new ValueSetCode(
                 dto.ValueSetID,
+                dto.ValueSetUniqueID,
+                dto.ValueSetOID,
                 dto.ValueSetNM,
                 dto.CodeCD,
                 dto.CodeDSC,
