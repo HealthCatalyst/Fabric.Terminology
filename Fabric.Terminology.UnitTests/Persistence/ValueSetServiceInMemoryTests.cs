@@ -13,6 +13,8 @@
 
     using FluentAssertions;
 
+    using Newtonsoft.Json;
+
     using Xunit;
     using Xunit.Abstractions;
 

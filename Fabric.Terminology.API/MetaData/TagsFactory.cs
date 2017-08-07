@@ -20,7 +20,7 @@
             return new Tag
             {
                 Description = "Operations related to Shared Terminology Value Sets",
-                Name = $"{TerminologyVersion.Route}/valuesets"
+                Name = $"{TerminologyVersion.Route}/valuesets/"
             };
         }
 
@@ -29,7 +29,7 @@
             return new Tag
             {
                 Description = "Search operations relating to ValueSets",
-                Name = $"{TerminologyVersion.Route}/valuesets/find"
+                Name = $"{TerminologyVersion.Route}/valuesets/find/"
             };
         }
     }

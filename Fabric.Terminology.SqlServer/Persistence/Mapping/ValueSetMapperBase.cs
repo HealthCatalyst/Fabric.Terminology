@@ -24,10 +24,11 @@
                 dto.ValueSetNM,
                 dto.AuthoringSourceDSC,
                 dto.PurposeDSC,
+                dto.SourceDSC,
                 dto.VersionDSC,
                 codes)
             {
-                ValueSetCodesCount = codeCount                
+                ValueSetCodesCount = codeCount
             };
 
             this.isCustomValue.Set(valueSet);

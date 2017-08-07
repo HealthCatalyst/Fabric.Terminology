@@ -148,7 +148,26 @@
 
         private object AddValueSet()
         {
-            return this.CreateFailureResponse("Not implemented", HttpStatusCode.NotImplemented);
+            try
+            {
+                var model = this.Bind<ValueSetCreationApiModel>();
+                var attempt = this.valueSetService.Create(model);
+                if (attempt.Success && attempt.Result.HasValue)
+                {
+                    var valueSet = attempt.Result.Single();
+                    this.valueSetService.Save(valueSet);
+                    return valueSet.ToValueSetApiModel(false);
+                }
+
+                throw attempt.Exception.HasValue ? attempt.Exception.Single() : new ArgumentException("Failed to add value set.");
+            }
+            catch (Exception ex)
+            {
+                this.Logger.Error(ex, ex.Message);
+                return this.CreateFailureResponse(
+                    "Failed to create a value set",
+                    HttpStatusCode.InternalServerError);
+            }
         }
 
         private object DeleteValueSet(dynamic parameters)

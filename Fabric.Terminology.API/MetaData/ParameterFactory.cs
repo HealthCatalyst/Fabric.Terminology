@@ -42,6 +42,19 @@
             };
         }
 
+        public static Parameter GetContentType()
+        {
+            return new Parameter
+            {
+                Name = "Content-Type",
+                Description = "Content-Type Header",
+                Required = true,
+                Type = "string",
+                In = ParameterIn.Header,
+                Default = "application/json"
+            };
+        }
+
         public static Parameter GetSkip()
         {
             return new Parameter

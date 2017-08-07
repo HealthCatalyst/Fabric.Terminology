@@ -25,8 +25,8 @@
 
         public ValueSetFullCodeListMapper(
             IIsCustomValueStrategy isCustomValue,
-            IMemoryCacheProvider memCache, 
-            Func<string, string[], IReadOnlyCollection<IValueSetCode>> fetchCodes, 
+            IMemoryCacheProvider memCache,
+            Func<string, string[], IReadOnlyCollection<IValueSetCode>> fetchCodes,
             IEnumerable<string> codeSystemCDs)
             : base(isCustomValue)
         {

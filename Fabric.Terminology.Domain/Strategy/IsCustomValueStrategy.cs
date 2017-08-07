@@ -9,7 +9,7 @@
         public bool Get(IValueSet valueSet)
         {
             // TODO - relates to GH issue # 13
-            return Guid.TryParse(valueSet.ValueSetUniqueId, out Guid _);
+            return Guid.TryParse(valueSet.ValueSetId, out Guid _);
         }
 
         public void Set(IValueSet valueSet)
