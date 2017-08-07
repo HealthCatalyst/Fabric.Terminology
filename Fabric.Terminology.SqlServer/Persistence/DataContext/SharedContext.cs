@@ -39,30 +39,14 @@
                 .HasKey(
                     code => new
                     {
-                        code.BindingID,
-                        code.BindingNM,
                         code.CodeCD,
-                        code.LastLoadDTS,
-                        code.SourceDSC,
-                        code.ValueSetID,
-                        code.VersionDSC
-                    }); 
+                        code.ValueSetUniqueID
+                    });
 
             modelBuilder.Entity<ValueSetDescriptionDto>().ToTable("ValueSetDescription", "Terminology");
             modelBuilder.Entity<ValueSetDescriptionDto>().Property(e => e.BindingNM).IsUnicode(false);
             modelBuilder.Entity<ValueSetDescriptionDto>()
-                .HasKey(
-                    desc => new
-                    {
-                        desc.BindingID,
-                        desc.BindingNM,
-                        desc.LastLoadDTS,
-                        desc.PublicFLG,
-                        desc.SourceDSC,
-                        desc.ValueSetID,
-                        desc.VersionDSC
-                    }); // TODO key should be ValueSetUniqueID
-
+                .HasKey(e => e.ValueSetUniqueID);
             base.OnModelCreating(modelBuilder);
         }
     }
