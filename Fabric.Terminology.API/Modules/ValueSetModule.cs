@@ -52,7 +52,7 @@
                 var valueSet = this.valueSetService.GetValueSet(valueSetUniqueId, codeSystems);
                 if (valueSet != null)
                 {
-                    return valueSet.ToValueSetApiModel(summary, this.config.ValueSetSettings.ShortListCodeCount);
+                    return valueSet.Single().ToValueSetApiModel(summary, this.config.ValueSetSettings.ShortListCodeCount);
                 }
 
                 return this.CreateFailureResponse("ValueSet with matching ID was not found", HttpStatusCode.NotFound);
@@ -148,7 +148,26 @@
 
         private object AddValueSet()
         {
-            return this.CreateFailureResponse("Not implemented", HttpStatusCode.NotImplemented);
+            try
+            {
+                var model = this.Bind<ValueSetCreationApiModel>();
+                var attempt = this.valueSetService.Create(model);
+                if (attempt.Success && attempt.Result.HasValue)
+                {
+                    var valueSet = attempt.Result.Single();
+                    this.valueSetService.Save(valueSet);
+                    return valueSet.ToValueSetApiModel(false);
+                }
+
+                throw attempt.Exception.HasValue ? attempt.Exception.Single() : new ArgumentException("Failed to add value set.");
+            }
+            catch (Exception ex)
+            {
+                this.Logger.Error(ex, ex.Message);
+                return this.CreateFailureResponse(
+                    "Failed to create a value set",
+                    HttpStatusCode.InternalServerError);
+            }
         }
 
         private object DeleteValueSet(dynamic parameters)
@@ -170,8 +189,7 @@
         private bool GetSummarySetting()
         {
             var val = (string)this.Request.Query["$summary"];
-            bool ret;
-            bool.TryParse(val, out ret);
+            bool.TryParse(val, out bool ret);
             return val.IsNullOrWhiteSpace() || ret;
         }
 
@@ -218,11 +236,6 @@
         private string[] GetValueSetIds(string valueSetIds)
         {
             return this.CreateParameterArray(valueSetIds);
-        }
-
-        private string[] GetValueSetIds()
-        {
-            return this.CreateParameterArray((string)this.Request.Query.@valuesetid);
         }
     }
 }

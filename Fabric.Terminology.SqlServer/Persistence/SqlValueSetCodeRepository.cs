@@ -45,20 +45,20 @@
 
         protected DbSet<ValueSetCodeDto> CustomDbSet => this.clientTermContext.Value.ValueSetCodes;
 
-        public int CountValueSetCodes(string valueSetId, IEnumerable<string> codeSystemCodes)
+        public int CountValueSetCodes(string valueSetUniqueId, IEnumerable<string> codeSystemCodes)
         {
             var systemCodes = codeSystemCodes as string[] ?? codeSystemCodes.ToArray();
             return systemCodes.Any()
                        ? this.DbSet.Count(
-                           dto => dto.ValueSetID == valueSetId && systemCodes.Contains(dto.CodeSystemCD))
-                       : this.DbSet.Count(dto => dto.ValueSetID == valueSetId);
+                           dto => dto.ValueSetUniqueID == valueSetUniqueId && systemCodes.Contains(dto.CodeSystemCD))
+                       : this.DbSet.Count(dto => dto.ValueSetUniqueID == valueSetUniqueId);
         }
 
         public IReadOnlyCollection<IValueSetCode> GetValueSetCodes(
-            string valueSetId,
+            string valueSetUniqueId,
             IEnumerable<string> codeSystemCodes)
         {
-            var dtos = this.DbSet.Where(dto => dto.ValueSetID == valueSetId);
+            var dtos = this.DbSet.Where(dto => dto.ValueSetUniqueID == valueSetUniqueId);
 
             var systemCodes = codeSystemCodes as string[] ?? codeSystemCodes.ToArray();
             if (systemCodes.Any())
@@ -80,14 +80,14 @@
         /// </remarks>
         /// <seealso cref="https://stackoverflow.com/questions/43906840/row-number-over-partition-by-order-by-in-entity-framework"/>
         public Task<ILookup<string, IValueSetCode>> LookupValueSetCodes(
-            IEnumerable<string> valueSetIds,
+            IEnumerable<string> valueSetUniqueIds,
             IEnumerable<string> codeSystemCodes,
             int count = 5)
         {
-            var setIds = valueSetIds as string[] ?? valueSetIds.ToArray();
+            var setIds = valueSetUniqueIds as string[] ?? valueSetUniqueIds.ToArray();
             if (!setIds.Any())
             {
-                return Task.FromResult(Enumerable.Empty<IValueSetCode>().ToLookup(vs => vs.ValueSetId, vs => vs));
+                return Task.FromResult(Enumerable.Empty<IValueSetCode>().ToLookup(vs => vs.ValueSetUniqueId, vs => vs));
             }
 
             var mapper = new ValueSetCodeMapper();
@@ -116,7 +116,7 @@ FROM ({innerSql}) vscr
 WHERE vscr.rownum <= {count}
 ORDER BY vscr.CodeDSC";
 
-            return Task.Run(() => this.DbSet.FromSql(sql).ToLookup(vsc => vsc.ValueSetID, vsc => mapper.Map(vsc)));
+            return Task.Run(() => this.DbSet.FromSql(sql).ToLookup(vsc => vsc.ValueSetUniqueID, vsc => mapper.Map(vsc)));
         }
 
         //// Used for testing.  codeSystemCodes parameter not used by required for mapper.
@@ -129,22 +129,6 @@ ORDER BY vscr.CodeDSC";
             var mapper = new ValueSetCodeMapper();
 
             return dtos.Select(dto => mapper.Map(dto)).ToList().AsReadOnly();
-        }
-
-        private async Task<PagedCollection<IValueSetCode>> CreatePagedCollectionAsync(
-            IQueryable<ValueSetCodeDto> source,
-            IPagerSettings pagerSettings,
-            IModelMapper<ValueSetCodeDto, IValueSetCode> mapper)
-        {
-            this.pagingStrategy.EnsurePagerSettings(pagerSettings);
-
-            var count = await source.CountAsync();
-            var items = await source.OrderBy(this.SortExpression)
-                            .Skip((pagerSettings.CurrentPage - 1) * pagerSettings.ItemsPerPage)
-                            .Take(pagerSettings.ItemsPerPage)
-                            .ToListAsync();
-
-            return this.pagingStrategy.CreatePagedCollection(items, count, pagerSettings, mapper);
         }
 
         private static string EscapeForSqlString(string input)

@@ -75,16 +75,16 @@
                        : this.ClientTermContext.ValueSetDescriptions.Any(dto => dto.ValueSetNM == name);
         }
 
-        public Maybe<IValueSet> GetValueSet(string valueSetId, IEnumerable<string> codeSystemCodes)
+        public Maybe<IValueSet> GetValueSet(string valueSetUniqueId, IEnumerable<string> codeSystemCodes)
         {
             var codeSystemCDs = codeSystemCodes as string[] ?? codeSystemCodes.ToArray();
-            var cached = this.Cache.GetCachedValueSetWithAllCodes(valueSetId, codeSystemCDs);
+            var cached = this.Cache.GetCachedValueSetWithAllCodes(valueSetUniqueId, codeSystemCDs);
             if (cached != null)
             {
                 return Maybe.From(cached);
             }
 
-            var dto = this.DbSet.Where(GetBaseExpression()).FirstOrDefault(vs => vs.ValueSetID == valueSetId);
+            var dto = this.DbSet.Where(GetBaseExpression()).FirstOrDefault(vs => vs.ValueSetUniqueID == valueSetUniqueId);
 
             if (dto == null)
             {
@@ -101,18 +101,18 @@
         }
 
         public IReadOnlyCollection<IValueSet> GetValueSets(
-            IEnumerable<string> valueSetIds,
+            IEnumerable<string> valueSetUniqueIds,
             IEnumerable<string> codeSystemCodes,
             bool includeAllValueSetCodes = false)
         {
-            var setIds = valueSetIds as string[] ?? valueSetIds.ToArray();
+            var setIds = valueSetUniqueIds as string[] ?? valueSetUniqueIds.ToArray();
             var cached = setIds.Select(vsid => this.Cache.GetCachedValueSetWithAllCodes(vsid, codeSystemCodes))
                 .Where(vs => vs != null)
                 .ToList();
 
-            var remaining = setIds.Except(cached.Select(s => s.ValueSetId));
+            var remaining = setIds.Except(cached.Select(s => s.ValueSetUniqueId));
 
-            var dtos = this.DbSet.Where(GetBaseExpression()).Where(dto => remaining.Contains(dto.ValueSetID)).ToList();
+            var dtos = this.DbSet.Where(GetBaseExpression()).Where(dto => remaining.Contains(dto.ValueSetUniqueID)).ToList();
 
             if (dtos.Any())
             {
@@ -136,17 +136,17 @@
         }
 
         public Task<PagedCollection<IValueSet>> GetValueSetsAsync(
-            IReadOnlyCollection<string> valueSetIds,
+            IReadOnlyCollection<string> valueSetUniqueIds,
             IPagerSettings pagerSettings,
             IEnumerable<string> codeSystemCodes,
             bool includeAllValueSetCodes = false)
         {
-            if (!valueSetIds.Any())
+            if (!valueSetUniqueIds.Any())
             {
                 return this.FindValueSetsAsync(string.Empty, pagerSettings, codeSystemCodes, includeAllValueSetCodes);
             }
 
-            var dtos = this.DbSet.Where(GetBaseExpression()).Where(dto => valueSetIds.Contains(dto.ValueSetID));
+            var dtos = this.DbSet.Where(GetBaseExpression()).Where(dto => valueSetUniqueIds.Contains(dto.ValueSetUniqueID));
 
             return this.CreatePagedCollectionAsync(dtos, pagerSettings, codeSystemCodes, includeAllValueSetCodes);
         }
@@ -167,10 +167,10 @@
             if (systemCodes.Any())
             {
                 var codevsid = this.SharedContext.ValueSetCodes.Where(code => systemCodes.Contains(code.CodeSystemCD))
-                    .Select(code => code.ValueSetID)
+                    .Select(code => code.ValueSetUniqueID)
                     .Distinct();
 
-                dtos = dtos.Join(codevsid, id => id.ValueSetID, sa => sa, (id, sa) => id);
+                dtos = dtos.Join(codevsid, id => id.ValueSetUniqueID, sa => sa, (id, sa) => id);
             }
 
             return this.CreatePagedCollectionAsync(dtos, pagerSettings, systemCodes, includeAllValueSetCodes);
@@ -276,7 +276,7 @@
 
         private static Expression<Func<ValueSetDescriptionDto, bool>> GetBaseExpression()
         {
-            return baseSql => baseSql.PublicFLG == "Y" && baseSql.StatusCD == "Active" && baseSql.LatestVersionFLG == "Y";
+            return baseSql => baseSql.PublicFLG == "Y" && baseSql.StatusCD == "Active";
         }
 
         private async Task<PagedCollection<IValueSet>> CreatePagedCollectionAsync(

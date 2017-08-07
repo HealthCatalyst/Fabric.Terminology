@@ -40,38 +40,38 @@ namespace Fabric.Terminology.Domain.Services
 
         #endregion
 
-        public Maybe<IValueSet> GetValueSet(string valueSetId)
+        public Maybe<IValueSet> GetValueSet(string valueSetUniqueId)
         {
-            return this.GetValueSet(valueSetId, new string[] { });
+            return this.GetValueSet(valueSetUniqueId, new string[] { });
         }
 
-        public Maybe<IValueSet> GetValueSet(string valueSetId, IEnumerable<string> codeSystemCodes)
+        public Maybe<IValueSet> GetValueSet(string valueSetUniqueId, IEnumerable<string> codeSystemCodes)
         {
-            return this.repository.GetValueSet(valueSetId, codeSystemCodes);
+            return this.repository.GetValueSet(valueSetUniqueId, codeSystemCodes);
         }
 
-        public IReadOnlyCollection<IValueSet> GetValueSets(IEnumerable<string> valueSetIds)
+        public IReadOnlyCollection<IValueSet> GetValueSets(IEnumerable<string> valueSetUniqueIds)
         {
-            return this.GetValueSets(valueSetIds, new string[] { });
+            return this.GetValueSets(valueSetUniqueIds, new string[] { });
         }
 
         public IReadOnlyCollection<IValueSet> GetValueSets(
-            IEnumerable<string> valueSetIds,
+            IEnumerable<string> valueSetUniqueIds,
             IEnumerable<string> codeSystemCodes)
         {
-            return this.repository.GetValueSets(valueSetIds, codeSystemCodes, true);
+            return this.repository.GetValueSets(valueSetUniqueIds, codeSystemCodes, true);
         }
 
-        public IReadOnlyCollection<IValueSet> GetValueSetSummaries(IEnumerable<string> valueSetIds)
+        public IReadOnlyCollection<IValueSet> GetValueSetSummaries(IEnumerable<string> valueSetUniqueIds)
         {
-            return this.GetValueSetSummaries(valueSetIds, new string[] { });
+            return this.GetValueSetSummaries(valueSetUniqueIds, new string[] { });
         }
 
         public IReadOnlyCollection<IValueSet> GetValueSetSummaries(
-            IEnumerable<string> valueSetIds,
+            IEnumerable<string> valueSetUniqueIds,
             IEnumerable<string> codeSystemCodes)
         {
-            return this.repository.GetValueSets(valueSetIds, codeSystemCodes, false);
+            return this.repository.GetValueSets(valueSetUniqueIds, codeSystemCodes, false);
         }
 
         public Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings settings)

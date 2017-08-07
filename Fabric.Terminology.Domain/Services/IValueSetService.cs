@@ -14,20 +14,20 @@
     /// </summary>
     public interface IValueSetService
     {
-        Maybe<IValueSet> GetValueSet(string valueSetId);
+        Maybe<IValueSet> GetValueSet(string valueSetUniqueId);
 
-        Maybe<IValueSet> GetValueSet(string valueSetId, IEnumerable<string> codeSystemCodes);
+        Maybe<IValueSet> GetValueSet(string valueSetUniqueId, IEnumerable<string> codeSystemCodes);
 
-        IReadOnlyCollection<IValueSet> GetValueSets(IEnumerable<string> valueSetIds);
+        IReadOnlyCollection<IValueSet> GetValueSets(IEnumerable<string> valueSetUniqueIds);
 
         IReadOnlyCollection<IValueSet> GetValueSets(
-            IEnumerable<string> valueSetIds,
+            IEnumerable<string> valueSetUniqueIds,
             IEnumerable<string> codeSystemCodes);
 
-        IReadOnlyCollection<IValueSet> GetValueSetSummaries(IEnumerable<string> valueSetIds);
+        IReadOnlyCollection<IValueSet> GetValueSetSummaries(IEnumerable<string> valueSetUniqueIds);
 
         IReadOnlyCollection<IValueSet> GetValueSetSummaries(
-            IEnumerable<string> valueSetIds,
+            IEnumerable<string> valueSetUniqueIds,
             IEnumerable<string> codeSystemCodes);
 
         Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings settings);

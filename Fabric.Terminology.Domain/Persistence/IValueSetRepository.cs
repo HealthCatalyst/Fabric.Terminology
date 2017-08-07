@@ -13,10 +13,10 @@
     {
         bool NameExists(string name);
 
-        Maybe<IValueSet> GetValueSet(string valueSetId, IEnumerable<string> codeSystemCodes);
+        Maybe<IValueSet> GetValueSet(string valueSetUniqueId, IEnumerable<string> codeSystemCodes);
 
         IReadOnlyCollection<IValueSet> GetValueSets(
-            IEnumerable<string> valueSetIds,
+            IEnumerable<string> valueSetUniqueIds,
             IEnumerable<string> codeSystemCodes,
             bool includeAllValueSetCodes = false);
 
