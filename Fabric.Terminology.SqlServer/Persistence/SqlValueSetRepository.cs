@@ -57,16 +57,16 @@
         }
 
         [CanBeNull]
-        public IValueSet GetValueSet(string valueSetId, IEnumerable<string> codeSystemCodes)
+        public IValueSet GetValueSet(string valueSetUniqueId, IEnumerable<string> codeSystemCodes)
         {
             var codeSystemCDs = codeSystemCodes as string[] ?? codeSystemCodes.ToArray();
-            var cached = this.Cache.GetCachedValueSetWithAllCodes(valueSetId, codeSystemCDs);
+            var cached = this.Cache.GetCachedValueSetWithAllCodes(valueSetUniqueId, codeSystemCDs);
             if (cached != null)
             {
                 return cached;
             }
 
-            var dto = this.DbSet.Where(GetBaseExpression()).FirstOrDefault(vs => vs.ValueSetID == valueSetId);
+            var dto = this.DbSet.Where(GetBaseExpression()).FirstOrDefault(vs => vs.ValueSetUniqueID == valueSetUniqueId);
 
             if (dto == null) return null;
 
@@ -79,18 +79,18 @@
         }
 
         public IReadOnlyCollection<IValueSet> GetValueSets(
-            IEnumerable<string> valueSetIds,
+            IEnumerable<string> valueSetUniqueIds,
             IEnumerable<string> codeSystemCodes,
             bool includeAllValueSetCodes = false)
         {
-            var setIds = valueSetIds as string[] ?? valueSetIds.ToArray();
+            var setIds = valueSetUniqueIds as string[] ?? valueSetUniqueIds.ToArray();
             var cached = setIds.Select(vsid => this.Cache.GetCachedValueSetWithAllCodes(vsid, codeSystemCodes))
                 .Where(vs => vs != null)
                 .ToList();
 
-            var remaining = setIds.Except(cached.Select(s => s.ValueSetId));
+            var remaining = setIds.Except(cached.Select(s => s.ValueSetUniqueId));
 
-            var dtos = this.DbSet.Where(GetBaseExpression()).Where(dto => remaining.Contains(dto.ValueSetID)).ToList();
+            var dtos = this.DbSet.Where(GetBaseExpression()).Where(dto => remaining.Contains(dto.ValueSetUniqueID)).ToList();
 
             if (dtos.Any())
             {
@@ -113,17 +113,17 @@
         }
 
         public Task<PagedCollection<IValueSet>> GetValueSetsAsync(
-            IReadOnlyCollection<string> valueSetIds,
+            IReadOnlyCollection<string> valueSetUniqueIds,
             IPagerSettings pagerSettings,
             IEnumerable<string> codeSystemCodes,
             bool includeAllValueSetCodes = false)
         {
-            if (!valueSetIds.Any())
+            if (!valueSetUniqueIds.Any())
             {
                 return this.FindValueSetsAsync(string.Empty, pagerSettings, codeSystemCodes, includeAllValueSetCodes);
             }
 
-            var dtos = this.DbSet.Where(GetBaseExpression()).Where(dto => valueSetIds.Contains(dto.ValueSetID));
+            var dtos = this.DbSet.Where(GetBaseExpression()).Where(dto => valueSetUniqueIds.Contains(dto.ValueSetUniqueID));
 
             return this.CreatePagedCollectionAsync(dtos, pagerSettings, codeSystemCodes, includeAllValueSetCodes);
         }
@@ -184,7 +184,7 @@
             }
             else
             {
-                // remove any valueSetIds for valuesets already cached from partition query
+                // remove any valueSetUniqueIds for valuesets already cached from partition query
                 var cachedValueSets = this.Cache
                     .GetItems(valueSetIds.Select(id => CacheKeys.ValueSetKey(id, codeSystemCodes)).ToArray())
                     .Select(obj => obj as IValueSet)

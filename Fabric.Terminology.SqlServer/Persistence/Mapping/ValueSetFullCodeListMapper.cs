@@ -30,18 +30,18 @@
         public IValueSet Map(ValueSetDescriptionDto dto)
         {
             // Ensure not already cached with full codes list
-            var found = this.cache.GetCachedValueSetWithAllCodes(dto.ValueSetID, this.codeSystemCodes.ToArray());
+            var found = this.cache.GetCachedValueSetWithAllCodes(dto.ValueSetUniqueID, this.codeSystemCodes.ToArray());
             if (found != null)
             {
                 return found;
             }
 
             // Clears cache item in case a short list item is stored (forces cache update)
-            var cacheKey = CacheKeys.ValueSetKey(dto.ValueSetID, this.codeSystemCodes.ToArray());
+            var cacheKey = CacheKeys.ValueSetKey(dto.ValueSetUniqueID, this.codeSystemCodes.ToArray());
             this.cache.ClearItem(cacheKey);
 
             // ValueSet must have codes
-            var codes = this.fetch.Invoke(dto.ValueSetID, this.codeSystemCodes.ToArray());
+            var codes = this.fetch.Invoke(dto.ValueSetUniqueID, this.codeSystemCodes.ToArray());
             if (!codes.Any())
             {
                 return null;

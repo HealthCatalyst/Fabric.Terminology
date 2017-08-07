@@ -12,10 +12,10 @@
         bool NameExists(string name);
 
         [CanBeNull]
-        IValueSet GetValueSet(string valueSetId, IEnumerable<string> codeSystemCodes);
+        IValueSet GetValueSet(string valueSetUniqueId, IEnumerable<string> codeSystemCodes);
 
         IReadOnlyCollection<IValueSet> GetValueSets(
-            IEnumerable<string> valueSetIds,
+            IEnumerable<string> valueSetUniqueIds,
             IEnumerable<string> codeSystemCodes,
             bool includeAllValueSetCodes = false);
 

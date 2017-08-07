@@ -34,22 +34,22 @@
 
             this.Get("/", _ => this.GetValueSetPage(), null, "GetPaged");
 
-            this.Get("/{valueSetIds}", parameters => this.GetValueSets(parameters.valueSetIds), null, "GetValueSet");
+            this.Get("/{valueSetUniqueId}", parameters => this.GetValueSets(parameters.valueSetUniqueId), null, "GetValueSet");
 
             this.Post("/find/", _ => this.Find(), null, "Find");
 
             this.Post("/", _ => this.AddValueSet(), null, "AddValueSet");
 
-            this.Delete("/{valueSetId}", parameters => this.DeleteValueSet(parameters), null, "DeleteValueSet");
+            this.Delete("/{valueSetUniqueId}", parameters => this.DeleteValueSet(parameters), null, "DeleteValueSet");
         }
 
-        private object GetValueSet(string valueSetId, bool summary = true)
+        private object GetValueSet(string valueSetUniqueId, bool summary = true)
         {
             try
             {
                 var codeSystems = this.GetCodeSystems();
 
-                var valueSet = this.valueSetService.GetValueSet(valueSetId, codeSystems);
+                var valueSet = this.valueSetService.GetValueSet(valueSetUniqueId, codeSystems);
                 if (valueSet != null)
                 {
                     return valueSet.ToValueSetApiModel(summary, this.config.ValueSetSettings.ShortListCodeCount);
@@ -59,26 +59,26 @@
             }
             catch (ValueSetNotFoundException ex)
             {
-                this.Logger.Error(ex, ex.Message, valueSetId);
+                this.Logger.Error(ex, ex.Message, valueSetUniqueId);
                 return this.CreateFailureResponse(
-                    $"The ValueSet with id: {valueSetId} was not found.",
+                    $"The ValueSet with id: {valueSetUniqueId} was not found.",
                     HttpStatusCode.InternalServerError);
             }
         }
 
-        private object GetValueSets(string valueSetIds)
+        private object GetValueSets(string valueSetUniqueIds)
         {
             try
             {
                 var summary = this.GetSummarySetting();
 
-                var ids = this.GetValueSetIds(valueSetIds);
+                var ids = this.GetValueSetIds(valueSetUniqueIds);
                 if (ids.Length == 1)
                 {
                     return this.GetValueSet(ids[0], summary);
                 }
 
-                if (!valueSetIds.Any())
+                if (!valueSetUniqueIds.Any())
                 {
                     return this.CreateFailureResponse("An array of value set ids is required.", HttpStatusCode.BadRequest);
                 }
