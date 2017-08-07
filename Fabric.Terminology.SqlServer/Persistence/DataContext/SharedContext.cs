@@ -46,7 +46,7 @@
                         code.SourceDSC,
                         code.ValueSetID,
                         code.VersionDSC
-                    });
+                    }); 
 
             modelBuilder.Entity<ValueSetDescriptionDto>().ToTable("ValueSetDescription", "Terminology");
             modelBuilder.Entity<ValueSetDescriptionDto>().Property(e => e.BindingNM).IsUnicode(false);
@@ -61,7 +61,7 @@
                         desc.SourceDSC,
                         desc.ValueSetID,
                         desc.VersionDSC
-                    });
+                    }); // TODO key should be ValueSetUniqueID
 
             base.OnModelCreating(modelBuilder);
         }
