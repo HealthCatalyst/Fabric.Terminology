@@ -5,7 +5,7 @@
     /// <summary>
     /// Utility helper for generating sequential GUIDs.
     /// </summary>
-    public class GuidComb
+    public static class GuidComb
     {
         /// <summary>
         /// Generates a sequential guid

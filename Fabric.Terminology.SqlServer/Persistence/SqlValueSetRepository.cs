@@ -19,8 +19,6 @@
     using Fabric.Terminology.SqlServer.Persistence.DataContext;
     using Fabric.Terminology.SqlServer.Persistence.Mapping;
 
-    using JetBrains.Annotations;
-
     using Microsoft.EntityFrameworkCore;
 
     using Serilog;

@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Fabric.Terminology.Domain.Exceptions
+﻿namespace Fabric.Terminology.Domain.Exceptions
 {
+    using System;
+
     public class ValueSetOperationException : Exception
     {
         public ValueSetOperationException(string message)

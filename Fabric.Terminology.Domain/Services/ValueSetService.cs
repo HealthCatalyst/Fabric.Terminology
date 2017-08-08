@@ -26,8 +26,6 @@ namespace Fabric.Terminology.Domain.Services
             this.isCustomValue = isCustomValue;
         }
 
-        #region Events
-
         public static event EventHandler<IValueSet> Created;
 
         public static event EventHandler<IValueSet> Saving;
@@ -37,8 +35,6 @@ namespace Fabric.Terminology.Domain.Services
         public static event EventHandler<IValueSet> Deleting;
 
         public static event EventHandler<IValueSet> Deleted;
-
-        #endregion
 
         public Maybe<IValueSet> GetValueSet(string valueSetUniqueId)
         {
