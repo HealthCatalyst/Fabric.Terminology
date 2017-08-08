@@ -19,17 +19,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fabric.Terminology.TestsBas
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fabric.Terminology.IntegrationTests", "Fabric.Terminology.IntegrationTests\Fabric.Terminology.IntegrationTests.csproj", "{ADCA8957-4118-4238-A70E-764A8DC2490D}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Analyzers", "Analyzers", "{9C005ED4-6784-432A-871A-C97E16EE90BD}"
-	ProjectSection(SolutionItems) = preProject
-		Catalyst.MinimumRecommendedRules.ruleset = Catalyst.MinimumRecommendedRules.ruleset
-		Catalyst.MostRules.Error.ruleset = Catalyst.MostRules.Error.ruleset
-		Catalyst.TestRules.ruleset = Catalyst.TestRules.ruleset
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{D92C1446-06EC-4E96-8CDD-CDDDFE23EC44}"
 	ProjectSection(SolutionItems) = preProject
 		Tools\gulpfile.js = Tools\gulpfile.js
 		Tools\package.json = Tools\package.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Analyzers", "Analyzers", "{84B1F8E3-E87D-4E57-B48D-9A0640BCABA4}"
+	ProjectSection(SolutionItems) = preProject
+		Catalyst.MinimumRecommendedRules.ruleset = Catalyst.MinimumRecommendedRules.ruleset
+		Catalyst.MostRules.Error.ruleset = Catalyst.MostRules.Error.ruleset
+		Catalyst.TestRules.ruleset = Catalyst.TestRules.ruleset
 	EndProjectSection
 EndProject
 Global
