@@ -6,9 +6,14 @@
 
     internal static class CacheKeys
     {
+        public static string ValueSetKey(string valueSetUniqueId)
+        {
+            return $"{typeof(ValueSet)}-{valueSetUniqueId}";
+        }
+
         public static string ValueSetKey(string valueSetUniqueId, IEnumerable<string> codeSystemCodes)
         {
-            return $"{typeof(ValueSet)}-{valueSetUniqueId}-{string.Join(string.Empty, codeSystemCodes)}";
+            return $"{ValueSetKey(valueSetUniqueId)}-{string.Join(string.Empty, codeSystemCodes)}";
         }
 
         public static string ValueSetCodesKey(string valueSetUniqueId)

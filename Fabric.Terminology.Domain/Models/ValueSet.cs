@@ -2,23 +2,103 @@
 {
     using System.Collections.Generic;
 
+    using Fabric.Terminology.Domain.Services;
+
     public class ValueSet : IValueSet
     {
-        public string ValueSetUniqueId { get; set; }
+        public ValueSet(
+            string valueSetId,
+            string name,
+            string authoringSourceDescription,
+            string purposeDescription,
+            string sourceDescription,
+            string versionDescription,
+            IReadOnlyCollection<IValueSetCode> valueSetCodes)
+            : this(
+                valueSetId,
+                valueSetId,
+                name,
+                authoringSourceDescription,
+                purposeDescription,
+                sourceDescription,
+                versionDescription,
+                valueSetCodes)
+        {
+        }
 
-        public string ValueSetId { get; set; }
+        public ValueSet(
+            string valueSetId,
+            string valueSetUniqueId,
+            string name,
+            string authoringSourceDescription,
+            string purposeDescription,
+            string sourceDescription,
+            string versionDescription,
+            IReadOnlyCollection<IValueSetCode> valueSetCodes)
+            : this(
+                valueSetId,
+                valueSetUniqueId,
+                valueSetUniqueId,
+                name,
+                authoringSourceDescription,
+                purposeDescription,
+                sourceDescription,
+                versionDescription,
+                valueSetCodes)
+        {
+        }
 
-        public string Name { get; set; }
+        public ValueSet(
+            string valueSetId,
+            string valueSetUniqueId,
+            string valueSetOId,
+            string name,
+            string authoringSourceDescription,
+            string purposeDescription,
+            string sourceDescription,
+            string versionDescription,
+            IReadOnlyCollection<IValueSetCode> valueSetCodes)
+        {
+            this.ValueSetId = valueSetId;
+            this.ValueSetUniqueId = valueSetUniqueId;
+            this.ValueSetOId = valueSetOId;
+            this.Name = name;
+            this.AuthoringSourceDescription = authoringSourceDescription;
+            this.PurposeDescription = purposeDescription;
+            this.SourceDescription = sourceDescription;
+            this.VersionDescription = versionDescription;
+            this.ValueSetCodes = valueSetCodes;
+            this.IsCustom = true;
+        }
 
-        public bool IsCustom { get; set; }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ValueSet"/> class.
+        /// </summary>
+        /// <remarks>
+        /// Prevents public construction to force creation via <see cref="IValueSetService"/>
+        /// Used for testing.
+        /// </remarks>
+        internal ValueSet()
+        {
+        }
 
-        public string AuthoringSourceDescription { get; set; }
+        public string ValueSetUniqueId { get; internal set; }
 
-        public string PurposeDescription { get; set; }
+        public string ValueSetId { get; internal set; }
 
-        public string SourceDescription { get; set; }
+        public string ValueSetOId { get; internal set; }
 
-        public string VersionDescription { get; set; }
+        public string Name { get; internal set; }
+
+        public bool IsCustom { get; internal set; }
+
+        public string AuthoringSourceDescription { get; internal set; }
+
+        public string PurposeDescription { get; internal set; }
+
+        public string SourceDescription { get; internal set; }
+
+        public string VersionDescription { get; internal set; }
 
         public bool AllCodesLoaded => this.ValueSetCodesCount == this.ValueSetCodes.Count;
 
@@ -31,6 +111,6 @@
         /// </remarks>
         public int ValueSetCodesCount { get; set; }
 
-        public IReadOnlyCollection<IValueSetCode> ValueSetCodes { get; set; } = new IValueSetCode[] { };
+        public IReadOnlyCollection<IValueSetCode> ValueSetCodes { get; internal set; } = new IValueSetCode[] { };
     }
 }

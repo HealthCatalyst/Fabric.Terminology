@@ -37,8 +37,22 @@
                 Name = "$summary",
                 Description = "Indicates ValueSets returned should be partial summaries - e.g. codes listing is not complete and intended to be used for presentation.",
                 Required = false,
+                In = ParameterIn.Query,
                 Type = "boolean",
                 Default = true
+            };
+        }
+
+        public static Parameter GetContentType()
+        {
+            return new Parameter
+            {
+                Name = "Content-Type",
+                Description = "Content-Type Header",
+                Required = true,
+                Type = "string",
+                In = ParameterIn.Header,
+                Default = "application/json"
             };
         }
 

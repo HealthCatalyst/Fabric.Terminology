@@ -6,7 +6,7 @@
     using Fabric.Terminology.Domain.Persistence.Mapping;
 
     public interface IPagingStrategy<TSrc, TResult>
-        where TSrc : class
+        where TSrc : class, new()
     {
         int DefaultItemsPerPage { get; }
 

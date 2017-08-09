@@ -4,6 +4,8 @@
     using System.Collections.Generic;
     using System.Linq;
 
+    using CallMeMaybe;
+
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Services;
 
@@ -26,7 +28,7 @@
                                     .ToList()
                                     .AsReadOnly();
                             }
-                            return vs.ValueSetCodes.Any() ? vs : null;
+                            return vs.ValueSetCodes.Any() ? Maybe.From(vs) : Maybe<IValueSet>.Not;
                         });
             return mockService;
         }

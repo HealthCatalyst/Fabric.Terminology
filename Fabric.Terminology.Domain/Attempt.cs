@@ -2,17 +2,18 @@
 {
     using System;
 
+    using CallMeMaybe;
+
     using JetBrains.Annotations;
 
     public class Attempt<T>
     {
         public bool Success { get; private set; }
 
-        [CanBeNull]
-        public T Result { get; private set; }
+        public Maybe<T> Result { get; private set; }
 
         [CanBeNull]
-        public Exception Exception { get; private set; } = null;
+        public Maybe<Exception> Exception { get; private set; } = Maybe<Exception>.Not;
 
         public static Attempt<T> Successful(T result)
         {

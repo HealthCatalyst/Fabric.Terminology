@@ -4,8 +4,10 @@
 
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence;
+    using Fabric.Terminology.Domain.Strategy;
     using Fabric.Terminology.SqlServer.Models.Dto;
     using Fabric.Terminology.SqlServer.Persistence;
+    using Fabric.Terminology.TestsBase.Fixtures;
 
     public class ValueSetRepositoryFixture : RepositoryFixtureBase, IDisposable
     {
@@ -18,14 +20,20 @@
 
         private void Initialize()
         {
-            var valueSetCodeRepository = new SqlValueSetCodeRepository(this.SharedContext, this.Logger, new DefaultPagingStrategy<ValueSetCodeDto, IValueSetCode>(100));
+            var valueSetCodeRepository = new SqlValueSetCodeRepository(
+                this.SharedContext,
+                this.ClientTermContext.AsLazy(),
+                this.Logger,
+                new DefaultPagingStrategy<ValueSetCodeDto, IValueSetCode>(100));
 
             this.ValueSetRepository = new SqlValueSetRepository(
-                                        this.SharedContext,
-                                        this.Cache,
-                                        this.Logger,
-                                        valueSetCodeRepository,
-                                        new DefaultPagingStrategy<ValueSetDescriptionDto, IValueSet>(20));
+                this.SharedContext,
+                this.ClientTermContext.AsLazy(),
+                this.Cache,
+                this.Logger,
+                valueSetCodeRepository,
+                new DefaultPagingStrategy<ValueSetDescriptionDto, IValueSet>(20),
+                new IsCustomValueStrategy());
         }
     }
 }

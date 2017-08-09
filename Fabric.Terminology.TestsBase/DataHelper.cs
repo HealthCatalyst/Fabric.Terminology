@@ -26,7 +26,7 @@
                     new ValueSetCode
                     {
                         Code = $"code{i}",
-                        CodeSystem = new ValueSetCodeSystem { Code = "cd1", Name = "cd1", Version = "cd1version" },
+                        CodeSystem = new CodeSystem { Code = "cd1", Name = "cd1", Version = "cd1version" },
                         Name = $"code{i}",
                         RevisionDate = null,
                         ValueSetId = valueSetId,

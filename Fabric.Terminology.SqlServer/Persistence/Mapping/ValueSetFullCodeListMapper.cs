@@ -6,29 +6,46 @@
 
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence.Mapping;
+    using Fabric.Terminology.Domain.Strategy;
     using Fabric.Terminology.SqlServer.Caching;
+    using Fabric.Terminology.SqlServer.Models;
     using Fabric.Terminology.SqlServer.Models.Dto;
 
     using JetBrains.Annotations;
 
-    internal sealed class ValueSetFullCodeListMapper : IModelMapper<ValueSetDescriptionDto, IValueSet>
+    internal sealed class ValueSetFullCodeListMapper :ValueSetMapperBase, IModelMapper<ValueSetDescriptionDto, IValueSet>
     {
+        private static readonly EmptySamdBinding EmptyBinding = new EmptySamdBinding();
+
         private readonly IMemoryCacheProvider cache;
 
         private readonly Func<string, string[], IReadOnlyCollection<IValueSetCode>> fetch;
 
         private readonly IEnumerable<string> codeSystemCodes;
 
-        public ValueSetFullCodeListMapper(IMemoryCacheProvider memCache, Func<string, string[], IReadOnlyCollection<IValueSetCode>> fetchCodes, IEnumerable<string> codeSystemCDs)
+        public ValueSetFullCodeListMapper(
+            IIsCustomValueStrategy isCustomValue,
+            IMemoryCacheProvider memCache,
+            Func<string, string[], IReadOnlyCollection<IValueSetCode>> fetchCodes,
+            IEnumerable<string> codeSystemCDs)
+            : base(isCustomValue)
         {
             this.cache = memCache;
             this.fetch = fetchCodes;
             this.codeSystemCodes = codeSystemCDs;
+            this.IsReady = true;
         }
+
+        public bool IsReady { get; } = false;
 
         [CanBeNull]
         public IValueSet Map(ValueSetDescriptionDto dto)
         {
+            if (!this.IsReady)
+            {
+                throw new ArgumentException("The default constructor may not be used to map IValueSet");
+            }
+
             // Ensure not already cached with full codes list
             var found = this.cache.GetCachedValueSetWithAllCodes(dto.ValueSetUniqueID, this.codeSystemCodes.ToArray());
             if (found != null)
@@ -48,19 +65,7 @@
             }
 
             return (IValueSet)this.cache.GetItem(
-                cacheKey, () => new ValueSet
-                {
-                    ValueSetUniqueId = dto.ValueSetUniqueID,
-                    ValueSetId = dto.ValueSetID,
-                    AuthoringSourceDescription = dto.AuthoringSourceDSC,
-                    Name = dto.ValueSetNM,
-                    IsCustom = false,
-                    PurposeDescription = dto.PurposeDSC,
-                    SourceDescription = dto.SourceDSC,
-                    VersionDescription = dto.VersionDSC,
-                    ValueSetCodes = codes,
-                    ValueSetCodesCount = codes.Count
-                },
+                cacheKey, () => this.Build(dto, codes, codes.Count),
                 TimeSpan.FromMinutes(this.cache.Settings.MemoryCacheMinDuration),
                 this.cache.Settings.MemoryCacheSliding);
         }

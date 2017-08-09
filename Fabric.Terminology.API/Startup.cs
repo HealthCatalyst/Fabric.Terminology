@@ -52,6 +52,10 @@
             Mapper.Initialize(
                 cfg =>
                     {
+                        cfg.CreateMap<ICodeSetCode, CodeSetCodeApiModel>();
+                        cfg.CreateMap<CodeSetCodeApiModel, CodeSetCode>();
+                        cfg.CreateMap<IValueSetCode, ValueSetCodeApiModel>();
+
                         cfg.CreateMap<IValueSet, ValueSetApiModel>()
                             .ForMember(
                                 dest => dest.Identifier,
@@ -59,9 +63,6 @@
                                     src => src.ValueSetId.IsNullOrWhiteSpace()
                                                ? Guid.NewGuid().ToString()
                                                : src.ValueSetId));
-
-                        cfg.CreateMap<IValueSetCode, ValueSetCodeApiModel>()
-                            .ForMember(dest => dest.CodeSystemCode, opt => opt.MapFrom(src => src.CodeSystem.Code));
                     });
 
             app.UseStaticFiles()

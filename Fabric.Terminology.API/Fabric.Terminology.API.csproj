@@ -1,17 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
   <PropertyGroup>
     <TargetFramework>netcoreapp1.1</TargetFramework>
     <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
     <CodeAnalysisRuleSet>..\Catalyst.MostRules.Error.ruleset</CodeAnalysisRuleSet>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <RepositoryUrl>https://github.com/HealthCatalyst/Fabric.Terminology</RepositoryUrl>
     <PackageProjectUrl>https://github.com/HealthCatalyst/Fabric.Terminology</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/HealthCatalyst/Fabric.Terminology</RepositoryUrl>
     <PackageLicenseUrl>https://github.com/HealthCatalyst/Fabric.Terminology/blob/develop/LICENSE</PackageLicenseUrl>
-  </PropertyGroup>
+ </PropertyGroup>
+
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile>
-    </DocumentationFile>
+    <DocumentationFile></DocumentationFile>
   </PropertyGroup>
+
   <ItemGroup>
     <Compile Remove="Logs\**" />
     <Compile Remove="Properties\PublishProfiles\**" />
@@ -26,6 +28,7 @@
     <None Remove="Properties\PublishProfiles\**" />
     <None Remove="wwwroot\swagger\dist\**" />
   </ItemGroup>
+
   <ItemGroup>
     <Content Include="wwwroot\swagger\favicon-16x16.png" />
     <Content Include="wwwroot\swagger\favicon-32x32.png" />
@@ -46,7 +49,7 @@
     <PackageReference Include="Microsoft.AspNetCore" Version="1.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Owin" Version="1.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="1.1.2" />
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.3.0-beta1" />
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="1.1.0" />
     <PackageReference Include="Nancy" Version="2.0.0-clinteastwood" />
     <PackageReference Include="Nancy.Swagger" Version="2.2.0-alpha" />
     <PackageReference Include="semver" Version="2.0.4" />
@@ -60,8 +63,8 @@
     <ProjectReference Include="..\Fabric.Terminology.SqlServer\Fabric.Terminology.SqlServer.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Update="Extensions.*.cs">
-      <DependentUpon>Extensions.cs</DependentUpon>
-    </Compile>
-  </ItemGroup>
+	<Compile Update="Extensions.*.cs">
+		<DependentUpon>Extensions.cs</DependentUpon>
+	</Compile>
+	</ItemGroup>
 </Project>

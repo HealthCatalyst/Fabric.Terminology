@@ -19,14 +19,18 @@
 
     internal class SqlValueSetCodeRepository : IValueSetCodeRepository
     {
-        private readonly IPagingStrategy<ValueSetCodeDto, IValueSetCode> pagingStrategy;
+        private readonly Lazy<ClientTermContext> clientTermContext;
+
+        private readonly IPagingStrategy<ValueSetCodeDto, IValueSetCode> pagingStrategy;        
 
         public SqlValueSetCodeRepository(
             SharedContext sharedContext,
+            Lazy<ClientTermContext> clientTermContext,
             ILogger logger,
             IPagingStrategy<ValueSetCodeDto, IValueSetCode> pagingStrategy)
         {
             this.SharedContext = sharedContext;
+            this.clientTermContext = clientTermContext;
             this.Logger = logger;
             this.pagingStrategy = pagingStrategy;
         }
@@ -38,6 +42,8 @@
         protected Expression<Func<ValueSetCodeDto, string>> SortExpression => sortBy => sortBy.CodeDSC;
 
         protected DbSet<ValueSetCodeDto> DbSet => this.SharedContext.ValueSetCodes;
+
+        protected DbSet<ValueSetCodeDto> CustomDbSet => this.clientTermContext.Value.ValueSetCodes;
 
         public int CountValueSetCodes(string valueSetUniqueId, IEnumerable<string> codeSystemCodes)
         {
@@ -91,8 +97,8 @@
             var innerSql =
                 $@"SELECT vsc.BindingID, vsc.BindingNM, vsc.CodeCD, vsc.CodeDSC, vsc.CodeSystemCD, vsc.CodeSystemNM, vsc.CodeSystemVersionTXT,
 vsc.LastLoadDTS, vsc.RevisionDTS, vsc.SourceDSC, vsc.ValueSetUniqueID, vsc.ValueSetID, vsc.ValueSetNM, vsc.ValueSetOID, vsc.VersionDSC,
-ROW_NUMBER() OVER (PARTITION BY vsc.ValueSetID ORDER BY vsc.ValueSetID) AS rownum 
-FROM [Terminology].[ValueSetCode] vsc WHERE vsc.ValueSetID IN ({escapedSetIds})";
+ROW_NUMBER() OVER (PARTITION BY vsc.ValueSetUniqueID ORDER BY vsc.ValueSetUniqueID) AS rownum 
+FROM [Terminology].[ValueSetCode] vsc WHERE vsc.ValueSetUniqueID IN ({escapedSetIds})";
 
             var systemCodes = codeSystemCodes as string[] ?? codeSystemCodes.ToArray();
             if (systemCodes.Any())
@@ -111,6 +117,18 @@ WHERE vscr.rownum <= {count}
 ORDER BY vscr.CodeDSC";
 
             return Task.Run(() => this.DbSet.FromSql(sql).ToLookup(vsc => vsc.ValueSetUniqueID, vsc => mapper.Map(vsc)));
+        }
+
+        //// Used for testing.  codeSystemCodes parameter not used by required for mapper.
+        internal IReadOnlyCollection<IValueSetCode> GetCustomValueSetCodes(string valueSetUniqueId, IEnumerable<string> codeSystemCodes)
+        {
+            var all = this.CustomDbSet.ToList();
+
+            var dtos = this.CustomDbSet.Where(dto => dto.ValueSetUniqueID == valueSetUniqueId).OrderBy(this.SortExpression).ToList();
+
+            var mapper = new ValueSetCodeMapper();
+
+            return dtos.Select(dto => mapper.Map(dto)).ToList().AsReadOnly();
         }
 
         private static string EscapeForSqlString(string input)

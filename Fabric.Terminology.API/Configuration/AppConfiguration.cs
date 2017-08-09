@@ -1,5 +1,6 @@
 ﻿namespace Fabric.Terminology.API.Configuration
 {
+    using Fabric.Terminology.Domain.Configuration;
     using Fabric.Terminology.SqlServer.Configuration;
 
     public class AppConfiguration : IAppConfiguration

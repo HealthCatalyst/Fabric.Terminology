@@ -3,6 +3,8 @@
     using System.Collections.Generic;
     using System.Threading.Tasks;
 
+    using CallMeMaybe;
+
     using Fabric.Terminology.Domain.Models;
 
     using JetBrains.Annotations;
@@ -11,8 +13,7 @@
     {
         bool NameExists(string name);
 
-        [CanBeNull]
-        IValueSet GetValueSet(string valueSetUniqueId, IEnumerable<string> codeSystemCodes);
+        Maybe<IValueSet> GetValueSet(string valueSetUniqueId, IEnumerable<string> codeSystemCodes);
 
         IReadOnlyCollection<IValueSet> GetValueSets(
             IEnumerable<string> valueSetUniqueIds,
@@ -29,5 +30,9 @@
             IPagerSettings pagerSettings,
             IEnumerable<string> codeSystemCodes,
             bool includeAllValueSetCodes = false);
+
+        Attempt<IValueSet> Add(IValueSet valueSet);
+
+        void Delete(IValueSet valueSet);
     }
 }

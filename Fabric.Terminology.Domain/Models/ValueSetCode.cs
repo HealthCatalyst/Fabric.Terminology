@@ -2,20 +2,95 @@
 {
     using System;
 
-    public class ValueSetCode : IValueSetCode
+    public class ValueSetCode : CodeSetCode, IValueSetCode
     {
-        public string Code { get; set; }
+        public ValueSetCode(
+            string valueSetId,
+            string valueSetName,
+            string code,
+            string name,
+            ICodeSystem codeSystem,
+            string versionDescription,
+            string sourceDescription,
+            DateTime lastLoadDate,
+            DateTime? revisionDate)
+            : this(
+                valueSetId,
+                valueSetId,
+                valueSetName,
+                code,
+                name,
+                codeSystem,
+                versionDescription,
+                sourceDescription,
+                lastLoadDate,
+                revisionDate)
+        {
+        }
 
-        public string ValueSetUniqueId { get; set; }
+        public ValueSetCode(
+            string valueSetId,
+            string valueSetUniqueId,
+            string valueSetName,
+            string code,
+            string name,
+            ICodeSystem codeSystem,
+            string versionDescription,
+            string sourceDescription,
+            DateTime lastLoadDate,
+            DateTime? revisionDate)
+            : this(
+                valueSetId,
+                valueSetUniqueId,
+                valueSetUniqueId,
+                valueSetName,
+                code,
+                name,
+                codeSystem,
+                versionDescription,
+                sourceDescription,
+                lastLoadDate,
+                revisionDate)
+        {
+        }
 
-        public string ValueSetId { get; set; }
+        public ValueSetCode(
+            string valueSetId,
+            string valueSetUniqueId,
+            string valueSetOId,
+            string valueSetName,
+            string code,
+            string name,
+            ICodeSystem codeSystem,
+            string versionDescription,
+            string sourceDescription,
+            DateTime lastLoadDate,
+            DateTime? revisionDate)
+            : base(code, name, codeSystem, versionDescription, sourceDescription, lastLoadDate, revisionDate)
+        {
+            this.ValueSetId = valueSetId;
+            this.ValueSetUniqueId = valueSetUniqueId;
+            this.ValueSetOId = valueSetOId;
+            this.ValueSetName = valueSetName;
+        }
 
-        public string Name { get; set; }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ValueSetCode"/> class.
+        /// </summary>
+        /// <remarks>
+        /// Prevents public construction
+        /// Used for testing
+        /// </remarks>
+        internal ValueSetCode()
+        {
+        }
 
-        public string VersionDescription { get; set; }
+        public string ValueSetUniqueId { get; internal set; }
 
-        public DateTime? RevisionDate { get; set; }
+        public string ValueSetOId { get; internal set; }
 
-        public IValueSetCodeSystem CodeSystem { get; set; }
+        public string ValueSetId { get; internal set; }
+
+        public string ValueSetName { get; internal set; }
     }
 }

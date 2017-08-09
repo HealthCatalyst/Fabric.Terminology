@@ -8,10 +8,11 @@
     using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Models.Dto;
     using Fabric.Terminology.Domain.Persistence.Mapping;
+    using Fabric.Terminology.Domain.Strategy;
 
     using JetBrains.Annotations;
 
-    internal sealed class ValueSetShortCodeListMapper : IModelMapper<ValueSetDescriptionDto, IValueSet>
+    internal sealed class ValueSetShortCodeListMapper : ValueSetMapperBase, IModelMapper<ValueSetDescriptionDto, IValueSet>
     {
         private readonly IMemoryCacheProvider cache;
 
@@ -24,11 +25,13 @@
         private readonly string[] codeSystemCds;
 
         public ValueSetShortCodeListMapper(
+            IIsCustomValueStrategy isCustomValue,
             IMemoryCacheProvider memCache, 
             ILookup<string, IValueSetCode> lookup, 
             IDictionary<string, IValueSet> previouslyCached,
             Func<string, string[], int> getCount,
             IEnumerable<string> codeSystemCodes)
+            : base(isCustomValue)
         {
             this.cache = memCache;
             this.lookupCodes = lookup;
@@ -50,19 +53,7 @@
                 cacheKey, () =>
                 {
                     var codes = this.lookupCodes[dto.ValueSetUniqueID].ToArray();
-                    return new ValueSet
-                    {
-                        ValueSetUniqueId = dto.ValueSetUniqueID,
-                        ValueSetId = dto.ValueSetID,
-                        AuthoringSourceDescription = dto.AuthoringSourceDSC,
-                        Name = dto.ValueSetNM,
-                        IsCustom = false,
-                        PurposeDescription = dto.PurposeDSC,
-                        SourceDescription = dto.SourceDSC,
-                        VersionDescription = dto.VersionDSC,
-                        ValueSetCodes = codes,
-                        ValueSetCodesCount = this.getCount.Invoke(dto.ValueSetUniqueID, this.codeSystemCds)
-                    };
+                    return this.Build(dto, codes, this.getCount.Invoke(dto.ValueSetUniqueID, this.codeSystemCds));
                 },
                 TimeSpan.FromMinutes(this.cache.Settings.MemoryCacheMinDuration),
                 this.cache.Settings.MemoryCacheSliding);

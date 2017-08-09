@@ -7,6 +7,7 @@
     using JetBrains.Annotations;
 
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.EntityFrameworkCore.Infrastructure;
     using Microsoft.Extensions.Logging;
 
     using Serilog;
@@ -33,13 +34,9 @@
         [CanBeNull]
         protected ISeededDatabaseInitializer<TDbContext> SeededDatabaseInitializer { get; }
 
-        public TDbContext Create(bool useInMemory = false)
+        public virtual TDbContext Create(bool useInMemory = false)
         {
             var context = useInMemory ? this.CreateInMemory() : this.CreateAttached();
-
-            // Shared Terminology data is read only so there is no reason to ever track the entities.
-            context.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
-
             return context;
         }
 
@@ -60,13 +57,17 @@
                 lf.AddSerilog(this.Logger);
                 builder.UseLoggerFactory(lf);
             }
-            return this.GetInstance(builder);
+            var context = this.GetInstance(builder);
+            this.SeededDatabaseInitializer?.Initialize(context);
+            return context;
         }
 
         protected virtual TDbContext CreateInMemory()
         {
             var builder = new DbContextOptionsBuilder<TDbContext>();
             builder.UseInMemoryDatabase();
+            builder.ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning));
+
             var context = this.GetInstance(builder, true);
             this.SeededDatabaseInitializer?.Initialize(context);
             return context;

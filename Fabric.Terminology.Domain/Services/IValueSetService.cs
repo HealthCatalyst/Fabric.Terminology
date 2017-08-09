@@ -3,6 +3,8 @@
     using System.Collections.Generic;
     using System.Threading.Tasks;
 
+    using CallMeMaybe;
+
     using Fabric.Terminology.Domain.Models;
 
     using JetBrains.Annotations;
@@ -12,11 +14,9 @@
     /// </summary>
     public interface IValueSetService
     {
-        [CanBeNull]
-        IValueSet GetValueSet(string valueSetUniqueId);
+        Maybe<IValueSet> GetValueSet(string valueSetUniqueId);
 
-        [CanBeNull]
-        IValueSet GetValueSet(string valueSetUniqueId, IEnumerable<string> codeSystemCodes);
+        Maybe<IValueSet> GetValueSet(string valueSetUniqueId, IEnumerable<string> codeSystemCodes);
 
         IReadOnlyCollection<IValueSet> GetValueSets(IEnumerable<string> valueSetUniqueIds);
 
@@ -58,7 +58,7 @@
         Attempt<IValueSet> Create(
             string name,
             IValueSetMeta meta,
-            IEnumerable<IValueSetCodeItem> valueSetCodes);
+            IEnumerable<ICodeSetCode> valueSetCodes);
 
         void Save(IValueSet valueSet);
 

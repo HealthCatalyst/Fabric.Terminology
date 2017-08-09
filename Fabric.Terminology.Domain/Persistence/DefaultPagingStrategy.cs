@@ -8,7 +8,7 @@
     using Fabric.Terminology.Domain.Persistence.Mapping;
 
     public class DefaultPagingStrategy<TSrc, TResult> : IPagingStrategy<TSrc, TResult>
-        where TSrc : class
+        where TSrc : class, new()
     {
         public DefaultPagingStrategy(int defaultItemsPerPage)
         {
@@ -39,8 +39,15 @@
 
         public void EnsurePagerSettings(IPagerSettings pagerSettings)
         {
-            if (pagerSettings.CurrentPage <= 0) pagerSettings.CurrentPage = 1;
-            if (pagerSettings.ItemsPerPage < 0) pagerSettings.ItemsPerPage = this.DefaultItemsPerPage;
+            if (pagerSettings.CurrentPage <= 0)
+            {
+                pagerSettings.CurrentPage = 1;
+            }
+
+            if (pagerSettings.ItemsPerPage < 0)
+            {
+                pagerSettings.ItemsPerPage = this.DefaultItemsPerPage;
+            }
         }
     }
 }

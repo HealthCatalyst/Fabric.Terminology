@@ -23,8 +23,8 @@
 
             // Assert
             attempt.Success.Should().BeTrue();
-            attempt.Exception.Should().BeNull();
-            attempt.Result.ShouldBeEquivalentTo(obj);
+            attempt.Exception.HasValue.Should().BeFalse();
+            attempt.Result.Single().ShouldBeEquivalentTo(obj);
         }
 
         [Fact]
@@ -38,9 +38,9 @@
 
             // Assert
             attempt.Success.Should().BeFalse();
-            attempt.Exception.Should().NotBeNull();
-            attempt.Exception.ShouldBeEquivalentTo(argEx);
-            attempt.Result.Should().BeNull();
+            attempt.Exception.HasValue.Should().BeTrue();
+            attempt.Exception.Single().ShouldBeEquivalentTo(argEx);
+            attempt.Result.HasValue.Should().BeFalse();
         }
 
         [Fact]
@@ -56,10 +56,10 @@
 
             // Assert
             attempt.Success.Should().BeFalse();
-            attempt.Exception.Should().NotBeNull();
-            attempt.Result.Should().NotBeNull();
-            attempt.Exception.ShouldBeEquivalentTo(argEx);
-            attempt.Result.Should().BeSameAs(obj);
+            attempt.Exception.HasValue.Should().BeTrue();
+            attempt.Result.HasValue.Should().BeTrue();
+            attempt.Exception.Single().ShouldBeEquivalentTo(argEx);
+            attempt.Result.Single().Should().BeSameAs(obj);
         }
     }
 }

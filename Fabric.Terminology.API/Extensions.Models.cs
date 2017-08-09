@@ -41,7 +41,12 @@
             };
         }
 
-        // acquired from Fabric.Authorization.Domain
+        public static ICodeSetCode ToCodeSetCode(this CodeSetCodeApiModel model)
+        {
+            return Mapper.Map<CodeSetCode>(model);
+        }
+
+        // acquired from Fabric.Authorization.Domain (renamed from ToError)
         public static Error ToError(this ValidationResult validationResult)
         {
             var details = validationResult.Errors.Select(

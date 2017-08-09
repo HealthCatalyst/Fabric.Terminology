@@ -5,13 +5,11 @@ namespace Fabric.Terminology.API.Configuration
 
     using Fabric.Terminology.Domain;
 
-    using Nancy.Extensions;
-
     using Semver;
 
     internal static class TerminologyVersion
     {
-        public static Version Current { get; } = new AssemblyName(typeof(TerminologyVersion).GetAssembly().FullName).Version;
+        public static Version Current { get; } = new AssemblyName(typeof(TerminologyVersion).GetTypeInfo().Assembly.FullName).Version;
 
         public static string CurrentComment => "alpha";
 

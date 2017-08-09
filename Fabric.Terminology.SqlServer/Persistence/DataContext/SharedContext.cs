@@ -28,21 +28,18 @@
 
         protected override void OnModelCreating([NotNull] ModelBuilder modelBuilder)
         {
-            if (modelBuilder == null) throw new ArgumentNullException(nameof(modelBuilder));
+            if (modelBuilder == null)
+            {
+                throw new ArgumentNullException(nameof(modelBuilder));
+            }
+
             modelBuilder.Entity<ValueSetCodeDto>().ToTable("ValueSetCode", "Terminology");
             modelBuilder.Entity<ValueSetCodeDto>().Property(e => e.BindingNM).IsUnicode(false);
-            modelBuilder.Entity<ValueSetCodeDto>()
-                .HasKey(
-                    code => new
-                    {
-                        code.CodeCD,
-                        code.ValueSetUniqueID
-                    });
+            modelBuilder.Entity<ValueSetCodeDto>().HasKey(code => new { code.CodeCD, code.ValueSetUniqueID });
 
             modelBuilder.Entity<ValueSetDescriptionDto>().ToTable("ValueSetDescription", "Terminology");
             modelBuilder.Entity<ValueSetDescriptionDto>().Property(e => e.BindingNM).IsUnicode(false);
-            modelBuilder.Entity<ValueSetDescriptionDto>()
-                .HasKey(e => e.ValueSetUniqueID);
+            modelBuilder.Entity<ValueSetDescriptionDto>().HasKey(e => e.ValueSetUniqueID);
             base.OnModelCreating(modelBuilder);
         }
     }

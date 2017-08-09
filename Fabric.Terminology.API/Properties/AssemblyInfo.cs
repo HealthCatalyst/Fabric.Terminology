@@ -11,5 +11,5 @@ using System.Reflection;
 [assembly: AssemblyCopyright("Copyright 2017 © Health Catalyst")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
-[assembly: AssemblyVersion("0.3.1.34603")]
-[assembly: AssemblyFileVersion("0.3.1.34603")]
+[assembly: AssemblyVersion("0.4.1.0")]
+[assembly: AssemblyFileVersion("0.4.1.0")]

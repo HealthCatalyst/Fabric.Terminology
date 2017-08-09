@@ -1,6 +1,6 @@
 ﻿namespace Fabric.Terminology.Domain.Models
 {
-    public interface IValueSetCodeSystem
+    public interface ICodeSystem
     {
         /// <summary>
         /// Gets the code system's unique "code".

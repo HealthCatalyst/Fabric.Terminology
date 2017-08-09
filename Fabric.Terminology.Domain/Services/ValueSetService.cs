@@ -5,8 +5,12 @@ namespace Fabric.Terminology.Domain.Services
     using System.Linq;
     using System.Threading.Tasks;
 
+    using CallMeMaybe;
+
+    using Fabric.Terminology.Domain.Exceptions;
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence;
+    using Fabric.Terminology.Domain.Strategy;
 
     using JetBrains.Annotations;
 
@@ -14,12 +18,13 @@ namespace Fabric.Terminology.Domain.Services
     {
         private readonly IValueSetRepository repository;
 
-        public ValueSetService(IValueSetRepository valueSetRepository)
+        private readonly IIsCustomValueStrategy isCustomValue;
+
+        public ValueSetService(IValueSetRepository valueSetRepository, IIsCustomValueStrategy isCustomValue)
         {
             this.repository = valueSetRepository;
+            this.isCustomValue = isCustomValue;
         }
-
-        #region Events
 
         public static event EventHandler<IValueSet> Created;
 
@@ -31,16 +36,12 @@ namespace Fabric.Terminology.Domain.Services
 
         public static event EventHandler<IValueSet> Deleted;
 
-        #endregion
-
-        [CanBeNull]
-        public IValueSet GetValueSet(string valueSetUniqueId)
+        public Maybe<IValueSet> GetValueSet(string valueSetUniqueId)
         {
             return this.GetValueSet(valueSetUniqueId, new string[] { });
         }
 
-        [CanBeNull]
-        public IValueSet GetValueSet(string valueSetUniqueId, IEnumerable<string> codeSystemCodes)
+        public Maybe<IValueSet> GetValueSet(string valueSetUniqueId, IEnumerable<string> codeSystemCodes)
         {
             return this.repository.GetValueSet(valueSetUniqueId, codeSystemCodes);
         }
@@ -116,13 +117,13 @@ namespace Fabric.Terminology.Domain.Services
 
         public bool NameIsUnique(string name)
         {
-            return this.repository.NameExists(name);
+            return !this.repository.NameExists(name);
         }
 
         public Attempt<IValueSet> Create(
             string name,
             IValueSetMeta meta,
-            IEnumerable<IValueSetCodeItem> valueSetCodes)
+            IEnumerable<ICodeSetCode> codeSetCodes)
         {
             if (!this.NameIsUnique(name))
             {
@@ -134,37 +135,25 @@ namespace Fabric.Terminology.Domain.Services
                 return Attempt<IValueSet>.Failed(new ArgumentException(msg));
             }
 
-            var valueSetCodeItems = valueSetCodes as IValueSetCodeItem[] ?? valueSetCodes.ToArray();
-            if (!valueSetCodeItems.Any())
+            var setCodes = codeSetCodes as IValueSetCode[] ?? codeSetCodes.ToArray();
+            if (!setCodes.Any())
             {
                 return Attempt<IValueSet>.Failed(new ArgumentException("A value set must include at least one code."));
             }
 
-            // TODO discuss key gen
-            var valueSetId = Guid.NewGuid().ToString();
-            var valueSet = new ValueSet
+            var emptyId = Guid.Empty.ToString();
+
+            var valueSet = new ValueSet(
+                emptyId,
+                name,
+                meta.AuthoringSourceDescription,
+                meta.PurposeDescription,
+                meta.SourceDescription,
+                meta.VersionDescription,
+                setCodes.Select(code => code.AsCodeForValueSet(emptyId, name)).ToList().AsReadOnly())
             {
-                ValueSetId = valueSetId,
-                Name = name,
-                AuthoringSourceDescription = meta.AuthoringSourceDescription,
-                PurposeDescription = meta.PurposeDescription,
-                SourceDescription = meta.SourceDescription,
-                VersionDescription = meta.VersionDescription,
-                ValueSetCodes =
-                    valueSetCodeItems
-                        .Select(
-                            code => new ValueSetCode
-                            {
-                                Code = code.Code,
-                                CodeSystem = new ValueSetCodeSystem { Code = code.CodeSystemCode },
-                                Name = code.Name,
-                                RevisionDate = null,
-                                ValueSetId = valueSetId
-                            })
-                        .ToList()
-                        .AsReadOnly(),
-                IsCustom = true,
-                ValueSetCodesCount = valueSetCodeItems.Count()
+                ValueSetCodesCount = setCodes.Length,
+                IsCustom = true
             };
 
             Created?.Invoke(this, valueSet);
@@ -172,17 +161,52 @@ namespace Fabric.Terminology.Domain.Services
             return Attempt<IValueSet>.Successful(valueSet);
         }
 
-        // TODO need a table to insert/update
+        /// <summary>
+        /// Saves a <see cref="IValueSet"/>
+        /// </summary>
+        /// <param name="valueSet">The <see cref="IValueSet"/> to be saved</param>
+        /// <remarks>
+        /// At this point, we can only save "new" value sets.  Updates are out of scope at the moment - To be discussed.
+        /// </remarks>
         public void Save(IValueSet valueSet)
         {
-            throw new System.NotImplementedException();
+            if (valueSet.IsCustom && this.isCustomValue.Get(valueSet) && valueSet.IsNew())
+            {
+                Saving?.Invoke(this, valueSet);
+
+                var attempt = this.repository.Add(valueSet);
+                if (attempt.Success && attempt.Result.HasValue)
+                {
+                    Saved?.Invoke(this, attempt.Result.Single());
+                    return;
+                }
+
+                if (!attempt.Exception.HasValue)
+                {
+                    throw new ValueSetOperationException(
+                        "An exception was not returned by the attempt to save a ValueSet but the save failed.");
+                }
+
+                throw attempt.Exception.Single();
+            }
+
+            throw new InvalidOperationException("ValueSet was not a custom value set and cannot be saved.");
         }
 
-        // TODO need a table to delete
         public void Delete(IValueSet valueSet)
         {
-            // assert is custom
-            throw new System.NotImplementedException();
+            if (valueSet.IsCustom && this.isCustomValue.Get(valueSet) && !valueSet.IsNew())
+            {
+                Deleting?.Invoke(this, valueSet);
+
+                this.repository.Delete(valueSet);
+
+                Deleted?.Invoke(this, valueSet);
+
+                return;
+            }
+
+            throw new InvalidOperationException("ValueSet was not a custom value set and cannot be deleted.");
         }
 
         private static bool ValidateValueSetMeta(IValueSetMeta meta, out string msg)

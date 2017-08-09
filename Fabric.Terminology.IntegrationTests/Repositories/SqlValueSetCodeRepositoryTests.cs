@@ -4,16 +4,10 @@
     using System.Linq;
     using Fabric.Terminology.Domain.Persistence;
     using Fabric.Terminology.IntegrationTests.Fixtures;
-    using Fabric.Terminology.SqlServer.Models.Dto;
     using Fabric.Terminology.TestsBase;
-    using Fabric.Terminology.TestsBase.Fake;
     using Fabric.Terminology.TestsBase.Mocks;
 
     using FluentAssertions;
-
-    using Microsoft.EntityFrameworkCore;
-
-    using Moq;
 
     using Xunit;
     using Xunit.Abstractions;

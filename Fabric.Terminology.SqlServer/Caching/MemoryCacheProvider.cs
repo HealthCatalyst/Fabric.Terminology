@@ -1,6 +1,7 @@
 ﻿namespace Fabric.Terminology.SqlServer.Caching
 {
     using System;
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading;
@@ -26,7 +27,7 @@
 
         public IMemoryCacheSettings Settings { get; }
 
-        /// Used in tests
+        //// Used in tests
         internal Guid InstanceKey { get; private set; }
 
         public void ClearAll()
