@@ -39,8 +39,15 @@
 
         public void EnsurePagerSettings(IPagerSettings pagerSettings)
         {
-            if (pagerSettings.CurrentPage <= 0) pagerSettings.CurrentPage = 1;
-            if (pagerSettings.ItemsPerPage < 0) pagerSettings.ItemsPerPage = this.DefaultItemsPerPage;
+            if (pagerSettings.CurrentPage <= 0)
+            {
+                pagerSettings.CurrentPage = 1;
+            }
+
+            if (pagerSettings.ItemsPerPage < 0)
+            {
+                pagerSettings.ItemsPerPage = this.DefaultItemsPerPage;
+            }
         }
     }
 }
