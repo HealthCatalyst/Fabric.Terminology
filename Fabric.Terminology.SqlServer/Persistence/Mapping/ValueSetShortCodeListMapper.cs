@@ -43,17 +43,17 @@
         [CanBeNull]
         public IValueSet Map(ValueSetDescriptionDto dto)
         {
-            if (this.stash.ContainsKey(dto.ValueSetID))
+            if (this.stash.ContainsKey(dto.ValueSetUniqueID))
             {
-                return this.stash[dto.ValueSetID];
+                return this.stash[dto.ValueSetUniqueID];
             }
 
-            var cacheKey = CacheKeys.ValueSetKey(dto.ValueSetID, this.codeSystemCds);
+            var cacheKey = CacheKeys.ValueSetKey(dto.ValueSetUniqueID, this.codeSystemCds);
             return (IValueSet)this.cache.GetItem(
                 cacheKey, () =>
                 {
-                    var codes = this.lookupCodes[dto.ValueSetID].ToArray();
-                    return this.Build(dto, codes, this.getCount.Invoke(dto.ValueSetID, this.codeSystemCds));
+                    var codes = this.lookupCodes[dto.ValueSetUniqueID].ToArray();
+                    return this.Build(dto, codes, this.getCount.Invoke(dto.ValueSetUniqueID, this.codeSystemCds));
                 },
                 TimeSpan.FromMinutes(this.cache.Settings.MemoryCacheMinDuration),
                 this.cache.Settings.MemoryCacheSliding);

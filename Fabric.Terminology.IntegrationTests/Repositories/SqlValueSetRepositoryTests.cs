@@ -1,5 +1,7 @@
 ﻿namespace Fabric.Terminology.IntegrationTests.Repositories
 {
+    using System.Linq;
+
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence;
     using Fabric.Terminology.IntegrationTests.Fixtures;
@@ -21,11 +23,11 @@
         }
 
         [Theory]
-        [InlineData(1, 20)]
-        [InlineData(2, 20)]
-        [InlineData(3, 20)]
-        [InlineData(4, 20)]
-        [InlineData(5, 20)]
+        [InlineData(1, 5)]
+        [InlineData(2, 5)]
+        [InlineData(3, 5)]
+        [InlineData(4, 5)]
+        [InlineData(5, 5)]
         public void GetValueSetsAsyncReturnsPageOfValueSets(int currentPage, int itemsPerPage)
         {
             // Arrange
@@ -38,9 +40,12 @@
             this.Output.WriteLine($"Total Pages {valueSets.TotalPages}");
 
             // Assert
+            this.Output.WriteLine(string.Join(",", valueSets.Values.Select(vs => vs.ValueSetUniqueId)));
             valueSets.Should().NotBeNull();
             valueSets.TotalItems.Should().BeGreaterThan(0);
             valueSets.TotalPages.Should().BeGreaterThan(0);
+
+            valueSets.Values.All(vs => vs.ValueSetCodes.Any()).Should().BeTrue("value sets must have codes");
 
             // Call again - to time cached
             var cached = this.Profiler.ExecuteTimed(
@@ -65,6 +70,7 @@
             valueSets.Should().NotBeNull();
             valueSets.TotalItems.Should().BeGreaterThan(0);
             valueSets.TotalPages.Should().BeGreaterThan(0);
+            valueSets.Values.All(vs => vs.ValueSetCodes.Any()).Should().BeTrue("value sets must have codes");
         }
 
         [Theory]

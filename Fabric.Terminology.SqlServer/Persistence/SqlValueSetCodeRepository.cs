@@ -97,8 +97,8 @@
             var innerSql =
                 $@"SELECT vsc.BindingID, vsc.BindingNM, vsc.CodeCD, vsc.CodeDSC, vsc.CodeSystemCD, vsc.CodeSystemNM, vsc.CodeSystemVersionTXT,
 vsc.LastLoadDTS, vsc.RevisionDTS, vsc.SourceDSC, vsc.ValueSetUniqueID, vsc.ValueSetID, vsc.ValueSetNM, vsc.ValueSetOID, vsc.VersionDSC,
-ROW_NUMBER() OVER (PARTITION BY vsc.ValueSetID ORDER BY vsc.ValueSetID) AS rownum 
-FROM [Terminology].[ValueSetCode] vsc WHERE vsc.ValueSetID IN ({escapedSetIds})";
+ROW_NUMBER() OVER (PARTITION BY vsc.ValueSetUniqueID ORDER BY vsc.ValueSetUniqueID) AS rownum 
+FROM [Terminology].[ValueSetCode] vsc WHERE vsc.ValueSetUniqueID IN ({escapedSetIds})";
 
             var systemCodes = codeSystemCodes as string[] ?? codeSystemCodes.ToArray();
             if (systemCodes.Any())
