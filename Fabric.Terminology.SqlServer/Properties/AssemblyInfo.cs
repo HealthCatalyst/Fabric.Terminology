@@ -1,6 +1,4 @@
-using System;
 using System.Reflection;
-using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle("Fabric.Terminology")]
 [assembly: AssemblyDescription("Service to provide shared healthcare terminology data")]
