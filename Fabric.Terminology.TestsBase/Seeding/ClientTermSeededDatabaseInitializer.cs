@@ -17,12 +17,9 @@
             context.ValueSetDescriptions.Add(vs1);
             context.ValueSetDescriptions.Add(vs2);
 
-
             var codes1 = MockDtoBuilder.ValueSetCodeDtoCollection(vs1);
             var codes2 = MockDtoBuilder.ValueSetCodeDtoCollection(vs2);
-            var allCodes = new List<ValueSetCodeDto>();
-            allCodes.AddRange(codes1.ToArray());
-            allCodes.AddRange(codes2.ToArray());
+            var allCodes = codes1.Concat(codes2).ToList();
 
             foreach (var code in allCodes)
             {

@@ -28,7 +28,8 @@
                                     .ToList()
                                     .AsReadOnly();
                             }
-                            return vs.ValueSetCodes.Any() ? Maybe.From(vs) : Maybe<IValueSet>.Not;
+
+                            return Maybe.If(vs.ValueSetCodes.Any(), vs);
                         });
             return mockService;
         }

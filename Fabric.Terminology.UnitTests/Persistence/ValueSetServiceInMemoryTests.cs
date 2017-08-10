@@ -123,7 +123,7 @@
             var codes = this.valueSetCodeRepository.GetCustomValueSetCodes(uid, Enumerable.Empty<string>());
 
             retreived.HasValue.Should().BeFalse();
-            codes.Any().Should().BeFalse();
+            codes.Should().BeEmpty();
         }
     }
 }

@@ -196,17 +196,23 @@
                     this.ClientTermContext.SaveChanges();
 
                     transaction.Commit();
-                    this.ClientTermContext.ChangeTracker.AutoDetectChangesEnabled = true;
                 }
                 catch (Exception ex)
                 {
                     this.Logger.Error(ex, "Failed to save a custom ValueSet");
                     this.ClientTermContext.ChangeTracker.AutoDetectChangesEnabled = true;
-                    return Attempt<IValueSet>.Failed(new ValueSetOperationException("Failed to save a custom ValueSet", ex ), valueSet);
+                    return Attempt<IValueSet>.Failed(
+                        new ValueSetOperationException("Failed to save a custom ValueSet", ex),
+                        valueSet);
+                }
+                finally
+                {
+                    this.ClientTermContext.ChangeTracker.AutoDetectChangesEnabled = true;
                 }
             }
 
             // Get the updated ValueSet
+            // TODO remove IsTest parameter
             var added = !this.IsTest ?
                 this.GetValueSet(valueSetDto.ValueSetUniqueID, Enumerable.Empty<string>()) :
                 this.GetCustomValueSet(valueSetDto.ValueSetUniqueID);
@@ -220,7 +226,7 @@
         {
             if (!valueSet.IsCustom)
             {
-                return;
+                throw new ValueSetOperationException("Only custom value sets may be deleted.");
             }
 
             var valueSetDto = this.ClientTermContext.ValueSetDescriptions.Find(valueSet.ValueSetUniqueId);
@@ -248,8 +254,9 @@
                 }
                 catch (Exception ex)
                 {
-                    this.Logger.Error(ex, "Failed to delete custom ValueSet");
-                    throw;
+                    var operationException = new ValueSetOperationException($"Failed to delete custom ValueSet with ID {valueSet.ValueSetUniqueId}", ex);
+                    this.Logger.Error(operationException, "Failed to delete custom ValueSet");
+                    throw operationException;
                 }
             }
         }

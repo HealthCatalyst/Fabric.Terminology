@@ -27,7 +27,7 @@
         {
             for (var i = 0; i < count; i++)
             {
-                yield return CodeSetCodeApiModel("Code.Set.Code." + i.ToString(), "Code.Set.Code." + i.ToString() + " Name");
+                yield return CodeSetCodeApiModel($"Code.Set.Code.{i}", $"Code.Set.Code.{i} Name");
             }
         }
 

@@ -46,7 +46,7 @@
             this.ClientTermContext = clientTermFactory.Create(this.ClientTermContextInMemory);
             if (this.SharedContext.IsInMemory)
             {
-                throw new InvalidOperationException();
+                throw new InvalidOperationException("Cannot use in memory tests with the SharedContext");
             }
         }
     }
