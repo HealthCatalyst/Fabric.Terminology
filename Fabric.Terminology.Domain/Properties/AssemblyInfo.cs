@@ -1,7 +1,4 @@
-using System;
 using System.Reflection;
-
-[assembly: CLSCompliant(true)]
 
 [assembly: AssemblyTitle("Fabric.Terminology")]
 [assembly: AssemblyDescription("Service to provide shared healthcare terminology data")]
