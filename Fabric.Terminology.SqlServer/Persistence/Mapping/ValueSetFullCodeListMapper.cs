@@ -33,19 +33,11 @@
             this.cache = memCache;
             this.fetch = fetchCodes;
             this.codeSystemCodes = codeSystemCDs;
-            this.IsReady = true;
         }
-
-        public bool IsReady { get; } = false;
 
         [CanBeNull]
         public IValueSet Map(ValueSetDescriptionDto dto)
         {
-            if (!this.IsReady)
-            {
-                throw new ArgumentException("The default constructor may not be used to map IValueSet");
-            }
-
             // Ensure not already cached with full codes list
             var found = this.cache.GetCachedValueSetWithAllCodes(dto.ValueSetUniqueID, this.codeSystemCodes.ToArray());
             if (found != null)
