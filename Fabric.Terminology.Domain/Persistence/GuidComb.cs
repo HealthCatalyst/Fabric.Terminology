@@ -3,7 +3,7 @@
     using System;
 
     /// <summary>
-    /// Utility helper for generating sequential GUIDs.
+    /// Utility helper for generating sequential GUIDs that increase over time are better as database IDs because they avoid fragmenting indexes.
     /// </summary>
     public static class GuidComb
     {

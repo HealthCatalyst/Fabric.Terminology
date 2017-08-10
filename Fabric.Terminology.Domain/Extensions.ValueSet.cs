@@ -1,6 +1,7 @@
 ﻿namespace Fabric.Terminology.Domain
 {
     using System;
+    using System.Linq;
 
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence;
@@ -14,21 +15,23 @@
         {
             var sequentialGuid = GuidComb.GenerateComb().ToString();
 
-            if (valueSet as ValueSet is null)
+            if (valueSet is ValueSet realValueSet)
+            {
+                realValueSet.ValueSetUniqueId = sequentialGuid;
+                realValueSet.ValueSetId = sequentialGuid;
+                realValueSet.ValueSetOId = sequentialGuid;
+            }
+            else
             {
                 throw new NotImplementedException("IValueSet must be instantiated as ValueSet in this implementation.");
             }
 
-            ((ValueSet)valueSet).ValueSetUniqueId = sequentialGuid;
-            ((ValueSet)valueSet).ValueSetId = sequentialGuid;
-            ((ValueSet)valueSet).ValueSetOId = sequentialGuid;
-
-            foreach (var code in valueSet.ValueSetCodes)
+            foreach (var code in valueSet.ValueSetCodes.Cast<ValueSetCode>())
             {
-                ((ValueSetCode)code).ValueSetUniqueId = sequentialGuid;
-                ((ValueSetCode)code).ValueSetId = sequentialGuid;
-                ((ValueSetCode)code).ValueSetOId = sequentialGuid;
-                ((ValueSetCode)code).ValueSetName = valueSet.Name;
+                code.ValueSetUniqueId = sequentialGuid;
+                code.ValueSetId = sequentialGuid;
+                code.ValueSetOId = sequentialGuid;
+                code.ValueSetName = valueSet.Name;
             }
         }
 

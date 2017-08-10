@@ -12,8 +12,7 @@
 
         public Maybe<T> Result { get; private set; }
 
-        [CanBeNull]
-        public Maybe<Exception> Exception { get; private set; } = Maybe<Exception>.Not;
+        public Maybe<Exception> Exception { get; private set; }
 
         public static Attempt<T> Successful(T result)
         {
