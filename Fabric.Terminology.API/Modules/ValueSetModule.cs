@@ -17,7 +17,7 @@
 
     using Serilog;
 
-    public sealed class ValueSetModule : TerminologyModule<IValueSet>
+    public sealed class ValueSetModule : TerminologyModule<ValueSetApiModel>
     {
         private readonly IValueSetService valueSetService;
 
