@@ -15,7 +15,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CallMeMaybe" Version="0.6.6" />
+    <PackageReference Include="CallMeMaybe" Version="0.6.6.42-alpha" />
     <PackageReference Include="FluentValidation" Version="7.1.1" />
   </ItemGroup>
 
