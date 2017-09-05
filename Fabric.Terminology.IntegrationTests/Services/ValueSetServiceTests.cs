@@ -48,7 +48,7 @@
             // Assert
             vs.ValueSetUniqueId.Should().NotBe(Guid.Empty.ToString());
             vs.ValueSetCodes.Count.Should().Be(codeCount);
-            vs.Name.ShouldBeEquivalentTo(name);
+            vs.Name.Should().BeEquivalentTo(name);
 
             // cleanup
             this.valueSetService.Delete(vs);
