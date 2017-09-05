@@ -33,15 +33,15 @@
 
             // Assert
             mapped.Should().NotBeNull();
-            mapped.ShouldBeEquivalentTo(valueSet, o => o.Excluding(p => p.Identifier).Excluding(p => p.ValueSetCodes));
-            mapped.Identifier.ShouldBeEquivalentTo(valueSet.ValueSetId);
+            mapped.Should().BeEquivalentTo(valueSet, o => o.Excluding(p => p.ValueSetCodes));
+            mapped.Identifier.Should().BeEquivalentTo(valueSet.ValueSetId);
 
             var codes = valueSet.ValueSetCodes.ToArray();
             var mappedCodes = mapped.ValueSetCodes.ToArray();
             for (var i = 0; i < codes.Length; i++)
             {
                 var code = codes[i];
-                mappedCodes[i].ShouldBeEquivalentTo(code, o => o.ExcludingMissingMembers());
+                mappedCodes[i].Should().BeEquivalentTo(code, o => o.ExcludingMissingMembers());
                 mappedCodes[i].CodeSystem.Code.Should().Be(code.CodeSystem.Code);
             }
         }
