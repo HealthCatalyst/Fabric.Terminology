@@ -15,12 +15,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CallMeMaybe" Version="0.6.3.22-alpha" />
-    <PackageReference Include="FluentValidation" Version="7.0.3" />
+    <PackageReference Include="CallMeMaybe" Version="0.6.6.42-alpha" />
+    <PackageReference Include="FluentValidation" Version="7.1.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="JetBrains.Annotations" Version="10.4.0" />
+    <PackageReference Include="JetBrains.Annotations" Version="11.0.0" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.0.2" />
   </ItemGroup>
 
