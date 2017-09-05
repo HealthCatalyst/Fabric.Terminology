@@ -9,7 +9,7 @@ var version = new function () {
     this.releaseComment = "alpha";
     this.major = 0;
     this.minor = 5;
-    this.patch = 0; // changing this will reset the build number in local
+    this.patch = 1; // changing this will reset the build number in local
 
     // do not assign. 
     this.build = argv.buildNumber === undefined ? -1 : argv.buildNumber;
