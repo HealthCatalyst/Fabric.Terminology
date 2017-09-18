@@ -1,14 +1,14 @@
 ﻿namespace Fabric.Terminology.SqlServer.Persistence.Mapping
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System;
 
     using Fabric.Terminology.Domain.Models;
-    using Fabric.Terminology.SqlServer.Caching;
-    using Fabric.Terminology.SqlServer.Models.Dto;
     using Fabric.Terminology.Domain.Persistence.Mapping;
     using Fabric.Terminology.Domain.Strategy;
+    using Fabric.Terminology.SqlServer.Caching;
+    using Fabric.Terminology.SqlServer.Models.Dto;
 
     using JetBrains.Annotations;
 
@@ -26,8 +26,8 @@
 
         public ValueSetShortCodeListMapper(
             IIsCustomValueStrategy isCustomValue,
-            IMemoryCacheProvider memCache, 
-            ILookup<string, IValueSetCode> lookup, 
+            IMemoryCacheProvider memCache,
+            ILookup<string, IValueSetCode> lookup,
             IDictionary<string, IValueSet> previouslyCached,
             Func<string, string[], int> getCount,
             IEnumerable<string> codeSystemCodes)

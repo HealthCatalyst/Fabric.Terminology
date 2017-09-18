@@ -106,7 +106,7 @@
         /// Gets or sets the number (count) of codes in the value set.
         /// </summary>
         /// <remarks>
-        /// Value is set, rather than calculated, so that API can return a summary object with the first X number of codes leaving 
+        /// Value is set, rather than calculated, so that API can return a summary object with the first X number of codes leaving
         /// this count correct for representation in the UI.
         /// </remarks>
         public int ValueSetCodesCount { get; set; }

@@ -64,7 +64,6 @@
                 },
                 new[] { TagsFactory.GetValueSetTag() });
 
-
             this.RouteDescriber.DescribeRouteWithParams(
                 "Find",
                 "Search by 'Name' of ValueSet operation",
@@ -76,7 +75,7 @@
                 },
                 new[]
                 {
-                    //ParameterFactory.GetContentType(),
+                    // ParameterFactory.GetContentType(),
                     new BodyParameter<FindByTermQuery>(modelCatalog) { Required = false }
                 },
                 new[] { TagsFactory.GetValueSetFindTag() });
@@ -92,7 +91,7 @@
                 },
                 new[]
                 {
-                    //ParameterFactory.GetContentType(),
+                    // ParameterFactory.GetContentType(),
                     new BodyParameter<ValueSetCreationApiModel>(modelCatalog) { Required = true }
                 },
                 new[]

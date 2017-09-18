@@ -21,7 +21,7 @@
     {
         private readonly Lazy<ClientTermContext> clientTermContext;
 
-        private readonly IPagingStrategy<ValueSetCodeDto, IValueSetCode> pagingStrategy;        
+        private readonly IPagingStrategy<ValueSetCodeDto, IValueSetCode> pagingStrategy;
 
         public SqlValueSetCodeRepository(
             SharedContext sharedContext,
@@ -73,6 +73,9 @@
             return dtos.Select(dto => mapper.Map(dto)).ToList().AsReadOnly();
         }
 
+        /// <summary>
+        /// Returns an association between valueset and codes
+        /// </summary>
         /// <remarks>
         /// Entity Framework does not support PARTITION BY and "will most likely generate the query using CROSS APPLY"
         /// Attempt to use straight also resulted in several warnings indicating that certain portions of the query could

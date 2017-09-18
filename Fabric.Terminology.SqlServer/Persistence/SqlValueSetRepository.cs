@@ -249,7 +249,7 @@
                     this.Cache.ClearItem(CacheKeys.ValueSetKey(valueSet.ValueSetId));
 
                     // FYI - brittle point here as we may (albeit unlikely) have cached valuesets with codesystem filters applied - thus still stored in cache.
-                    // Current caching mechanism does not allow for searching keys for key pattern so we have to rely on 
+                    // Current caching mechanism does not allow for searching keys for key pattern so we have to rely on
                     // the cache expiration (default 5 mins).
                 }
                 catch (Exception ex)

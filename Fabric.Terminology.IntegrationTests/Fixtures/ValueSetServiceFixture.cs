@@ -19,7 +19,7 @@
         }
 
         public IValueSetService ValueSetService { get; private set; }
-        
+
         private void Initialize()
         {
             var valueSetCodeRepository = new SqlValueSetCodeRepository(

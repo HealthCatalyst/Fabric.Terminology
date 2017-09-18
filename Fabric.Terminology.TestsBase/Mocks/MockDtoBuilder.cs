@@ -38,7 +38,6 @@
             };
         }
 
-
         internal static IEnumerable<ValueSetCodeDto> ValueSetCodeDtoCollection(
             ValueSetDescriptionDto valueSetDto,
             int count = 10)

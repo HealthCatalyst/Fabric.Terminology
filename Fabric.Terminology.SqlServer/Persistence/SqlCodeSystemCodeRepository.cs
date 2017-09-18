@@ -5,6 +5,7 @@
 
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence;
+
     internal class SqlCodeSystemCodeRepository : ICodeSetCodeRepository
     {
         public int CountCodes(IEnumerable<string> codeSystemCodes)

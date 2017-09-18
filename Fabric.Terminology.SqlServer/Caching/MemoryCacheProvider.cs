@@ -48,6 +48,7 @@
                 {
                     return;
                 }
+
                 this.memCache.Remove(key);
             }
         }

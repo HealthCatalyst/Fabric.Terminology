@@ -57,6 +57,7 @@
                 lf.AddSerilog(this.Logger);
                 builder.UseLoggerFactory(lf);
             }
+
             var context = this.GetInstance(builder);
             this.SeededDatabaseInitializer?.Initialize(context);
             return context;

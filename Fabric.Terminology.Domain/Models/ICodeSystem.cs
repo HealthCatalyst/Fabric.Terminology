@@ -1,7 +1,5 @@
 ﻿namespace Fabric.Terminology.Domain.Models
 {
-    using System;
-
     public interface ICodeSystem
     {
         /// <summary>
@@ -16,11 +14,5 @@
 
         // TODO REMOVE
         string Version { get; }
-
-        // TODO REMOVE
-        //bool RetiredFLG { get; }
-
-        // TODO REMOVE
-        //DateTime RetiredDate { get; }
     }
 }

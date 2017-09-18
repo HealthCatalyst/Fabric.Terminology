@@ -13,7 +13,7 @@
 
     using JetBrains.Annotations;
 
-    internal sealed class ValueSetFullCodeListMapper :ValueSetMapperBase, IModelMapper<ValueSetDescriptionDto, IValueSet>
+    internal sealed class ValueSetFullCodeListMapper : ValueSetMapperBase, IModelMapper<ValueSetDescriptionDto, IValueSet>
     {
         private static readonly EmptySamdBinding EmptyBinding = new EmptySamdBinding();
 

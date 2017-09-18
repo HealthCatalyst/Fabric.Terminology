@@ -1,7 +1,4 @@
-﻿
-
-// ReSharper disable InconsistentNaming
-
+﻿// ReSharper disable InconsistentNaming
 namespace Fabric.Terminology.SqlServer
 {
     public static partial class Constants
