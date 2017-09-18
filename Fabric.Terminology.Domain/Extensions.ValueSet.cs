@@ -13,13 +13,11 @@
     {
         public static void SetIdsForCustomInsert(this IValueSet valueSet)
         {
-            var sequentialGuid = GuidComb.GenerateComb().ToString();
+            var sequentialGuid = GuidComb.GenerateComb();
 
             if (valueSet is ValueSet realValueSet)
             {
-                realValueSet.ValueSetUniqueId = sequentialGuid;
-                realValueSet.ValueSetId = sequentialGuid;
-                realValueSet.ValueSetOId = sequentialGuid;
+                realValueSet.ValueSetGuid = sequentialGuid;
             }
             else
             {
@@ -28,16 +26,13 @@
 
             foreach (var code in valueSet.ValueSetCodes.Cast<ValueSetCode>())
             {
-                code.ValueSetUniqueId = sequentialGuid;
-                code.ValueSetId = sequentialGuid;
-                code.ValueSetOId = sequentialGuid;
-                code.ValueSetName = valueSet.Name;
+                code.ValueSetGuid = sequentialGuid;
             }
         }
 
         internal static bool IsNew(this IValueSet valueSet)
         {
-            return Guid.TryParse(valueSet.ValueSetUniqueId, out Guid empty) && empty.Equals(Guid.Empty);
+            return valueSet.ValueSetGuid.Equals(Guid.Empty);
         }
     }
 }

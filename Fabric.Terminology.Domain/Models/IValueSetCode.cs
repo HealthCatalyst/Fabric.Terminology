@@ -1,16 +1,9 @@
 ﻿namespace Fabric.Terminology.Domain.Models
 {
+    using System;
+
     public interface IValueSetCode : ICodeSetCode
     {
-        string ValueSetUniqueId { get; }
-
-        // TODO REMOVE
-        string ValueSetOId { get; }
-
-        // TODO REMOVE
-        string ValueSetId { get; }
-
-        // TODO REMOVE
-        string ValueSetName { get; }
+        Guid ValueSetGuid { get; }
     }
 }

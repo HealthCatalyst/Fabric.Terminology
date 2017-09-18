@@ -4,18 +4,12 @@
 
     public interface IValueSetMeta
     {
-        // TODO AuthorDSC
+        DateTime VersionDate { get; }
+
+        string DefinitionDescription { get; }
+
         string AuthoringSourceDescription { get; }
 
-        // TODO REMOVE
-        string PurposeDescription { get; }
-
         string SourceDescription { get; }
-
-        // TODO REmove
-        string VersionDescription { get; }
-
-        // TODO ADD
-        // DateTime VersionDTS { get; }
     }
 }

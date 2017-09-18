@@ -24,7 +24,7 @@
                 PublicFLG = "Y",
                 LatestVersionFLG = "Y",
                 StatusCD = "Active",
-                PurposeDSC = valueSet.PurposeDescription,
+                PurposeDSC = valueSet.DefinitionDescription,
                 RevisionDTS = null,
                 SourceDSC = valueSet.SourceDescription,
                 ValueSetUniqueID = valueSet.ValueSetUniqueId,

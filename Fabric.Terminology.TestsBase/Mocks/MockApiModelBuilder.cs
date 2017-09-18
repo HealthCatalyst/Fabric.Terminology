@@ -16,7 +16,7 @@
             {
                 Name = name,
                 AuthoringSourceDescription = "Test Authoring Source Description",
-                PurposeDescription = "Test Purpose Description",
+                DefinitionDescription = "Test Purpose Description",
                 SourceDescription = "Test Source Description",
                 VersionDescription = "Test Version Description",
                 CodeSetCodes = CodeSetCodeApiModelCollection(codeCount)

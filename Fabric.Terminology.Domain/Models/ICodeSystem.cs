@@ -11,8 +11,5 @@
         string Code { get; }
 
         string Name { get; }
-
-        // TODO REMOVE
-        string Version { get; }
     }
 }

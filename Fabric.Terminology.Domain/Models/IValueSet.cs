@@ -2,22 +2,8 @@
 {
     using System.Collections.Generic;
 
-    public interface IValueSet : IValueSetMeta
+    public interface IValueSet : IValueSetSummary
     {
-        string ValueSetUniqueId { get; }
-
-        string ValueSetId { get; }
-
-        string ValueSetOId { get; }
-
-        string Name { get;  }
-
-        bool IsCustom { get; }
-
-        bool AllCodesLoaded { get; }
-
-        int ValueSetCodesCount { get; }
-
         IReadOnlyCollection<IValueSetCode> ValueSetCodes { get; }
     }
 }

@@ -40,7 +40,7 @@
                 AuthoringSourceDescription = "author",
                 IsCustom = true,
                 Name = $"test{settings.IdSuffix}",
-                PurposeDescription = "purpose",
+                DefinitionDescription = "purpose",
                 SourceDescription = "source",
                 ValueSetCodesCount = settings.ValueSetCodeCount,
                 VersionDescription = "version",

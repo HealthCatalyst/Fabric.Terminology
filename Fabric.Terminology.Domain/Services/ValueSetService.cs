@@ -143,18 +143,22 @@ namespace Fabric.Terminology.Domain.Services
 
             var emptyId = Guid.Empty.ToString();
 
-            var valueSet = new ValueSet(
-                emptyId,
-                name,
-                meta.AuthoringSourceDescription,
-                meta.PurposeDescription,
-                meta.SourceDescription,
-                meta.VersionDescription,
-                setCodes.Select(code => code.AsCodeForValueSet(emptyId, name)).ToList().AsReadOnly())
-            {
-                ValueSetCodesCount = setCodes.Length,
-                IsCustom = true
-            };
+            var valueSet = new ValueSet();
+
+            throw new NotImplementedException();
+
+            //var valueSet = new ValueSet(
+            //    emptyId,
+            //    name,
+            //    meta.AuthoringSourceDescription,
+            //    meta.DefinitionDescription,
+            //    meta.SourceDescription,
+            //    meta.VersionDescription,
+            //    setCodes.Select(code => code.AsCodeForValueSet(emptyId, name)).ToList().AsReadOnly())
+            //{
+            //    ValueSetCodesCount = setCodes.Length,
+            //    IsCustom = true
+            //};
 
             Created?.Invoke(this, valueSet);
 
@@ -214,9 +218,8 @@ namespace Fabric.Terminology.Domain.Services
             var errors = new List<string>
             {
                 ValidateProperty("AuthoringSourceDescription", meta.AuthoringSourceDescription),
-                ValidateProperty("PurposeDescription", meta.PurposeDescription),
-                ValidateProperty("SourceDescription", meta.SourceDescription),
-                ValidateProperty("VersionDescription", meta.VersionDescription)
+                ValidateProperty("DefinitionDescription", meta.DefinitionDescription),
+                ValidateProperty("SourceDescription", meta.SourceDescription)
             };
 
             msg = string.Join(", ", errors.Where(m => !m.IsNullOrWhiteSpace()));

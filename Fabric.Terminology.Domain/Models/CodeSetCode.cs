@@ -5,21 +5,15 @@ namespace Fabric.Terminology.Domain.Models
     public class CodeSetCode : ICodeSetCode
     {
         public CodeSetCode(
+            Guid codeGuid,
             string code,
             string name,
-            ICodeSystem codeSystem,
-            string versionDescription,
-            string sourceDescription,
-            DateTime lastLoadDate,
-            DateTime? revisionDate)
+            string codeSystemCode)
         {
+            this.CodeGuid = codeGuid;
             this.Code = code;
             this.Name = name;
-            this.CodeSystem = codeSystem;
-            this.VersionDescription = versionDescription;
-            this.SourceDescription = sourceDescription;
-            this.LastLoadDate = lastLoadDate;
-            this.RevisionDate = revisionDate;
+            this.CodeSystemCode = codeSystemCode;
         }
 
         /// <summary>
@@ -33,18 +27,12 @@ namespace Fabric.Terminology.Domain.Models
         {
         }
 
+        public Guid CodeGuid { get; internal set; }
+
         public string Code { get; internal set; }
 
         public string Name { get; internal set; }
 
-        public string VersionDescription { get; internal set; }
-
-        public string SourceDescription { get; internal set; }
-
-        public DateTime? RevisionDate { get; internal set; }
-
-        public ICodeSystem CodeSystem { get; internal set; }
-
-        public DateTime LastLoadDate { get; internal set; }
+        public string CodeSystemCode { get; internal set; }
     }
 }

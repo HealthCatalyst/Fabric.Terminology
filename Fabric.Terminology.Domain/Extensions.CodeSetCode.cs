@@ -1,5 +1,7 @@
 ﻿namespace Fabric.Terminology.Domain
 {
+    using System;
+
     using Fabric.Terminology.Domain.Models;
 
     /// <summary>
@@ -9,33 +11,12 @@
     {
         public static IValueSetCode AsCodeForValueSet(this ICodeSetCode codeSetCode, IValueSet valueSet)
         {
-            return new ValueSetCode(
-                valueSet.ValueSetId,
-                valueSet.ValueSetUniqueId,
-                valueSet.ValueSetOId,
-                valueSet.Name,
-                codeSetCode.Code,
-                codeSetCode.CodeSystem,
-                codeSetCode.VersionDescription,
-                codeSetCode.SourceDescription,
-                codeSetCode.LastLoadDate,
-                codeSetCode.RevisionDate);
+           throw new NotImplementedException();
         }
 
         public static IValueSetCode AsCodeForValueSet(this ICodeSetCode codeSetCode, string valueSetId, string valueSetName)
         {
-            return new ValueSetCode(
-                valueSetId,
-                valueSetId,
-                valueSetId,
-                valueSetName,
-                codeSetCode.Code,
-                codeSetCode.Name,
-                codeSetCode.CodeSystem,
-                codeSetCode.VersionDescription,
-                codeSetCode.SourceDescription,
-                codeSetCode.LastLoadDate,
-                codeSetCode.RevisionDate);
+            throw new NotImplementedException();
         }
     }
 }

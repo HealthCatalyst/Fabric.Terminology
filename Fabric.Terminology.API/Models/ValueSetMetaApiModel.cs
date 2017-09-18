@@ -6,7 +6,7 @@
     {
         public string AuthoringSourceDescription { get; set; }
 
-        public string PurposeDescription { get; set; }
+        public string DefinitionDescription { get; set; }
 
         public string SourceDescription { get; set; }
 
