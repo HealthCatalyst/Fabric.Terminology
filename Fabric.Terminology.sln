@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.15
+VisualStudioVersion = 15.0.26730.10
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fabric.Terminology.API", "Fabric.Terminology.API\Fabric.Terminology.API.csproj", "{7AE08F41-42CD-4C33-90D4-207A1653D488}"
 EndProject
@@ -73,5 +73,8 @@ Global
 		{DCDC41F2-0E61-468D-9DCA-583168938829} = {ED1CC761-BD47-43F6-A3D9-77077285ECB6}
 		{7F85FF63-24B7-424C-BBBC-21ADC04E4F2E} = {ED1CC761-BD47-43F6-A3D9-77077285ECB6}
 		{ADCA8957-4118-4238-A70E-764A8DC2490D} = {ED1CC761-BD47-43F6-A3D9-77077285ECB6}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0013A09D-D37E-4991-B56C-89E979AF2645}
 	EndGlobalSection
 EndGlobal
