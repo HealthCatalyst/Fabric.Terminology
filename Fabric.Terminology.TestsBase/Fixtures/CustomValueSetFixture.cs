@@ -1,10 +1,7 @@
 ﻿namespace Fabric.Terminology.TestsBase.Fixtures
 {
-    using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence;
     using Fabric.Terminology.Domain.Services;
-    using Fabric.Terminology.Domain.Strategy;
-    using Fabric.Terminology.SqlServer.Models.Dto;
     using Fabric.Terminology.SqlServer.Persistence;
 
     public class CustomValueSetFixture : RepositoryFixtureBase
@@ -29,18 +26,16 @@
                 this.SharedContext,
                 this.ClientTermContext.AsLazy(),
                 this.Logger,
-                new DefaultPagingStrategy<ValueSetCodeDto, IValueSetCode>(100));
+                new PagingStrategyFactory());
 
             this.ValueSetRepository = new SqlValueSetRepository(
                 this.SharedContext,
                 this.ClientTermContext.AsLazy(),
                 this.Cache,
                 this.Logger,
-                this.ValueSetCodeRepository,
-                new DefaultPagingStrategy<ValueSetDescriptionDto, IValueSet>(20),
-                new IsCustomValueStrategy());
+                new PagingStrategyFactory());
 
-            this.ValueSetService = new ValueSetService(this.ValueSetRepository, new IsCustomValueStrategy());
+            this.ValueSetService = new ValueSetService(this.ValueSetRepository);
         }
     }
 }

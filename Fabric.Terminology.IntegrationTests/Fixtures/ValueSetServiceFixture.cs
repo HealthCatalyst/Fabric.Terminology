@@ -1,12 +1,8 @@
 ﻿namespace Fabric.Terminology.IntegrationTests.Fixtures
 {
-    using System.Collections;
-    using System.Collections.Generic;
-
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence;
     using Fabric.Terminology.Domain.Services;
-    using Fabric.Terminology.Domain.Strategy;
     using Fabric.Terminology.SqlServer.Models.Dto;
     using Fabric.Terminology.SqlServer.Persistence;
     using Fabric.Terminology.TestsBase.Fixtures;
@@ -26,18 +22,16 @@
                 this.SharedContext,
                 this.ClientTermContext.AsLazy(),
                 this.Logger,
-                new DefaultPagingStrategy<ValueSetCodeDto, IValueSetCode>(100));
+                new PagingStrategyFactory());
 
             var valueSetRepository = new SqlValueSetRepository(
                 this.SharedContext,
                 this.ClientTermContext.AsLazy(),
                 this.Cache,
                 this.Logger,
-                valueSetCodeRepository,
-                new DefaultPagingStrategy<ValueSetDescriptionDto, IValueSet>(20),
-                new IsCustomValueStrategy());
+                new PagingStrategyFactory());
 
-            this.ValueSetService = new ValueSetService(valueSetRepository, new IsCustomValueStrategy());
+            this.ValueSetService = new ValueSetService(valueSetRepository);
         }
     }
 }

@@ -2,12 +2,12 @@
 {
     using System;
 
-    public interface IValueSetStat
+    public interface IValueSetCodeCount
     {
         Guid ValueSetGuid { get; }
 
-        string CodeSystemCode { get; }
+        Guid CodeSystemGuid { get; }
 
-        int CodeSystemCodeCount { get; }
+        int CodeCount { get; }
     }
 }

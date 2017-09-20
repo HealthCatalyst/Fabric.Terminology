@@ -6,7 +6,6 @@
 
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence.Mapping;
-    using Fabric.Terminology.Domain.Strategy;
     using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Models.Dto;
 
@@ -16,22 +15,20 @@
     {
         private readonly IMemoryCacheProvider cache;
 
-        private readonly ILookup<string, IValueSetCode> lookupCodes;
+        private readonly ILookup<Guid, IValueSetCode> lookupCodes;
 
-        private readonly IDictionary<string, IValueSet> stash;
+        private readonly IDictionary<Guid, IValueSet> stash;
 
-        private readonly Func<string, string[], int> getCount;
+        private readonly Func<Guid, string[], int> getCount;
 
         private readonly string[] codeSystemCds;
 
         public ValueSetShortCodeListMapper(
-            IIsCustomValueStrategy isCustomValue,
             IMemoryCacheProvider memCache,
-            ILookup<string, IValueSetCode> lookup,
-            IDictionary<string, IValueSet> previouslyCached,
-            Func<string, string[], int> getCount,
+            ILookup<Guid, IValueSetCode> lookup,
+            IDictionary<Guid, IValueSet> previouslyCached,
+            Func<Guid, string[], int> getCount,
             IEnumerable<string> codeSystemCodes)
-            : base(isCustomValue)
         {
             this.cache = memCache;
             this.lookupCodes = lookup;
@@ -43,17 +40,17 @@
         [CanBeNull]
         public IValueSet Map(ValueSetDescriptionDto dto)
         {
-            if (this.stash.ContainsKey(dto.ValueSetUniqueID))
+            if (this.stash.ContainsKey(dto.ValueSetGUID))
             {
-                return this.stash[dto.ValueSetUniqueID];
+                return this.stash[dto.ValueSetGUID];
             }
 
-            var cacheKey = CacheKeys.ValueSetKey(dto.ValueSetUniqueID, this.codeSystemCds);
+            var cacheKey = CacheKeys.ValueSetKey(dto.ValueSetGUID, this.codeSystemCds);
             return (IValueSet)this.cache.GetItem(
                 cacheKey, () =>
                 {
-                    var codes = this.lookupCodes[dto.ValueSetUniqueID].ToArray();
-                    return this.Build(dto, codes, this.getCount.Invoke(dto.ValueSetUniqueID, this.codeSystemCds));
+                    var codes = this.lookupCodes[dto.ValueSetGUID].ToArray();
+                    return this.Build(dto, codes, this.getCount.Invoke(dto.ValueSetGUID, this.codeSystemCds));
                 },
                 TimeSpan.FromMinutes(this.cache.Settings.MemoryCacheMinDuration),
                 this.cache.Settings.MemoryCacheSliding);

@@ -1,8 +1,10 @@
 ﻿namespace Fabric.Terminology.Domain.Models
 {
+    using System;
+
     public class CodeSystem : ICodeSystem
     {
-        public string Code { get; set; }
+        public Guid CodeSystemGuid { get; set; }
 
         public string Name { get; set; }
     }

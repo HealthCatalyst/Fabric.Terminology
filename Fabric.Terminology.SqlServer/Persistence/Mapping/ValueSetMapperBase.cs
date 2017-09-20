@@ -4,18 +4,10 @@
     using System.Collections.Generic;
 
     using Fabric.Terminology.Domain.Models;
-    using Fabric.Terminology.Domain.Strategy;
     using Fabric.Terminology.SqlServer.Models.Dto;
 
     internal abstract class ValueSetMapperBase
     {
-        private readonly IIsCustomValueStrategy isCustomValue;
-
-        protected ValueSetMapperBase(IIsCustomValueStrategy isCustomValueStrategy)
-        {
-            this.isCustomValue = isCustomValueStrategy;
-        }
-
         protected IValueSet Build(ValueSetDescriptionDto dto, IReadOnlyCollection<IValueSetCode> codes, int codeCount)
         {
 

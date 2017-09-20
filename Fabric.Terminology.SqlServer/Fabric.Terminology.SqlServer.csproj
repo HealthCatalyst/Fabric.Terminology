@@ -14,6 +14,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Persistence\Mapping\ValueSetCodeMapper.cs" />
+    <Compile Remove="Persistence\Mapping\ValueSetFullCodeListMapper.cs" />
+    <Compile Remove="Persistence\Mapping\ValueSetMapperBase.cs" />
+    <Compile Remove="Persistence\Mapping\ValueSetShortCodeListMapper.cs" />
+    <Compile Remove="Persistence\remove\SqlValueSetCodeRepository.cs" />
+    <Compile Remove="Persistence\remove\SqlValueSetRepository.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="CallMeMaybe" Version="0.6.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="1.1.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="1.1.2" />
@@ -37,4 +46,9 @@
       <DependentUpon>Constants.cs</DependentUpon>
     </Compile>
 	</ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Persistence\Mapping\" />
+    <Folder Include="Persistence\remove\" />
+  </ItemGroup>
 </Project>

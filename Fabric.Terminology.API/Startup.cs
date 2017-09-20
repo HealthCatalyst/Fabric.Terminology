@@ -60,9 +60,9 @@
                             .ForMember(
                                 dest => dest.Identifier,
                                 opt => opt.MapFrom(
-                                    src => src.ValueSetId.IsNullOrWhiteSpace()
+                                    src => src.ValueSetGuid.Equals(Guid.Empty)
                                                ? Guid.NewGuid().ToString()
-                                               : src.ValueSetId));
+                                               : src.ValueSetGuid.ToString()));
                     });
 
             app.UseStaticFiles()

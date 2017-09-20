@@ -2,7 +2,7 @@
 {
     using System;
 
-    using JetBrains.Annotations;
+    using CallMeMaybe;
 
     public interface ICacheProvider
     {
@@ -10,8 +10,7 @@
 
         void ClearItem(string key);
 
-        [CanBeNull]
-        object GetItem(string key);
+        Maybe<object> GetItem(string key);
 
         object GetItem(string key, Func<object> getItem);
     }

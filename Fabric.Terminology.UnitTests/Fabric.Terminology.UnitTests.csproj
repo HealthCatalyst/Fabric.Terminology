@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <Compile Remove="Modules\ValueSetModuleTests.cs" />
+    <Compile Remove="Persistence\ValueSetServiceInMemoryTests.cs" />
   </ItemGroup>
 
   <ItemGroup>

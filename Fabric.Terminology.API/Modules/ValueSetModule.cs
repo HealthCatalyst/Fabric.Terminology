@@ -49,11 +49,13 @@
             {
                 var codeSystems = this.GetCodeSystems();
 
-                var valueSet = this.valueSetService.GetValueSet(valueSetUniqueId, codeSystems);
-                if (valueSet != null)
-                {
-                    return valueSet.Single().ToValueSetApiModel(summary, this.config.ValueSetSettings.ShortListCodeCount);
-                }
+                throw new NotImplementedException();
+
+                //var valueSet = this.valueSetService.GetValueSet(valueSetUniqueId, codeSystems);
+                //if (valueSet != null)
+                //{
+                //    return valueSet.Single().ToValueSetApiModel(summary, this.config.ValueSetSettings.ShortListCodeCount);
+                //}
 
                 return this.CreateFailureResponse("ValueSet with matching ID was not found", HttpStatusCode.NotFound);
             }
@@ -85,11 +87,13 @@
 
                 var codeSystemCds = this.GetCodeSystems();
 
-                var valueSets = summary
-                                    ? this.valueSetService.GetValueSetSummaries(ids, codeSystemCds)
-                                    : this.valueSetService.GetValueSets(ids, codeSystemCds);
+                throw new NotImplementedException();
 
-                return valueSets.Select(vs => vs.ToValueSetApiModel(summary, this.config.ValueSetSettings.ShortListCodeCount)).ToList();
+                //var valueSets = summary
+                //                    ? this.valueSetService.GetValueSetSummaries(ids, codeSystemCds)
+                //                    : this.valueSetService.GetValueSets(ids, codeSystemCds);
+
+                //return valueSets.Select(vs => vs.ToValueSetApiModel(summary, this.config.ValueSetSettings.ShortListCodeCount)).ToList();
             }
             catch (Exception ex)
             {
@@ -108,11 +112,13 @@
                 var pagerSettings = this.GetPagerSettings();
                 var codeSystemCds = this.GetCodeSystems();
 
-                var pc = summary ?
-                    await this.valueSetService.GetValueSetSummariesAsync(pagerSettings, codeSystemCds) :
-                    await this.valueSetService.GetValueSetsAsync(pagerSettings, codeSystemCds);
+                throw new NotImplementedException();
 
-                return pc.ToValueSetApiModelPage(summary, this.config.ValueSetSettings.ShortListCodeCount);
+                //var pc = summary ?
+                //    await this.valueSetService.GetValueSetSummariesAsync(pagerSettings, codeSystemCds) :
+                //    await this.valueSetService.GetValueSetsAsync(pagerSettings, codeSystemCds);
+
+                //return pc.ToValueSetApiModelPage(summary, this.config.ValueSetSettings.ShortListCodeCount);
             }
             catch (Exception ex)
             {
@@ -129,13 +135,15 @@
             {
                 var model = this.EnsureQueryModel(this.Bind<FindByTermQuery>());
 
-                var results = await this.valueSetService.FindValueSetsAsync(
-                                  model.Term,
-                                  model.PagerSettings,
-                                  model.CodeSystemCodes.ToArray(),
-                                  !model.Summary);
+                throw new NotImplementedException();
 
-                return results.ToValueSetApiModelPage(model.Summary, this.config.ValueSetSettings.ShortListCodeCount);
+                //var results = await this.valueSetService.FindValueSetsAsync(
+                //                  model.Term,
+                //                  model.PagerSettings,
+                //                  model.CodeSystemCodes.ToArray(),
+                //                  !model.Summary);
+
+                //return results.ToValueSetApiModelPage(model.Summary, this.config.ValueSetSettings.ShortListCodeCount);
             }
             catch (Exception ex)
             {

@@ -4,7 +4,6 @@
 
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence;
-    using Fabric.Terminology.Domain.Strategy;
     using Fabric.Terminology.SqlServer.Models.Dto;
     using Fabric.Terminology.SqlServer.Persistence;
     using Fabric.Terminology.TestsBase.Fixtures;
@@ -24,16 +23,14 @@
                 this.SharedContext,
                 this.ClientTermContext.AsLazy(),
                 this.Logger,
-                new DefaultPagingStrategy<ValueSetCodeDto, IValueSetCode>(100));
+                new PagingStrategyFactory());
 
             this.ValueSetRepository = new SqlValueSetRepository(
                 this.SharedContext,
                 this.ClientTermContext.AsLazy(),
                 this.Cache,
                 this.Logger,
-                valueSetCodeRepository,
-                new DefaultPagingStrategy<ValueSetDescriptionDto, IValueSet>(20),
-                new IsCustomValueStrategy());
+                new PagingStrategyFactory());
         }
     }
 }

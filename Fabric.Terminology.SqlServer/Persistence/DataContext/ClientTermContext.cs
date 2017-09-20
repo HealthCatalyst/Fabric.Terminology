@@ -34,19 +34,11 @@
             }
 
             modelBuilder.Entity<ValueSetCodeDto>().ToTable("ValueSetCodeBASE", "ClientTerm");
-            modelBuilder.Entity<ValueSetCodeDto>().Property(e => e.BindingNM).IsUnicode(false);
-            modelBuilder.Entity<ValueSetCodeDto>()
-                .HasKey(
-                    code => new
-                    {
-                        code.CodeCD,
-                        code.ValueSetUniqueID
-                    });
+            modelBuilder.Entity<ValueSetCodeDto>().HasKey(code => new { code.CodeCD, code.ValueSetGUID });
 
             modelBuilder.Entity<ValueSetDescriptionDto>().ToTable("ValueSetDescriptionBASE", "ClientTerm");
-            modelBuilder.Entity<ValueSetDescriptionDto>().Property(e => e.BindingNM).IsUnicode(false);
-            modelBuilder.Entity<ValueSetDescriptionDto>()
-                .HasKey(e => e.ValueSetUniqueID);
+            modelBuilder.Entity<ValueSetDescriptionDto>().HasKey(e => e.ValueSetGUID);
+
             base.OnModelCreating(modelBuilder);
         }
     }

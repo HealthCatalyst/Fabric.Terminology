@@ -1,5 +1,6 @@
 ﻿namespace Fabric.Terminology.Domain.Services
 {
+    using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
 
@@ -7,51 +8,56 @@
 
     using Fabric.Terminology.Domain.Models;
 
-    using JetBrains.Annotations;
-
     /// <summary>
     /// Represents a service for interacting with ValueSets.
     /// </summary>
     public interface IValueSetService
     {
-        Maybe<IValueSet> GetValueSet(string valueSetUniqueId);
+        Maybe<IValueSet> GetValueSet(Guid valueSetGuid);
 
-        Maybe<IValueSet> GetValueSet(string valueSetUniqueId, IEnumerable<string> codeSystemCodes);
+        Maybe<IValueSet> GetValueSet(Guid valueSetGuid, IEnumerable<Guid> codeSystemGuids);
 
-        IReadOnlyCollection<IValueSet> GetValueSets(IEnumerable<string> valueSetUniqueIds);
+        IReadOnlyCollection<IValueSet> GetValueSets(IEnumerable<Guid> valueSetGuids);
 
         IReadOnlyCollection<IValueSet> GetValueSets(
-            IEnumerable<string> valueSetUniqueIds,
-            IEnumerable<string> codeSystemCodes);
+            IEnumerable<Guid> valueSetGuids,
+            IEnumerable<Guid> codeSystemGuids);
 
-        IReadOnlyCollection<IValueSet> GetValueSetSummaries(IEnumerable<string> valueSetUniqueIds);
+        IReadOnlyCollection<IValueSetSummary> GetValueSetSummaries(IEnumerable<Guid> valueSetGuid);
 
-        IReadOnlyCollection<IValueSet> GetValueSetSummaries(
-            IEnumerable<string> valueSetUniqueIds,
-            IEnumerable<string> codeSystemCodes);
+        IReadOnlyCollection<IValueSetSummary> GetValueSetSummaries(
+            IEnumerable<Guid> valueSetGuids,
+            IEnumerable<Guid> codeSystemGuids);
 
         Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings settings);
 
         Task<PagedCollection<IValueSet>> GetValueSetsAsync(
             IPagerSettings settings,
-            IEnumerable<string> codeSystemCodes);
+            IEnumerable<Guid> codeSystemGuids);
 
-        Task<PagedCollection<IValueSet>> GetValueSetSummariesAsync(IPagerSettings settings);
+        Task<PagedCollection<IValueSetSummary>> GetValueSetSummariesAsync(IPagerSettings settings);
 
-        Task<PagedCollection<IValueSet>> GetValueSetSummariesAsync(
+        Task<PagedCollection<IValueSetSummary>> GetValueSetSummariesAsync(
             IPagerSettings settings,
-            IEnumerable<string> codeSystemCodes);
+            IEnumerable<Guid> codeSystemGuids);
+
+        Task<PagedCollection<IValueSet>> FindValueSetsAsync(
+            string nameFilterText,
+            IPagerSettings pagerSettings);
 
         Task<PagedCollection<IValueSet>> FindValueSetsAsync(
             string nameFilterText,
             IPagerSettings pagerSettings,
-            bool includeAllValueSetCodes = false);
+            IEnumerable<Guid> codeSystemGuids);
 
-        Task<PagedCollection<IValueSet>> FindValueSetsAsync(
+        Task<PagedCollection<IValueSetSummary>> FindValueSetSummariesAsync(
+            string nameFilterText,
+            IPagerSettings pagerSettings);
+
+        Task<PagedCollection<IValueSetSummary>> FindValueSetSummariesAsync(
             string nameFilterText,
             IPagerSettings pagerSettings,
-            IEnumerable<string> codeSystemCodes,
-            bool includeAllValueSetCodes = false);
+            IEnumerable<Guid> codeSystemGuids);
 
         bool NameIsUnique(string name);
 

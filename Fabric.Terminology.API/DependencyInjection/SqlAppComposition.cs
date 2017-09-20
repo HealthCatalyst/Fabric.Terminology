@@ -4,7 +4,6 @@
     using Fabric.Terminology.Domain.DependencyInjection;
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence;
-    using Fabric.Terminology.Domain.Strategy;
     using Fabric.Terminology.SqlServer.Configuration;
     using Fabric.Terminology.SqlServer.Models;
     using Fabric.Terminology.SqlServer.Models.Dto;
@@ -20,15 +19,7 @@
             container.Register<SharedContextFactory>().AsSingleton();
             container.Register<ClientTermContextFactory>().AsSingleton();
 
-            container.Register<IPagingStrategy<ValueSetCodeDto, IValueSetCode>>(
-                (c, s) => new DefaultPagingStrategy<ValueSetCodeDto, IValueSetCode>(
-                    c.Resolve<TerminologySqlSettings>().DefaultItemsPerPage));
-
-            container.Register<IPagingStrategy<ValueSetDescriptionDto, IValueSet>>(
-                (c, s) => new DefaultPagingStrategy<ValueSetDescriptionDto, IValueSet>(
-                    c.Resolve<TerminologySqlSettings>().DefaultItemsPerPage));
-
-            container.Register<IIsCustomValueStrategy, IsCustomValueStrategy>();
+            container.Register<IPagingStrategyFactory, PagingStrategyFactory>().AsSingleton();
 
             container.Register<EmptySamdBinding>().AsSingleton();
         }

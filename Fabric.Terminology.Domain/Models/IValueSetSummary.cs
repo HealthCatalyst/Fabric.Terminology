@@ -17,6 +17,6 @@ namespace Fabric.Terminology.Domain.Models
 
         bool IsCustom { get; }
 
-        IReadOnlyCollection<IValueSetStat> ValueSetStats { get; }
+        IReadOnlyCollection<IValueSetCodeCount> CodeCounts { get; }
     }
 }

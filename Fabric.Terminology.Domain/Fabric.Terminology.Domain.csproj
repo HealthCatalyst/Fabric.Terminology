@@ -15,6 +15,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Models\ValueSetBackingItem.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="CallMeMaybe" Version="0.6.6" />
     <PackageReference Include="FluentValidation" Version="7.1.1" />
   </ItemGroup>

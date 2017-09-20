@@ -46,7 +46,7 @@
             this.Profiler.ExecuteTimed(() => this.valueSetService.Save(vs));
 
             // Assert
-            vs.ValueSetUniqueId.Should().NotBe(Guid.Empty.ToString());
+            vs.ValueSetGuid.Should().NotBe(Guid.Empty);
             vs.ValueSetCodes.Count.Should().Be(codeCount);
             vs.Name.Should().BeEquivalentTo(name);
 

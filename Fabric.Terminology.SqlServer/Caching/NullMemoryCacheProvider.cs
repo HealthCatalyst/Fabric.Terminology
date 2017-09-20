@@ -3,7 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-
+    using CallMeMaybe;
     using Fabric.Terminology.SqlServer.Configuration;
 
     using JetBrains.Annotations;
@@ -25,8 +25,7 @@
         {
         }
 
-        [CanBeNull]
-        public object GetItem(string key)
+        public Maybe<object> GetItem(string key)
         {
             return null;
         }

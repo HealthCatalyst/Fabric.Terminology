@@ -1,5 +1,6 @@
 ﻿namespace Fabric.Terminology.Domain.Persistence
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
@@ -8,15 +9,12 @@
 
     public interface IValueSetCodeRepository
     {
-        int CountValueSetCodes(string valueSetUniqueId, IEnumerable<string> codeSystemCodes);
+        int CountValueSetCodes(Guid valueSetGuid, IEnumerable<string> codeSystemCodes);
 
-        IReadOnlyCollection<IValueSetCode> GetValueSetCodes(
-            string valueSetUniqueId,
-            IEnumerable<string> codeSystemCodes);
+        IReadOnlyCollection<IValueSetCode> GetValueSetCodes(Guid valueSetGuid, IEnumerable<Guid> codeSystsemGuids);
 
-        Task<ILookup<string, IValueSetCode>> LookupValueSetCodes(
-            IEnumerable<string> valueSetUniqueIds,
-            IEnumerable<string> codeSystemCodes,
-            int count = 5);
+        Task<ILookup<Guid, IValueSetCodeCount>> LookupValueSetCounts(IEnumerable<Guid> valueSetGuids);
+
+        Task<ILookup<string, IValueSetCode>> LookupValueSetCodes(IEnumerable<Guid> valueSetGuids);
     }
 }

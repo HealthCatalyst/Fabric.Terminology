@@ -1,24 +1,24 @@
 ﻿namespace Fabric.Terminology.SqlServer.Caching
 {
-    using System.Collections.Generic;
+    using System;
 
     using Fabric.Terminology.Domain.Models;
 
     internal static class CacheKeys
     {
-        public static string ValueSetKey(string valueSetUniqueId)
+        public static string ValueSetKey(Guid valueSetGuid)
         {
-            return $"{typeof(ValueSet)}-{valueSetUniqueId}";
+            return $"{typeof(IValueSet)}-{valueSetGuid}";
         }
 
-        public static string ValueSetKey(string valueSetUniqueId, IEnumerable<string> codeSystemCodes)
+        public static string ValueSetCodeCountsKey(Guid valueSetGuid)
         {
-            return $"{ValueSetKey(valueSetUniqueId)}-{string.Join(string.Empty, codeSystemCodes)}";
+            return $"{typeof(IValueSetCodeCount)}-{valueSetGuid}";
         }
 
-        public static string ValueSetCodesKey(string valueSetUniqueId)
+        public static string ValueSetCodesKey(Guid valueSetGuid)
         {
-            return $"{typeof(ValueSetCode)}-{valueSetUniqueId}";
+            return $"{typeof(IValueSetCode)}-{valueSetGuid}";
         }
     }
 }
