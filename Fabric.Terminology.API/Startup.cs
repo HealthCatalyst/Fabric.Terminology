@@ -53,7 +53,6 @@
                 cfg =>
                     {
                         cfg.CreateMap<ICodeSetCode, CodeSetCodeApiModel>();
-                        cfg.CreateMap<CodeSetCodeApiModel, CodeSetCode>();
                         cfg.CreateMap<IValueSetCode, ValueSetCodeApiModel>();
 
                         cfg.CreateMap<IValueSet, ValueSetApiModel>()

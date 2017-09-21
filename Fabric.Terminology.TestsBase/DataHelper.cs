@@ -42,7 +42,6 @@
                 DefinitionDescription = "purpose",
                 SourceDescription = "source",
                 ClientCode = "TEST001",
-                CodeCounts = new List<IValueSetCodeCount>(),
                 ValueSetCodes = codes
             };
         }

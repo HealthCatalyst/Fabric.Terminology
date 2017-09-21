@@ -2,9 +2,7 @@
 {
     using System;
 
-    using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence;
-    using Fabric.Terminology.SqlServer.Models.Dto;
     using Fabric.Terminology.SqlServer.Persistence;
     using Fabric.Terminology.TestsBase.Fixtures;
 
@@ -22,14 +20,15 @@
             var valueSetCodeRepository = new SqlValueSetCodeRepository(
                 this.SharedContext,
                 this.ClientTermContext.AsLazy(),
-                this.Logger,
-                new PagingStrategyFactory());
+                this.Cache,
+                this.Logger);
 
             this.ValueSetRepository = new SqlValueSetRepository(
                 this.SharedContext,
                 this.ClientTermContext.AsLazy(),
                 this.Cache,
                 this.Logger,
+                valueSetCodeRepository,
                 new PagingStrategyFactory());
         }
     }

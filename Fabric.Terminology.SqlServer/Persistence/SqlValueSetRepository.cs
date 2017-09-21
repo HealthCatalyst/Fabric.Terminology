@@ -3,7 +3,6 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Linq.Expressions;
     using System.Threading.Tasks;
 
     using CallMeMaybe;
@@ -12,8 +11,8 @@
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence;
     using Fabric.Terminology.SqlServer.Caching;
-    using Fabric.Terminology.SqlServer.Models.Dto;
     using Fabric.Terminology.SqlServer.Persistence.DataContext;
+    using Fabric.Terminology.SqlServer.Persistence.Factories;
 
     using Serilog;
 
@@ -27,6 +26,8 @@
 
         private readonly ILogger logger;
 
+        private readonly IValueSetCodeRepository valueSetCodeRepository;
+
         private readonly IPagingStrategyFactory pagingStrategyFactory;
 
         public SqlValueSetRepository(
@@ -34,20 +35,25 @@
             Lazy<ClientTermContext> clientTermContext,
             IMemoryCacheProvider cache,
             ILogger logger,
+            IValueSetCodeRepository valueSetCodeRepository,
             IPagingStrategyFactory pagingStrategyFactory)
         {
             this.sharedContext = sharedContext;
             this.clientTermContext = clientTermContext;
             this.cache = cache;
             this.logger = logger;
+            this.valueSetCodeRepository = valueSetCodeRepository;
             this.pagingStrategyFactory = pagingStrategyFactory;
         }
-
-        private Expression<Func<ValueSetDescriptionDto, string>> SortExpression => sortBy => sortBy.ValueSetNM;
 
         public bool NameExists(string name)
         {
             return this.sharedContext.ValueSetDescriptions.Any(dto => dto.ValueSetNM == name);
+        }
+
+        public Maybe<IValueSet> GetValueSet(Guid valueSetGuid)
+        {
+            throw new NotImplementedException();
         }
 
         public Maybe<IValueSet> GetValueSet(Guid valueSetGuid, IEnumerable<Guid> codeSystemGuids)
@@ -60,27 +66,12 @@
             throw new NotImplementedException();
         }
 
-        public IReadOnlyCollection<IValueSetSummary> GetValueSetSummaries(IEnumerable<Guid> valueSetGuids, IEnumerable<Guid> codeSystemGuids)
-        {
-            throw new NotImplementedException();
-        }
-
         public Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings pagerSettings, IEnumerable<Guid> codeSystemGuids)
         {
             throw new NotImplementedException();
         }
 
-        public Task<PagedCollection<IValueSetSummary>> GetValueSetSummariesAsync(IPagerSettings pagerSettings, IEnumerable<Guid> codeSystemGuids)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<PagedCollection<IValueSet>> FindValueSetsAsync(string filterText, IPagerSettings pagerSettings, IEnumerable<Guid> codeSystemGuids)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<PagedCollection<IValueSetSummary>> FindValueSetsSummariesAsync(string filterText, IPagerSettings pagerSettings, IEnumerable<Guid> codeSystemGuids)
+        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(string filterText, IPagerSettings pagerSettings, IEnumerable<Guid> codeSystemGuids)
         {
             throw new NotImplementedException();
         }
@@ -93,6 +84,22 @@
         public void Delete(IValueSet valueSet)
         {
             throw new NotImplementedException();
+        }
+
+        private Maybe<IValueSetBackingItem> QueryValueSetBackingItem(Guid valueSetGuid)
+        {
+            var factory = new ValueSetBackingItemFactory();
+
+            try
+            {
+                return Maybe.From(this.sharedContext.ValueSetDescriptions.FirstOrDefault(dto => dto.ValueSetGUID == valueSetGuid))
+                        .Select(factory.Build);
+            }
+            catch (Exception ex)
+            {
+                this.logger.Error(ex, "Query failed for ValueSetDescription by ValueSetGUID");
+                throw;
+            }
         }
     }
 }

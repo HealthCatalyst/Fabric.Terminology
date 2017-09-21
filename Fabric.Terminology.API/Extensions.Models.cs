@@ -1,5 +1,6 @@
 ﻿namespace Fabric.Terminology.API
 {
+    using System;
     using System.Linq;
 
     using AutoMapper;
@@ -43,7 +44,8 @@
 
         public static ICodeSetCode ToCodeSetCode(this CodeSetCodeApiModel model)
         {
-            return Mapper.Map<CodeSetCode>(model);
+            throw new NotImplementedException();
+            //return Mapper.Build<CodeSetCode>(model);
         }
 
         // acquired from Fabric.Authorization.Domain (renamed from ToError)

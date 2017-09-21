@@ -21,14 +21,15 @@
             var valueSetCodeRepository = new SqlValueSetCodeRepository(
                 this.SharedContext,
                 this.ClientTermContext.AsLazy(),
-                this.Logger,
-                new PagingStrategyFactory());
+                this.Cache,
+                this.Logger);
 
             var valueSetRepository = new SqlValueSetRepository(
                 this.SharedContext,
                 this.ClientTermContext.AsLazy(),
                 this.Cache,
                 this.Logger,
+                valueSetCodeRepository,
                 new PagingStrategyFactory());
 
             this.ValueSetService = new ValueSetService(valueSetRepository);

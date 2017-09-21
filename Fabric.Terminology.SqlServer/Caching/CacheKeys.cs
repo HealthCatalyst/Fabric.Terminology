@@ -6,9 +6,9 @@
 
     internal static class CacheKeys
     {
-        public static string ValueSetKey(Guid valueSetGuid)
+        public static string ValueSetBackingItemKey(Guid valueSetGuid)
         {
-            return $"{typeof(IValueSet)}-{valueSetGuid}";
+            return $"{typeof(IValueSetBackingItem)}-{valueSetGuid}";
         }
 
         public static string ValueSetCodeCountsKey(Guid valueSetGuid)

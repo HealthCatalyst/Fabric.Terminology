@@ -5,7 +5,7 @@
     using System.Linq;
 
     using Fabric.Terminology.Domain.Models;
-    using Fabric.Terminology.Domain.Persistence.Mapping;
+    using Fabric.Terminology.Domain.Persistence.Factories;
 
     public class DefaultPagingStrategy<TSrc, TResult> : IPagingStrategy<TSrc, TResult>
         where TSrc : class, new()
@@ -21,7 +21,7 @@
             IEnumerable<TSrc> items,
             int totalCount,
             IPagerSettings pagerSettings,
-            IModelMapper<TSrc, TResult> mapper)
+            IModelFactory<TSrc, TResult> factory)
         {
             return new PagedCollection<TResult>
             {
@@ -33,7 +33,7 @@
                         ItemsPerPage = pagerSettings.ItemsPerPage
                     },
                 TotalPages = (int)Math.Ceiling((double)totalCount / pagerSettings.ItemsPerPage),
-                Values = items.Select(mapper.Map).ToList().AsReadOnly()
+                Values = items.Select(factory.Build).ToList().AsReadOnly()
             };
         }
 

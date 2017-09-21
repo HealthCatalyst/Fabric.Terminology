@@ -2,18 +2,14 @@
 {
     using System.Collections.Generic;
 
-    using Fabric.Terminology.Domain.Services;
-
-    public class ValueSet : ValueSetSummary, IValueSet
+    internal class ValueSet : ValueSetBase, IValueSet
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ValueSet"/> class.
-        /// </summary>
-        /// <remarks>
-        /// Prevents public construction to force creation via <see cref="IValueSetService"/>
-        /// Used for testing.
-        /// </remarks>
         internal ValueSet()
+        {
+        }
+
+        internal ValueSet(IValueSetBackingItem backingItem)
+            : base(backingItem)
         {
         }
 

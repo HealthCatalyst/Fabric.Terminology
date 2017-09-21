@@ -29,6 +29,8 @@ namespace Fabric.Terminology.SqlServer.Models.Dto
 
         public string ClientTermFLG { get; set; }
 
+        public string LatestVersionFLG { get; set; }
+
         public DateTime LastLoadDTS { get; set; }
     }
 }

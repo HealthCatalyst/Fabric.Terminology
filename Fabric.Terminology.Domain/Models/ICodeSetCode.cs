@@ -6,10 +6,12 @@ namespace Fabric.Terminology.Domain.Models
     {
         Guid CodeGuid { get; }
 
-        Guid CodeSystemGuid { get; set; }
-
         string Code { get; }
 
         string Name { get; }
+
+        Guid CodeSystemGuid { get; set; }
+
+        string CodeSystemName { get; set; }
     }
 }

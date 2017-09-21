@@ -24,7 +24,6 @@
         {
             modelCatalog.AddModels(
                 typeof(CodeSetCodeApiModel),
-                typeof(CodeSystem),
                 typeof(FindByTermQuery),
                 typeof(PagedCollection<ValueSetApiModel>),
                 typeof(PagerSettings),

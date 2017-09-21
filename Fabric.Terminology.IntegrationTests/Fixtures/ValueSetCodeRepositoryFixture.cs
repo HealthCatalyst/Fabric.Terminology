@@ -15,7 +15,7 @@
 
         private void Initialize()
         {
-            this.ValueSetCodeRepository = new SqlValueSetCodeRepository(this.SharedContext,  this.ClientTermContext.AsLazy(), this.Logger, new PagingStrategyFactory());
+            this.ValueSetCodeRepository = new SqlValueSetCodeRepository(this.SharedContext,  this.ClientTermContext.AsLazy(), this.Cache, this.Logger);
         }
     }
 }

@@ -2,7 +2,7 @@
 {
     using System;
 
-    public class CodeSystem : ICodeSystem
+    internal class CodeSystem : ICodeSystem
     {
         public Guid CodeSystemGuid { get; set; }
 

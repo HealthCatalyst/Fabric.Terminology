@@ -137,7 +137,7 @@
 
                 throw new NotImplementedException();
 
-                //var results = await this.valueSetService.FindValueSetsAsync(
+                //var results = await this.valueSetService.GetValueSetsAsync(
                 //                  model.Term,
                 //                  model.PagerSettings,
                 //                  model.CodeSystemCodes.ToArray(),

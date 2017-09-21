@@ -7,13 +7,15 @@ namespace Fabric.Terminology.SqlServer.Models.Dto
     {
         public Guid ValueSetGUID { get; set; }
 
-        public Guid CodeGUID { get; set; }
+        public Guid? CodeGUID { get; set; }
 
         public string CodeCD { get; set; }
 
         public string CodeDSC { get; set; }
 
         public Guid CodeSystemGuid { get; set; }
+
+        public string CodeSystemNM { get; set; }
 
         public DateTime LastModifiedDTS { get; set; }
 

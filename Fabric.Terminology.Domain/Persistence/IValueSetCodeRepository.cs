@@ -2,19 +2,22 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Threading.Tasks;
 
     using Fabric.Terminology.Domain.Models;
 
     public interface IValueSetCodeRepository
     {
-        int CountValueSetCodes(Guid valueSetGuid, IEnumerable<string> codeSystemCodes);
+        int CountValueSetCodes(Guid valueSetGuid, IEnumerable<Guid> codeSystemGuids);
+
+        IReadOnlyCollection<IValueSetCode> GetValueSetCodes(Guid valueSetGuid);
+
+        IReadOnlyCollection<IValueSetCodeCount> GetValueSetCodeCounts(Guid valueSetGuid);
 
         IReadOnlyCollection<IValueSetCode> GetValueSetCodes(Guid valueSetGuid, IEnumerable<Guid> codeSystsemGuids);
 
-        Task<ILookup<Guid, IValueSetCodeCount>> LookupValueSetCounts(IEnumerable<Guid> valueSetGuids);
+        Task<Dictionary<Guid, IReadOnlyCollection<IValueSetCodeCount>>> BuildValueSetCountsDictionary(IEnumerable<Guid> valueSetGuids);
 
-        Task<ILookup<string, IValueSetCode>> LookupValueSetCodes(IEnumerable<Guid> valueSetGuids);
+        Task<Dictionary<Guid, IReadOnlyCollection<IValueSetCode>>> BuildValueSetCodesDictionary(IEnumerable<Guid> valueSetGuids);
     }
 }

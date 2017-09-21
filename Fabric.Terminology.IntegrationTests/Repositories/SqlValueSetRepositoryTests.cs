@@ -1,14 +1,8 @@
 ﻿namespace Fabric.Terminology.IntegrationTests.Repositories
 {
-    using System;
-    using System.Linq;
-
-    using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence;
     using Fabric.Terminology.IntegrationTests.Fixtures;
     using Fabric.Terminology.TestsBase;
-
-    using FluentAssertions;
 
     using Xunit;
     using Xunit.Abstractions;
@@ -65,7 +59,7 @@
 
         //    // Act
         //    var valueSets = this.Profiler.ExecuteTimed(
-        //        () => this.valueSetRepository.FindValueSetsAsync(nameFilter, pagerSettings, new string[] { }));
+        //        () => this.valueSetRepository.GetValueSetsAsync(nameFilter, pagerSettings, new string[] { }));
 
         //    // Assert
         //    valueSets.Should().NotBeNull();

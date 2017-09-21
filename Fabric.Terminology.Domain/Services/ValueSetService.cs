@@ -183,21 +183,21 @@ namespace Fabric.Terminology.Domain.Services
         //    return this.repository.GetValueSetsAsync(settings, codeSystemCodes, false);
         //}
 
-        //public Task<PagedCollection<IValueSet>> FindValueSetsAsync(
+        //public Task<PagedCollection<IValueSet>> GetValueSetsAsync(
         //    string nameFilterText,
         //    IPagerSettings pagerSettings,
         //    bool includeAllValueSetCodes = false)
         //{
-        //    return this.FindValueSetsAsync(nameFilterText, pagerSettings, new string[] { }, includeAllValueSetCodes);
+        //    return this.GetValueSetsAsync(nameFilterText, pagerSettings, new string[] { }, includeAllValueSetCodes);
         //}
 
-        //public Task<PagedCollection<IValueSet>> FindValueSetsAsync(
+        //public Task<PagedCollection<IValueSet>> GetValueSetsAsync(
         //    string nameFilterText,
         //    IPagerSettings pagerSettings,
         //    IEnumerable<string> codeSystemCodes,
         //    bool includeAllValueSetCodes = false)
         //{
-        //    return this.repository.FindValueSetsAsync(
+        //    return this.repository.GetValueSetsAsync(
         //        nameFilterText,
         //        pagerSettings,
         //        codeSystemCodes,

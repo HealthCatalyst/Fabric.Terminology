@@ -2,7 +2,7 @@
 {
     using System.Collections.Generic;
 
-    public interface IValueSet : IValueSetSummary
+    public interface IValueSet : IValueSetBackingItem
     {
         IReadOnlyCollection<IValueSetCode> ValueSetCodes { get; }
     }

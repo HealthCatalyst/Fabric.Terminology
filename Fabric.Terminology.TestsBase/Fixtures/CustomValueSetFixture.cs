@@ -1,5 +1,7 @@
 ﻿namespace Fabric.Terminology.TestsBase.Fixtures
 {
+    using AngleSharp.Attributes;
+
     using Fabric.Terminology.Domain.Persistence;
     using Fabric.Terminology.Domain.Services;
     using Fabric.Terminology.SqlServer.Persistence;
@@ -25,14 +27,15 @@
             this.ValueSetCodeRepository = new SqlValueSetCodeRepository(
                 this.SharedContext,
                 this.ClientTermContext.AsLazy(),
-                this.Logger,
-                new PagingStrategyFactory());
+                this.Cache,
+                this.Logger);
 
             this.ValueSetRepository = new SqlValueSetRepository(
                 this.SharedContext,
                 this.ClientTermContext.AsLazy(),
                 this.Cache,
                 this.Logger,
+                this.ValueSetCodeRepository,
                 new PagingStrategyFactory());
 
             this.ValueSetService = new ValueSetService(this.ValueSetRepository);

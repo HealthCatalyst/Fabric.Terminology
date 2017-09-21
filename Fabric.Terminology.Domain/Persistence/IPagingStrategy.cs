@@ -3,7 +3,7 @@
     using System.Collections.Generic;
 
     using Fabric.Terminology.Domain.Models;
-    using Fabric.Terminology.Domain.Persistence.Mapping;
+    using Fabric.Terminology.Domain.Persistence.Factories;
 
     public interface IPagingStrategy<TSrc, TResult>
         where TSrc : class, new()
@@ -14,7 +14,7 @@
             IEnumerable<TSrc> items,
             int totalCount,
             IPagerSettings pagerSettings,
-            IModelMapper<TSrc, TResult> mapper);
+            IModelFactory<TSrc, TResult> factory);
 
         void EnsurePagerSettings(IPagerSettings pagerSettings);
     }

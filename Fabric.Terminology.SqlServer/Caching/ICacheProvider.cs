@@ -12,6 +12,6 @@
 
         Maybe<object> GetItem(string key);
 
-        object GetItem(string key, Func<object> getItem);
+        Maybe<object> GetItem(string key, Func<object> getItem);
     }
 }

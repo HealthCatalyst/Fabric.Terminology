@@ -53,7 +53,7 @@
             return Maybe.From(result);
         }
 
-        public object GetItem(string key, Func<object> getItem)
+        public Maybe<object> GetItem(string key, Func<object> getItem)
         {
             return this.GetItem(key, getItem, TimeSpan.FromMinutes(5), false);
         }
@@ -63,7 +63,7 @@
             return !cacheKeys.Any() ? Enumerable.Empty<object>() : cacheKeys.Select(this.GetItem).Values();
         }
 
-        public object GetItem(string key, Func<object> getItem, TimeSpan? timeout, bool isSliding = false)
+        public Maybe<object> GetItem(string key, Func<object> getItem, TimeSpan? timeout, bool isSliding = false)
         {
             if (!this.memCache.TryGetValue(key, out object value))
             {
@@ -85,13 +85,9 @@
 
                     this.memCache.Set(key, value, options);
                 }
-                else
-                {
-                    throw new NullReferenceException("Attempt to cache a null object.");
-                }
             }
 
-            return value;
+            return Maybe.From(value);
         }
 
         private static IMemoryCache Create()

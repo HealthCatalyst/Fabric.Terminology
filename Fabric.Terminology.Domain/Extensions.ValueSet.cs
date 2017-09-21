@@ -30,11 +30,6 @@
             }
         }
 
-        public static bool AllCodesLoaded(this IValueSet valueSet)
-        {
-            return valueSet.CodeCounts.Sum(cc => cc.CodeCount) == valueSet.ValueSetCodes.Count;
-        }
-
         internal static bool IsNew(this IValueSet valueSet)
         {
             return valueSet.ValueSetGuid.Equals(Guid.Empty);

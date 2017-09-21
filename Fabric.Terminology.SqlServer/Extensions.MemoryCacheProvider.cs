@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
 
     using CallMeMaybe;
 
@@ -13,16 +14,44 @@
     /// </summary>
     public static partial class Extensions
     {
+        public static Maybe<T> GetItem<T>(this IMemoryCacheProvider cache, string key)
+            where T : class
+        {
+            return cache.GetItem(key).OfType<T>();
+        }
+
         public static T GetItem<T>(this IMemoryCacheProvider cache, string key, Func<object> getter)
             where T : class
         {
-            return (T)cache.GetItem(key, getter);
+            return cache.GetItem(key, getter)
+                    .OfType<T>()
+                    .Else(() => throw new InvalidCastException($"Failed to get an item of type {typeof(T)}"));
         }
 
-        public static Maybe<IValueSet> GetValueSet(this IMemoryCacheProvider cache, Guid valueSetGuid)
+        internal static Maybe<IValueSet> GetValueSet(this IMemoryCacheProvider cache, Guid valueSetGuid)
         {
-            var cacheKey = CacheKeys.ValueSetKey(valueSetGuid);
+            var cacheKey = CacheKeys.ValueSetBackingItemKey(valueSetGuid);
             return cache.GetItem(cacheKey).OfType<IValueSet>();
+        }
+
+        internal static IReadOnlyCollection<IValueSetBackingItem> GetValueSetBackingItems(
+            this IMemoryCacheProvider cache,
+            IEnumerable<Guid> valueSetGuids)
+        {
+            return valueSetGuids.Select(
+                    key => cache.GetItem<IValueSetBackingItem>(CacheKeys.ValueSetBackingItemKey(key))
+                ).Values().ToList();
+        }
+
+        internal static Maybe<Tuple<Guid, IReadOnlyCollection<TResult>>> GetCachedPartialValueSetAsTuple<TResult>(
+            this IMemoryCacheProvider cache,
+            Guid valueSetGuid,
+            Func<Guid, string> getCacheKey)
+        {
+            var cacheKey = getCacheKey(valueSetGuid);
+            return cache.GetItem(cacheKey)
+                .OfType<IReadOnlyCollection<TResult>>()
+                .Select(x => new Tuple<Guid, IReadOnlyCollection<TResult>>(valueSetGuid, x));
         }
     }
 }
