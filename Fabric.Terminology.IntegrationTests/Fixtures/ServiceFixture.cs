@@ -7,14 +7,16 @@
     using Fabric.Terminology.SqlServer.Persistence;
     using Fabric.Terminology.TestsBase.Fixtures;
 
-    public class ValueSetServiceFixture : RepositoryFixtureBase
+    public class ServiceFixture : RepositoryFixtureBase
     {
-        public ValueSetServiceFixture()
+        public ServiceFixture()
         {
             this.Initialize();
         }
 
         public IValueSetService ValueSetService { get; private set; }
+
+        public IValueSetSummaryService ValueSetSummaryService { get; private set; }
 
         private void Initialize()
         {
@@ -23,13 +25,20 @@
                 this.Logger,
                 new ValueSetCachingManager<IValueSetCode>(this.Cache));
 
+            var valueSetCodeCountRepository = new SqlValueSetCodeCountRepository(
+                this.SharedContext,
+                this.Logger,
+                new ValueSetCachingManager<IValueSetCodeCount>(this.Cache));
+
             var valueSetBackingItemRepository = new SqlValueSetBackingItemRepository(
                 this.SharedContext,
                 this.Logger,
                 new ValueSetCachingManager<IValueSetBackingItem>(this.Cache),
                 new PagingStrategyFactory());
 
-            this.ValueSetService = new ValueSetService(valueSetBackingItemRepository, valueSetCodeRepository, this.Logger);
+            this.ValueSetService = new ValueSetService(this.Logger, valueSetBackingItemRepository, valueSetCodeRepository);
+
+            this.ValueSetSummaryService = new ValueSetSummaryService(this.Logger, valueSetBackingItemRepository, valueSetCodeCountRepository);
         }
     }
 }

@@ -16,14 +16,17 @@
     using Xunit;
     using Xunit.Abstractions;
 
-    public class ValueSetServiceTests : OutputTestBase, IClassFixture<ValueSetServiceFixture>
+    public class ValueSetServiceTests : OutputTestBase, IClassFixture<ServiceFixture>
     {
         private readonly IValueSetService valueSetService;
 
-        public ValueSetServiceTests(ValueSetServiceFixture fixture, [NotNull] ITestOutputHelper output)
+        private readonly IValueSetSummaryService valueSetSummaryService;
+
+        public ValueSetServiceTests(ServiceFixture fixture, [NotNull] ITestOutputHelper output)
             : base(output)
         {
             this.valueSetService = fixture.ValueSetService;
+            this.valueSetSummaryService = fixture.ValueSetSummaryService;
         }
 
         [Theory]
@@ -36,9 +39,15 @@
             var valueSetGuid = Guid.Parse(key);
 
             // Act
-            var valueSet = this.Profiler.ExecuteTimed(() => this.valueSetService.GetValueSet(valueSetGuid), $"Querying ValueSetGuid {valueSetGuid}").Single();
+            var valueSet = this.Profiler.ExecuteTimed(() => this.valueSetService.GetValueSet(valueSetGuid), $"Querying ValueSet {valueSetGuid}").Single();
+            var summary = this.Profiler.ExecuteTimed(() => this.valueSetSummaryService.GetValueSetSummary(valueSetGuid), $"Querying ValueSetSummary {valueSetGuid}").Single();
+
             this.Output.WriteLine(valueSet.Name);
             this.Output.WriteLine($"Code count: {valueSet.ValueSetCodes.Count}");
+            foreach (var count in summary.CodeCounts)
+            {
+                this.Output.WriteLine($"CodeSystem {count.CodeSystemGuid}: {count.CodeCount}");
+            }
 
             // Assert
             valueSet.ValueSetGuid.Should().Be(valueSetGuid);
@@ -58,6 +67,8 @@
 
             // Act
             var page = this.Profiler.ExecuteTimed(async () => await this.valueSetService.GetValueSetsAsync(pagerSettings));
+            var summaryPage = this.Profiler.ExecuteTimed(async () => await  this.valueSetSummaryService.GetValueSetSummariesAsync(pagerSettings));
+
             this.Output.WriteLine($"Total Values {page.TotalItems}");
             this.Output.WriteLine($"Total Pages {page.TotalPages}");
 
@@ -66,6 +77,9 @@
             page.TotalPages.Should().BeGreaterThan(0);
             page.Values.Count.Should().BeLessOrEqualTo(itemsPerPage);
 
+            summaryPage.TotalItems.Should().BeGreaterThan(0);
+            summaryPage.TotalPages.Should().BeGreaterThan(0);
+            summaryPage.Values.Count.Should().BeLessOrEqualTo(itemsPerPage);
         }
 
         [Theory]

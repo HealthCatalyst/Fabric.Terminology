@@ -22,9 +22,9 @@ namespace Fabric.Terminology.Domain.Services
         private readonly ILogger logger;
 
         public ValueSetService(
+            ILogger logger,
             IValueSetBackingItemRepository valueSetBackingItemRepository,
-            IValueSetCodeRepository valueSetCodeRepository,
-            ILogger logger)
+            IValueSetCodeRepository valueSetCodeRepository)
         {
             this.valueSetBackingItemRepository = valueSetBackingItemRepository;
             this.valueSetCodeRepository = valueSetCodeRepository;
