@@ -8,7 +8,7 @@
 
     using Fabric.Terminology.Domain.Models;
 
-    internal interface IValueSetBackingItemRepository
+    public interface IValueSetBackingItemRepository
     {
         bool NameExists(string name);
 

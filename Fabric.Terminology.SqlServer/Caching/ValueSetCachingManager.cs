@@ -1,4 +1,4 @@
-﻿namespace Fabric.Terminology.SqlServer.Persistence.Factories
+﻿namespace Fabric.Terminology.SqlServer.Caching
 {
     using System;
     using System.Collections.Generic;
@@ -9,9 +9,10 @@
     using CallMeMaybe;
 
     using Fabric.Terminology.Domain.Models;
-    using Fabric.Terminology.SqlServer.Caching;
+    using Fabric.Terminology.SqlServer.Persistence.Factories;
 
-    internal class ValueSetCachingManager : IValueSetCachingManager
+    internal class ValueSetCachingManager<TResult> : IValueSetCachingManager<TResult>
+        where TResult : class, IHaveValueSetGuid
     {
         private readonly IMemoryCacheProvider cache;
 
@@ -20,23 +21,34 @@
             this.cache = cache;
         }
 
-        public TResult GetOrQuery<TResult>(
+        public TResult GetOrSet(Guid valueSetGuid, TResult value)
+        {
+            return this.cache.GetItem<TResult>(this.GetCacheKey(valueSetGuid), () => value);
+        }
+
+        public TResult GetOrSet(Guid valueSetGuid, Func<TResult> value)
+        {
+            return this.cache.GetItem<TResult>(this.GetCacheKey(valueSetGuid), value);
+        }
+
+        public TResult GetOrQuery(
             Guid valueSetGuid,
-            Func<Guid, string> getCacheKey,
             Func<Guid, TResult> doQuery)
-            where TResult : class
         {
             return this.cache.GetItem<TResult>(CacheKeys.ValueSetCodesKey(valueSetGuid), () => doQuery(valueSetGuid));
         }
 
-        public IReadOnlyCollection<TResult> GetMultipleWithFallBack<TResult>(
+        public IReadOnlyCollection<TResult> GetMultipleOrQuery(Guid valueSetGuid, Func<Guid, IReadOnlyCollection<TResult>> doQuery)
+        {
+            return this.cache.GetItem<IReadOnlyCollection<TResult>>(this.GetCacheKey(valueSetGuid), () => doQuery(valueSetGuid));
+        }
+
+        public IReadOnlyCollection<TResult> GetMultipleWithFallBack(
             IEnumerable<Guid> valueSetGuids,
-            Func<Guid, string> getCacheKey,
             Func<IEnumerable<Guid>, ILookup<Guid, TResult>> getLookup)
-            where TResult : class, IHaveValueSetGuid
         {
             var setGuids = valueSetGuids as Guid[] ?? valueSetGuids.ToArray();
-            var items = this.cache.GetMultipleExisting<TResult>(setGuids, getCacheKey).ToList();
+            var items = this.GetMultipleExisting(setGuids).ToList();
 
             var remaining = setGuids.Except(items.Select(bi => bi.ValueSetGuid)).ToImmutableHashSet();
             if (!remaining.Any())
@@ -51,9 +63,8 @@
             return items;
         }
 
-        public Task<Dictionary<Guid, IReadOnlyCollection<TResult>>> GetCachedValueDictionary<TResult>(
+        public Task<Dictionary<Guid, IReadOnlyCollection<TResult>>> GetCachedValueDictionary(
             IEnumerable<Guid> valueSetGuids,
-            Func<Guid, string> getCacheKey,
             Func<IEnumerable<Guid>, ILookup<Guid, TResult>> doQuery)
         {
             // nothing to do
@@ -64,7 +75,7 @@
             }
 
             // get what we can from cache
-            var codes = setKeys.SelectMany(key => this.cache.GetCachedPartialValueSetAsTuple<TResult>(key, getCacheKey)).ToDictionary(t => t.Item1, t => t.Item2);
+            var codes = setKeys.SelectMany(this.GetCachedPartialValueSetAsTuple).ToDictionary(t => t.Item1, t => t.Item2);
             var remaining = setKeys.Except(codes.Select(g => g.Key)).ToImmutableHashSet();
             if (!remaining.Any())
             {
@@ -80,11 +91,26 @@
                         // Add queried values to cache
                         foreach (var key in lookup.Select(g => g.Key))
                         {
-                            codes.Add(key, this.cache.GetItem<IReadOnlyCollection<TResult>>(getCacheKey(key), () => lookup[key].ToList()));
+                            codes.Add(key, this.cache.GetItem<IReadOnlyCollection<TResult>>(this.GetCacheKey(key), () => lookup[key].ToList()));
                         }
 
                         return codes;
                     });
         }
+
+        public IReadOnlyCollection<TResult> GetMultipleExisting(
+            IEnumerable<Guid> valueSetGuids)
+        {
+            return valueSetGuids.Select(key => this.cache.GetItem<TResult>(this.GetCacheKey(key))).Values().ToList();
+        }
+
+        private Maybe<Tuple<Guid, IReadOnlyCollection<TResult>>> GetCachedPartialValueSetAsTuple(Guid valueSetGuid)
+        {
+            return this.cache.GetItem(this.GetCacheKey(valueSetGuid))
+                .OfType<IReadOnlyCollection<TResult>>()
+                .Select(x => new Tuple<Guid, IReadOnlyCollection<TResult>>(valueSetGuid, x));
+        }
+
+        private string GetCacheKey(Guid valueSetGuid) => $"{typeof(TResult)}-{valueSetGuid}";
     }
 }
