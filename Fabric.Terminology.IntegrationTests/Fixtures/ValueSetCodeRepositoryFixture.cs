@@ -1,6 +1,8 @@
 ﻿namespace Fabric.Terminology.IntegrationTests.Fixtures
 {
+    using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence;
+    using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Persistence;
     using Fabric.Terminology.TestsBase.Fixtures;
 
@@ -15,7 +17,10 @@
 
         private void Initialize()
         {
-            this.ValueSetCodeRepository = new SqlValueSetCodeRepository(this.SharedContext,  this.ClientTermContext.AsLazy(), this.Cache, this.Logger);
+            this.ValueSetCodeRepository = new SqlValueSetCodeRepository(
+                this.SharedContext,
+                this.Logger,
+                new ValueSetCachingManager<IValueSetCode>(this.Cache));
         }
     }
 }

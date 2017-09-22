@@ -1,9 +1,8 @@
 ﻿namespace Fabric.Terminology.TestsBase.Fixtures
 {
-    using AngleSharp.Attributes;
-
-    using Fabric.Terminology.Domain.Persistence;
+    using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Services;
+    using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Persistence;
 
     public class CustomValueSetFixture : RepositoryFixtureBase
@@ -15,10 +14,8 @@
 
         internal SqlValueSetCodeRepository ValueSetCodeRepository { get; private set; }
 
-        //// not using interface for more direct access to testing internals
-        internal SqlValueSetRepository ValueSetRepository { get; private set; }
 
-        internal IValueSetService ValueSetService { get; private set; }
+        //internal IValueSetService ValueSetService { get; private set; }
 
         protected override bool ClientTermContextInMemory => true;
 
@@ -26,19 +23,10 @@
         {
             this.ValueSetCodeRepository = new SqlValueSetCodeRepository(
                 this.SharedContext,
-                this.ClientTermContext.AsLazy(),
-                this.Cache,
-                this.Logger);
-
-            this.ValueSetRepository = new SqlValueSetRepository(
-                this.SharedContext,
-                this.ClientTermContext.AsLazy(),
-                this.Cache,
                 this.Logger,
-                this.ValueSetCodeRepository,
-                new PagingStrategyFactory());
+                new ValueSetCachingManager<IValueSetCode>(this.Cache));
 
-            this.ValueSetService = new ValueSetService(this.ValueSetRepository);
+            //this.ValueSetService = new ValueSetService(this.ValueSetRepository);
         }
     }
 }

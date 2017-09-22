@@ -17,14 +17,11 @@
 
     public class ValueSetServiceTests : OutputTestBase, IClassFixture<ValueSetServiceFixture>
     {
-        private readonly ValueSetServiceFixture fixture;
-
         private readonly IValueSetService valueSetService;
 
         public ValueSetServiceTests(ValueSetServiceFixture fixture, [NotNull] ITestOutputHelper output)
             : base(output)
         {
-            this.fixture = fixture;
             this.valueSetService = fixture.ValueSetService;
         }
 

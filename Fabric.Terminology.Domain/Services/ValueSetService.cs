@@ -12,11 +12,16 @@ namespace Fabric.Terminology.Domain.Services
 
     public class ValueSetService : IValueSetService
     {
-        private readonly IValueSetRepository valueSetRepository;
+        private readonly IValueSetBackingItemRepository valueSetBackingItemRepository;
 
-        public ValueSetService(IValueSetRepository valueSetRepository)
+        private readonly IValueSetCodeRepository valueSetCodeRepository;
+
+        public ValueSetService(
+            IValueSetBackingItemRepository valueSetBackingItemRepository,
+            IValueSetCodeRepository valueSetCodeRepository)
         {
-            this.valueSetRepository = valueSetRepository;
+            this.valueSetBackingItemRepository = valueSetBackingItemRepository;
+            this.valueSetCodeRepository = valueSetCodeRepository;
         }
 
         public Maybe<IValueSet> GetValueSet(Guid valueSetGuid)
@@ -26,7 +31,8 @@ namespace Fabric.Terminology.Domain.Services
 
         public Maybe<IValueSet> GetValueSet(Guid valueSetGuid, IEnumerable<Guid> codeSystemGuids)
         {
-            return this.valueSetRepository.GetValueSet(valueSetGuid, codeSystemGuids);
+            throw new NotImplementedException();
+            //return this.valueSetRepository.GetValueSet(valueSetGuid, codeSystemGuids);
         }
 
         public IReadOnlyCollection<IValueSet> GetValueSets(IEnumerable<Guid> valueSetGuids)
@@ -76,7 +82,7 @@ namespace Fabric.Terminology.Domain.Services
 
         public bool NameIsUnique(string name)
         {
-            return !this.valueSetRepository.NameExists(name);
+            return !this.valueSetBackingItemRepository.NameExists(name);
         }
 
         private static bool ValidateValueSetMeta(IValueSetMeta meta, out string msg)

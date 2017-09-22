@@ -12,7 +12,7 @@
 
         internal static ValueSetDescriptionDto AsDto(this IValueSet valueSet)
         {
-            throw  new NotImplementedException();
+            throw new NotImplementedException();
 
             //return new ValueSetDescriptionDto
             //{

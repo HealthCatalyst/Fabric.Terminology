@@ -27,19 +27,19 @@
 
         private readonly ILogger logger;
 
-        private readonly IMemoryCacheProvider cache;
+        private readonly IValueSetCachingManager<IValueSetBackingItem> cacheManager;
 
         private readonly IPagingStrategyFactory pagingStrategyFactory;
 
         public SqlValueSetBackingItemRepository(
             SharedContext sharedContext,
-            IMemoryCacheProvider cache,
             ILogger logger,
+            IValueSetCachingManager<IValueSetBackingItem> cacheManager,
             IPagingStrategyFactory pagingStrategyFactory)
         {
             this.sharedContext = sharedContext;
             this.logger = logger;
-            this.cache = cache;
+            this.cacheManager = cacheManager;
             this.pagingStrategyFactory = pagingStrategyFactory;
         }
 
@@ -57,13 +57,17 @@
 
         public IReadOnlyCollection<IValueSetBackingItem> GetValueSetBackingItems(string valueSetReferenceId)
         {
-            throw new NotImplementedException();
+            // We have to query here since we use the Guid for the cache key but the results
+            // are cached for use in subesequent requests.
+            return this.QueryValueSetBackingItems(valueSetReferenceId)
+                .Select(bi => this.cacheManager.GetOrSet(bi.ValueSetGuid, bi))
+                .ToList();
         }
 
         public IReadOnlyCollection<IValueSetBackingItem> GetValueSetBackingItems(IEnumerable<Guid> valueSetGuids)
         {
             var setGuids = valueSetGuids as Guid[] ?? valueSetGuids.ToArray();
-            var backingItems = this.cache.GetMultipleExisting<IValueSetBackingItem>(setGuids, CacheKeys.ValueSetBackingItemKey).ToList();
+            var backingItems = this.cacheManager.GetMultipleExisting(setGuids).ToList();
 
             var remaining = setGuids.Except(backingItems.Select(bi => bi.ValueSetGuid)).ToImmutableHashSet();
             if (!remaining.Any())
@@ -73,7 +77,7 @@
 
             backingItems.AddRange(
                 this.QueryValueSetBackingItems(remaining)
-                .Select(bi => this.cache.GetItem<IValueSetBackingItem>(CacheKeys.ValueSetBackingItemKey(bi.ValueSetGuid), () => bi)));
+                .Select(bi => this.cacheManager.GetOrSet(bi.ValueSetGuid, bi)));
 
             return backingItems;
         }
@@ -128,14 +132,13 @@
             var factory = new ValueSetBackingItemFactory();
 
             return pagingStrategy.CreatePagedCollection(
-                items.Select(
-                    i => this.cache.GetItem<IValueSetBackingItem>(CacheKeys.ValueSetBackingItemKey(i.ValueSetGUID), () => factory.Build(i))
+                    items.Select(i => this.cacheManager.GetOrSet(i.ValueSetGUID, () => factory.Build(i))
                 ),
                 count,
                 pagerSettings);
         }
 
-        private IReadOnlyCollection<IValueSetBackingItem> QueryValueSetBackingItems(IReadOnlyCollection<Guid> valueSetGuids)
+        private IEnumerable<IValueSetBackingItem> QueryValueSetBackingItems(IReadOnlyCollection<Guid> valueSetGuids)
         {
             var factory = new ValueSetBackingItemFactory();
 
@@ -149,6 +152,25 @@
             catch (Exception ex)
             {
                 this.logger.Error(ex, "Failed to query ValueSetDescriptions by collection of ValueSetGUID");
+                throw;
+            }
+        }
+
+        private IEnumerable<IValueSetBackingItem> QueryValueSetBackingItems(string valueSetReferenceId)
+        {
+            var factory = new ValueSetBackingItemFactory();
+
+            try
+            {
+                return this.DbSet.Where(GetBaseExpression())
+                    .Where(dto => dto.ValueSetReferenceID == valueSetReferenceId)
+                    .AsNoTracking()
+                    .Select(dto => factory.Build(dto))
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                this.logger.Error(ex, "Failed to query ValueSetDescriptions by collection of ValueSetReferenceId");
                 throw;
             }
         }

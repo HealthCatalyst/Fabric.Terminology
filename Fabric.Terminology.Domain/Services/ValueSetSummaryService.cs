@@ -7,13 +7,18 @@
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence;
 
-    public class ValueSetSummaryService : IValueSetSummaryService
+    internal class ValueSetSummaryService : IValueSetSummaryService
     {
-        private readonly IValueSetSummaryRepository valueSetSummaryRepository;
+        private readonly IValueSetBackingItemRepository valueSetBackingItemRepository;
 
-        public ValueSetSummaryService(IValueSetSummaryRepository valueSetSummaryRepository)
+        private readonly IValueSetCodeCountRepository valueSetCodeCountRepository;
+
+        public ValueSetSummaryService(
+            IValueSetBackingItemRepository valueSetBackingItemRepository,
+            IValueSetCodeCountRepository valueSetCodeCountRepository)
         {
-            this.valueSetSummaryRepository = valueSetSummaryRepository;
+            this.valueSetBackingItemRepository = valueSetBackingItemRepository;
+            this.valueSetCodeCountRepository = valueSetCodeCountRepository;
         }
 
         public IReadOnlyCollection<IValueSetSummary> GetValueSetSummaries(IEnumerable<Guid> valueSetGuids)

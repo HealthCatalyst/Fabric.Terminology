@@ -3,7 +3,7 @@
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence;
     using Fabric.Terminology.Domain.Services;
-    using Fabric.Terminology.SqlServer.Models.Dto;
+    using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Persistence;
     using Fabric.Terminology.TestsBase.Fixtures;
 
@@ -20,19 +20,16 @@
         {
             var valueSetCodeRepository = new SqlValueSetCodeRepository(
                 this.SharedContext,
-                this.ClientTermContext.AsLazy(),
-                this.Cache,
-                this.Logger);
-
-            var valueSetRepository = new SqlValueSetRepository(
-                this.SharedContext,
-                this.ClientTermContext.AsLazy(),
-                this.Cache,
                 this.Logger,
-                valueSetCodeRepository,
+                new ValueSetCachingManager<IValueSetCode>(this.Cache));
+
+            var valueSetBackingItemRepository = new SqlValueSetBackingItemRepository(
+                this.SharedContext,
+                this.Logger,
+                new ValueSetCachingManager<IValueSetBackingItem>(this.Cache),
                 new PagingStrategyFactory());
 
-            this.ValueSetService = new ValueSetService(valueSetRepository);
+            this.ValueSetService = new ValueSetService(valueSetBackingItemRepository, valueSetCodeRepository);
         }
     }
 }
