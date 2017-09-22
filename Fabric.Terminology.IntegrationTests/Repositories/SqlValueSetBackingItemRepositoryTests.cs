@@ -57,6 +57,7 @@
             // Assert
             page.TotalItems.Should().BeGreaterThan(0);
             page.TotalPages.Should().BeGreaterThan(0);
+            page.Values.Count.Should().BeLessOrEqualTo(itemsPerPage);
         }
     }
 }

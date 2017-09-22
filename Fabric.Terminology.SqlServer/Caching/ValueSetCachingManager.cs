@@ -9,7 +9,6 @@
     using CallMeMaybe;
 
     using Fabric.Terminology.Domain.Models;
-    using Fabric.Terminology.SqlServer.Persistence.Factories;
 
     internal class ValueSetCachingManager<TResult> : IValueSetCachingManager<TResult>
         where TResult : class, IHaveValueSetGuid
@@ -98,8 +97,7 @@
                     });
         }
 
-        public IReadOnlyCollection<TResult> GetMultipleExisting(
-            IEnumerable<Guid> valueSetGuids)
+        public IReadOnlyCollection<TResult> GetMultipleExisting(IEnumerable<Guid> valueSetGuids)
         {
             return valueSetGuids.Select(key => this.cache.GetItem<TResult>(this.GetCacheKey(key))).Values().ToList();
         }
