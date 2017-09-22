@@ -2,7 +2,6 @@
 {
     public interface IPagingStrategyFactory
     {
-        IPagingStrategy<TSrc, TResult> GetPagingStrategy<TSrc, TResult>(int defaultItemsPerPage)
-            where TSrc : class, new();
+        IPagingStrategy<TResult> GetPagingStrategy<TResult>(int defaultItemsPerPage);
     }
 }

@@ -2,10 +2,9 @@
 {
     public class PagingStrategyFactory : IPagingStrategyFactory
     {
-        public IPagingStrategy<TSrc, TResult> GetPagingStrategy<TSrc, TResult>(int defaultItemsPerPage)
-            where TSrc : class, new()
+        public IPagingStrategy<TResult> GetPagingStrategy<TResult>(int defaultItemsPerPage)
         {
-            return new DefaultPagingStrategy<TSrc, TResult>(defaultItemsPerPage);
+            return new DefaultPagingStrategy<TResult>(defaultItemsPerPage);
         }
     }
 }
