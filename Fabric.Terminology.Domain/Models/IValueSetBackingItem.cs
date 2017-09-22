@@ -2,10 +2,8 @@
 
 namespace Fabric.Terminology.Domain.Models
 {
-    public interface IValueSetBackingItem : IValueSetMeta
+    public interface IValueSetBackingItem : IValueSetMeta, IHaveValueSetGuid
     {
-        Guid ValueSetGuid { get; }
-
         string ValueSetReferenceId { get; }
 
         string Name { get; }

@@ -2,10 +2,8 @@
 {
     using System;
 
-    public interface IValueSetCodeCount
+    public interface IValueSetCodeCount : IHaveValueSetGuid
     {
-        Guid ValueSetGuid { get; }
-
         Guid CodeSystemGuid { get; }
 
         int CodeCount { get; }

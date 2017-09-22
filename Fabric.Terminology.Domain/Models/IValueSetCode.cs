@@ -2,8 +2,10 @@
 {
     using System;
 
-    public interface IValueSetCode : ICodeSetCode
+    /// <summary>
+    /// Marker interface for a ValueSetCode
+    /// </summary>
+    public interface IValueSetCode : ICodeSetCode, IHaveValueSetGuid
     {
-        Guid ValueSetGuid { get; }
     }
 }
