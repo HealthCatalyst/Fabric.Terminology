@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
 
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence;

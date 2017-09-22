@@ -52,7 +52,12 @@
 
         public Maybe<IValueSetBackingItem> GetValueSetBackingItem(Guid valueSetGuid)
         {
-            return this.GetValueSetBackingItems(new[] { valueSetGuid }).FirstMaybe();
+            return this.GetValueSetBackingItem(valueSetGuid, new List<Guid>());
+        }
+
+        public Maybe<IValueSetBackingItem> GetValueSetBackingItem(Guid valueSetGuid, IEnumerable<Guid> codeSystemGuids)
+        {
+            return this.GetValueSetBackingItems(new[] { valueSetGuid }, codeSystemGuids).FirstMaybe();
         }
 
         public IReadOnlyCollection<IValueSetBackingItem> GetValueSetBackingItems(string valueSetReferenceId)
@@ -66,6 +71,11 @@
 
         public IReadOnlyCollection<IValueSetBackingItem> GetValueSetBackingItems(IEnumerable<Guid> valueSetGuids)
         {
+            return this.GetValueSetBackingItems(valueSetGuids, new List<Guid>());
+        }
+
+        public IReadOnlyCollection<IValueSetBackingItem> GetValueSetBackingItems(IEnumerable<Guid> valueSetGuids, IEnumerable<Guid> codeSystemGuids)
+        {
             var setGuids = valueSetGuids as Guid[] ?? valueSetGuids.ToArray();
             var backingItems = this.cacheManager.GetMultipleExisting(setGuids).ToList();
 
@@ -76,20 +86,28 @@
             }
 
             backingItems.AddRange(
-                this.QueryValueSetBackingItems(remaining)
-                .Select(bi => this.cacheManager.GetOrSet(bi.ValueSetGuid, bi)));
+                this.QueryValueSetBackingItems(remaining, codeSystemGuids.ToList())
+                    .Select(bi => this.cacheManager.GetOrSet(bi.ValueSetGuid, bi)));
 
             return backingItems;
         }
 
-        public Task<PagedCollection<IValueSetBackingItem>> GetValueSetBackingItemsAsync(IPagerSettings pagerSettings, IEnumerable<Guid> codeSystemGuids)
+        public Task<PagedCollection<IValueSetBackingItem>> GetValueSetBackingItemsAsync(
+            IPagerSettings pagerSettings,
+            IEnumerable<Guid> codeSystemGuids, 
+            bool latestVersionsOnly = true)
         {
             return this.GetValueSetBackingItemsAsync(string.Empty, pagerSettings, codeSystemGuids);
         }
 
-        public Task<PagedCollection<IValueSetBackingItem>> GetValueSetBackingItemsAsync(string filterText, IPagerSettings pagerSettings, IEnumerable<Guid> codeSystemGuids)
+        public Task<PagedCollection<IValueSetBackingItem>> GetValueSetBackingItemsAsync(
+            string filterText,
+            IPagerSettings pagerSettings,
+            IEnumerable<Guid> codeSystemGuids,
+            bool latestVersionsOnly = true)
         {
-            var dtos = this.DbSet.Where(GetBaseExpression());
+            var dtos = latestVersionsOnly ? this.DbSet.Where(GetBaseExpression()) : this.DbSet.AsQueryable();
+
             if (!filterText.IsNullOrWhiteSpace())
             {
                 // TODO need to match filtering mechanic
@@ -138,16 +156,24 @@
                 pagerSettings);
         }
 
-        private IEnumerable<IValueSetBackingItem> QueryValueSetBackingItems(IReadOnlyCollection<Guid> valueSetGuids)
+        private IEnumerable<IValueSetBackingItem> QueryValueSetBackingItems(IReadOnlyCollection<Guid> valueSetGuids, IReadOnlyCollection<Guid> codeSystemGuids)
         {
             var factory = new ValueSetBackingItemFactory();
 
             try
             {
-                return this.DbSet.Where(GetBaseExpression()).Where(dto => valueSetGuids.Contains(dto.ValueSetGUID))
-                    .AsNoTracking()
-                    .Select(dto => factory.Build(dto))
-                    .ToList();
+                var dtos = this.DbSet.Where(dto => valueSetGuids.Contains(dto.ValueSetGUID));
+
+                if (codeSystemGuids.Any())
+                {
+                    var vsGuids = this.sharedContext.ValueSetCodes.Where(code => codeSystemGuids.Contains(code.CodeSystemGuid))
+                        .Select(code => code.ValueSetGUID)
+                        .Distinct();
+
+                    dtos = dtos.Join(vsGuids, dto => dto.ValueSetGUID, key => key, (dto, key) => dto);
+                }
+
+                return dtos.Select(dto => factory.Build(dto)).ToList();
             }
             catch (Exception ex)
             {
@@ -162,8 +188,7 @@
 
             try
             {
-                return this.DbSet.Where(GetBaseExpression())
-                    .Where(dto => dto.ValueSetReferenceID == valueSetReferenceId)
+                return this.DbSet.Where(dto => dto.ValueSetReferenceID == valueSetReferenceId)
                     .AsNoTracking()
                     .Select(dto => factory.Build(dto))
                     .ToList();

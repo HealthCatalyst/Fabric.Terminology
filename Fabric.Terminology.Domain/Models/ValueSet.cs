@@ -6,13 +6,15 @@
     {
         internal ValueSet()
         {
+            this.ValueSetCodes = new List<IValueSetCode>();
         }
 
-        internal ValueSet(IValueSetBackingItem backingItem)
+        internal ValueSet(IValueSetBackingItem backingItem, IReadOnlyCollection<IValueSetCode> codes)
             : base(backingItem)
         {
+            this.ValueSetCodes = codes;
         }
 
-        public IReadOnlyCollection<IValueSetCode> ValueSetCodes { get; internal set; } = new List<IValueSetCode>();
+        public IReadOnlyCollection<IValueSetCode> ValueSetCodes { get; internal set; }
     }
 }

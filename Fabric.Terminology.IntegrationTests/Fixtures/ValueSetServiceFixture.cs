@@ -29,7 +29,7 @@
                 new ValueSetCachingManager<IValueSetBackingItem>(this.Cache),
                 new PagingStrategyFactory());
 
-            this.ValueSetService = new ValueSetService(valueSetBackingItemRepository, valueSetCodeRepository);
+            this.ValueSetService = new ValueSetService(valueSetBackingItemRepository, valueSetCodeRepository, this.Logger);
         }
     }
 }

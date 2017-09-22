@@ -23,20 +23,23 @@
             IEnumerable<Guid> valueSetGuids,
             IEnumerable<Guid> codeSystemGuids);
 
-        Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings settings);
+        Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings settings, bool latestVersionsOnly = true);
 
         Task<PagedCollection<IValueSet>> GetValueSetsAsync(
             IPagerSettings settings,
-            IEnumerable<Guid> codeSystemGuids);
-
-        Task<PagedCollection<IValueSet>> GetValueSetsAsync(
-            string nameFilterText,
-            IPagerSettings pagerSettings);
+            IEnumerable<Guid> codeSystemGuids,
+            bool latestVersionsOnly = true);
 
         Task<PagedCollection<IValueSet>> GetValueSetsAsync(
             string nameFilterText,
             IPagerSettings pagerSettings,
-            IEnumerable<Guid> codeSystemGuids);
+            bool latestVersionsOnly = true);
+
+        Task<PagedCollection<IValueSet>> GetValueSetsAsync(
+            string nameFilterText,
+            IPagerSettings pagerSettings,
+            IEnumerable<Guid> codeSystemGuids, 
+            bool latestVersionsOnly = true);
 
         bool NameIsUnique(string name);
 

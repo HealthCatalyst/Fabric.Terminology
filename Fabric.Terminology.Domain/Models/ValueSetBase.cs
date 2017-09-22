@@ -2,7 +2,7 @@
 
 namespace Fabric.Terminology.Domain.Models
 {
-    internal abstract class ValueSetBase : IValueSetBackingItem
+    public abstract class ValueSetBase : IValueSetBackingItem
     {
         protected ValueSetBase()
         {

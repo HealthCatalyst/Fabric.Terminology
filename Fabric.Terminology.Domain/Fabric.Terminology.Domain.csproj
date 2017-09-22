@@ -25,6 +25,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Serilog">
+      <HintPath>..\..\..\..\Users\rusty.swayne\.nuget\packages\serilog\2.4.0\lib\netstandard1.3\Serilog.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
 	<Compile Update="Extensions.*.cs">
 		<DependentUpon>Extensions.cs</DependentUpon>
 	</Compile>

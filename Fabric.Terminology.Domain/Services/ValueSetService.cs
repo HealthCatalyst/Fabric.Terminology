@@ -7,8 +7,11 @@ namespace Fabric.Terminology.Domain.Services
 
     using CallMeMaybe;
 
+    using Fabric.Terminology.Domain.Exceptions;
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence;
+
+    using Serilog;
 
     public class ValueSetService : IValueSetService
     {
@@ -16,12 +19,16 @@ namespace Fabric.Terminology.Domain.Services
 
         private readonly IValueSetCodeRepository valueSetCodeRepository;
 
+        private readonly ILogger logger;
+
         public ValueSetService(
             IValueSetBackingItemRepository valueSetBackingItemRepository,
-            IValueSetCodeRepository valueSetCodeRepository)
+            IValueSetCodeRepository valueSetCodeRepository,
+            ILogger logger)
         {
             this.valueSetBackingItemRepository = valueSetBackingItemRepository;
             this.valueSetCodeRepository = valueSetCodeRepository;
+            this.logger = logger;
         }
 
         public Maybe<IValueSet> GetValueSet(Guid valueSetGuid)
@@ -31,8 +38,13 @@ namespace Fabric.Terminology.Domain.Services
 
         public Maybe<IValueSet> GetValueSet(Guid valueSetGuid, IEnumerable<Guid> codeSystemGuids)
         {
-            throw new NotImplementedException();
-            //return this.valueSetRepository.GetValueSet(valueSetGuid, codeSystemGuids);
+            return this.valueSetBackingItemRepository.GetValueSetBackingItem(valueSetGuid, codeSystemGuids)
+                .Select(
+                    backingItem =>
+                        {
+                            var codes = this.valueSetCodeRepository.GetValueSetCodes(valueSetGuid);
+                            return new ValueSet(backingItem, codes) as IValueSet;
+                        });
         }
 
         public IReadOnlyCollection<IValueSet> GetValueSets(IEnumerable<Guid> valueSetGuids)
@@ -42,27 +54,45 @@ namespace Fabric.Terminology.Domain.Services
 
         public IReadOnlyCollection<IValueSet> GetValueSets(IEnumerable<Guid> valueSetGuids, IEnumerable<Guid> codeSystemGuids)
         {
-            throw new NotImplementedException();
+            var setGuids = valueSetGuids as Guid[] ?? valueSetGuids.ToArray();
+            var backingItemTask = Task.Run(
+                () => this.valueSetBackingItemRepository.GetValueSetBackingItems(setGuids, codeSystemGuids));
+
+            var codesTask = Task.Run(() => this.valueSetCodeRepository.BuildValueSetCodesDictionary(setGuids));
+
+            Task.WaitAll(backingItemTask, codesTask);
+
+            return this.BuildValueSets(backingItemTask.Result, codesTask.Result);
         }
 
-        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings settings)
+        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings settings, bool latestVersionsOnly = true)
         {
-            throw new NotImplementedException();
+            return this.GetValueSetsAsync(settings, new List<Guid>(), latestVersionsOnly);
         }
 
-        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings settings, IEnumerable<Guid> codeSystemGuids)
+        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings settings, IEnumerable<Guid> codeSystemGuids, bool latestVersionsOnly = true)
         {
-            throw new NotImplementedException();
+            return this.GetValueSetsAsync(string.Empty, settings, codeSystemGuids, latestVersionsOnly);
         }
 
-        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(string nameFilterText, IPagerSettings pagerSettings)
+        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(string nameFilterText, IPagerSettings pagerSettings, bool latestVersionsOnly = true)
         {
-            throw new NotImplementedException();
+            return this.GetValueSetsAsync(nameFilterText, pagerSettings, new List<Guid>(), latestVersionsOnly);
         }
 
-        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(string nameFilterText, IPagerSettings pagerSettings, IEnumerable<Guid> codeSystemGuids)
+        public async Task<PagedCollection<IValueSet>> GetValueSetsAsync(string nameFilterText, IPagerSettings pagerSettings, IEnumerable<Guid> codeSystemGuids, bool latestVersionsOnly = true)
         {
-            throw new NotImplementedException();
+            var backingItemPage = await this.valueSetBackingItemRepository.GetValueSetBackingItemsAsync(
+                                      nameFilterText,
+                                      pagerSettings,
+                                      codeSystemGuids,
+                                      latestVersionsOnly);
+
+            var codesDictionary =
+                await this.valueSetCodeRepository.BuildValueSetCodesDictionary(
+                    backingItemPage.Values.Select(bi => bi.ValueSetGuid));
+
+            return this.BuildValueSetsPage(backingItemPage, codesDictionary);
         }
 
         public Attempt<IValueSet> Create(string name, IValueSetMeta meta, IEnumerable<ICodeSetCode> valueSetCodes)
@@ -102,6 +132,40 @@ namespace Fabric.Terminology.Domain.Services
         private static string ValidateProperty(string propName, string value)
         {
             return value.IsNullOrWhiteSpace() ? $"The {propName} property must have a value. " : string.Empty;
+        }
+
+        private PagedCollection<IValueSet> BuildValueSetsPage(
+            PagedCollection<IValueSetBackingItem> backingItemPage,
+            IDictionary<Guid, IReadOnlyCollection<IValueSetCode>> codesDictionary)
+        {
+            return new PagedCollection<IValueSet>
+            {
+                PagerSettings = backingItemPage.PagerSettings,
+                TotalItems = backingItemPage.TotalItems,
+                TotalPages = backingItemPage.TotalPages,
+                Values = this.BuildValueSets(backingItemPage.Values, codesDictionary)
+            };
+        }
+
+        private IReadOnlyCollection<IValueSet> BuildValueSets(
+            IReadOnlyCollection<IValueSetBackingItem> backingItems,
+            IDictionary<Guid, IReadOnlyCollection<IValueSetCode>> codesDictionary)
+        {
+            var valueSets = backingItems.SelectMany(
+                    backingItem => codesDictionary.GetMaybe(backingItem.ValueSetGuid)
+                        .Select(codes => new ValueSet(backingItem, codes)))
+                .ToList();
+
+            if (valueSets.Count == backingItems.Count)
+            {
+                return valueSets;
+            }
+
+            var vsex = new ValueSetOperationException(
+                "Failed to find ValueSetCode collection for every ValueSetBackingItem (ValueSetDescription)");
+
+            this.logger.Error(vsex, "Failed to match codes with every valueset.");
+            throw vsex;
         }
     }
 }

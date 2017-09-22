@@ -7,11 +7,13 @@
     {
         internal ValueSetSummary()
         {
+            this.CodeCounts = new List<IValueSetCodeCount>();
         }
 
-        internal ValueSetSummary(IValueSetBackingItem backingItem)
+        internal ValueSetSummary(IValueSetBackingItem backingItem, IReadOnlyCollection<IValueSetCodeCount> counts)
             : base(backingItem)
         {
+            this.CodeCounts = counts;
         }
 
         public IReadOnlyCollection<IValueSetCodeCount> CodeCounts { get; internal set; }
