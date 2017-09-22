@@ -1,7 +1,10 @@
 ﻿namespace Fabric.Terminology.IntegrationTests.Repositories
 {
     using System;
+    using System.Collections.Generic;
+    using System.Linq;
 
+    using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence;
     using Fabric.Terminology.IntegrationTests.Fixtures;
     using Fabric.Terminology.TestsBase;
@@ -33,6 +36,27 @@
 
             // Assert
             backingItem.ValueSetGuid.Should().Be(valueSetGuid);
+        }
+
+        [Theory]
+        [InlineData(10, 1)]
+        [InlineData(20, 2)]
+        [InlineData(20, 3)]
+        [InlineData(100, 1)]
+        [InlineData(100, 2)]
+        public void CanGetAPageOfValueSetBackingItem(int itemsPerPage, int pageNumber)
+        {
+            // Arrange
+            var pagerSettings = new PagerSettings { CurrentPage = pageNumber, ItemsPerPage = itemsPerPage };
+
+            // Act
+            var page = this.Profiler.ExecuteTimed(async () => await this.repository.GetValueSetBackingItemsAsync(pagerSettings, new List<Guid>()));
+            this.Output.WriteLine($"Total Values {page.TotalItems}");
+            this.Output.WriteLine($"Total Pages {page.TotalPages}");
+
+            // Assert
+            page.TotalItems.Should().BeGreaterThan(0);
+            page.TotalPages.Should().BeGreaterThan(0);
         }
     }
 }
