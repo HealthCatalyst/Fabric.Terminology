@@ -45,15 +45,25 @@
 
         private DbSet<ValueSetDescriptionDto> DbSet => this.sharedContext.ValueSetDescriptions;
 
+        public bool NameExists(string name)
+        {
+            return this.sharedContext.ValueSetDescriptions.Any(dto => dto.ValueSetNM == name);
+        }
+
         public Maybe<IValueSetBackingItem> GetValueSetBackingItem(Guid valueSetGuid)
         {
             return this.GetValueSetBackingItems(new[] { valueSetGuid }).FirstMaybe();
         }
 
+        public IReadOnlyCollection<IValueSetBackingItem> GetValueSetBackingItems(string valueSetReferenceId)
+        {
+            throw new NotImplementedException();
+        }
+
         public IReadOnlyCollection<IValueSetBackingItem> GetValueSetBackingItems(IEnumerable<Guid> valueSetGuids)
         {
             var setGuids = valueSetGuids as Guid[] ?? valueSetGuids.ToArray();
-            var backingItems = this.cache.GetValueSetBackingItems(setGuids).ToList();
+            var backingItems = this.cache.GetMultipleExisting<IValueSetBackingItem>(setGuids, CacheKeys.ValueSetBackingItemKey).ToList();
 
             var remaining = setGuids.Except(backingItems.Select(bi => bi.ValueSetGuid)).ToImmutableHashSet();
             if (!remaining.Any())
@@ -105,7 +115,8 @@
             IPagerSettings pagerSettings)
         {
             var defaultItemsPerPage = this.sharedContext.Settings.DefaultItemsPerPage;
-            var pagingStrategy = this.pagingStrategyFactory.GetPagingStrategy<ValueSetDescriptionDto, IValueSetBackingItem>(defaultItemsPerPage);
+            var pagingStrategy = this.pagingStrategyFactory.GetPagingStrategy<IValueSetBackingItem>(defaultItemsPerPage);
+
             pagingStrategy.EnsurePagerSettings(pagerSettings);
 
             var count = await source.CountAsync();
@@ -114,7 +125,14 @@
                             .Take(pagerSettings.ItemsPerPage)
                             .ToListAsync();
 
-            return pagingStrategy.CreatePagedCollection(items, count, pagerSettings, new ValueSetBackingItemFactory());
+            var factory = new ValueSetBackingItemFactory();
+
+            return pagingStrategy.CreatePagedCollection(
+                items.Select(
+                    i => this.cache.GetItem<IValueSetBackingItem>(CacheKeys.ValueSetBackingItemKey(i.ValueSetGUID), () => factory.Build(i))
+                ),
+                count,
+                pagerSettings);
         }
 
         private IReadOnlyCollection<IValueSetBackingItem> QueryValueSetBackingItems(IReadOnlyCollection<Guid> valueSetGuids)

@@ -34,14 +34,24 @@
             return cache.GetItem(cacheKey).OfType<IValueSet>();
         }
 
-        internal static IReadOnlyCollection<IValueSetBackingItem> GetValueSetBackingItems(
+        //internal static IReadOnlyCollection<IValueSetBackingItem> GetValueSetBackingItems(
+        //    this IMemoryCacheProvider cache,
+        //    IEnumerable<Guid> valueSetGuids)
+        //{
+        //    return valueSetGuids.Select(
+        //            key => cache.GetItem<IValueSetBackingItem>(CacheKeys.ValueSetBackingItemKey(key))
+        //        ).Values().ToList();
+        //}
+
+        internal static IReadOnlyCollection<TResult> GetMultipleExisting<TResult>(
             this IMemoryCacheProvider cache,
-            IEnumerable<Guid> valueSetGuids)
+            IEnumerable<Guid> valueSetGuids,
+            Func<Guid, string> getCacheKey)
+            where TResult : class
         {
-            return valueSetGuids.Select(
-                    key => cache.GetItem<IValueSetBackingItem>(CacheKeys.ValueSetBackingItemKey(key))
-                ).Values().ToList();
+            return valueSetGuids.Select(key => cache.GetItem<TResult>(getCacheKey(key))).Values().ToList();
         }
+
 
         internal static Maybe<Tuple<Guid, IReadOnlyCollection<TResult>>> GetCachedPartialValueSetAsTuple<TResult>(
             this IMemoryCacheProvider cache,

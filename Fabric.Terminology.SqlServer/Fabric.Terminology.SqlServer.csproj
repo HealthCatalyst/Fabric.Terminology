@@ -17,8 +17,6 @@
     <Compile Remove="Persistence\Factories\ValueSetFullCodeListMapper.cs" />
     <Compile Remove="Persistence\Factories\ValueSetMapperBase.cs" />
     <Compile Remove="Persistence\Factories\ValueSetShortCodeListMapper.cs" />
-    <Compile Remove="Persistence\remove\SqlValueSetCodeRepository.cs" />
-    <Compile Remove="Persistence\remove\SqlValueSetRepository.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -45,8 +43,4 @@
       <DependentUpon>Constants.cs</DependentUpon>
     </Compile>
 	</ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Persistence\remove\" />
-  </ItemGroup>
 </Project>

@@ -10,7 +10,11 @@
 
     internal interface IValueSetBackingItemRepository
     {
+        bool NameExists(string name);
+
         Maybe<IValueSetBackingItem> GetValueSetBackingItem(Guid valueSetGuid);
+
+        IReadOnlyCollection<IValueSetBackingItem> GetValueSetBackingItems(string valueSetReferenceId);
 
         IReadOnlyCollection<IValueSetBackingItem> GetValueSetBackingItems(IEnumerable<Guid> valueSetGuids);
 

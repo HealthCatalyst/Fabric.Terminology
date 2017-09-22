@@ -23,22 +23,18 @@
     {
         private readonly SharedContext sharedContext;
 
-        private readonly Lazy<ClientTermContext> clientTermContext;
-
         private readonly ILogger logger;
 
-        private readonly IMemoryCacheProvider cache;
+        private readonly IValueSetCachingManager cacheManager;
 
         public SqlValueSetCodeRepository(
             SharedContext sharedContext,
-            Lazy<ClientTermContext> clientTermContext,
-            IMemoryCacheProvider cache,
-            ILogger logger)
+            ILogger logger,
+            IValueSetCachingManager cacheManager)
         {
             this.sharedContext = sharedContext;
-            this.clientTermContext = clientTermContext;
             this.logger = logger;
-            this.cache = cache;
+            this.cacheManager = cacheManager;
         }
 
         public int CountValueSetCodes(Guid valueSetGuid, IEnumerable<Guid> codeSystemGuids)
@@ -48,17 +44,15 @@
 
         public IReadOnlyCollection<IValueSetCode> GetValueSetCodes(Guid valueSetGuid)
         {
-            return this.cache.GetItem<IEnumerable<IValueSetCode>>(
-                CacheKeys.ValueSetCodesKey(valueSetGuid),
-                () => this.QueryValueSetCodes(valueSetGuid))
-                .OrderBy(code => code.Name).ToList();
+            return this.cacheManager
+                    .GetOrQuery(valueSetGuid, CacheKeys.ValueSetCodesKey, this.QueryValueSetCodes)
+                    .OrderBy(code => code.Name)
+                    .ToList();
         }
 
         public IReadOnlyCollection<IValueSetCodeCount> GetValueSetCodeCounts(Guid valueSetGuid)
         {
-            return this.cache.GetItem<IReadOnlyCollection<IValueSetCodeCount>>(
-                CacheKeys.ValueSetCodeCountsKey(valueSetGuid),
-                () => this.QueryValueSetCodeCounts(valueSetGuid));
+            return this.cacheManager.GetOrQuery(valueSetGuid, CacheKeys.ValueSetCodesKey, this.QueryValueSetCodeCounts);
         }
 
         public IReadOnlyCollection<IValueSetCode> GetValueSetCodes(Guid valueSetGuid, IEnumerable<Guid> codeSystsemGuids)
@@ -73,48 +67,18 @@
 
         public Task<Dictionary<Guid, IReadOnlyCollection<IValueSetCodeCount>>> BuildValueSetCountsDictionary(IEnumerable<Guid> valueSetGuids)
         {
-            return this.GetCachedValueDictionary(valueSetGuids, CacheKeys.ValueSetCodeCountsKey, this.QueryValueSetCodeCountLookup);
+            return this.cacheManager.GetCachedValueDictionary(
+                valueSetGuids,
+                CacheKeys.ValueSetCodeCountsKey,
+                this.QueryValueSetCodeCountLookup);
         }
 
         public Task<Dictionary<Guid, IReadOnlyCollection<IValueSetCode>>> BuildValueSetCodesDictionary(IEnumerable<Guid> valueSetGuids)
         {
-            return this.GetCachedValueDictionary(valueSetGuids, CacheKeys.ValueSetCodesKey, this.QueryValueSetCodeLookup);
-        }
-
-        private Task<Dictionary<Guid, IReadOnlyCollection<TResult>>> GetCachedValueDictionary<TResult>(
-            IEnumerable<Guid> valueSetGuids,
-            Func<Guid, string> getCacheKey,
-            Func<IEnumerable<Guid>, ILookup<Guid, TResult>> doQuery)
-        {
-            // nothing to do
-            var setKeys = valueSetGuids as Guid[] ?? valueSetGuids.ToArray();
-            if (!setKeys.Any())
-            {
-                return Task.FromResult(new Dictionary<Guid, IReadOnlyCollection<TResult>>());
-            }
-
-            // get what we can from cache
-            var codes = setKeys.SelectMany(key => this.cache.GetCachedPartialValueSetAsTuple<TResult>(key, getCacheKey)).ToDictionary(t => t.Item1, t => t.Item2);
-            var remaining = setKeys.Except(codes.Select(g => g.Key)).ToImmutableHashSet();
-            if (!remaining.Any())
-            {
-                return Task.FromResult(codes);
-            }
-
-            // Query, cache return
-            return Task.Run(
-                () =>
-                {
-                    var lookup = doQuery(remaining);
-
-                    // Add queried values to cache
-                    foreach (var key in lookup.Select(g => g.Key))
-                    {
-                        codes.Add(key, this.cache.GetItem<IReadOnlyCollection<TResult>>(getCacheKey(key), () => lookup[key].ToList()));
-                    }
-
-                    return codes;
-                });
+            return this.cacheManager.GetCachedValueDictionary(
+                valueSetGuids,
+                CacheKeys.ValueSetCodesKey,
+                this.QueryValueSetCodeLookup);
         }
 
         private IReadOnlyCollection<IValueSetCode> QueryValueSetCodes(Guid valueSetGuid)
