@@ -13,5 +13,7 @@ namespace Fabric.Terminology.Domain.Models
         string ClientCode { get; }
 
         bool IsCustom { get; }
+
+        bool IsLatestVersion { get; }
     }
 }

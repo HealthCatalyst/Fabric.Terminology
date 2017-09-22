@@ -14,6 +14,7 @@
                 ClientCode = dto.ClientCD,
                 DefinitionDescription = dto.DefinitionDSC,
                 IsCustom = dto.ClientTermFLG == "Y",
+                IsLatestVersion = dto.LatestVersionFLG == "Y",
                 Name = dto.ValueSetNM,
                 OriginGuid = dto.OriginGUID,
                 SourceDescription = dto.SourceDSC,

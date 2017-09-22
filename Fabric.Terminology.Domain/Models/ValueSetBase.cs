@@ -20,6 +20,7 @@ namespace Fabric.Terminology.Domain.Models
             this.OriginGuid = backingItem.OriginGuid;
             this.ClientCode = backingItem.ClientCode;
             this.IsCustom = backingItem.IsCustom;
+            this.IsLatestVersion = backingItem.IsLatestVersion;
         }
 
         public DateTime VersionDate { get; internal set; }
@@ -41,5 +42,7 @@ namespace Fabric.Terminology.Domain.Models
         public string ClientCode { get; internal set; }
 
         public bool IsCustom { get; internal set; }
+
+        public bool IsLatestVersion { get; internal set; }
     }
 }
