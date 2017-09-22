@@ -23,38 +23,17 @@
             IEnumerable<Guid> valueSetGuids,
             IEnumerable<Guid> codeSystemGuids);
 
-        IReadOnlyCollection<IValueSetSummary> GetValueSetSummaries(IEnumerable<Guid> valueSetGuid);
-
-        IReadOnlyCollection<IValueSetSummary> GetValueSetSummaries(
-            IEnumerable<Guid> valueSetGuids,
-            IEnumerable<Guid> codeSystemGuids);
-
         Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings settings);
 
         Task<PagedCollection<IValueSet>> GetValueSetsAsync(
             IPagerSettings settings,
             IEnumerable<Guid> codeSystemGuids);
 
-        Task<PagedCollection<IValueSetSummary>> GetValueSetSummariesAsync(IPagerSettings settings);
-
-        Task<PagedCollection<IValueSetSummary>> GetValueSetSummariesAsync(
-            IPagerSettings settings,
-            IEnumerable<Guid> codeSystemGuids);
-
-        Task<PagedCollection<IValueSet>> FindValueSetsAsync(
+        Task<PagedCollection<IValueSet>> GetValueSetsAsync(
             string nameFilterText,
             IPagerSettings pagerSettings);
 
-        Task<PagedCollection<IValueSet>> FindValueSetsAsync(
-            string nameFilterText,
-            IPagerSettings pagerSettings,
-            IEnumerable<Guid> codeSystemGuids);
-
-        Task<PagedCollection<IValueSetSummary>> FindValueSetSummariesAsync(
-            string nameFilterText,
-            IPagerSettings pagerSettings);
-
-        Task<PagedCollection<IValueSetSummary>> FindValueSetSummariesAsync(
+        Task<PagedCollection<IValueSet>> GetValueSetsAsync(
             string nameFilterText,
             IPagerSettings pagerSettings,
             IEnumerable<Guid> codeSystemGuids);
