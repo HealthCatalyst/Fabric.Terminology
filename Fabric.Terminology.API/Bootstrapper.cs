@@ -77,6 +77,8 @@
                 container.Register<IMemoryCacheProvider, NullMemoryCacheProvider>().AsSingleton();
             }
 
+            container.Register(typeof(IValueSetCachingManager<>), typeof(ValueSetCachingManager<>));
+
             // Persistence (Must precede service registration)
             container.ComposeFrom<SqlAppComposition>();
         }
