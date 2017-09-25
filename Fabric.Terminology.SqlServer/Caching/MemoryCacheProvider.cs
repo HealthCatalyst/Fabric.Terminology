@@ -55,7 +55,7 @@
 
         public Maybe<object> GetItem(string key, Func<object> getItem)
         {
-            return this.GetItem(key, getItem, TimeSpan.FromMinutes(5), false);
+            return this.GetItem(key, getItem, TimeSpan.FromMinutes(5), true);
         }
 
         public IEnumerable<object> GetItems(params string[] cacheKeys)
@@ -63,7 +63,7 @@
             return !cacheKeys.Any() ? Enumerable.Empty<object>() : cacheKeys.Select(this.GetItem).Values();
         }
 
-        public Maybe<object> GetItem(string key, Func<object> getItem, TimeSpan? timeout, bool isSliding = false)
+        public Maybe<object> GetItem(string key, Func<object> getItem, TimeSpan? timeout, bool isSliding = true)
         {
             if (!this.memCache.TryGetValue(key, out object value))
             {

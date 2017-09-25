@@ -13,6 +13,6 @@
 
         IEnumerable<object> GetItems(params string[] cacheKeys);
 
-        Maybe<object> GetItem(string cacheKey, Func<object> getItem, TimeSpan? timeout, bool isSliding = false);
+        Maybe<object> GetItem(string cacheKey, Func<object> getItem, TimeSpan? timeout, bool isSliding = true);
     }
 }
