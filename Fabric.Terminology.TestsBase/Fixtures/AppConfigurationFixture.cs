@@ -7,7 +7,6 @@
 
     using Fabric.Terminology.API.Configuration;
     using Fabric.Terminology.API.Models;
-    using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Models;
 
     using Microsoft.Extensions.Configuration;

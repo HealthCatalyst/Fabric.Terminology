@@ -38,7 +38,6 @@
             modelBuilder.Entity<ValueSetCodeDto>().ToTable("ValueSetCode", "Terminology");
             modelBuilder.Entity<ValueSetCodeDto>().HasKey(code => new { code.CodeCD, code.ValueSetGUID });
 
-
             modelBuilder.Entity<ValueSetCodeCountDto>().ToTable("ValueSetCodeCount", "ClientTerm");
             modelBuilder.Entity<ValueSetCodeCountDto>().HasKey(record => new { record.ValueSetGUID, record.CodeSystemGUID });
 
