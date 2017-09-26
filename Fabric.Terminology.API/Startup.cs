@@ -54,7 +54,7 @@
                         cfg.CreateMap<ICodeSetCode, CodeSetCodeApiModel>();
                         cfg.CreateMap<IValueSetCode, ValueSetCodeApiModel>();
                         cfg.CreateMap<IValueSetCodeCount, ValueSetCodeCountApiModel>();
-                        cfg.CreateMap<IValueSetSummary, ValueSetSummaryApiModel>()
+                        cfg.CreateMap<IValueSetSummary, ValueSetItemApiModel>()
                             .ForMember(
                                 dest => dest.Identifier,
                                 opt => opt.MapFrom(

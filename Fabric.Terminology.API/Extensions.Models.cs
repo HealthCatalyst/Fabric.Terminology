@@ -20,24 +20,22 @@
             return apiModel;
         }
 
-        public static ValueSetSummaryApiModel ToValueSetSummaryApiModel(this IValueSetSummary valueSetSummary)
+        public static ValueSetItemApiModel ToValueSetItemApiModel(this IValueSetSummary valueSetSummary)
         {
-            return Mapper.Map<IValueSetSummary, ValueSetSummaryApiModel>(valueSetSummary);
+            return Mapper.Map<IValueSetSummary, ValueSetItemApiModel>(valueSetSummary);
         }
 
-        //public static PagedCollection<ValueSetApiModel> ToValueSetApiModelPage(
-        //    this PagedCollection<IValueSet> valuesets,
-        //    bool summaries = true,
-        //    int shortListCount = 5)
-        //{
-        //    return new PagedCollection<ValueSetApiModel>
-        //    {
-        //        PagerSettings = valuesets.PagerSettings,
-        //        TotalItems = valuesets.TotalItems,
-        //        TotalPages = valuesets.TotalPages,
-        //        Values = valuesets.Values.Select(vs => vs.ToValueSetApiModel(summaries, shortListCount)).ToList()
-        //    };
-        //}
+        public static PagedCollection<ValueSetItemApiModel> ToValueSetApiModelPage<T>(this PagedCollection<T> valuesets, Func<T, ValueSetItemApiModel> mapper)
+            where T : IValueSetSummary
+        {
+            return new PagedCollection<ValueSetItemApiModel>
+            {
+                PagerSettings = valuesets.PagerSettings,
+                TotalItems = valuesets.TotalItems,
+                TotalPages = valuesets.TotalPages,
+                Values = valuesets.Values.Select(mapper).ToList()
+            };
+        }
 
         public static ICodeSetCode ToCodeSetCode(this CodeSetCodeApiModel model)
         {
