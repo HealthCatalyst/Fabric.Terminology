@@ -3,6 +3,7 @@
     using System;
 
     using Fabric.Terminology.API;
+    using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Services;
     using Fabric.Terminology.IntegrationTests.Fixtures;
     using Fabric.Terminology.TestsBase;
@@ -15,17 +16,70 @@
     using Xunit;
     using Xunit.Abstractions;
 
-    public class ValueSetServiceTests : OutputTestBase, IClassFixture<ValueSetServiceFixture>
+    public class ValueSetServiceTests : OutputTestBase, IClassFixture<ServiceFixture>
     {
-        private readonly ValueSetServiceFixture fixture;
-
         private readonly IValueSetService valueSetService;
 
-        public ValueSetServiceTests(ValueSetServiceFixture fixture, [NotNull] ITestOutputHelper output)
+        private readonly IValueSetSummaryService valueSetSummaryService;
+
+        public ValueSetServiceTests(ServiceFixture fixture, [NotNull] ITestOutputHelper output)
             : base(output)
         {
-            this.fixture = fixture;
             this.valueSetService = fixture.ValueSetService;
+            this.valueSetSummaryService = fixture.ValueSetSummaryService;
+        }
+
+        [Theory]
+        [InlineData("35F6B1A6-A72B-48F5-B319-F6CCAF15734D")]
+        [InlineData("A2216AAC-8513-43D8-85C2-00057F92394B")]
+        [InlineData("31EA98DC-D050-47A2-9435-002C19CEBF8F")]
+        public void CanGetValueSet(string key)
+        {
+            // Arrange
+            var valueSetGuid = Guid.Parse(key);
+
+            // Act
+            var valueSet = this.Profiler.ExecuteTimed(() => this.valueSetService.GetValueSet(valueSetGuid), $"Querying ValueSet {valueSetGuid}").Single();
+           // var summary = this.Profiler.ExecuteTimed(() => this.valueSetSummaryService.GetValueSetSummary(valueSetGuid), $"Querying ValueSetSummary {valueSetGuid}").Single();
+
+            this.Output.WriteLine(valueSet.Name);
+            this.Output.WriteLine($"Code count: {valueSet.ValueSetCodes.Count}");
+            //foreach (var count in summary.CodeCounts)
+            //{
+            //    this.Output.WriteLine($"CodeSystem {count.CodeSystemGuid}: {count.CodeCount}");
+            //}
+
+            // Assert
+            valueSet.ValueSetGuid.Should().Be(valueSetGuid);
+
+        }
+
+        [Theory]
+        [InlineData(10, 1)]
+        [InlineData(20, 2)]
+        [InlineData(20, 3)]
+        [InlineData(100, 1)]
+        [InlineData(100, 2)]
+        public void CanGetValueSetPages(int itemsPerPage, int pageNumber)
+        {
+            // Arrange
+            var pagerSettings = new PagerSettings { CurrentPage = pageNumber, ItemsPerPage = itemsPerPage };
+
+            // Act
+            var page = this.Profiler.ExecuteTimed(async () => await this.valueSetService.GetValueSetsAsync(pagerSettings));
+            var summaryPage = this.Profiler.ExecuteTimed(async () => await this.valueSetSummaryService.GetValueSetSummariesAsync(pagerSettings));
+
+            this.Output.WriteLine($"Total Values {page.TotalItems}");
+            this.Output.WriteLine($"Total Pages {page.TotalPages}");
+
+            // Assert
+            page.TotalItems.Should().BeGreaterThan(0);
+            page.TotalPages.Should().BeGreaterThan(0);
+            page.Values.Count.Should().BeLessOrEqualTo(itemsPerPage);
+
+            summaryPage.TotalItems.Should().BeGreaterThan(0);
+            summaryPage.TotalPages.Should().BeGreaterThan(0);
+            summaryPage.Values.Count.Should().BeLessOrEqualTo(itemsPerPage);
         }
 
         [Theory]
@@ -46,7 +100,7 @@
             this.Profiler.ExecuteTimed(() => this.valueSetService.Save(vs));
 
             // Assert
-            vs.ValueSetUniqueId.Should().NotBe(Guid.Empty.ToString());
+            vs.ValueSetGuid.Should().NotBe(Guid.Empty);
             vs.ValueSetCodes.Count.Should().Be(codeCount);
             vs.Name.Should().BeEquivalentTo(name);
 

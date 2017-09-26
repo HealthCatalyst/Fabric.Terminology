@@ -16,9 +16,8 @@
             {
                 Name = name,
                 AuthoringSourceDescription = "Test Authoring Source Description",
-                PurposeDescription = "Test Purpose Description",
+                DefinitionDescription = "Test Purpose Description",
                 SourceDescription = "Test Source Description",
-                VersionDescription = "Test Version Description",
                 CodeSetCodes = CodeSetCodeApiModelCollection(codeCount)
             };
         }
@@ -35,19 +34,14 @@
         {
             var codeSystem = new CodeSystem
             {
-                Code = "TEST-CODE-SYSTEM",
-                Name = "TEST CODE SYSTEM",
-                Version = "TEST-CODE-SYSTEM-VERSION"
+                CodeSystemGuid = Guid.NewGuid(),
+                Name = "TEST CODE SYSTEM"
             };
 
             return new CodeSetCodeApiModel
             {
                 Code = code,
-                Name = name,
-                SourceDescription = "TEST Source",
-                VersionDescription = "TEST Version",
-                CodeSystem = codeSystem,
-                LastLoadDate = DateTime.UtcNow
+                Name = name
             };
         }
     }

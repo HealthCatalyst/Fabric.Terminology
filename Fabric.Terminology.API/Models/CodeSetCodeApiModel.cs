@@ -2,20 +2,16 @@
 {
     using System;
 
-    using Fabric.Terminology.Domain.Models;
+    using Swagger.ObjectModel;
 
     public class CodeSetCodeApiModel
     {
-        public string Code { get; set; }
+        public string CodeGuid { get; internal set; }
 
-        public string Name { get; set; }
+        public string Code { get; internal set; }
 
-        public CodeSystem CodeSystem { get; set; }
+        public string Name { get; internal set; }
 
-        public string SourceDescription { get; set; }
-
-        public string VersionDescription { get; set; }
-
-        public DateTime LastLoadDate { get; set; }
+        public string CodeSystemGuid { get; internal set; }
     }
 }

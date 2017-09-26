@@ -15,6 +15,7 @@
             container.Register<SharedContext>((c, p) => c.Resolve<SharedContextFactory>().Create());
             container.Register<Lazy<ClientTermContext>>((c, p) => c.Resolve<ClientTermContextFactory>().CreateLazy());
             container.Register<IValueSetService, ValueSetService>().AsSingleton();
+            container.Register<IValueSetSummaryService, ValueSetSummaryService>().AsSingleton();
         }
     }
 }

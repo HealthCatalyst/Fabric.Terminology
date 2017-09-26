@@ -4,15 +4,15 @@
 
     internal static class ParameterFactory
     {
-        public static Parameter GetValueSetIdArray()
+        public static Parameter GetValueSetGuidArray()
         {
             return new Parameter
             {
-                Name = "valueSetUniqueId",
+                Name = "valueSetGuid",
                 In = ParameterIn.Path,
                 Required = true,
                 CollectionFormat = CollectionFormats.Csv,
-                Description = "A CSV string of ValueSetIds",
+                Description = "A CSV string of ValueSetGuids",
                 Type = "string"
             };
         }
@@ -26,7 +26,8 @@
                 Required = false,
                 CollectionFormat = CollectionFormats.Csv,
                 Description = "An array of Code System Codes (CodeSystemCD) - used to filter ValueSet Codes",
-                Type = "string"
+                Type = "string",
+                Format = "uuid"
             };
         }
 

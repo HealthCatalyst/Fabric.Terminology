@@ -14,6 +14,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Persistence\Factories\ValueSetFullCodeListMapper.cs" />
+    <Compile Remove="Persistence\Factories\ValueSetMapperBase.cs" />
+    <Compile Remove="Persistence\Factories\ValueSetShortCodeListMapper.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="CallMeMaybe" Version="0.6.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="1.1.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="1.1.2" />

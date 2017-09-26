@@ -3,18 +3,15 @@
     using System.Collections.Generic;
 
     using Fabric.Terminology.Domain.Models;
-    using Fabric.Terminology.Domain.Persistence.Mapping;
 
-    public interface IPagingStrategy<TSrc, TResult>
-        where TSrc : class, new()
+    public interface IPagingStrategy<TResult>
     {
         int DefaultItemsPerPage { get; }
 
         PagedCollection<TResult> CreatePagedCollection(
-            IEnumerable<TSrc> items,
+            IEnumerable<TResult> items,
             int totalCount,
-            IPagerSettings pagerSettings,
-            IModelMapper<TSrc, TResult> mapper);
+            IPagerSettings pagerSettings);
 
         void EnsurePagerSettings(IPagerSettings pagerSettings);
     }

@@ -2,10 +2,6 @@
 {
     public class ValueSetCodeApiModel : CodeSetCodeApiModel
     {
-        public string ValueSetUniqueId { get; set; }
-
-        public string ValueSetOId { get; set; }
-
-        public string ValueSetId { get; set; }
+        public string ValueSetGuid { get; set; }
     }
 }

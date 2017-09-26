@@ -28,7 +28,7 @@
             var val = cache.GetItem(Key);
 
             // Assert
-            Assert.Null(val);
+            val.HasValue.Should().BeTrue();
         }
 
         [Fact]
@@ -42,11 +42,11 @@
 
             // Act
             var tmp = cache.GetItem(Key, () => obj);
-            var cached = cache.GetItem(Key) as TestObject;
+            var cached = cache.GetItem(Key).OfType<TestObject>();
 
             // Assert
-            Assert.NotNull(cached);
-            Assert.Equal(dt, cached.Stamp);
+            cached.HasValue.Should().BeTrue();
+            cached.Single().Stamp.Should().Be(dt);
         }
 
         [Fact]

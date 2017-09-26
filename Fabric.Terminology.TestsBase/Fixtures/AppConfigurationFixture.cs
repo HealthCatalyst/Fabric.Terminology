@@ -7,7 +7,6 @@
 
     using Fabric.Terminology.API.Configuration;
     using Fabric.Terminology.API.Models;
-    using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Models;
 
     using Microsoft.Extensions.Configuration;
@@ -27,9 +26,9 @@
                             .ForMember(
                                 dest => dest.Identifier,
                                 opt => opt.MapFrom(
-                                    src => src.ValueSetId.IsNullOrWhiteSpace()
+                                    src => src.ValueSetGuid.Equals(Guid.Empty)
                                                ? Guid.NewGuid().ToString()
-                                               : src.ValueSetId));
+                                               : src.ValueSetGuid.ToString()));
                     });
 
             var builder = new ConfigurationBuilder()

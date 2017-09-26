@@ -4,22 +4,14 @@ namespace Fabric.Terminology.Domain.Models
 
     public interface ICodeSetCode
     {
+        Guid CodeGuid { get; }
+
         string Code { get; }
 
         string Name { get; }
 
-        // TODO REMOVE
-        string VersionDescription { get; }
+        Guid CodeSystemGuid { get; set; }
 
-        // TODO REMOVE
-        string SourceDescription { get; }
-
-        // TODO REMOVE
-        DateTime? RevisionDate { get; }
-
-        ICodeSystem CodeSystem { get; }
-
-        // TODO REMOVE
-        DateTime LastLoadDate { get; }
+        string CodeSystemName { get; set; }
     }
 }
