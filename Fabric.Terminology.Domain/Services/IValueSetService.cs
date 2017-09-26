@@ -52,5 +52,7 @@
 
         // Can only delete custom value sets
         void Delete(IValueSet valueSet);
+
+        bool ValueSetGuidIsUnique(Guid valueSetGuid);
     }
 }

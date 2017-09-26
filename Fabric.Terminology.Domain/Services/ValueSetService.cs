@@ -124,6 +124,11 @@ namespace Fabric.Terminology.Domain.Services
             return !this.valueSetBackingItemRepository.NameExists(name);
         }
 
+        public bool ValueSetGuidIsUnique(Guid valueSetGuid)
+        {
+            return !this.valueSetBackingItemRepository.ValueSetGuidExists(valueSetGuid);
+        }
+
         private static bool ValidateValueSetMeta(IValueSetMeta meta, out string msg)
         {
             var errors = new List<string>
