@@ -20,23 +20,25 @@
 
         private void Initialize()
         {
+            var cacheManagerFactory = new CachingManagerFactory(this.Cache);
+
             var valueSetCodeRepository = new SqlValueSetCodeRepository(
                 this.SharedContext,
                 this.Logger,
-                new ValueSetCachingManager<IValueSetCode>(this.Cache));
+                cacheManagerFactory);
 
             var valueSetCodeCountRepository = new SqlValueSetCodeCountRepository(
                 this.SharedContext,
                 this.Logger,
-                new ValueSetCachingManager<IValueSetCodeCount>(this.Cache));
+                cacheManagerFactory);
 
             var valueSetBackingItemRepository = new SqlValueSetBackingItemRepository(
                 this.SharedContext,
                 this.Logger,
-                new ValueSetCachingManager<IValueSetBackingItem>(this.Cache),
+                cacheManagerFactory,
                 new PagingStrategyFactory());
 
-            this.ValueSetService = new ValueSetService(this.Logger, valueSetBackingItemRepository, valueSetCodeRepository);
+            this.ValueSetService = new ValueSetService(this.Logger, valueSetBackingItemRepository, valueSetCodeRepository, valueSetCodeCountRepository);
 
             this.ValueSetSummaryService = new ValueSetSummaryService(this.Logger, valueSetBackingItemRepository, valueSetCodeCountRepository);
         }

@@ -7,8 +7,8 @@
 
     using Fabric.Terminology.Domain.Models;
 
-    internal interface IValueSetCachingManager<TResult>
-        where TResult : IHaveValueSetGuid
+    public interface IValueSetCachingManager<TResult>
+        where TResult : class, IHaveValueSetGuid
     {
         TResult GetOrSet(Guid valueSetGuid, TResult value);
 

@@ -26,11 +26,11 @@
         public SqlValueSetCodeCountRepository(
             SharedContext sharedContext,
             ILogger logger,
-            IValueSetCachingManager<IValueSetCodeCount> cacheManager)
+            ICachingManagerFactory cachingManagerFactory)
         {
             this.sharedContext = sharedContext;
             this.logger = logger;
-            this.cacheManager = cacheManager;
+            this.cacheManager = cachingManagerFactory.ResolveFor<IValueSetCodeCount>();
         }
 
         public IReadOnlyCollection<IValueSetCodeCount> GetValueSetCodeCounts(Guid valueSetGuid)

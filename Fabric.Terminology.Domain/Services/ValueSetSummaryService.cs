@@ -13,7 +13,7 @@
 
     using Serilog;
 
-    internal class ValueSetSummaryService : IValueSetSummaryService
+    public class ValueSetSummaryService : IValueSetSummaryService
     {
         private readonly IValueSetBackingItemRepository valueSetBackingItemRepository;
 

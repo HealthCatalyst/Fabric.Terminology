@@ -13,34 +13,31 @@
     public static partial class Extensions
     {
         public static ValueSetApiModel ToValueSetApiModel(
-            this IValueSet valueSet,
-            bool summary = true,
-            int shortListCount = 5)
+            this IValueSet valueSet)
         {
             var apiModel = Mapper.Map<IValueSet, ValueSetApiModel>(valueSet);
-            if (!summary)
-            {
-                return apiModel;
-            }
-
-            apiModel.ValueSetCodes = apiModel.ValueSetCodes.Take(shortListCount).ToList().AsReadOnly();
-
+            apiModel.ValueSetCodes = apiModel.ValueSetCodes.ToList().AsReadOnly();
             return apiModel;
         }
 
-        public static PagedCollection<ValueSetApiModel> ToValueSetApiModelPage(
-            this PagedCollection<IValueSet> valuesets,
-            bool summaries = true,
-            int shortListCount = 5)
+        public static ValueSetSummaryApiModel ToValueSetSummaryApiModel(this IValueSetSummary valueSetSummary)
         {
-            return new PagedCollection<ValueSetApiModel>
-            {
-                PagerSettings = valuesets.PagerSettings,
-                TotalItems = valuesets.TotalItems,
-                TotalPages = valuesets.TotalPages,
-                Values = valuesets.Values.Select(vs => vs.ToValueSetApiModel(summaries, shortListCount)).ToList()
-            };
+            return Mapper.Map<IValueSetSummary, ValueSetSummaryApiModel>(valueSetSummary);
         }
+
+        //public static PagedCollection<ValueSetApiModel> ToValueSetApiModelPage(
+        //    this PagedCollection<IValueSet> valuesets,
+        //    bool summaries = true,
+        //    int shortListCount = 5)
+        //{
+        //    return new PagedCollection<ValueSetApiModel>
+        //    {
+        //        PagerSettings = valuesets.PagerSettings,
+        //        TotalItems = valuesets.TotalItems,
+        //        TotalPages = valuesets.TotalPages,
+        //        Values = valuesets.Values.Select(vs => vs.ToValueSetApiModel(summaries, shortListCount)).ToList()
+        //    };
+        //}
 
         public static ICodeSetCode ToCodeSetCode(this CodeSetCodeApiModel model)
         {
@@ -62,7 +59,7 @@
 
             var error = new Error
             {
-                Message = details.Count > 1 ? "Multiple Errors" : details.FirstOrDefault().Message,
+                Message = details.Count > 1 ? "Multiple Errors" : details.First().Message,
                 Details = details.ToArray()
             };
 

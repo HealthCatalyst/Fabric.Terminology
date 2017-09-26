@@ -19,15 +19,19 @@ namespace Fabric.Terminology.Domain.Services
 
         private readonly IValueSetCodeRepository valueSetCodeRepository;
 
+        private readonly IValueSetCodeCountRepository valueSetCodeCountRepository;
+
         private readonly ILogger logger;
 
         public ValueSetService(
             ILogger logger,
             IValueSetBackingItemRepository valueSetBackingItemRepository,
-            IValueSetCodeRepository valueSetCodeRepository)
+            IValueSetCodeRepository valueSetCodeRepository,
+            IValueSetCodeCountRepository valueSetCodeCountRepository)
         {
             this.valueSetBackingItemRepository = valueSetBackingItemRepository;
             this.valueSetCodeRepository = valueSetCodeRepository;
+            this.valueSetCodeCountRepository = valueSetCodeCountRepository;
             this.logger = logger;
         }
 
@@ -43,7 +47,8 @@ namespace Fabric.Terminology.Domain.Services
                     backingItem =>
                         {
                             var codes = this.valueSetCodeRepository.GetValueSetCodes(valueSetGuid);
-                            return new ValueSet(backingItem, codes) as IValueSet;
+                            var counts = this.valueSetCodeCountRepository.GetValueSetCodeCounts(valueSetGuid);
+                            return new ValueSet(backingItem, codes, counts) as IValueSet;
                         });
         }
 
@@ -60,9 +65,11 @@ namespace Fabric.Terminology.Domain.Services
 
             var codesTask = Task.Run(() => this.valueSetCodeRepository.BuildValueSetCodesDictionary(setGuids));
 
-            Task.WaitAll(backingItemTask, codesTask);
+            var countsTask = Task.Run(() => this.valueSetCodeCountRepository.BuildValueSetCountsDictionary(setGuids));
 
-            return this.BuildValueSets(backingItemTask.Result, codesTask.Result);
+            Task.WaitAll(backingItemTask, codesTask, countsTask);
+
+            return this.BuildValueSets(backingItemTask.Result, codesTask.Result, countsTask.Result);
         }
 
         public Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings settings, bool latestVersionsOnly = true)
@@ -88,11 +95,13 @@ namespace Fabric.Terminology.Domain.Services
                                       codeSystemGuids,
                                       latestVersionsOnly);
 
-            var codesDictionary =
-                await this.valueSetCodeRepository.BuildValueSetCodesDictionary(
-                    backingItemPage.Values.Select(bi => bi.ValueSetGuid));
+            var valueSetGuids = backingItemPage.Values.Select(bi => bi.ValueSetGuid).ToList();
 
-            return this.BuildValueSetsPage(backingItemPage, codesDictionary);
+            var codes = await this.valueSetCodeRepository.BuildValueSetCodesDictionary(valueSetGuids);
+
+            var counts = await this.valueSetCodeCountRepository.BuildValueSetCountsDictionary(valueSetGuids);
+
+            return this.BuildValueSetsPage(backingItemPage, codes, counts);
         }
 
         public Attempt<IValueSet> Create(string name, IValueSetMeta meta, IEnumerable<ICodeSetCode> valueSetCodes)
@@ -136,25 +145,30 @@ namespace Fabric.Terminology.Domain.Services
 
         private PagedCollection<IValueSet> BuildValueSetsPage(
             PagedCollection<IValueSetBackingItem> backingItemPage,
-            IDictionary<Guid, IReadOnlyCollection<IValueSetCode>> codesDictionary)
+            IDictionary<Guid, IReadOnlyCollection<IValueSetCode>> codesDictionary,
+            IDictionary<Guid, IReadOnlyCollection<IValueSetCodeCount>> countsDictionary)
         {
             return new PagedCollection<IValueSet>
             {
                 PagerSettings = backingItemPage.PagerSettings,
                 TotalItems = backingItemPage.TotalItems,
                 TotalPages = backingItemPage.TotalPages,
-                Values = this.BuildValueSets(backingItemPage.Values, codesDictionary)
+                Values = this.BuildValueSets(backingItemPage.Values, codesDictionary, countsDictionary)
             };
         }
 
         private IReadOnlyCollection<IValueSet> BuildValueSets(
             IReadOnlyCollection<IValueSetBackingItem> backingItems,
-            IDictionary<Guid, IReadOnlyCollection<IValueSetCode>> codesDictionary)
+            IDictionary<Guid, IReadOnlyCollection<IValueSetCode>> codesDictionary,
+            IDictionary<Guid, IReadOnlyCollection<IValueSetCodeCount>> countsDictionary)
         {
+            // TODO Review
             var valueSets = backingItems.SelectMany(
-                    backingItem => codesDictionary.GetMaybe(backingItem.ValueSetGuid)
-                        .Select(codes => new ValueSet(backingItem, codes)))
-                .ToList();
+                    item => codesDictionary.GetMaybe(item.ValueSetGuid)
+                        .Select(
+                            codes => countsDictionary.GetMaybe(item.ValueSetGuid)
+                                .Select(counts => new ValueSet(item, codes, counts))))
+                .Values().ToList();
 
             if (valueSets.Count == backingItems.Count)
             {

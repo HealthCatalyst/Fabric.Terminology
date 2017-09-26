@@ -40,14 +40,14 @@
 
             // Act
             var valueSet = this.Profiler.ExecuteTimed(() => this.valueSetService.GetValueSet(valueSetGuid), $"Querying ValueSet {valueSetGuid}").Single();
-            var summary = this.Profiler.ExecuteTimed(() => this.valueSetSummaryService.GetValueSetSummary(valueSetGuid), $"Querying ValueSetSummary {valueSetGuid}").Single();
+           // var summary = this.Profiler.ExecuteTimed(() => this.valueSetSummaryService.GetValueSetSummary(valueSetGuid), $"Querying ValueSetSummary {valueSetGuid}").Single();
 
             this.Output.WriteLine(valueSet.Name);
             this.Output.WriteLine($"Code count: {valueSet.ValueSetCodes.Count}");
-            foreach (var count in summary.CodeCounts)
-            {
-                this.Output.WriteLine($"CodeSystem {count.CodeSystemGuid}: {count.CodeCount}");
-            }
+            //foreach (var count in summary.CodeCounts)
+            //{
+            //    this.Output.WriteLine($"CodeSystem {count.CodeSystemGuid}: {count.CodeCount}");
+            //}
 
             // Assert
             valueSet.ValueSetGuid.Should().Be(valueSetGuid);
@@ -67,7 +67,7 @@
 
             // Act
             var page = this.Profiler.ExecuteTimed(async () => await this.valueSetService.GetValueSetsAsync(pagerSettings));
-            var summaryPage = this.Profiler.ExecuteTimed(async () => await  this.valueSetSummaryService.GetValueSetSummariesAsync(pagerSettings));
+            var summaryPage = this.Profiler.ExecuteTimed(async () => await this.valueSetSummaryService.GetValueSetSummariesAsync(pagerSettings));
 
             this.Output.WriteLine($"Total Values {page.TotalItems}");
             this.Output.WriteLine($"Total Pages {page.TotalPages}");

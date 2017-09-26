@@ -1,6 +1,5 @@
 ﻿namespace Fabric.Terminology.IntegrationTests.Fixtures
 {
-    using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence;
     using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Persistence;
@@ -17,10 +16,12 @@
 
         private void Initialize()
         {
+            var cachingManagerFactory = new CachingManagerFactory(this.Cache);
+
             this.ValueSetBackingItemRepository = new SqlValueSetBackingItemRepository(
                 this.SharedContext,
                 this.Logger,
-                new ValueSetCachingManager<IValueSetBackingItem>(this.Cache),
+                cachingManagerFactory,
                 new PagingStrategyFactory());
         }
     }

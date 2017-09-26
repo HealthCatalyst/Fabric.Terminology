@@ -34,12 +34,12 @@
         public SqlValueSetBackingItemRepository(
             SharedContext sharedContext,
             ILogger logger,
-            IValueSetCachingManager<IValueSetBackingItem> cacheManager,
+            ICachingManagerFactory cachingManagerFactory,
             IPagingStrategyFactory pagingStrategyFactory)
         {
             this.sharedContext = sharedContext;
             this.logger = logger;
-            this.cacheManager = cacheManager;
+            this.cacheManager = cachingManagerFactory.ResolveFor<IValueSetBackingItem>();
             this.pagingStrategyFactory = pagingStrategyFactory;
         }
 
@@ -94,7 +94,7 @@
 
         public Task<PagedCollection<IValueSetBackingItem>> GetValueSetBackingItemsAsync(
             IPagerSettings pagerSettings,
-            IEnumerable<Guid> codeSystemGuids, 
+            IEnumerable<Guid> codeSystemGuids,
             bool latestVersionsOnly = true)
         {
             return this.GetValueSetBackingItemsAsync(string.Empty, pagerSettings, codeSystemGuids);

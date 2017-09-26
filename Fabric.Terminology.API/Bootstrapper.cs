@@ -3,6 +3,7 @@
     using Fabric.Terminology.API.Configuration;
     using Fabric.Terminology.API.DependencyInjection;
     using Fabric.Terminology.API.Validators;
+    using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Configuration;
 
@@ -77,7 +78,7 @@
                 container.Register<IMemoryCacheProvider, NullMemoryCacheProvider>().AsSingleton();
             }
 
-            container.Register(typeof(IValueSetCachingManager<>), typeof(ValueSetCachingManager<>));
+            container.Register<ICachingManagerFactory, CachingManagerFactory>().AsSingleton();
 
             // Persistence (Must precede service registration)
             container.ComposeFrom<SqlAppComposition>();

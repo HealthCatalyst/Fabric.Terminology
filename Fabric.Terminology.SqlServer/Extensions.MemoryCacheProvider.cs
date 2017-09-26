@@ -12,16 +12,14 @@
     public static partial class Extensions
     {
         public static Maybe<T> GetItem<T>(this IMemoryCacheProvider cache, string key)
-            where T : class
         {
-            return cache.GetItem(key).OfType<T>();
+            return cache.GetItem(key).Select(o => (T)o);
         }
 
         public static T GetItem<T>(this IMemoryCacheProvider cache, string key, Func<object> getter)
-            where T : class
         {
             return cache.GetItem(key, getter)
-                    .OfType<T>()
+                    .Select(o => (T)o)
                     .Else(() => throw new InvalidCastException($"Failed to get an item of type {typeof(T)}"));
         }
     }

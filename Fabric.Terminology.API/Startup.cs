@@ -7,7 +7,6 @@
     using Fabric.Terminology.API.Configuration;
     using Fabric.Terminology.API.Logging;
     using Fabric.Terminology.API.Models;
-    using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Models;
 
     using Microsoft.AspNetCore.Builder;
@@ -54,6 +53,14 @@
                     {
                         cfg.CreateMap<ICodeSetCode, CodeSetCodeApiModel>();
                         cfg.CreateMap<IValueSetCode, ValueSetCodeApiModel>();
+                        cfg.CreateMap<IValueSetCodeCount, ValueSetCodeCountApiModel>();
+                        cfg.CreateMap<IValueSetSummary, ValueSetSummaryApiModel>()
+                            .ForMember(
+                                dest => dest.Identifier,
+                                opt => opt.MapFrom(
+                                    src => src.ValueSetGuid.Equals(Guid.Empty)
+                                               ? Guid.NewGuid().ToString()
+                                               : src.ValueSetGuid.ToString()));
 
                         cfg.CreateMap<IValueSet, ValueSetApiModel>()
                             .ForMember(

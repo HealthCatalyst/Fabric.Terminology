@@ -24,7 +24,7 @@
             this.ValueSetCodeRepository = new SqlValueSetCodeRepository(
                 this.SharedContext,
                 this.Logger,
-                new ValueSetCachingManager<IValueSetCode>(this.Cache));
+                new CachingManagerFactory(this.Cache));
 
             //this.ValueSetService = new ValueSetService(this.ValueSetRepository);
         }

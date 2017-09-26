@@ -9,11 +9,14 @@
             this.ValueSetCodes = new List<IValueSetCode>();
         }
 
-        internal ValueSet(IValueSetBackingItem backingItem, IReadOnlyCollection<IValueSetCode> codes)
+        internal ValueSet(IValueSetBackingItem backingItem, IReadOnlyCollection<IValueSetCode> codes, IReadOnlyCollection<IValueSetCodeCount> counts)
             : base(backingItem)
         {
             this.ValueSetCodes = codes;
+            this.CodeCounts = counts;
         }
+
+        public IReadOnlyCollection<IValueSetCodeCount> CodeCounts { get; }
 
         public IReadOnlyCollection<IValueSetCode> ValueSetCodes { get; internal set; }
     }

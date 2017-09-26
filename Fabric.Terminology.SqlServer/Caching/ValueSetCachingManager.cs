@@ -34,7 +34,7 @@
             Guid valueSetGuid,
             Func<Guid, TResult> doQuery)
         {
-            return this.cache.GetItem<TResult>(CacheKeys.ValueSetCodesKey(valueSetGuid), () => doQuery(valueSetGuid));
+            return this.cache.GetItem<TResult>(this.GetCacheKey(valueSetGuid), () => doQuery(valueSetGuid));
         }
 
         public IReadOnlyCollection<TResult> GetMultipleOrQuery(Guid valueSetGuid, Func<Guid, IReadOnlyCollection<TResult>> doQuery)
@@ -57,7 +57,7 @@
 
             items.AddRange(
                     getLookup(remaining)
-                    .Select(bi => this.cache.GetItem<TResult>(CacheKeys.ValueSetBackingItemKey(bi.Key), () => bi)));
+                    .Select(bi => this.cache.GetItem<TResult>(this.GetCacheKey(bi.Key), () => bi)));
 
             return items;
         }
