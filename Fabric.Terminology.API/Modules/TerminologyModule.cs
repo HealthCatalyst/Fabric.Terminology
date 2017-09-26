@@ -76,9 +76,9 @@
                 };
             }
 
-            if (model.CodeSystemCodes == null)
+            if (model.CodeSystemGuids == null)
             {
-                model.CodeSystemCodes = Enumerable.Empty<string>();
+                model.CodeSystemGuids = new Guid[] { };
             }
 
             if (model.Term == null)
@@ -107,7 +107,7 @@
 
         protected Guid[] GetCodeSystems()
         {
-            return this.CreateGuidParameterArray((string)this.Request.Query["$codesytems"]);
+            return this.CreateGuidParameterArray((string)this.Request.Query["$codesystems"]);
         }
 
         protected Guid[] GetValueSetGuids(string valueSetGuids)

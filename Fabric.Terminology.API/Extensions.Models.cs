@@ -1,6 +1,7 @@
 ﻿namespace Fabric.Terminology.API
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
 
     using AutoMapper;
@@ -12,28 +13,48 @@
 
     public static partial class Extensions
     {
+        public static ValueSetApiModel ToValueSetApiModel(this IValueSet valueSet) =>
+            valueSet.ToValueSetApiModel(new List<Guid>());
+
         public static ValueSetApiModel ToValueSetApiModel(
-            this IValueSet valueSet)
+            this IValueSet valueSet,
+            IReadOnlyCollection<Guid> codeSystemGuids)
         {
             var apiModel = Mapper.Map<IValueSet, ValueSetApiModel>(valueSet);
-            apiModel.ValueSetCodes = apiModel.ValueSetCodes.ToList().AsReadOnly();
+            if (codeSystemGuids.Any())
+            {
+                apiModel.CodeCounts = apiModel.CodeCounts.Where(cc => codeSystemGuids.Contains(cc.CodeSystemGuid)).ToList();
+                apiModel.ValueSetCodes = apiModel.ValueSetCodes.Where(csc => codeSystemGuids.Contains(csc.CodeSystemGuid)).ToList();
+            }
+
             return apiModel;
         }
 
-        public static ValueSetItemApiModel ToValueSetItemApiModel(this IValueSetSummary valueSetSummary)
+        public static ValueSetItemApiModel ToValueSetItemApiModel(this IValueSetSummary valueSetSummary) =>
+            valueSetSummary.ToValueSetItemApiModel(new List<Guid>());
+
+        public static ValueSetItemApiModel ToValueSetItemApiModel(
+            this IValueSetSummary valueSetSummary,
+            IReadOnlyCollection<Guid> codeSystemGuids)
         {
-            return Mapper.Map<IValueSetSummary, ValueSetItemApiModel>(valueSetSummary);
+            var apiModel = Mapper.Map<IValueSetSummary, ValueSetItemApiModel>(valueSetSummary);
+            if (codeSystemGuids.Any())
+            {
+                apiModel.CodeCounts = apiModel.CodeCounts.Where(cc => codeSystemGuids.Contains(cc.CodeSystemGuid)).ToList();
+            }
+
+            return apiModel;
         }
 
-        public static PagedCollection<ValueSetItemApiModel> ToValueSetApiModelPage<T>(this PagedCollection<T> valuesets, Func<T, ValueSetItemApiModel> mapper)
+        public static PagedCollection<ValueSetItemApiModel> ToValueSetApiModelPage<T>(this PagedCollection<T> items, IReadOnlyCollection<Guid> codeSystemGuids, Func<T, IReadOnlyCollection<Guid>, ValueSetItemApiModel> mapper)
             where T : IValueSetSummary
         {
             return new PagedCollection<ValueSetItemApiModel>
             {
-                PagerSettings = valuesets.PagerSettings,
-                TotalItems = valuesets.TotalItems,
-                TotalPages = valuesets.TotalPages,
-                Values = valuesets.Values.Select(mapper).ToList()
+                PagerSettings = items.PagerSettings,
+                TotalItems = items.TotalItems,
+                TotalPages = items.TotalPages,
+                Values = items.Values.Select(vsi => mapper(vsi, codeSystemGuids)).ToList()
             };
         }
 

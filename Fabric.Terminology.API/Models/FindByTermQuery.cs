@@ -1,17 +1,23 @@
 ﻿namespace Fabric.Terminology.API.Models
 {
-    using System.Collections.Generic;
+    using System;
 
     using Fabric.Terminology.Domain.Models;
 
+    using Newtonsoft.Json;
+
     public class FindByTermQuery
     {
+        [JsonProperty("term")]
         public string Term { get; set; }
 
+        [JsonProperty("pagerSettings")]
         public PagerSettings PagerSettings { get; set; }
 
-        public IEnumerable<string> CodeSystemCodes { get; set; }
+        [JsonProperty("codeSystemGuids")]
+        public Guid[] CodeSystemGuids { get; set; }
 
+        [JsonProperty("summary")]
         public bool Summary { get; set; } = true;
     }
 }
