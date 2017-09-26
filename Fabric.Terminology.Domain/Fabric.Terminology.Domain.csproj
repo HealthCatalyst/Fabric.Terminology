@@ -21,13 +21,8 @@
 
   <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" Version="11.0.0" />
+    <PackageReference Include="Serilog" Version="2.4.0" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.0.2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Serilog">
-      <HintPath>..\..\..\..\Users\rusty.swayne\.nuget\packages\serilog\2.4.0\lib\netstandard1.3\Serilog.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
   <ItemGroup>
