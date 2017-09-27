@@ -16,7 +16,7 @@
 
         Maybe<IValueSetBackingItem> GetValueSetBackingItem(Guid valueSetGuid, IEnumerable<Guid> codeSystemGuids);
 
-        IReadOnlyCollection<IValueSetBackingItem> GetValueSetBackingItems(string valueSetReferenceId);
+        IReadOnlyCollection<IValueSetBackingItem> GetValueSetBackingItemVersions(string valueSetReferenceId);
 
         IReadOnlyCollection<IValueSetBackingItem> GetValueSetBackingItems(IEnumerable<Guid> valueSetGuids);
 

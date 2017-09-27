@@ -14,11 +14,13 @@
 
         Maybe<IValueSetSummary> GetValueSetSummary(Guid valueSetGuid, IEnumerable<Guid> codeSystemGuids);
 
-        IReadOnlyCollection<IValueSetSummary> GetValueSetSummaries(IEnumerable<Guid> valueSetGuids);
+        Task<IReadOnlyCollection<IValueSetSummary>> GetValueSetSummaries(IEnumerable<Guid> valueSetGuids);
 
-        IReadOnlyCollection<IValueSetSummary> GetValueSetSummaries(
+        Task<IReadOnlyCollection<IValueSetSummary>> GetValueSetSummaries(
             IEnumerable<Guid> valueSetGuids,
             IEnumerable<Guid> codeSystemGuids);
+
+        Task<IReadOnlyCollection<IValueSetSummary>> GetValueSetVersions(string valueSetReferenceId);
 
         Task<PagedCollection<IValueSetSummary>> GetValueSetSummariesAsync(IPagerSettings settings, bool latestVersionsOnly = true);
 

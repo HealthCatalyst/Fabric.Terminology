@@ -17,7 +17,7 @@
             };
         }
 
-        public static Parameter GetCodeSystemCodesArray()
+        public static Parameter GetCodeSystemGuidsArray()
         {
             return new Parameter
             {
@@ -25,7 +25,19 @@
                 In = ParameterIn.Query,
                 Required = false,
                 CollectionFormat = CollectionFormats.Csv,
-                Description = "An array of Code System Codes (CodeSystemCD) - used to filter ValueSet Codes",
+                Description = "An array of Code System identifiers (CodeSystemGUID) - used to filter ValueSet Codes",
+                Type = "string"
+            };
+        }
+
+        public static Parameter GetValueSetReferenceId()
+        {
+            return new Parameter
+            {
+                Name = "referenceId",
+                Description = "The published ValueSet (usually the OID)",
+                Required = true,
+                In = ParameterIn.Path,
                 Type = "string"
             };
         }

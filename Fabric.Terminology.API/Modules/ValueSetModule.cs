@@ -43,6 +43,8 @@
 
             this.Get("/{valueSetGuid}", parameters => this.GetValueSets(parameters.valueSetGuid), null, "GetValueSet");
 
+            this.Get("/versions/{referenceId}", parameters => this.GetValueSetVersions(parameters.referenceId), null, "GetValueSetVersions");
+
             this.Post("/search/", _ => this.Search(), null, "Search");
 
             //this.Post("/", _ => this.AddValueSet(), null, "AddValueSet");
@@ -79,7 +81,7 @@
             }
         }
 
-        private object GetValueSets(string valueSetGuids)
+        private async Task<object> GetValueSets(string valueSetGuids)
         {
             try
             {
@@ -97,12 +99,11 @@
                     return this.CreateFailureResponse("An array of value set ids is required.", HttpStatusCode.BadRequest);
                 }
 
-                return summary ? this.valueSetSummaryService
-                                            .GetValueSetSummaries(guids, codeSystemGuids)
-                                            .Select(vs => vs.ToValueSetItemApiModel(codeSystemGuids)) :
+                return summary ? (await this.valueSetSummaryService.GetValueSetSummaries(guids, codeSystemGuids))
+                                    .Select(vs => vs.ToValueSetItemApiModel(codeSystemGuids)) :
 
-                                          this.valueSetService.GetValueSets(guids, codeSystemGuids)
-                                            .Select(vs => vs.ToValueSetApiModel(codeSystemGuids));
+                                (await this.valueSetService.GetValueSets(guids, codeSystemGuids))
+                                    .Select(vs => vs.ToValueSetApiModel(codeSystemGuids));
             }
             catch (Exception ex)
             {
@@ -110,6 +111,34 @@
                 return this.CreateFailureResponse(
                     "Failed to retrieve value sets",
                     HttpStatusCode.InternalServerError);
+            }
+        }
+
+        private async Task<object> GetValueSetVersions(string valueSetReferenceId)
+        {
+            try
+            {
+                var codeSystemGuids = this.GetCodeSystems();
+                var summary = this.GetSummarySetting();
+
+                var versions = (summary
+                        ? (await this.valueSetSummaryService.GetValueSetVersions(valueSetReferenceId))
+                            .Select(vss => vss.ToValueSetItemApiModel(codeSystemGuids))
+
+                        : (await this.valueSetSummaryService.GetValueSetVersions(valueSetReferenceId))
+                            .Select(vs => vs.ToValueSetItemApiModel(codeSystemGuids))).ToList();
+
+                if (!versions.Any())
+                {
+                    return this.CreateFailureResponse("ValueSet with matching ValueSetReferenceID was not found", HttpStatusCode.NotFound);
+                }
+
+                return versions;
+            }
+            catch (Exception ex)
+            {
+                this.Logger.Error(ex, ex.Message);
+                return this.CreateFailureResponse("Failed to retrieve value sets", HttpStatusCode.InternalServerError);
             }
         }
 

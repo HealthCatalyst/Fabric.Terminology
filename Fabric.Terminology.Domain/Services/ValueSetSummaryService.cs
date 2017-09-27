@@ -47,22 +47,33 @@
                         });
         }
 
-        public IReadOnlyCollection<IValueSetSummary> GetValueSetSummaries(IEnumerable<Guid> valueSetGuids)
+        public Task<IReadOnlyCollection<IValueSetSummary>> GetValueSetSummaries(IEnumerable<Guid> valueSetGuids)
         {
             return this.GetValueSetSummaries(valueSetGuids, new List<Guid>());
         }
 
-        public IReadOnlyCollection<IValueSetSummary> GetValueSetSummaries(IEnumerable<Guid> valueSetGuids, IEnumerable<Guid> codeSystemGuids)
+        public async Task<IReadOnlyCollection<IValueSetSummary>> GetValueSetSummaries(IEnumerable<Guid> valueSetGuids, IEnumerable<Guid> codeSystemGuids)
         {
             var setGuids = valueSetGuids as Guid[] ?? valueSetGuids.ToArray();
-            var backingItemTask = Task.Run(
-                () => this.valueSetBackingItemRepository.GetValueSetBackingItems(setGuids, codeSystemGuids));
+            var backingItems = this.valueSetBackingItemRepository.GetValueSetBackingItems(setGuids, codeSystemGuids);
 
-            var countsTask = Task.Run(() => this.valueSetCodeCountRepository.BuildValueSetCountsDictionary(setGuids));
+            var counts = await this.valueSetCodeCountRepository.BuildValueSetCountsDictionary(setGuids);
 
-            Task.WaitAll(backingItemTask, countsTask);
+            return this.BuildValueSetSummaries(backingItems, counts);
+        }
 
-            return this.BuildValueSetSummaries(backingItemTask.Result, countsTask.Result);
+        public async Task<IReadOnlyCollection<IValueSetSummary>> GetValueSetVersions(string valueSetReferenceId)
+        {
+            var backingItems = this.valueSetBackingItemRepository.GetValueSetBackingItemVersions(valueSetReferenceId);
+
+            if (!backingItems.Any())
+            {
+                return new List<IValueSetSummary>();
+            }
+
+            var counts = await this.valueSetCodeCountRepository.BuildValueSetCountsDictionary(backingItems.Select(bi => bi.ValueSetGuid).ToList());
+
+            return this.BuildValueSetSummaries(backingItems, counts);
         }
 
         public Task<PagedCollection<IValueSetSummary>> GetValueSetSummariesAsync(IPagerSettings settings, bool latestVersionsOnly = true)
