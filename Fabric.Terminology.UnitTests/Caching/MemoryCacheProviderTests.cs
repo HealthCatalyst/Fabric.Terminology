@@ -28,7 +28,7 @@
             var val = cache.GetItem(Key);
 
             // Assert
-            val.HasValue.Should().BeTrue();
+            val.HasValue.Should().BeFalse();
         }
 
         [Fact]
@@ -66,13 +66,13 @@
             cache.GetItem(Key3, () => obj3);
 
             // Act
-            cache.GetItem(Key2).Should().NotBeNull();
+            cache.GetItem(Key2).HasValue.Should().BeTrue();
             cache.ClearItem(Key2);
 
             // Assert
-            cache.GetItem(Key2).Should().BeNull();
-            cache.GetItem(Key1).Should().NotBeNull();
-            cache.GetItem(Key3).Should().NotBeNull();
+            cache.GetItem(Key2).HasValue.Should().BeFalse();
+            cache.GetItem(Key1).HasValue.Should().BeTrue();
+            cache.GetItem(Key3).HasValue.Should().BeTrue();
         }
 
         [Fact]
@@ -101,9 +101,9 @@
             cache.ClearAll();
 
             // Assert
-            cache.GetItem(Key1).Should().BeNull();
-            cache.GetItem(Key2).Should().BeNull();
-            cache.GetItem(Key3).Should().BeNull();
+            cache.GetItem(Key1).HasValue.Should().BeFalse();
+            cache.GetItem(Key2).HasValue.Should().BeFalse();
+            cache.GetItem(Key3).HasValue.Should().BeFalse();
             instanceKey.Should().NotBe(cache.InstanceKey);
         }
 
@@ -113,13 +113,13 @@
             // Arrange
             var cache = new MemoryCacheProvider(this.fixture.AppConfiguration.TerminologySqlSettings);
             const string Key = "key";
-            cache.GetItem(Key).Should().BeNull();
+            cache.GetItem(Key).HasValue.Should().BeFalse();
 
             // Act
             cache.GetItem(Key, () => new TestObject { Text = "Test string", Stamp = DateTime.Now });
 
             // Assert
-            cache.GetItem(Key).Should().NotBeNull();
+            cache.GetItem(Key).HasValue.Should().BeTrue();
         }
     }
 }

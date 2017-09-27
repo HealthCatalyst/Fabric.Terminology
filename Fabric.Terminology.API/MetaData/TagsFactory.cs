@@ -24,12 +24,12 @@
             };
         }
 
-        public static Tag GetValueSetFindTag()
+        public static Tag GetValueSetSearchTag()
         {
             return new Tag
             {
                 Description = "Search operations relating to ValueSets",
-                Name = $"{TerminologyVersion.Route}/valuesets/find/"
+                Name = $"{TerminologyVersion.Route}/valuesets/search/"
             };
         }
     }
