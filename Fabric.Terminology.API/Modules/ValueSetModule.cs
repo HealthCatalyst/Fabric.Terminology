@@ -1,7 +1,9 @@
 ﻿namespace Fabric.Terminology.API.Modules
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
+    using System.Threading.Tasks;
 
     using CallMeMaybe;
 
@@ -9,9 +11,11 @@
     using Fabric.Terminology.API.Models;
     using Fabric.Terminology.API.Validators;
     using Fabric.Terminology.Domain.Exceptions;
+    using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Services;
 
     using Nancy;
+    using Nancy.ModelBinding;
 
     using Serilog;
 
@@ -19,37 +23,50 @@
     {
         private readonly IValueSetService valueSetService;
 
+        private readonly IValueSetSummaryService valueSetSummaryService;
+
         private readonly ValueSetValidator valueSetValidator;
 
         public ValueSetModule(
                 IValueSetService valueSetService,
+                IValueSetSummaryService valueSetSummaryService,
                 IAppConfiguration config,
                 ILogger logger,
                 ValueSetValidator valueSetValidator)
             : base($"/{TerminologyVersion.Route}/valuesets", config, logger)
         {
             this.valueSetService = valueSetService;
+            this.valueSetSummaryService = valueSetSummaryService;
             this.valueSetValidator = valueSetValidator;
 
-            //this.Get("/", _ => this.GetValueSetPage(), null, "GetPaged");
+            this.Get("/", _ => this.GetValueSetPage(), null, "GetPaged");
 
             this.Get("/{valueSetGuid}", parameters => this.GetValueSets(parameters.valueSetGuid), null, "GetValueSet");
 
-            //this.Post("/find/", _ => this.Find(), null, "Find");
+            this.Post("/search/", _ => this.Search(), null, "Search");
 
             //this.Post("/", _ => this.AddValueSet(), null, "AddValueSet");
 
             //this.Delete("/{valueSetUniqueId}", parameters => this.DeleteValueSet(parameters), null, "DeleteValueSet");
         }
 
-        private object GetValueSet(Guid valueSetGuid)
+        private static ValueSetApiModel MapToValueSetApiModel(IValueSet vs, IReadOnlyCollection<Guid> codeSystemGuids) =>
+            vs.ToValueSetApiModel(codeSystemGuids);
+
+        private static ValueSetItemApiModel MapToValueSetItemApiModel(IValueSetSummary vss, IReadOnlyCollection<Guid> codeSystemGuids) =>
+                vss.ToValueSetItemApiModel(codeSystemGuids);
+
+        private object GetValueSet(Guid valueSetGuid, IReadOnlyCollection<Guid> codeSystemGuids, bool summary = true)
         {
             try
             {
-                var codeSystems = this.GetCodeSystems();
+                var model = summary ? (Maybe<object>)this.valueSetSummaryService
+                                        .GetValueSetSummary(valueSetGuid, codeSystemGuids)
+                                        .Select(vs => vs.ToValueSetItemApiModel(codeSystemGuids)) :
 
-                var model = (Maybe<object>)this.valueSetService.GetValueSet(valueSetGuid, codeSystems)
-                        .Select(vs => vs.ToValueSetApiModel());
+                                      this.valueSetService
+                                        .GetValueSet(valueSetGuid, codeSystemGuids)
+                                        .Select(vs => vs.ToValueSetApiModel(codeSystemGuids));
 
                 return model.Else(() => this.CreateFailureResponse("ValueSet with matching ID was not found", HttpStatusCode.NotFound));
             }
@@ -67,9 +84,12 @@
             try
             {
                 var guids = this.GetValueSetGuids(valueSetGuids);
+                var codeSystemGuids = this.GetCodeSystems();
+                var summary = this.GetSummarySetting();
+
                 if (guids.Length == 1)
                 {
-                    return this.GetValueSet(guids[0]);
+                    return this.GetValueSet(guids[0], codeSystemGuids, summary);
                 }
 
                 if (!valueSetGuids.Any())
@@ -77,14 +97,12 @@
                     return this.CreateFailureResponse("An array of value set ids is required.", HttpStatusCode.BadRequest);
                 }
 
-                var codeSystemCds = this.GetCodeSystems();
+                return summary ? this.valueSetSummaryService
+                                            .GetValueSetSummaries(guids, codeSystemGuids)
+                                            .Select(vs => vs.ToValueSetItemApiModel(codeSystemGuids)) :
 
-                throw new NotImplementedException();
-                //return summary
-                //                    ? (IReadOnlyCollection<object>) this.QueryValueSetSummaries(guids, codeSystemCds)
-                //                    : this.valueSetService.GetValueSets(guids, codeSystemCds);
-
-                //return valueSets.Select(vs => vs.ValueSetSummaryApiModel(summary, this.config.ValueSetSettings.ShortListCodeCount)).ToList();
+                                          this.valueSetService.GetValueSets(guids, codeSystemGuids)
+                                            .Select(vs => vs.ToValueSetApiModel(codeSystemGuids));
             }
             catch (Exception ex)
             {
@@ -95,56 +113,57 @@
             }
         }
 
+        private async Task<object> GetValueSetPage()
+        {
+            try
+            {
+                var summary = this.GetSummarySetting();
+                var pagerSettings = this.GetPagerSettings();
+                var codeSystemGuids = this.GetCodeSystems();
 
-        //private async Task<object> GetValueSetPage()
-        //{
-        //    try
-        //    {
-        //        var summary = this.GetSummarySetting();
-        //        var pagerSettings = this.GetPagerSettings();
-        //        var codeSystemCds = this.GetCodeSystems();
+                return summary
+                           ? (await this.valueSetSummaryService.GetValueSetSummariesAsync(pagerSettings, codeSystemGuids))
+                                .ToValueSetApiModelPage(codeSystemGuids, MapToValueSetItemApiModel)
 
-        //        throw new NotImplementedException();
+                           : (await this.valueSetService.GetValueSetsAsync(pagerSettings, codeSystemGuids))
+                                .ToValueSetApiModelPage(codeSystemGuids, MapToValueSetApiModel);
+            }
+            catch (Exception ex)
+            {
+                this.Logger.Error(ex, ex.Message);
+                return this.CreateFailureResponse(
+                    "Failed to retrieve the page of value sets",
+                    HttpStatusCode.InternalServerError);
+            }
+        }
 
-        //        //var pc = summary ?
-        //        //    await this.valueSetService.GetValueSetSummariesAsync(pagerSettings, codeSystemCds) :
-        //        //    await this.valueSetService.GetValueSetsAsync(pagerSettings, codeSystemCds);
+        private async Task<object> Search()
+        {
+            try
+            {
+                var model = this.EnsureQueryModel(this.Bind<FindByTermQuery>(new BindingConfig { BodyOnly = true }));
 
-        //        //return pc.ToValueSetApiModelPage(summary, this.config.ValueSetSettings.ShortListCodeCount);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        this.Logger.Error(ex, ex.Message);
-        //        return this.CreateFailureResponse(
-        //            "Failed to retrieve the page of value sets",
-        //            HttpStatusCode.InternalServerError);
-        //    }
-        //}
+                var codeSystemGuids = model.CodeSystemGuids.ToList();
 
-        //private async Task<object> Find()
-        //{
-        //    try
-        //    {
-        //        var model = this.EnsureQueryModel(this.Bind<FindByTermQuery>());
+                return model.Summary
+                           ? (await this.valueSetSummaryService.GetValueSetSummariesAsync(
+                                  model.Term,
+                                  model.PagerSettings,
+                                  codeSystemGuids)).ToValueSetApiModelPage(codeSystemGuids, MapToValueSetItemApiModel)
 
-        //        throw new NotImplementedException();
-
-        //        //var results = await this.valueSetService.GetValueSetsAsync(
-        //        //                  model.Term,
-        //        //                  model.PagerSettings,
-        //        //                  model.CodeSystemCodes.ToArray(),
-        //        //                  !model.Summary);
-
-        //        //return results.ToValueSetApiModelPage(model.Summary, this.config.ValueSetSettings.ShortListCodeCount);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        this.Logger.Error(ex, ex.Message);
-        //        return this.CreateFailureResponse(
-        //            "Failed to find the page of value sets",
-        //            HttpStatusCode.InternalServerError);
-        //    }
-        //}
+                           : (await this.valueSetService.GetValueSetsAsync(
+                                  model.Term,
+                                  model.PagerSettings,
+                                  codeSystemGuids)).ToValueSetApiModelPage(codeSystemGuids, MapToValueSetApiModel);
+            }
+            catch (Exception ex)
+            {
+                this.Logger.Error(ex, ex.Message);
+                return this.CreateFailureResponse(
+                    ex.Message,
+                    HttpStatusCode.InternalServerError);
+            }
+        }
 
         //private object AddValueSet()
         //{
@@ -156,7 +175,7 @@
         //        {
         //            var valueSet = attempt.Result.Single();
         //            this.valueSetService.Save(valueSet);
-        //            return valueSet.ValueSetSummaryApiModel(false);
+        //            return valueSet.ValueSetItemApiModel(false);
         //        }
 
         //        throw attempt.Exception.HasValue ? attempt.Exception.Single() : new ArgumentException("Failed to add value set.");

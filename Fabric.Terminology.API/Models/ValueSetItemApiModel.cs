@@ -3,19 +3,17 @@
     using System;
     using System.Collections.Generic;
 
-    using Fabric.Terminology.Domain.Models;
-
-    public class ValueSetSummaryApiModel : ValueSetMetaApiModel, IIdentifiable
+    public class ValueSetItemApiModel : ValueSetMetaApiModel, IIdentifiable
     {
         public string Identifier { get; set; }
 
-        public string ValueSetGuid { get; set; }
+        public Guid ValueSetGuid { get; set; }
 
         public string ValueSetReferenceId { get; set; }
 
         public string Name { get; set; }
 
-        public string OriginGuid { get; set; }
+        public Guid OriginGuid { get; set; }
 
         public string ClientCode { get; set; }
 
@@ -23,6 +21,6 @@
 
         public bool IsLatestVersion { get; set; }
 
-        public IReadOnlyCollection<ValueSetCodeCountApiModel> ValueSetStats { get; set; }
+        public IReadOnlyCollection<ValueSetCodeCountApiModel> CodeCounts { get; set; }
     }
 }

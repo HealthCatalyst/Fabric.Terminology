@@ -26,8 +26,7 @@
                 Required = false,
                 CollectionFormat = CollectionFormats.Csv,
                 Description = "An array of Code System Codes (CodeSystemCD) - used to filter ValueSet Codes",
-                Type = "string",
-                Format = "uuid"
+                Type = "string"
             };
         }
 
