@@ -52,6 +52,7 @@
                 return this.sharedContext.ValueSetCounts
                     .Where(dto => valueSetGuids.Contains(dto.ValueSetGUID))
                     .AsNoTracking()
+                    .ToList()
                     .ToLookup(vscc => vscc.ValueSetGUID, vscc => factory.Build(vscc));
             }
             catch (Exception ex)

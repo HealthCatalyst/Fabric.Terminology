@@ -24,6 +24,15 @@
             };
         }
 
+        public static Tag GetValueSetVersionTag()
+        {
+            return new Tag
+            {
+                Description = "Operations related to Shared Terminology Value Sets Versions",
+                Name = $"{TerminologyVersion.Route}/valuesets/versions/"
+            };
+        }
+
         public static Tag GetValueSetSearchTag()
         {
             return new Tag

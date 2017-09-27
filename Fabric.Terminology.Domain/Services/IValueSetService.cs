@@ -17,11 +17,13 @@
 
         Maybe<IValueSet> GetValueSet(Guid valueSetGuid, IEnumerable<Guid> codeSystemGuids);
 
-        IReadOnlyCollection<IValueSet> GetValueSets(IEnumerable<Guid> valueSetGuids);
+        Task<IReadOnlyCollection<IValueSet>> GetValueSets(IEnumerable<Guid> valueSetGuids);
 
-        IReadOnlyCollection<IValueSet> GetValueSets(
+        Task<IReadOnlyCollection<IValueSet>> GetValueSets(
             IEnumerable<Guid> valueSetGuids,
             IEnumerable<Guid> codeSystemGuids);
+
+        Task<IReadOnlyCollection<IValueSet>> GetValueSetVersions(string valueSetReferenceId);
 
         Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings settings, bool latestVersionsOnly = true);
 

@@ -1,6 +1,7 @@
 ﻿namespace Fabric.Terminology.IntegrationTests.Services
 {
     using System;
+    using System.Collections.Generic;
 
     using Fabric.Terminology.API;
     using Fabric.Terminology.Domain.Models;
@@ -51,7 +52,25 @@
 
             // Assert
             valueSet.ValueSetGuid.Should().Be(valueSetGuid);
+        }
 
+        [Fact]
+        public void CanGetMultipleValueSets()
+        {
+            // Arrange
+            var valueSetGuids = new List<Guid>
+            {
+                Guid.Parse("35F6B1A6-A72B-48F5-B319-F6CCAF15734D"),
+                Guid.Parse("A2216AAC-8513-43D8-85C2-00057F92394B"),
+                Guid.Parse("31EA98DC-D050-47A2-9435-002C19CEBF8F")
+            };
+
+            // Act
+            var valueSets = this.Profiler.ExecuteTimed(() => this.valueSetService.GetValueSets(valueSetGuids));
+
+            // Assert
+            valueSets.Should().NotBeEmpty();
+            valueSets.Count.Should().Be(valueSetGuids.Count);
         }
 
         [Theory]
@@ -83,6 +102,34 @@
         }
 
         [Theory]
+        [InlineData("2.16.840.1.113883.3.464.1003.109.12.1028")]
+        [InlineData("2.16.840.1.113883.3.464.1003.111.12.1011")]
+        public void CanGetValueSetVersions(string valueSetReferenceId)
+        {
+            // Arrange
+
+            // Act
+            var versions = this.Profiler.ExecuteTimed(async () => await this.valueSetService.GetValueSetVersions(valueSetReferenceId));
+
+            // Assert
+            versions.Should().NotBeEmpty();
+        }
+
+        [Theory]
+        [InlineData("2.16.840.1.113883.3.464.1003.109.12.1028")]
+        [InlineData("2.16.840.1.113883.3.464.1003.111.12.1011")]
+        public void CanGetValueSetSummaryVersions(string valueSetReferenceId)
+        {
+            // Arrange
+
+            // Act
+            var versions = this.Profiler.ExecuteTimed(async () => await this.valueSetSummaryService.GetValueSetVersions(valueSetReferenceId));
+
+            // Assert
+            versions.Should().NotBeEmpty();
+        }
+
+        [Theory]
         [InlineData("Add VS 1", 5)]
         [InlineData("Add VS 2", 1000)]
         [InlineData("Add VS 4", 4000)]
@@ -107,5 +154,6 @@
             // cleanup
             this.valueSetService.Delete(vs);
         }
+
     }
 }
