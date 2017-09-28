@@ -8,33 +8,28 @@ namespace Fabric.Terminology.SqlServer.Models.Dto
 
     internal sealed class ValueSetDescriptionDto
     {
+        private static readonly EmptySamdBinding EmptyBinding = new EmptySamdBinding();
+
         public ValueSetDescriptionDto()
         {
         }
 
         public ValueSetDescriptionDto(IValueSet valueSet)
         {
-            //cody
-            //return new ValueSetDescriptionDto
-            //{
-            //    AuthoringSourceDSC = valueSet.AuthoringSourceDescription,
-            //    BindingID = EmptyBinding.BindingID,
-            //    BindingNM = EmptyBinding.BindingNM,
-            //    CreatedByNM = Constants.ValueSetDescriptionDto.CreatedByNM,
-            //    DefinitionDSC = string.Empty,
-            //    VersionDSC = valueSet.VersionDescription,
-            //    LastLoadDTS = EmptyBinding.GetLastLoadDTS(),
-            //    PublicFLG = "Y",
-            //    LatestVersionFLG = "Y",
-            //    StatusCD = "Active",
-            //    PurposeDSC = valueSet.DefinitionDescription,
-            //    RevisionDTS = null,
-            //    SourceDSC = valueSet.SourceDescription,
-            //    ValueSetUniqueID = valueSet.ValueSetUniqueId,
-            //    ValueSetID = valueSet.ValueSetId,
-            //    ValueSetOID = valueSet.ValueSetOId,
-            //    ValueSetNM = valueSet.Name
-            //};
+            this.ValueSetGUID = valueSet.ValueSetGuid;
+            this.ValueSetReferenceID = valueSet.ValueSetReferenceId;
+            this.ValueSetNM = valueSet.Name;
+            this.VersionDTS = valueSet.VersionDate;
+            this.DefinitionDSC = valueSet.DefinitionDescription;
+            this.AuthorityDSC = string.Empty; // cody?
+            this.SourceDSC = valueSet.SourceDescription;
+            this.StatusCD = "Active";
+            this.OriginGUID = valueSet.OriginGuid;
+            this.ClientCD = valueSet.ClientCode;
+            this.LastModifiedDTS = default(DateTime); // cody?
+            this.ClientTermFLG = string.Empty; // cody?
+            this.LatestVersionFLG = "Y";
+            this.LastLoadDTS = EmptyBinding.LastLoadDts;
         }
 
         public Guid ValueSetGUID { get; set; }

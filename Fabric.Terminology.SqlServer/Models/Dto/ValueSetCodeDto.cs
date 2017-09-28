@@ -8,27 +8,22 @@ namespace Fabric.Terminology.SqlServer.Models.Dto
 
     internal sealed class ValueSetCodeDto
     {
+        private static readonly EmptySamdBinding EmptyBinding = new EmptySamdBinding();
+
         public ValueSetCodeDto()
         {
         }
 
         public ValueSetCodeDto(IValueSetCode code)
         {
-            // cody
-            /*this.BindingNM = EmptyBinding.BindingNM,
-            this.BindingID = EmptyBinding.BindingID,
-            this.CodeCD = code.Code,
-            this.CodeDSC = code.Name,
-            this.CodeSystemNM = code.CodeSystem.Name,
-            this.CodeSystemVersionTXT = code.CodeSystem.Version,
-            this.CodeSystemCD = code.CodeSystem.Code,
-            this.LastLoadDTS = code.LastLoadDate,
-            this.SourceDSC = code.SourceDescription,
-            this.ValueSetID = code.ValueSetId,
-            this.ValueSetUniqueID = code.ValueSetUniqueId,
-            this.ValueSetOID = code.ValueSetOId,
-            this.ValueSetNM = code.ValueSetName,
-            this.VersionDSC = code.VersionDescription*/
+            this.ValueSetGUID = code.ValueSetGuid;
+            this.CodeGUID = code.CodeGuid;
+            this.CodeCD = code.Code;
+            this.CodeDSC = code.Name;
+            this.CodeSystemGuid = code.CodeSystemGuid;
+            this.CodeSystemNM = code.CodeSystemName;
+            this.LastModifiedDTS = default(DateTime); // cody?
+            this.LastLoadDTS = EmptyBinding.LastLoadDts;
         }
 
         public Guid ValueSetGUID { get; set; }

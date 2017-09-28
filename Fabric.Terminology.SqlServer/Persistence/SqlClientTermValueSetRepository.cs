@@ -17,7 +17,7 @@
 
     using Serilog;
 
-    using ValueSet = Fabric.Terminology.SqlServer.ValueSet;
+    using ValueSet = Fabric.Terminology.SqlServer.Models.Dto.ValueSet;
 
     internal class SqlClientTermValueSetRepository : IClientTermValueSetRepository
     {
