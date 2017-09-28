@@ -23,15 +23,19 @@ namespace Fabric.Terminology.Domain.Services
 
         private readonly ILogger logger;
 
+        private readonly IClientTermValueSetRepository clientTermValueSetRepository;
+
         public ValueSetService(
             ILogger logger,
             IValueSetBackingItemRepository valueSetBackingItemRepository,
             IValueSetCodeRepository valueSetCodeRepository,
-            IValueSetCodeCountRepository valueSetCodeCountRepository)
+            IValueSetCodeCountRepository valueSetCodeCountRepository,
+            IClientTermValueSetRepository clientTermValueSetRepository)
         {
             this.valueSetBackingItemRepository = valueSetBackingItemRepository;
             this.valueSetCodeRepository = valueSetCodeRepository;
             this.valueSetCodeCountRepository = valueSetCodeCountRepository;
+            this.clientTermValueSetRepository = clientTermValueSetRepository;
             this.logger = logger;
         }
 
@@ -106,12 +110,12 @@ namespace Fabric.Terminology.Domain.Services
 
         public Attempt<IValueSet> Create(string name, IValueSetMeta meta, IEnumerable<ICodeSetCode> valueSetCodes)
         {
-            throw new NotImplementedException();
+            return this.clientTermValueSetRepository.Add(new ValueSet(name, meta, valueSetCodes));
         }
 
         public void Save(IValueSet valueSet)
         {
-            throw new NotImplementedException();
+            this.clientTermValueSetRepository.Save(valueSet);
         }
 
         public void Delete(IValueSet valueSet)

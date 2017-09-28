@@ -1,10 +1,42 @@
 // ReSharper disable InconsistentNaming
+
 namespace Fabric.Terminology.SqlServer.Models.Dto
 {
     using System;
 
+    using Fabric.Terminology.Domain.Models;
+
     internal sealed class ValueSetDescriptionDto
     {
+        public ValueSetDescriptionDto()
+        {
+        }
+
+        public ValueSetDescriptionDto(IValueSet valueSet)
+        {
+            //cody
+            //return new ValueSetDescriptionDto
+            //{
+            //    AuthoringSourceDSC = valueSet.AuthoringSourceDescription,
+            //    BindingID = EmptyBinding.BindingID,
+            //    BindingNM = EmptyBinding.BindingNM,
+            //    CreatedByNM = Constants.ValueSetDescriptionDto.CreatedByNM,
+            //    DefinitionDSC = string.Empty,
+            //    VersionDSC = valueSet.VersionDescription,
+            //    LastLoadDTS = EmptyBinding.GetLastLoadDTS(),
+            //    PublicFLG = "Y",
+            //    LatestVersionFLG = "Y",
+            //    StatusCD = "Active",
+            //    PurposeDSC = valueSet.DefinitionDescription,
+            //    RevisionDTS = null,
+            //    SourceDSC = valueSet.SourceDescription,
+            //    ValueSetUniqueID = valueSet.ValueSetUniqueId,
+            //    ValueSetID = valueSet.ValueSetId,
+            //    ValueSetOID = valueSet.ValueSetOId,
+            //    ValueSetNM = valueSet.Name
+            //};
+        }
+
         public Guid ValueSetGUID { get; set; }
 
         public string ValueSetReferenceID { get; set; }
