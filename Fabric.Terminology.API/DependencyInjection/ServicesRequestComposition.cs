@@ -5,6 +5,7 @@
     using Fabric.Terminology.Domain.DependencyInjection;
     using Fabric.Terminology.Domain.Services;
     using Fabric.Terminology.SqlServer.Persistence.DataContext;
+    using Fabric.Terminology.SqlServer.Services;
 
     using Nancy.TinyIoc;
 

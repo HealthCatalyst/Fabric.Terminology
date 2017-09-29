@@ -32,6 +32,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Analyzers", "Analyzers", "{
 		Catalyst.TestRules.ruleset = Catalyst.TestRules.ruleset
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fabric.Terminology.ElasticSearch", "Fabric.Terminology.ElasticSearch\Fabric.Terminology.ElasticSearch.csproj", "{CE5EF667-3F76-43E5-B281-EADD1CB6EA78}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fabric.Terminology.ElasticSearch.Indexer", "Fabric.Terminology.ElasticSearch.Indexer\Fabric.Terminology.ElasticSearch.Indexer.csproj", "{15B5D5FA-A055-44C5-BBA1-6F5D311BE914}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -65,6 +69,14 @@ Global
 		{ADCA8957-4118-4238-A70E-764A8DC2490D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ADCA8957-4118-4238-A70E-764A8DC2490D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ADCA8957-4118-4238-A70E-764A8DC2490D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CE5EF667-3F76-43E5-B281-EADD1CB6EA78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE5EF667-3F76-43E5-B281-EADD1CB6EA78}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE5EF667-3F76-43E5-B281-EADD1CB6EA78}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE5EF667-3F76-43E5-B281-EADD1CB6EA78}.Release|Any CPU.Build.0 = Release|Any CPU
+		{15B5D5FA-A055-44C5-BBA1-6F5D311BE914}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15B5D5FA-A055-44C5-BBA1-6F5D311BE914}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15B5D5FA-A055-44C5-BBA1-6F5D311BE914}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15B5D5FA-A055-44C5-BBA1-6F5D311BE914}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

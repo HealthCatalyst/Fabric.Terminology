@@ -1,4 +1,4 @@
-﻿namespace Fabric.Terminology.API.Logging
+﻿namespace Fabric.Terminology.ElasticSearch.Indexer.Logging
 {
     using Serilog;
     using Serilog.Core;
@@ -13,6 +13,7 @@
     {
         public static ILogger CreateLogger(LoggingLevelSwitch levelSwitch)
         {
+            // TODO work on log format
             return new LoggerConfiguration()
                 .MinimumLevel.ControlledBy(levelSwitch)
                 .Enrich.FromLogContext()

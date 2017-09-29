@@ -154,6 +154,5 @@
             // cleanup
             this.valueSetService.Delete(vs);
         }
-
     }
 }

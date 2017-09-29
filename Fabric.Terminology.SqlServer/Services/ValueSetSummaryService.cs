@@ -1,19 +1,20 @@
-﻿namespace Fabric.Terminology.Domain.Services
+﻿namespace Fabric.Terminology.SqlServer.Services
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
+	using System;
+	using System.Collections.Generic;
+	using System.Linq;
+	using System.Threading.Tasks;
 
-    using CallMeMaybe;
+	using CallMeMaybe;
 
-    using Fabric.Terminology.Domain.Exceptions;
-    using Fabric.Terminology.Domain.Models;
-    using Fabric.Terminology.Domain.Persistence;
+	using Fabric.Terminology.Domain.Exceptions;
+	using Fabric.Terminology.Domain.Models;
+	using Fabric.Terminology.Domain.Services;
+	using Fabric.Terminology.SqlServer.Persistence;
 
-    using Serilog;
+	using Serilog;
 
-    public class ValueSetSummaryService : IValueSetSummaryService
+	public class ValueSetSummaryService : IValueSetSummaryService
     {
         private readonly IValueSetBackingItemRepository valueSetBackingItemRepository;
 

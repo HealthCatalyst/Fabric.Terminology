@@ -1,8 +1,8 @@
-﻿namespace Fabric.Terminology.API.Models
+﻿namespace Fabric.Terminology.ElasticSearch.Indexer.Models
 {
-    using System;
+	using System;
 
-	public class CodeSetCodeApiModel
+	public class CodeSetCodeIndexModel
     {
         public Guid CodeGuid { get; internal set; }
 
