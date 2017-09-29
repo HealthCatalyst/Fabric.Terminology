@@ -14,8 +14,9 @@
 			CreateMap<ICodeSetCode, CodeSetCodeIndexModel>();
 			CreateMap<IValueSetCode, ValueSetCodeIndexModel>();
 			CreateMap<IValueSetCodeCount, ValueSetCodeCountIndexModel>();
-			CreateMap<IValueSetSummary, ValueSetItemIndexModel>();
-		    CreateMap<IValueSet, ValueSetIndexModel>().ForMember(d => d.Id, o => o.MapFrom(s => s.ValueSetGuid));
+		    CreateMap<IValueSet, ValueSetIndexModel>()
+			    .ForMember(d => d.Id, o => o.MapFrom(s => s.ValueSetGuid))
+			    .ForMember(d => d.Name, o => o.MapFrom(s => s.Name));
 	    }
     }
 }

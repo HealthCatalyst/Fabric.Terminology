@@ -71,6 +71,7 @@
 			    .Mappings(m => m
 				    .Map<ValueSetIndexModel>(t => t
 					    .AutoMap()
+						.Properties(p => p.Keyword(s => s.Name(n => n.NameKeyword)))
 					    //.Properties(p => p.Keyword(s => s.Name(n => n.ValueSetGuid)))
 				    )
 			    )
