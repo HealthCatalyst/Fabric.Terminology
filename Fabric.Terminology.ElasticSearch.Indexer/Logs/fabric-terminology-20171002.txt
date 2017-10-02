@@ -1,0 +1,26 @@
+2017-10-02 10:53:34.655 -07:00 [Information] BootManager Initializing
+2017-10-02 10:53:35.209 -07:00 [Information] Completed loading appsettings.json
+2017-10-02 10:53:35.487 -07:00 [Information] BootManager finished.
+2017-10-02 10:54:10.947 -07:00 [Error] Failed to match codes with every valueset.
+Fabric.Terminology.Domain.Exceptions.ValueSetOperationException: Failed to find ValueSetCode collection for every ValueSetBackingItem (ValueSetDescription)
+2017-10-02 14:08:48.444 -07:00 [Information] BootManager Initializing
+2017-10-02 14:08:49.033 -07:00 [Information] Completed loading appsettings.json
+2017-10-02 14:08:49.292 -07:00 [Information] BootManager finished.
+2017-10-02 14:09:26.480 -07:00 [Error] Failed to match codes with every valueset.
+Fabric.Terminology.Domain.Exceptions.ValueSetOperationException: Failed to find ValueSetCode collection for every ValueSetBackingItem (ValueSetDescription)
+2017-10-02 14:26:26.312 -07:00 [Information] BootManager Initializing
+2017-10-02 14:26:26.861 -07:00 [Information] Completed loading appsettings.json
+2017-10-02 14:26:26.979 -07:00 [Information] BootManager finished.
+2017-10-02 14:27:02.998 -07:00 [Error] Failed to match codes with every valueset.
+Fabric.Terminology.Domain.Exceptions.ValueSetOperationException: Failed to find ValueSetCode collection for every ValueSetBackingItem (ValueSetDescription)
+2017-10-02 14:34:29.936 -07:00 [Information] BootManager Initializing
+2017-10-02 14:34:30.542 -07:00 [Information] Completed loading appsettings.json
+2017-10-02 14:34:30.680 -07:00 [Information] BootManager finished.
+2017-10-02 14:35:05.591 -07:00 [Error] Failed to match codes with every valueset.
+Fabric.Terminology.Domain.Exceptions.ValueSetOperationException: Failed to find ValueSetCode collection for every ValueSetBackingItem (ValueSetDescription)
+2017-10-02 14:36:05.193 -07:00 [Information] BootManager Initializing
+2017-10-02 14:36:14.973 -07:00 [Information] BootManager Initializing
+2017-10-02 14:36:15.504 -07:00 [Information] Completed loading appsettings.json
+2017-10-02 14:36:15.632 -07:00 [Information] BootManager finished.
+2017-10-02 14:36:51.452 -07:00 [Error] Failed to match codes with every valueset.
+Fabric.Terminology.Domain.Exceptions.ValueSetOperationException: Failed to find ValueSetCode collection for every ValueSetBackingItem (ValueSetDescription)

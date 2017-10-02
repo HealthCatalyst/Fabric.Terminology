@@ -67,15 +67,20 @@
 		    {
 			    client.DeleteIndex(IndexName);
 		    }
-		    client.CreateIndex(IndexName, c => c
-			    .Mappings(m => m
-				    .Map<ValueSetIndexModel>(t => t
-					    .AutoMap()
-						.Properties(p => p.Keyword(s => s.Name(n => n.NameKeyword)))
-					    //.Properties(p => p.Keyword(s => s.Name(n => n.ValueSetGuid)))
-				    )
-			    )
-		    );
+
+            client.CreateIndex(IndexName, c => c
+                .Mappings(m => m
+                    .Map<ValueSetIndexModel>(t => t
+                        .Properties(ps => ps.Keyword(s => s.Name(n => n.NameKeyword))
+                        .Nested<ValueSetCodeIndexModel>(n => n.Name(vsc => vsc.ValueSetCodes))
+                        .Nested<ValueSetCodeCountIndexModel>(n => n.Name(cc => cc.CodeCounts))
+                        )
+                    .AutoMap()
+                    )
+                    //.Map<ValueSetCodeIndexModel>(t => t.AutoMap())
+                    //.Map<ValueSetCodeCountIndexModel>(t => t.AutoMap())
+                )
+            );
 		}
 
 	    private static async Task<PagedCollection<IValueSet>> QueryPageAndIndex(
