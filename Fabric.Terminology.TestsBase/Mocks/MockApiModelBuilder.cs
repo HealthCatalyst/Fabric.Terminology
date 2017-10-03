@@ -18,7 +18,8 @@
                 AuthoringSourceDescription = "Test Authoring Source Description",
                 DefinitionDescription = "Test Purpose Description",
                 SourceDescription = "Test Source Description",
-                CodeSetCodes = CodeSetCodeApiModelCollection(codeCount)
+                CodeSetCodes = CodeSetCodeApiModelCollection(codeCount),
+                VersionDate = DateTime.UtcNow
             };
         }
 

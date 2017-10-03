@@ -21,21 +21,19 @@
 
     internal class SqlClientTermValueSetRepository : IClientTermValueSetRepository
     {
-        private readonly Lazy<ClientTermContext> clientTermContextLazy;
+        private readonly ClientTermContext clientTermContext;
 
-        public SqlClientTermValueSetRepository(ClientTermContextFactory clientTermContextFactory, ILogger logger)
+        private readonly ILogger logger;
+
+        public SqlClientTermValueSetRepository(ClientTermContext clientTermContext, ILogger logger)
         {
-            this.Logger = logger;
-            this.clientTermContextLazy = clientTermContextFactory.CreateLazy();
+            this.clientTermContext = clientTermContext;
+            this.logger = logger;
         }
-
-        protected ClientTermContext ClientTermContext => this.clientTermContextLazy.Value;
-
-        protected ILogger Logger { get; }
 
         public Maybe<IValueSet> GetValueSet(Guid valueSetGuid)
         {
-            var desc = this.ClientTermContext.ValueSetDescriptions.AsNoTracking()
+            var desc = this.clientTermContext.ValueSetDescriptions.AsNoTracking()
                 .SingleOrDefault(x => x.ValueSetGUID == valueSetGuid);
 
             if (desc == null)
@@ -43,7 +41,7 @@
                 return Maybe.Not;
             }
 
-            var codes = this.ClientTermContext.ValueSetCodes.Where(vsc => vsc.ValueSetGUID == valueSetGuid).ToList();
+            var codes = this.clientTermContext.ValueSetCodes.Where(vsc => vsc.ValueSetGUID == valueSetGuid).ToList();
 
             return new Maybe<IValueSet>(new ValueSet(desc, codes));
         }
@@ -77,14 +75,14 @@
             var valueSetDto = new ValueSetDescriptionDto(valueSet);
             var codeDtos = valueSet.ValueSetCodes.Select(code => new ValueSetCodeDto(code)).ToList();
 
-            this.ClientTermContext.ChangeTracker.AutoDetectChangesEnabled = false;
-            using (var transaction = this.ClientTermContext.Database.BeginTransaction())
+            this.clientTermContext.ChangeTracker.AutoDetectChangesEnabled = false;
+            using (var transaction = this.clientTermContext.Database.BeginTransaction())
             {
                 try
                 {
-                    this.ClientTermContext.ValueSetDescriptions.Add(valueSetDto);
-                    this.ClientTermContext.ValueSetCodes.AddRange(codeDtos);
-                    var changes = this.ClientTermContext.SaveChanges();
+                    this.clientTermContext.ValueSetDescriptions.Add(valueSetDto);
+                    this.clientTermContext.ValueSetCodes.AddRange(codeDtos);
+                    var changes = this.clientTermContext.SaveChanges();
 
                     var expectedChanges = codeDtos.Count + 1;
                     if (changes != expectedChanges)
@@ -106,15 +104,15 @@
                 }
                 catch (Exception ex)
                 {
-                    this.Logger.Error(ex, "Failed to save a custom ValueSet");
-                    this.ClientTermContext.ChangeTracker.AutoDetectChangesEnabled = true;
+                    this.logger.Error(ex, "Failed to save a custom ValueSet");
+                    this.clientTermContext.ChangeTracker.AutoDetectChangesEnabled = true;
                     return Attempt<IValueSet>.Failed(
                         new ValueSetOperationException("Failed to save a custom ValueSet", ex),
                         valueSet);
                 }
                 finally
                 {
-                    this.ClientTermContext.ChangeTracker.AutoDetectChangesEnabled = true;
+                    this.clientTermContext.ChangeTracker.AutoDetectChangesEnabled = true;
                 }
             }
         }

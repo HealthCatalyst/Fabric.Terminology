@@ -22,7 +22,9 @@ namespace Fabric.Terminology.SqlServer.Models.Dto
             this.CodeDSC = code.Name;
             this.CodeSystemGuid = code.CodeSystemGuid;
             this.CodeSystemNM = code.CodeSystemName;
-            this.LastModifiedDTS = default(DateTime); // cody?
+            this.LastModifiedDTS = DateTime.UtcNow;
+            this.BindingID = EmptyBinding.BindingID;
+            this.BindingNM = EmptyBinding.BindingNM;
             this.LastLoadDTS = EmptyBinding.LastLoadDts;
         }
 
@@ -39,6 +41,10 @@ namespace Fabric.Terminology.SqlServer.Models.Dto
         public string CodeSystemNM { get; set; }
 
         public DateTime LastModifiedDTS { get; set; }
+
+        public int BindingID { get; set; }
+
+        public string BindingNM { get; set; }
 
         public DateTime LastLoadDTS { get; set; }
     }

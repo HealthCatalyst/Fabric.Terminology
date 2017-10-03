@@ -26,9 +26,11 @@ namespace Fabric.Terminology.SqlServer.Models.Dto
             this.StatusCD = "Active";
             this.OriginGUID = valueSet.OriginGuid;
             this.ClientCD = valueSet.ClientCode;
-            this.LastModifiedDTS = default(DateTime); // cody?
+            this.LastModifiedDTS = DateTime.UtcNow;
             this.ClientTermFLG = string.Empty; // cody?
             this.LatestVersionFLG = "Y";
+            this.BindingID = EmptyBinding.BindingID;
+            this.BindingNM = EmptyBinding.BindingNM;
             this.LastLoadDTS = EmptyBinding.LastLoadDts;
         }
 
@@ -57,6 +59,10 @@ namespace Fabric.Terminology.SqlServer.Models.Dto
         public string ClientTermFLG { get; set; }
 
         public string LatestVersionFLG { get; set; }
+
+        public int BindingID { get; set; }
+
+        public string BindingNM { get; set; }
 
         public DateTime LastLoadDTS { get; set; }
     }

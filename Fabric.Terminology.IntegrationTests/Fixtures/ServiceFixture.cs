@@ -39,7 +39,7 @@
                 new PagingStrategyFactory());
 
             var sqlClientTermValueSetRepository = new SqlClientTermValueSetRepository(
-                new ClientTermContextFactory(this.AppConfiguration.TerminologySqlSettings, this.Logger),
+                this.ClientTermContext,
                 this.Logger);
 
             this.ValueSetService = new ValueSetService(
