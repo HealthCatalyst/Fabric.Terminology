@@ -1,0 +1,89 @@
+GET /_cat/indices?v
+
+GET valuesets/_mapping/
+
+GET valuesets/_search
+
+GET valuesets/valueset/b209106e-2dff-4e85-ae71-c2fdec3385f0
+
+GET valuesets/_search
+{
+  "query": { "match": 
+    {
+      "name": "cancer"
+    }
+  },
+  "sort": [
+    {
+      "name.keyword": {
+        "order": "asc"
+      }
+    }
+  ]
+}
+
+GET valuesets/_search
+{
+    "size": 20,
+    "query" : {
+      "match_all": {}
+    },
+     "sort": [
+    {
+      "name.keyword": {
+        "order": "asc"
+      }
+    }
+  ]
+}
+
+
+# 87F53B39-2EDF-4045-82CF-93010055A5B8 ICD10CM Diagnosis
+# 87846E70-CA84-4D5D-B414-C301F7BFEFAA ICD9CM Diagnosis
+# 824DE45A-D4A9-4A18-B7BB-8513F10BA1B3 SNOMED CT US Extension
+*/
+
+GET valuesets/_search
+{
+    "query": {
+        "nested" : {
+            "path" : "codeCounts",
+            "query" : {
+                "match" : {
+                  "codeCounts.codeSystemGuid" : "9c78e8c1-71c4-43e4-b729-8809b4785431"
+                  
+                }
+            }
+        }
+    }
+}
+
+GET valuesets/_search
+{
+    "query": {
+        "nested" : {
+            "path" : "codeCounts",
+            "query" : {
+              "bool" : {
+                "must": 
+                  [
+                    { "match": { "codeCounts.codeSystemGuid" : "9c78e8c1-71c4-43e4-b729-8809b4785431"  } }
+                  ]
+                }
+              }
+            }
+          }
+}
+
+
+GET valuesets/_search
+{
+  "query": {
+      "ids": {
+          "values": [ 
+            "b209106e-2dff-4e85-ae71-c2fdec3385f0", 
+            "601ab4c1-c6e7-42b6-b055-4db2a8227914", 
+            "d7ba46ff-31d2-4135-b5a3-758734c78971" ] 
+        }
+    }
+}

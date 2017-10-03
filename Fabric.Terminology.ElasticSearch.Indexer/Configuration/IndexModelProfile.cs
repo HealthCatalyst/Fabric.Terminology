@@ -1,22 +1,19 @@
 ﻿namespace Fabric.Terminology.ElasticSearch.Indexer.Configuration
 {
-	using System;
+    using AutoMapper;
 
-	using AutoMapper;
+    using Fabric.Terminology.Domain.Models;
+    using Fabric.Terminology.ElasticSearch.Models;
 
-	using Fabric.Terminology.Domain.Models;
-	using Fabric.Terminology.ElasticSearch.Indexer.Models;
-
-	internal class IndexModelProfile : Profile
+    internal class IndexModelProfile : Profile
     {
-	    public IndexModelProfile()
-	    {
-			CreateMap<ICodeSetCode, CodeSetCodeIndexModel>();
-			CreateMap<IValueSetCode, ValueSetCodeIndexModel>();
-			CreateMap<IValueSetCodeCount, ValueSetCodeCountIndexModel>();
-		    CreateMap<IValueSet, ValueSetIndexModel>()
-			    .ForMember(d => d.Id, o => o.MapFrom(s => s.ValueSetGuid))
-			    .ForMember(d => d.Name, o => o.MapFrom(s => s.Name));
-	    }
+        public IndexModelProfile()
+        {
+            this.CreateMap<ICodeSetCode, CodeSetCodeIndexModel>();
+            this.CreateMap<IValueSetCode, ValueSetCodeIndexModel>();
+            this.CreateMap<IValueSetCodeCount, ValueSetCodeCountIndexModel>();
+            this.CreateMap<IValueSet, ValueSetIndexModel>()
+                .ForMember(d => d.Id, o => o.MapFrom(s => s.ValueSetGuid.ToString()));
+        }
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace Fabric.Terminology.ElasticSearch.Indexer.Logging
+﻿namespace Fabric.Terminology.ElasticSearch.Logging
 {
     using Serilog;
     using Serilog.Core;

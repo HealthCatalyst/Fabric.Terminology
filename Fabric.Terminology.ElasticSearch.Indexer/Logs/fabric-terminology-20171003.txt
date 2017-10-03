@@ -1,0 +1,517 @@
+2017-10-03 11:10:06.057 -07:00 [Information] BootManager Initializing
+2017-10-03 11:10:06.526 -07:00 [Information] Completed loading appsettings.json
+2017-10-03 11:10:06.677 -07:00 [Information] BootManager finished.
+2017-10-03 11:10:46.438 -07:00 [Error] Failed to query for ValueSetCode lookup for collection of ValueSetGUIDs
+System.Data.SqlClient.SqlException: Timeout expired.  The timeout period elapsed prior to completion of the operation or the server is not responding. ---> System.ComponentModel.Win32Exception: The wait operation timed out
+   --- End of inner exception stack trace ---
+   at System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at System.Data.SqlClient.SqlDataReader.TryConsumeMetaData()
+   at System.Data.SqlClient.SqlDataReader.get_MetaData()
+   at System.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString)
+   at System.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean async, Int32 timeout, Task& task, Boolean asyncWrite, SqlDataReader ds)
+   at System.Data.SqlClient.SqlCommand.ExecuteReader(CommandBehavior behavior)
+   at Microsoft.EntityFrameworkCore.Storage.Internal.RelationalCommand.Execute(IRelationalConnection connection, String executeMethod, IReadOnlyDictionary`2 parameterValues, Boolean closeConnection)
+   at Microsoft.EntityFrameworkCore.Storage.Internal.RelationalCommand.ExecuteReader(IRelationalConnection connection, IReadOnlyDictionary`2 parameterValues)
+   at Microsoft.EntityFrameworkCore.Query.Internal.QueryingEnumerable.Enumerator.BufferlessMoveNext(Boolean buffer)
+   at Microsoft.EntityFrameworkCore.Storage.Internal.SqlServerExecutionStrategy.Execute[TState,TResult](Func`2 operation, Func`2 verifySucceeded, TState state)
+   at Microsoft.EntityFrameworkCore.Query.QueryMethodProvider.<_ShapedQuery>d__3`1.MoveNext()
+   at Microsoft.EntityFrameworkCore.Query.Internal.LinqOperatorProvider.ExceptionInterceptor`1.EnumeratorExceptionInterceptor.MoveNext()
+   at System.Linq.Lookup`2.Create[TSource](IEnumerable`1 source, Func`2 keySelector, Func`2 elementSelector, IEqualityComparer`1 comparer)
+   at System.Linq.Enumerable.ToLookup[TSource,TKey,TElement](IEnumerable`1 source, Func`2 keySelector, Func`2 elementSelector)
+   at Fabric.Terminology.SqlServer.Persistence.SqlValueSetCodeRepository.QueryValueSetCodeLookup(IEnumerable`1 valueSetGuids) in C:\Working\GitHub\Fabric.Terminology\Fabric.Terminology.SqlServer\Persistence\SqlValueSetCodeRepository.cs:line 74
+ClientConnectionId:d9707e48-5dc8-4bd3-b97d-5cea0de6dbf7
+Error Number:-2,State:0,Class:11
+2017-10-03 11:11:08.001 -07:00 [Information] BootManager Initializing
+2017-10-03 11:11:08.509 -07:00 [Information] Completed loading appsettings.json
+2017-10-03 11:11:08.649 -07:00 [Information] BootManager finished.
+2017-10-03 11:13:25.849 -07:00 [Information] Completed indexing 1090 value sets.
+2017-10-03 11:19:19.024 -07:00 [Information] BootManager Initializing
+2017-10-03 11:19:19.525 -07:00 [Information] Completed loading appsettings.json
+2017-10-03 11:19:19.684 -07:00 [Information] BootManager finished.
+2017-10-03 11:21:13.617 -07:00 [Information] Completed indexing 1090 value sets.
+2017-10-03 11:33:01.453 -07:00 [Information] BootManager Initializing
+2017-10-03 11:33:02.112 -07:00 [Information] Completed loading appsettings.json
+2017-10-03 11:33:02.295 -07:00 [Information] BootManager finished.
+2017-10-03 11:34:50.804 -07:00 [Information] Completed indexing 1090 value sets.
+2017-10-03 13:29:19.992 -07:00 [Information] BootManager Initializing
+2017-10-03 13:29:35.829 -07:00 [Information] BootManager Initializing
+2017-10-03 13:29:36.320 -07:00 [Information] Completed loading appsettings.json
+2017-10-03 13:29:36.574 -07:00 [Information] BootManager finished.
+2017-10-03 13:29:47.175 -07:00 [Error] Failed to match codes with every valueset.
+Fabric.Terminology.Domain.Exceptions.ValueSetOperationException: Failed to find ValueSetCode collection for every ValueSetBackingItem (ValueSetDescription)
+2017-10-03 13:30:05.548 -07:00 [Information] BootManager Initializing
+2017-10-03 13:30:05.971 -07:00 [Information] Completed loading appsettings.json
+2017-10-03 13:30:06.017 -07:00 [Information] BootManager finished.
+2017-10-03 13:30:15.045 -07:00 [Error] Failed to match codes with every valueset.
+Fabric.Terminology.Domain.Exceptions.ValueSetOperationException: Failed to find ValueSetCode collection for every ValueSetBackingItem (ValueSetDescription)
+2017-10-03 13:38:55.981 -07:00 [Information] BootManager Initializing
+2017-10-03 13:38:56.427 -07:00 [Information] Completed loading appsettings.json
+2017-10-03 13:38:56.563 -07:00 [Information] BootManager finished.
+2017-10-03 13:39:05.528 -07:00 [Error] Invalid NEST response built from a successful low level call on POST: /_bulk
+# Invalid Bulk items:
+  operation[0]: index returned 400 _index: valuesets _type: valueset _id: bebbf8d1-b4ca-495e-96dd-ed4e2dc32d69 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[1]: index returned 400 _index: valuesets _type: valueset _id: 95af1a63-6787-443d-a73a-28b8ba15c8db _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[2]: index returned 400 _index: valuesets _type: valueset _id: 6622e589-ec0f-4255-b8ae-c177977d3c4c _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[3]: index returned 400 _index: valuesets _type: valueset _id: b304ddb1-67cd-4ad0-9357-6b3012f0e504 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[4]: index returned 400 _index: valuesets _type: valueset _id: b209106e-2dff-4e85-ae71-c2fdec3385f0 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[5]: index returned 400 _index: valuesets _type: valueset _id: 601ab4c1-c6e7-42b6-b055-4db2a8227914 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[6]: index returned 400 _index: valuesets _type: valueset _id: c161e978-a27f-4557-83d2-b9c472f42c2f _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[7]: index returned 400 _index: valuesets _type: valueset _id: c4e46fd6-8ca3-4819-bcc0-67beae89eeaa _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[8]: index returned 400 _index: valuesets _type: valueset _id: ad712e41-ff82-47ee-a317-4835ee0a7ce2 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[9]: index returned 400 _index: valuesets _type: valueset _id: 68612178-6994-40f6-85c8-8551fbda553c _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[10]: index returned 400 _index: valuesets _type: valueset _id: 4ca57419-73d3-4604-8302-c334478f5c79 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[11]: index returned 400 _index: valuesets _type: valueset _id: 644528af-f9ef-4e7b-95b7-5800828c5be8 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[12]: index returned 400 _index: valuesets _type: valueset _id: 37fb3af1-1422-4d7c-8be6-f47248685cb6 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[13]: index returned 400 _index: valuesets _type: valueset _id: 2056d82f-1a89-4c62-9b16-7edfbba04ac1 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[14]: index returned 400 _index: valuesets _type: valueset _id: 67a4aaa2-1b43-4dd9-97de-1dc16e090e32 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[15]: index returned 400 _index: valuesets _type: valueset _id: 07220c33-a40e-4a90-adc5-4df8dba7ecf9 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[16]: index returned 400 _index: valuesets _type: valueset _id: 84cafb7b-8b88-4760-8f0d-f6a90fb2bd90 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[17]: index returned 400 _index: valuesets _type: valueset _id: 2cc2bacc-679a-4bd0-a6fd-43256854b6f7 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[18]: index returned 400 _index: valuesets _type: valueset _id: 4aed2342-6643-4ccf-a200-fbf7933878be _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[19]: index returned 400 _index: valuesets _type: valueset _id: a5121496-f384-40c0-bd20-8d2dc6f3d360 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[20]: index returned 400 _index: valuesets _type: valueset _id: 14708353-690c-4c0c-8f8c-6ba906866f8e _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[21]: index returned 400 _index: valuesets _type: valueset _id: cc3476c4-52f7-4b1a-b937-2a5671cc7e6a _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[22]: index returned 400 _index: valuesets _type: valueset _id: 5deeb483-22b6-4b35-9f96-7f8870205fed _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[23]: index returned 400 _index: valuesets _type: valueset _id: 362ba7f1-57f2-47f2-a065-252bdcdd1566 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[24]: index returned 400 _index: valuesets _type: valueset _id: 6104d55d-683a-4c61-a3dc-58d2dd999ef0 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[25]: index returned 400 _index: valuesets _type: valueset _id: 8a2a23ff-42c0-4096-87b8-fa2654438c48 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[26]: index returned 400 _index: valuesets _type: valueset _id: 7ba16806-4855-4a60-bb7d-1bd41a16bcfd _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[27]: index returned 400 _index: valuesets _type: valueset _id: d3397b17-42db-4285-82d7-55d14dfe8ae2 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[28]: index returned 400 _index: valuesets _type: valueset _id: e176d119-77ca-4ceb-8427-b6589decf324 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[29]: index returned 400 _index: valuesets _type: valueset _id: 44e54882-0491-456d-a79b-ea751feff704 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[30]: index returned 400 _index: valuesets _type: valueset _id: 356af6d0-fc78-4cb1-83ef-b90745fcff2d _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[31]: index returned 400 _index: valuesets _type: valueset _id: df265ebf-da52-420b-b5e4-7a1ed9f613fe _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[32]: index returned 400 _index: valuesets _type: valueset _id: 9da22dd3-b3c6-4097-a2e0-10f8376b9199 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[33]: index returned 400 _index: valuesets _type: valueset _id: 2a4506a0-3676-4b79-b986-20529e63193d _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[34]: index returned 400 _index: valuesets _type: valueset _id: 8a112e04-5d83-4ef3-bbc0-011a7da4aa8c _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[35]: index returned 400 _index: valuesets _type: valueset _id: d3a6517a-0443-4c78-b986-7e1140e5ff0c _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[36]: index returned 400 _index: valuesets _type: valueset _id: d121cea8-f5fc-4ac8-98a5-b36fd66300fa _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[37]: index returned 400 _index: valuesets _type: valueset _id: 4eb457fb-5777-4620-a5f2-c5dfc78347d2 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[38]: index returned 400 _index: valuesets _type: valueset _id: 489ac30a-3881-472e-9c6b-38728375a00d _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[39]: index returned 400 _index: valuesets _type: valueset _id: 2b3261f3-a26d-407d-98b5-0604e5e422d5 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[40]: index returned 400 _index: valuesets _type: valueset _id: d7ba46ff-31d2-4135-b5a3-758734c78971 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[41]: index returned 400 _index: valuesets _type: valueset _id: 73dd818b-4372-4d81-9680-927ace969f6b _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[42]: index returned 400 _index: valuesets _type: valueset _id: 0f66eb69-f526-4f0f-bb46-fa70e2b79dcd _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[43]: index returned 400 _index: valuesets _type: valueset _id: f4cc9251-0477-4f5c-8932-212e5a6c0920 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[44]: index returned 400 _index: valuesets _type: valueset _id: 952520a1-e635-4c8f-b517-d6e882b00621 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[45]: index returned 400 _index: valuesets _type: valueset _id: 1b13ab35-c467-463f-9c7f-fd72846657e8 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[46]: index returned 400 _index: valuesets _type: valueset _id: 989da48c-0794-41e7-aae7-61f1c490655d _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[47]: index returned 400 _index: valuesets _type: valueset _id: 9221380c-7c3a-4c27-bb28-9c953425dfd3 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[48]: index returned 400 _index: valuesets _type: valueset _id: 413b430e-42ec-41b2-939a-4a4e757124dd _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[49]: index returned 400 _index: valuesets _type: valueset _id: 1a005eab-b90d-446f-b6ed-7d7fb69d7873 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+# Audit trail of this API call:
+ - [1] HealthyResponse: Node: http://localhost:9200/ Took: 00:00:00.2476547
+# Request:
+<Request stream not captured or already read to completion by serializer. Set DisableDirectStreaming() on ConnectionSettings to force it to be set on the response.>
+# Response:
+<Response stream not captured or already read to completion by serializer. Set DisableDirectStreaming() on ConnectionSettings to force it to be set on the response.>
+
+2017-10-03 13:39:10.849 -07:00 [Error] Invalid NEST response built from a successful low level call on POST: /_bulk
+# Invalid Bulk items:
+  operation[0]: index returned 400 _index: valuesets _type: valueset _id: 1a005eab-b90d-446f-b6ed-7d7fb69d7873 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[1]: index returned 400 _index: valuesets _type: valueset _id: 8d4c396c-627d-4ffe-8c4e-7ac7f043ec4d _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[2]: index returned 400 _index: valuesets _type: valueset _id: e9c3775b-1557-4a21-a135-dbbeb791f48c _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[3]: index returned 400 _index: valuesets _type: valueset _id: abbaaa84-af77-48b8-93e7-ec68fd06afb3 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[4]: index returned 400 _index: valuesets _type: valueset _id: 184e3d3d-0b30-4838-8530-d3f78efb70eb _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[5]: index returned 400 _index: valuesets _type: valueset _id: deb44506-f9a2-4a02-86cd-9ebcafeb5b46 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[6]: index returned 400 _index: valuesets _type: valueset _id: f02d0a4b-9144-4348-940d-5444bab7c6f7 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[7]: index returned 400 _index: valuesets _type: valueset _id: 2b7be42c-e257-4fb1-8d9a-2a72c7289ee9 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[8]: index returned 400 _index: valuesets _type: valueset _id: 06354330-0a58-4a81-89e9-f59141cc713e _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[9]: index returned 400 _index: valuesets _type: valueset _id: c92e6a29-b37c-4291-90c4-d4de34b86ebd _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[10]: index returned 400 _index: valuesets _type: valueset _id: f792b341-8047-46b1-97d1-d2b475d088b8 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[11]: index returned 400 _index: valuesets _type: valueset _id: 63d2180e-3b06-4761-8009-da81a64cdc87 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[12]: index returned 400 _index: valuesets _type: valueset _id: cb6ac419-a6eb-43f8-8496-bd8acae61409 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[13]: index returned 400 _index: valuesets _type: valueset _id: 0a10ccc7-562d-4031-a553-f5a5e823b068 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[14]: index returned 400 _index: valuesets _type: valueset _id: 41d48943-84d0-4446-a7ae-c9aa9ba21093 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[15]: index returned 400 _index: valuesets _type: valueset _id: d4128c75-657d-4225-851a-9b26ae03cd49 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[16]: index returned 400 _index: valuesets _type: valueset _id: 769f7108-f6d5-4e5a-9de5-cc4f8d9aa4e5 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[17]: index returned 400 _index: valuesets _type: valueset _id: 1348e6b3-ecc7-4a6c-9f4d-3f8c86396ba2 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[18]: index returned 400 _index: valuesets _type: valueset _id: a90bd50c-af79-41a7-9c45-5f9b693abdaa _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[19]: index returned 400 _index: valuesets _type: valueset _id: 40e8fd42-b4dd-4ad2-bc5e-790131fe2bdb _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[20]: index returned 400 _index: valuesets _type: valueset _id: 80ae94ea-2b28-40a8-847f-e2c1fb4a81e7 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[21]: index returned 400 _index: valuesets _type: valueset _id: f8b95842-007f-4821-b563-34191a21b4e9 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[22]: index returned 400 _index: valuesets _type: valueset _id: 684d691c-c1f7-4bd7-8e34-b874af8e99c0 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[23]: index returned 400 _index: valuesets _type: valueset _id: d30a1b85-02eb-407f-b069-9b3fb50256ad _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[24]: index returned 400 _index: valuesets _type: valueset _id: 1f0fbf75-ccab-49ac-8815-aa2111d70907 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[25]: index returned 400 _index: valuesets _type: valueset _id: 999c16b0-d1b8-4f82-b45b-331e4a734624 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[26]: index returned 400 _index: valuesets _type: valueset _id: 442677ac-f897-47dd-9ab2-7ef77c045e89 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[27]: index returned 400 _index: valuesets _type: valueset _id: adcf3cb1-d305-495d-bb24-12f63775b2b9 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[28]: index returned 400 _index: valuesets _type: valueset _id: d1102e7b-e4b0-43fb-b1d2-b0e8a8588cc0 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[29]: index returned 400 _index: valuesets _type: valueset _id: 6ee22c84-4fcc-42f9-a3f5-df626e6eb83a _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[30]: index returned 400 _index: valuesets _type: valueset _id: 74395b29-6b93-440c-9def-05e1be84d882 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[31]: index returned 400 _index: valuesets _type: valueset _id: 872ebb96-b693-4a7f-b21a-cd214109f7f6 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[32]: index returned 400 _index: valuesets _type: valueset _id: 6c46a819-2361-4247-8530-bf85728b1dc7 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[33]: index returned 400 _index: valuesets _type: valueset _id: 4a150170-644b-4e0b-a6f1-af3eddbe91ba _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[34]: index returned 400 _index: valuesets _type: valueset _id: f0e6984c-2f15-4754-9854-32f22d8a0176 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[35]: index returned 400 _index: valuesets _type: valueset _id: 50e26785-1ba7-439b-8b2a-7ba0356197ee _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[36]: index returned 400 _index: valuesets _type: valueset _id: a1090fed-0082-42dd-b2b0-b52a783e6424 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[37]: index returned 400 _index: valuesets _type: valueset _id: 67e7e94c-f84d-493b-a65a-cf61f48a85d2 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[38]: index returned 400 _index: valuesets _type: valueset _id: 6ee91be7-a39a-4bbe-9ad8-3f1e4462888c _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[39]: index returned 400 _index: valuesets _type: valueset _id: 7ff2b68f-0dae-47c2-b3de-f44d34d326f1 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[40]: index returned 400 _index: valuesets _type: valueset _id: c352071c-b421-4110-8be2-f154eb6e3b37 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[41]: index returned 400 _index: valuesets _type: valueset _id: 2a29dadb-16be-44f0-b788-5487958c95cf _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[42]: index returned 400 _index: valuesets _type: valueset _id: bce72bfa-fd54-4d4a-81f8-36df1fbc5964 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[43]: index returned 400 _index: valuesets _type: valueset _id: ecf1c5a8-f890-4fb0-84be-d39f63e0ead6 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[44]: index returned 400 _index: valuesets _type: valueset _id: 1e962c2f-e5c3-4be8-b0c9-ae48ecbc221d _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[45]: index returned 400 _index: valuesets _type: valueset _id: f93fef01-266e-472e-be34-6ae6cb1e2ce4 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[46]: index returned 400 _index: valuesets _type: valueset _id: 0abe68fc-fb1e-484c-a027-20279288a211 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[47]: index returned 400 _index: valuesets _type: valueset _id: f0cecde4-d503-40a7-b33b-be1359d954e3 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[48]: index returned 400 _index: valuesets _type: valueset _id: 15b9c90b-14ce-4edb-b934-97b089ee8545 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[49]: index returned 400 _index: valuesets _type: valueset _id: ca5067be-3b28-458c-a45c-33fff71e5b2e _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+# Audit trail of this API call:
+ - [1] HealthyResponse: Node: http://localhost:9200/ Took: 00:00:00.1880253
+# Request:
+<Request stream not captured or already read to completion by serializer. Set DisableDirectStreaming() on ConnectionSettings to force it to be set on the response.>
+# Response:
+<Response stream not captured or already read to completion by serializer. Set DisableDirectStreaming() on ConnectionSettings to force it to be set on the response.>
+
+2017-10-03 13:39:14.579 -07:00 [Error] Invalid NEST response built from a successful low level call on POST: /_bulk
+# Invalid Bulk items:
+  operation[0]: index returned 400 _index: valuesets _type: valueset _id: 7424c3b7-d834-4cc9-95b7-23ae18a4b88f _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[1]: index returned 400 _index: valuesets _type: valueset _id: 17ae88fe-3068-4960-a937-c1fedf321c83 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[2]: index returned 400 _index: valuesets _type: valueset _id: 7ad09d2b-a40b-4e1b-945d-532cd5462cf6 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[3]: index returned 400 _index: valuesets _type: valueset _id: 28407fc0-42ac-4f30-b2ab-b033f5afeebd _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[4]: index returned 400 _index: valuesets _type: valueset _id: 739586d8-3549-45fa-8c45-2402e381b32d _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[5]: index returned 400 _index: valuesets _type: valueset _id: ba35ef1b-0e95-41e3-95e9-40662581e22e _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[6]: index returned 400 _index: valuesets _type: valueset _id: ca43596b-fddd-4e2a-adda-8514ed552b75 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[7]: index returned 400 _index: valuesets _type: valueset _id: 80a798e0-df22-46b3-ba6a-18d7bc02c6e0 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[8]: index returned 400 _index: valuesets _type: valueset _id: 3d71f225-f5ca-48a3-8d8f-92c5103b349a _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[9]: index returned 400 _index: valuesets _type: valueset _id: cbc9842d-d679-499a-ac64-55161592040a _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[10]: index returned 400 _index: valuesets _type: valueset _id: e7031a20-fc09-479d-a482-763ee7a2836d _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[11]: index returned 400 _index: valuesets _type: valueset _id: dbd51e38-a9b0-48e7-96e7-153e8fc619ce _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[12]: index returned 400 _index: valuesets _type: valueset _id: aa291831-99e4-40a3-8ed1-454d08434405 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[13]: index returned 400 _index: valuesets _type: valueset _id: 149e7dcb-30ec-4659-9a35-7e09e235a269 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[14]: index returned 400 _index: valuesets _type: valueset _id: b2898a11-a233-4c10-b253-7e7d5c3ff5bb _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[15]: index returned 400 _index: valuesets _type: valueset _id: 4faab05d-c729-40d5-a557-d84dfc96415b _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[16]: index returned 400 _index: valuesets _type: valueset _id: dbb720c2-e047-4377-bc63-d8b259078a56 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[17]: index returned 400 _index: valuesets _type: valueset _id: 2d6b35fe-00e6-4365-ad3e-9491c743fd6c _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[18]: index returned 400 _index: valuesets _type: valueset _id: 4f5bedfc-7f34-40e3-843d-8584995e40f3 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[19]: index returned 400 _index: valuesets _type: valueset _id: 065e26b2-faa3-4b81-aa64-da031bf3700d _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[20]: index returned 400 _index: valuesets _type: valueset _id: 2e9c6882-1201-4d73-8412-6ee76a4187da _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[21]: index returned 400 _index: valuesets _type: valueset _id: 7615c602-8128-4a5e-93a3-cf59a9e8cc5e _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[22]: index returned 400 _index: valuesets _type: valueset _id: 7cff3175-d8c2-43cd-9690-3e5dd071a71d _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[23]: index returned 400 _index: valuesets _type: valueset _id: 08c19dca-cb4c-4d20-bcc4-82e15dbf6382 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[24]: index returned 400 _index: valuesets _type: valueset _id: 14f6ebfa-df35-4730-a248-f0a93fef122e _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[25]: index returned 400 _index: valuesets _type: valueset _id: 6414d284-cb94-4efe-9513-70e2eaf7e67e _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[26]: index returned 400 _index: valuesets _type: valueset _id: d4aaa6ab-51c3-449b-a14d-5af3e4b7db3c _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[27]: index returned 400 _index: valuesets _type: valueset _id: 9f016032-a4df-42af-bd5c-863b82c5067f _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[28]: index returned 400 _index: valuesets _type: valueset _id: 69d02c68-e44c-4f95-bb8c-d59ac27a1df8 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[29]: index returned 400 _index: valuesets _type: valueset _id: 95aa1610-a486-4ead-b1ca-b6f32bfdea53 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[30]: index returned 400 _index: valuesets _type: valueset _id: 7adb111f-afd0-4597-a604-24f4b8bec1d9 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[31]: index returned 400 _index: valuesets _type: valueset _id: dacbf73c-e491-4925-aaff-36a3fb214cec _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[32]: index returned 400 _index: valuesets _type: valueset _id: 59d0645f-ca46-4321-9e28-5486a7b944b8 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[33]: index returned 400 _index: valuesets _type: valueset _id: 77849a92-f3cc-44d3-a625-06767e19ea37 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[34]: index returned 400 _index: valuesets _type: valueset _id: 3ffbf6f5-a269-480c-b2a9-0de9c70a97a8 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[35]: index returned 400 _index: valuesets _type: valueset _id: 8b8809d9-1e06-489a-93c6-8449588320e8 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[36]: index returned 400 _index: valuesets _type: valueset _id: b733f302-be18-4091-996d-668713bfb948 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[37]: index returned 400 _index: valuesets _type: valueset _id: e9afb280-4f2c-4140-a933-3c59cc9ad6cb _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[38]: index returned 400 _index: valuesets _type: valueset _id: ab9beab1-ae60-4bd8-8db6-3c4c61cef8b2 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[39]: index returned 400 _index: valuesets _type: valueset _id: 21c03775-b91d-41ea-a032-cf7e3a9d709c _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[40]: index returned 400 _index: valuesets _type: valueset _id: a6b3e3bd-d55f-420a-bf98-237a44a0f607 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[41]: index returned 400 _index: valuesets _type: valueset _id: 41a27896-7194-4fda-849e-89e47cc34bad _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[42]: index returned 400 _index: valuesets _type: valueset _id: 5b96018d-0ad1-4503-bb85-30e6aa916b8c _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[43]: index returned 400 _index: valuesets _type: valueset _id: 02a5c030-e665-4393-bf75-63cca792ca77 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[44]: index returned 400 _index: valuesets _type: valueset _id: ede2ffe7-ff69-4807-b64e-7d697397c250 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[45]: index returned 400 _index: valuesets _type: valueset _id: 1229a308-6f60-4a18-9519-a3325ca5e90c _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[46]: index returned 400 _index: valuesets _type: valueset _id: 91724ce7-30b0-4a5a-96a1-ba374226dbe9 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[47]: index returned 400 _index: valuesets _type: valueset _id: 3d23335b-347c-4465-8f39-1a9ec2e8a47e _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[48]: index returned 400 _index: valuesets _type: valueset _id: 80dc1ff5-6154-4c33-905d-9873c316a151 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[49]: index returned 400 _index: valuesets _type: valueset _id: 907db77f-d34f-4746-a25f-1ac4217889d6 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+# Audit trail of this API call:
+ - [1] HealthyResponse: Node: http://localhost:9200/ Took: 00:00:00.0760211
+# Request:
+<Request stream not captured or already read to completion by serializer. Set DisableDirectStreaming() on ConnectionSettings to force it to be set on the response.>
+# Response:
+<Response stream not captured or already read to completion by serializer. Set DisableDirectStreaming() on ConnectionSettings to force it to be set on the response.>
+
+2017-10-03 13:39:19.118 -07:00 [Error] Invalid NEST response built from a successful low level call on POST: /_bulk
+# Invalid Bulk items:
+  operation[0]: index returned 400 _index: valuesets _type: valueset _id: 97a3bd52-fb7f-46d3-9c25-b3678e19f6b8 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[1]: index returned 400 _index: valuesets _type: valueset _id: 0c2a202a-6f07-42de-9c00-20787827acb1 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[2]: index returned 400 _index: valuesets _type: valueset _id: 91f8f69e-f27a-4857-b431-a8e45704d4c7 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[3]: index returned 400 _index: valuesets _type: valueset _id: 33962ac9-b2f2-4283-a2cc-eafea828dc38 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[4]: index returned 400 _index: valuesets _type: valueset _id: 340bb277-dc68-45e7-b762-61a06ed6255e _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[5]: index returned 400 _index: valuesets _type: valueset _id: be5b1ee3-4c55-4617-9ca2-03ffa2f6f35c _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[6]: index returned 400 _index: valuesets _type: valueset _id: dc5cd6ff-a726-434b-9fdf-11e2f0ef7243 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[7]: index returned 400 _index: valuesets _type: valueset _id: 216b0a3b-a938-418e-aa2b-80925a9dea02 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[8]: index returned 400 _index: valuesets _type: valueset _id: 8f617332-84d4-41c5-9e21-71863ed23fd4 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[9]: index returned 400 _index: valuesets _type: valueset _id: 2d1969af-3168-4584-8e8b-4846528c28e7 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[10]: index returned 400 _index: valuesets _type: valueset _id: 56ce0645-b45e-4c3e-8ee0-2168d82685c2 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[11]: index returned 400 _index: valuesets _type: valueset _id: 575cf5c2-ff4a-410c-91ee-e05ffde6a911 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[12]: index returned 400 _index: valuesets _type: valueset _id: 755de1f6-192b-460b-b259-fd1124c3e733 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[13]: index returned 400 _index: valuesets _type: valueset _id: 094231df-8811-4101-bd0a-9b5ace5ed2ac _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[14]: index returned 400 _index: valuesets _type: valueset _id: 9f5beae3-4ee1-40e0-b7d9-cde76bd0a561 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[15]: index returned 400 _index: valuesets _type: valueset _id: d31cd809-c0ab-4900-94b3-9c8cf3b636aa _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[16]: index returned 400 _index: valuesets _type: valueset _id: b2b910db-2461-4bf0-aa20-1611af8ddd9d _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[17]: index returned 400 _index: valuesets _type: valueset _id: 7d76c8bb-5017-4eee-9c17-9bac9fcce52a _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[18]: index returned 400 _index: valuesets _type: valueset _id: ae17b37e-bd26-4748-9299-94cfa6bc5dfa _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[19]: index returned 400 _index: valuesets _type: valueset _id: 8fe9d342-ed30-4c9a-9386-f88df1b4d352 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[20]: index returned 400 _index: valuesets _type: valueset _id: 85512602-a58d-45aa-9346-7339cc32a8ed _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[21]: index returned 400 _index: valuesets _type: valueset _id: b0cd865e-7999-493d-a3eb-917343c8f24c _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[22]: index returned 400 _index: valuesets _type: valueset _id: 7a8402b3-24c4-4ded-b942-12beaee0cfc8 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[23]: index returned 400 _index: valuesets _type: valueset _id: 3c5d6d6f-3b31-4e21-a12d-42df344f3653 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[24]: index returned 400 _index: valuesets _type: valueset _id: 1df422d1-bcdf-44a9-bb12-5e2422a36924 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[25]: index returned 400 _index: valuesets _type: valueset _id: 8753a7f4-7886-42f1-9876-8d5b4b5cacdc _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[26]: index returned 400 _index: valuesets _type: valueset _id: 177fce27-b328-41bc-a988-e8c8c0b52dc1 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[27]: index returned 400 _index: valuesets _type: valueset _id: a3395e5b-27dd-479f-bcfd-5501e577099d _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[28]: index returned 400 _index: valuesets _type: valueset _id: 3d7d33f3-7e8d-49b2-8cb8-442a7ee5dead _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[29]: index returned 400 _index: valuesets _type: valueset _id: 5de0d3bd-fbfe-46be-97c6-5f5057c0c6ca _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[30]: index returned 400 _index: valuesets _type: valueset _id: da569a35-fc64-4e93-b1ec-d5185bfd923b _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[31]: index returned 400 _index: valuesets _type: valueset _id: 38b42024-8844-4884-acbb-ae05acddffac _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[32]: index returned 400 _index: valuesets _type: valueset _id: a918e522-1730-4dd9-9f2c-4ea39d7ab37b _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[33]: index returned 400 _index: valuesets _type: valueset _id: a275cc9d-0a36-4695-b4e7-7d0c564ba0c1 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[34]: index returned 400 _index: valuesets _type: valueset _id: 6fc074e5-1071-473d-b416-83b2a03d26d5 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[35]: index returned 400 _index: valuesets _type: valueset _id: 693c03ff-a591-4822-a874-c3d578e9052d _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[36]: index returned 400 _index: valuesets _type: valueset _id: b1a0df40-8167-4542-b7e0-1241b3f11623 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[37]: index returned 400 _index: valuesets _type: valueset _id: 52a40ec2-19ab-4fb9-96c4-fc4df2726d8c _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[38]: index returned 400 _index: valuesets _type: valueset _id: 4994236b-c58b-4c2f-af6e-c2b55e4129ef _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[39]: index returned 400 _index: valuesets _type: valueset _id: 3a8866bf-58f8-4668-b3fc-c7856afe9975 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[40]: index returned 400 _index: valuesets _type: valueset _id: 9765750c-e9f6-40a6-ac10-a157ec5bdf4f _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[41]: index returned 400 _index: valuesets _type: valueset _id: f4a81ee5-5871-4ef7-8b88-272fe97a9214 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[42]: index returned 400 _index: valuesets _type: valueset _id: ccf49e00-408b-43cd-a2d9-c4cd16adecd9 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-01-06T00:00:00" is malformed at "-06T00:00:00""
+  operation[43]: index returned 400 _index: valuesets _type: valueset _id: c3e0b834-b583-4f30-863c-19cf25d94c6e _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[44]: index returned 400 _index: valuesets _type: valueset _id: 5e0cadb5-a0a3-4480-8ee0-c3a48d3f4273 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[45]: index returned 400 _index: valuesets _type: valueset _id: fb729b20-5eb1-40dc-84c2-27782fa54533 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[46]: index returned 400 _index: valuesets _type: valueset _id: 47be5b2c-f80f-49be-8e62-60c19a7cf539 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[47]: index returned 400 _index: valuesets _type: valueset _id: 2d96545e-130f-4e5f-bc53-717b231f3937 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[48]: index returned 400 _index: valuesets _type: valueset _id: 5f6ea8f9-93d7-454a-a37a-1397cafd176e _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+  operation[49]: index returned 400 _index: valuesets _type: valueset _id: cca4aaed-a065-4076-93cb-9d2d190b4c45 _version: 0 error: Type: mapper_parsing_exception Reason: "failed to parse [versionDate]" CausedBy:
+Type: illegal_argument_exception Reason: "Invalid format: "2017-05-05T00:00:00" is malformed at "-05T00:00:00""
+# Audit trail of this API call:
+ - [1] HealthyResponse: Node: http://localhost:9200/ Took: 00:00:00.1537911
+# Request:
+<Request stream not captured or already read to completion by serializer. Set DisableDirectStreaming() on ConnectionSettings to force it to be set on the response.>
+# Response:
+<Response stream not captured or already read to completion by serializer. Set DisableDirectStreaming() on ConnectionSettings to force it to be set on the response.>
+
+2017-10-03 13:48:07.785 -07:00 [Information] BootManager Initializing
+2017-10-03 13:48:08.413 -07:00 [Information] Completed loading appsettings.json
+2017-10-03 13:48:08.589 -07:00 [Information] BootManager finished.
+2017-10-03 13:48:17.928 -07:00 [Error] Failed to match codes with every valueset.
+Fabric.Terminology.Domain.Exceptions.ValueSetOperationException: Failed to find ValueSetCode collection for every ValueSetBackingItem (ValueSetDescription)
+2017-10-03 13:49:04.118 -07:00 [Information] BootManager Initializing
+2017-10-03 13:49:04.722 -07:00 [Information] Completed loading appsettings.json
+2017-10-03 13:49:04.867 -07:00 [Information] BootManager finished.
+2017-10-03 13:49:14.727 -07:00 [Error] Failed to match codes with every valueset.
+Fabric.Terminology.Domain.Exceptions.ValueSetOperationException: Failed to find ValueSetCode collection for every ValueSetBackingItem (ValueSetDescription)
+2017-10-03 13:54:05.480 -07:00 [Information] BootManager Initializing
+2017-10-03 13:54:06.068 -07:00 [Information] Completed loading appsettings.json
+2017-10-03 13:54:06.263 -07:00 [Information] BootManager finished.
+2017-10-03 13:54:15.851 -07:00 [Error] Failed to match codes with every valueset.
+Fabric.Terminology.Domain.Exceptions.ValueSetOperationException: Failed to find ValueSetCode collection for every ValueSetBackingItem (ValueSetDescription)
+2017-10-03 14:05:11.361 -07:00 [Information] BootManager Initializing
+2017-10-03 14:05:12.011 -07:00 [Information] Completed loading appsettings.json
+2017-10-03 14:05:12.207 -07:00 [Information] BootManager finished.
+2017-10-03 14:08:29.941 -07:00 [Information] BootManager Initializing
+2017-10-03 14:08:30.656 -07:00 [Information] Completed loading appsettings.json
+2017-10-03 14:08:30.798 -07:00 [Information] BootManager finished.
+2017-10-03 14:10:22.298 -07:00 [Information] Completed indexing 1090 value sets.
+2017-10-03 14:17:31.262 -07:00 [Information] BootManager Initializing
+2017-10-03 14:17:31.830 -07:00 [Information] Completed loading appsettings.json
+2017-10-03 14:17:31.974 -07:00 [Information] BootManager finished.
+2017-10-03 14:19:11.043 -07:00 [Information] Completed indexing 1090 value sets.
+2017-10-03 14:22:14.141 -07:00 [Information] BootManager Initializing
+2017-10-03 14:22:14.726 -07:00 [Information] Completed loading appsettings.json
+2017-10-03 14:22:14.857 -07:00 [Information] BootManager finished.
+2017-10-03 14:23:57.083 -07:00 [Information] Completed indexing 1090 value sets.

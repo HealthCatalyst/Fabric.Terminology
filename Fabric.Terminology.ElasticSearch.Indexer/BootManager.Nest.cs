@@ -1,17 +1,17 @@
 ﻿namespace Fabric.Terminology.ElasticSearch.Indexer
 {
-	using Fabric.Terminology.ElasticSearch.Indexer.Nest;
+    using Fabric.Terminology.ElasticSearch.Indexer.Nest;
 
-	using global::Nest;
+    using global::Nest;
 
-	using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.DependencyInjection;
 
-	internal partial class BootManager
+    internal partial class BootManager
     {
-	    private void RegisterNestServices(IServiceCollection services)
-	    {
-		    services.AddSingleton<ElasticConnectionFactory>();
-		    services.AddTransient<ElasticClient>(factory => factory.GetService<ElasticConnectionFactory>().Create());
-	    }
+        private void RegisterNestServices(IServiceCollection services)
+        {
+            services.AddTransient<ElasticConnectionFactory>();
+            services.AddSingleton<ElasticClient>(factory => factory.GetService<ElasticConnectionFactory>().Create());
+        }
     }
 }

@@ -1,10 +1,9 @@
 ﻿namespace Fabric.Terminology.ElasticSearch.Indexer.Configuration
 {
-	using Fabric.Terminology.SqlServer.Configuration;
+    using Fabric.Terminology.SqlServer.Configuration;
 
-	public class IndexerConfiguration
+    public class IndexerConfiguration
     {
-	    public TerminologySqlSettings TerminologySqlSettings { get; set; }
-
-	}
+        public TerminologySqlSettings TerminologySqlSettings { get; set; }
+    }
 }

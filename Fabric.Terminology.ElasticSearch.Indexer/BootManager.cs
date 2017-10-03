@@ -1,6 +1,6 @@
 ﻿namespace Fabric.Terminology.ElasticSearch.Indexer
 {
-	using Fabric.Terminology.ElasticSearch.Indexer.Logging;
+    using Fabric.Terminology.ElasticSearch.Logging;
 
     using Microsoft.Extensions.DependencyInjection;
 
@@ -19,15 +19,15 @@
             this.logger.Information("BootManager Initializing");
             services.AddSingleton(this.logger);
 
-			// SqlServer
-			this.RegisterSqlServices(services);
+            // SqlServer
+            this.RegisterSqlServices(services);
 
             // ElasticSearch
-			this.RegisterNestServices(services);
+            this.RegisterNestServices(services);
 
             this.logger.Information("BootManager finished.");
 
-	        return services;
+            return services;
         }
-	}
+    }
 }
