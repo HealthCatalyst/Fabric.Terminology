@@ -12,8 +12,6 @@
 
         void Delete(IValueSet valueSet);
 
-        void Save(IValueSet valueSet);
-
         Maybe<IValueSet> GetValueSet(Guid valueSetGuid);
     }
 }

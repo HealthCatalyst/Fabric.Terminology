@@ -19,7 +19,7 @@
 
         public DbSet<ValueSetCodeDto> ValueSetCodes { get; set; }
 
-        public DbSet<ValueSetDescriptionDto> ValueSetDescriptions { get; set; }
+        public DbSet<ValueSetDescriptionBASEDto> ValueSetDescriptions { get; set; }
 
         // Used for testing
         internal bool IsInMemory { get; set; }
@@ -36,8 +36,8 @@
             modelBuilder.Entity<ValueSetCodeDto>().ToTable("ValueSetCodeBASE", "ClientTerm");
             modelBuilder.Entity<ValueSetCodeDto>().HasKey(code => new { code.CodeCD, code.ValueSetGUID });
 
-            modelBuilder.Entity<ValueSetDescriptionDto>().ToTable("ValueSetDescriptionBASE", "ClientTerm");
-            modelBuilder.Entity<ValueSetDescriptionDto>().HasKey(e => e.ValueSetGUID);
+            modelBuilder.Entity<ValueSetDescriptionBASEDto>().ToTable("ValueSetDescriptionBASE", "ClientTerm");
+            modelBuilder.Entity<ValueSetDescriptionBASEDto>().HasKey(e => e.ValueSetGUID);
 
             base.OnModelCreating(modelBuilder);
         }

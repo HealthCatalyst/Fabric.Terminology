@@ -17,14 +17,14 @@
             this.CodeCounts = counts;
         }
 
-        internal ValueSet(string name, IValueSetMeta meta, IEnumerable<ICodeSetCode> valueSetCodes)
+        internal ValueSet(string name, IValueSetMeta meta, IEnumerable<ICodeSetCode> codeSetCodes)
         {
             this.Name = name;
             this.VersionDate = meta.VersionDate;
             this.DefinitionDescription = meta.DefinitionDescription;
             this.AuthoringSourceDescription = meta.AuthoringSourceDescription;
             this.SourceDescription = meta.SourceDescription;
-            this.ValueSetCodes = valueSetCodes.Select(c => new ValueSetCode(c)).ToList();
+            this.ValueSetCodes = codeSetCodes.Select(c => new ValueSetCode(c)).ToList();
         }
 
         public IReadOnlyCollection<IValueSetCodeCount> CodeCounts { get; }

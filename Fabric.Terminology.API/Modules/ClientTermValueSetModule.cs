@@ -76,7 +76,7 @@
 
         private object DeleteValueSet(dynamic parameters)
         {
-            return this.CreateFailureResponse("Not implemented", HttpStatusCode.NotImplemented);
+            return this.CreateFailureResponse("Not Implemented", HttpStatusCode.NotImplemented);
         }
     }
 }

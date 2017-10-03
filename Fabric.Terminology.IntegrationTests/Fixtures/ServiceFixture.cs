@@ -4,7 +4,6 @@
     using Fabric.Terminology.Domain.Services;
     using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Persistence;
-    using Fabric.Terminology.SqlServer.Persistence.DataContext;
     using Fabric.Terminology.TestsBase.Fixtures;
 
     public class ServiceFixture : RepositoryFixtureBase
@@ -39,7 +38,7 @@
                 new PagingStrategyFactory());
 
             var sqlClientTermValueSetRepository = new SqlClientTermValueSetRepository(
-                this.ClientTermContext,
+                this.ClientTermContext.AsLazy(),
                 this.Logger);
 
             this.ValueSetService = new ValueSetService(

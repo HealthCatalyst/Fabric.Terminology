@@ -11,7 +11,7 @@ namespace Fabric.Terminology.SqlServer.Models.Dto
         }
 
         public ValueSet(
-            ValueSetDescriptionDto descDto,
+            ValueSetDescriptionBASEDto descDto,
             IReadOnlyCollection<ValueSetCodeDto> codeDtos)
         {
             this.ValueSetGuid = descDto.ValueSetGUID;

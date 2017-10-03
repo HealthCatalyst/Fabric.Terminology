@@ -13,7 +13,6 @@
     using Fabric.Terminology.SqlServer.Persistence.DataContext;
 
     using Microsoft.EntityFrameworkCore;
-    using Microsoft.EntityFrameworkCore.Storage;
 
     using Serilog;
 
@@ -21,19 +20,21 @@
 
     internal class SqlClientTermValueSetRepository : IClientTermValueSetRepository
     {
-        private readonly ClientTermContext clientTermContext;
+        private readonly Lazy<ClientTermContext> clientTermContext;
 
         private readonly ILogger logger;
 
-        public SqlClientTermValueSetRepository(ClientTermContext clientTermContext, ILogger logger)
+        public SqlClientTermValueSetRepository(Lazy<ClientTermContext> clientTermContext, ILogger logger)
         {
             this.clientTermContext = clientTermContext;
             this.logger = logger;
         }
 
+        protected ClientTermContext ClientTermContext => this.clientTermContext.Value;
+
         public Maybe<IValueSet> GetValueSet(Guid valueSetGuid)
         {
-            var desc = this.clientTermContext.ValueSetDescriptions.AsNoTracking()
+            var desc = this.ClientTermContext.ValueSetDescriptions.AsNoTracking()
                 .SingleOrDefault(x => x.ValueSetGUID == valueSetGuid);
 
             if (desc == null)
@@ -41,48 +42,26 @@
                 return Maybe.Not;
             }
 
-            var codes = this.clientTermContext.ValueSetCodes.Where(vsc => vsc.ValueSetGUID == valueSetGuid).ToList();
+            var codes = this.ClientTermContext.ValueSetCodes.Where(vsc => vsc.ValueSetGUID == valueSetGuid).ToList();
 
             return new Maybe<IValueSet>(new ValueSet(desc, codes));
         }
 
         public Attempt<IValueSet> Add(IValueSet valueSet)
         {
-            return this.AttemptAdd(valueSet, t => t.Rollback());
-        }
-
-        public void Delete(IValueSet valueSet)
-        {
-            throw new NotImplementedException($"Deleting an {nameof(IValueSet)} is not supported yet.");
-        }
-
-        public void Save(IValueSet valueSet)
-        {
-            if (valueSet.ValueSetGuid == Guid.Empty)
-            {
-                this.AttemptAdd(valueSet, t => t.Commit());
-            }
-            else
-            {
-                throw new NotImplementedException($"Updating an {nameof(IValueSet)} is not supported yet.");
-            }
-        }
-
-        private Attempt<IValueSet> AttemptAdd(IValueSet valueSet, Action<IDbContextTransaction> transactionChangeAction)
-        {
             valueSet.SetIdsForCustomInsert();
 
-            var valueSetDto = new ValueSetDescriptionDto(valueSet);
+            var valueSetDto = new ValueSetDescriptionBASEDto(valueSet);
             var codeDtos = valueSet.ValueSetCodes.Select(code => new ValueSetCodeDto(code)).ToList();
 
-            this.clientTermContext.ChangeTracker.AutoDetectChangesEnabled = false;
-            using (var transaction = this.clientTermContext.Database.BeginTransaction())
+            this.ClientTermContext.ChangeTracker.AutoDetectChangesEnabled = false;
+            using (var transaction = this.ClientTermContext.Database.BeginTransaction())
             {
                 try
                 {
-                    this.clientTermContext.ValueSetDescriptions.Add(valueSetDto);
-                    this.clientTermContext.ValueSetCodes.AddRange(codeDtos);
-                    var changes = this.clientTermContext.SaveChanges();
+                    this.ClientTermContext.ValueSetDescriptions.Add(valueSetDto);
+                    this.ClientTermContext.ValueSetCodes.AddRange(codeDtos);
+                    var changes = this.ClientTermContext.SaveChanges();
 
                     var expectedChanges = codeDtos.Count + 1;
                     if (changes != expectedChanges)
@@ -95,7 +74,7 @@
                     // Get the updated ValueSet
                     var added = this.GetValueSet(valueSetDto.ValueSetGUID);
 
-                    transactionChangeAction(transaction);
+                    transaction.Commit();
 
                     return added.Select(Attempt<IValueSet>.Successful)
                         .Else(
@@ -105,15 +84,45 @@
                 catch (Exception ex)
                 {
                     this.logger.Error(ex, "Failed to save a custom ValueSet");
-                    this.clientTermContext.ChangeTracker.AutoDetectChangesEnabled = true;
+                    this.ClientTermContext.ChangeTracker.AutoDetectChangesEnabled = true;
                     return Attempt<IValueSet>.Failed(
                         new ValueSetOperationException("Failed to save a custom ValueSet", ex),
                         valueSet);
                 }
                 finally
                 {
-                    this.clientTermContext.ChangeTracker.AutoDetectChangesEnabled = true;
+                    this.ClientTermContext.ChangeTracker.AutoDetectChangesEnabled = true;
                 }
+            }
+        }
+
+        public void Delete(IValueSet valueSet)
+        {
+            using (var transaction = this.ClientTermContext.Database.BeginTransaction())
+            try
+            {
+                var valueSetDto = this.ClientTermContext.ValueSetDescriptions.Find(valueSet.ValueSetGuid);
+                if (valueSetDto == null)
+                {
+                    throw new ValueSetNotFoundException(
+                        $"ValueSet with {nameof(IValueSet.ValueSetGuid)} {valueSet.ValueSetGuid} was not found.");
+                }
+
+                var codes = this.ClientTermContext.ValueSetCodes.Where(
+                    code => code.ValueSetGUID == valueSetDto.ValueSetGUID);
+                this.ClientTermContext.ValueSetCodes.RemoveRange(codes);
+                this.ClientTermContext.ValueSetDescriptions.Remove(valueSetDto);
+                this.ClientTermContext.SaveChanges();
+
+                transaction.Commit();
+            }
+            catch (Exception ex)
+            {
+                var operationException = new ValueSetOperationException(
+                    $"Failed to delete custom ValueSet with ID {valueSet.ValueSetGuid}",
+                    ex);
+                this.logger.Error(operationException, "Failed to delete custom ValueSet");
+                throw operationException;
             }
         }
     }
