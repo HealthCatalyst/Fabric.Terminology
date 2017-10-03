@@ -3,10 +3,12 @@
     using System;
     using System.Collections.Generic;
 
+    using Fabric.Terminology.Domain.Models;
+
     using Nest;
 
     [ElasticsearchType(Name = "valueset")]
-    public class ValueSetIndexModel
+    public class ValueSetIndexModel : IValueSetBackingItem
     {
         [Text]
         public string Id { get; set; }

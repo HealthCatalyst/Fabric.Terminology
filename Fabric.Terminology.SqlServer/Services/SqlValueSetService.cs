@@ -1,21 +1,21 @@
 namespace Fabric.Terminology.SqlServer.Services
 {
-	using System;
-	using System.Collections.Generic;
-	using System.Linq;
-	using System.Threading.Tasks;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
 
-	using CallMeMaybe;
+    using CallMeMaybe;
 
-	using Fabric.Terminology.Domain;
-	using Fabric.Terminology.Domain.Exceptions;
-	using Fabric.Terminology.Domain.Models;
-	using Fabric.Terminology.Domain.Services;
-	using Fabric.Terminology.SqlServer.Persistence;
+    using Fabric.Terminology.Domain;
+    using Fabric.Terminology.Domain.Exceptions;
+    using Fabric.Terminology.Domain.Models;
+    using Fabric.Terminology.Domain.Services;
+    using Fabric.Terminology.SqlServer.Persistence;
 
-	using Serilog;
+    using Serilog;
 
-	public class ValueSetService : IValueSetService
+    public class SqlValueSetService : IValueSetService
     {
         private readonly IValueSetBackingItemRepository valueSetBackingItemRepository;
 
@@ -25,7 +25,7 @@ namespace Fabric.Terminology.SqlServer.Services
 
         private readonly ILogger logger;
 
-        public ValueSetService(
+        public SqlValueSetService(
             ILogger logger,
             IValueSetBackingItemRepository valueSetBackingItemRepository,
             IValueSetCodeRepository valueSetCodeRepository,
@@ -59,7 +59,9 @@ namespace Fabric.Terminology.SqlServer.Services
             return this.GetValueSets(valueSetGuids, new List<Guid>());
         }
 
-        public async Task<IReadOnlyCollection<IValueSet>> GetValueSets(IEnumerable<Guid> valueSetGuids, IEnumerable<Guid> codeSystemGuids)
+        public async Task<IReadOnlyCollection<IValueSet>> GetValueSets(
+            IEnumerable<Guid> valueSetGuids,
+            IEnumerable<Guid> codeSystemGuids)
         {
             var setGuids = valueSetGuids as Guid[] ?? valueSetGuids.ToArray();
             var backingItems = this.valueSetBackingItemRepository.GetValueSetBackingItems(setGuids, codeSystemGuids);
@@ -89,22 +91,34 @@ namespace Fabric.Terminology.SqlServer.Services
             return this.BuildValueSets(backingItems, codes, counts);
         }
 
-        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings settings, bool latestVersionsOnly = true)
+        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(
+            IPagerSettings settings,
+            bool latestVersionsOnly = true)
         {
             return this.GetValueSetsAsync(settings, new List<Guid>(), latestVersionsOnly);
         }
 
-        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings settings, IEnumerable<Guid> codeSystemGuids, bool latestVersionsOnly = true)
+        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(
+            IPagerSettings settings,
+            IEnumerable<Guid> codeSystemGuids,
+            bool latestVersionsOnly = true)
         {
             return this.GetValueSetsAsync(string.Empty, settings, codeSystemGuids, latestVersionsOnly);
         }
 
-        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(string nameFilterText, IPagerSettings pagerSettings, bool latestVersionsOnly = true)
+        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(
+            string nameFilterText,
+            IPagerSettings pagerSettings,
+            bool latestVersionsOnly = true)
         {
             return this.GetValueSetsAsync(nameFilterText, pagerSettings, new List<Guid>(), latestVersionsOnly);
         }
 
-        public async Task<PagedCollection<IValueSet>> GetValueSetsAsync(string nameFilterText, IPagerSettings pagerSettings, IEnumerable<Guid> codeSystemGuids, bool latestVersionsOnly = true)
+        public async Task<PagedCollection<IValueSet>> GetValueSetsAsync(
+            string nameFilterText,
+            IPagerSettings pagerSettings,
+            IEnumerable<Guid> codeSystemGuids,
+            bool latestVersionsOnly = true)
         {
             var backingItemPage = await this.valueSetBackingItemRepository.GetValueSetBackingItemsAsync(
                                       nameFilterText,
@@ -185,7 +199,8 @@ namespace Fabric.Terminology.SqlServer.Services
                         .Select(
                             codes => countsDictionary.GetMaybe(item.ValueSetGuid)
                                 .Select(counts => new ValueSet(item, codes, counts))))
-                .Values().ToList();
+                .Values()
+                .ToList();
 
             if (valueSets.Count == backingItems.Count)
             {

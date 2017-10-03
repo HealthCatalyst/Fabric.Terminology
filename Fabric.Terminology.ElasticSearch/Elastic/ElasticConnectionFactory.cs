@@ -1,8 +1,8 @@
-﻿namespace Fabric.Terminology.ElasticSearch.Indexer.Nest
+﻿namespace Fabric.Terminology.ElasticSearch.Elastic
 {
     using System;
 
-    using global::Nest;
+    using Nest;
 
     // This is to test the proof of concept.  Should be load via configuration.
     public class ElasticConnectionFactory

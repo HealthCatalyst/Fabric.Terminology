@@ -35,4 +35,7 @@
       <DependentUpon>BootManager.cs</DependentUpon>
     </Compile>
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Nest\" />
+  </ItemGroup>
 </Project>

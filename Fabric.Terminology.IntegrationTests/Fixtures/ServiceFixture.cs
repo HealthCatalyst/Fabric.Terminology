@@ -39,9 +39,9 @@
                 cacheManagerFactory,
                 new PagingStrategyFactory());
 
-            this.ValueSetService = new ValueSetService(this.Logger, valueSetBackingItemRepository, valueSetCodeRepository, valueSetCodeCountRepository);
+            this.ValueSetService = new SqlValueSetService(this.Logger, valueSetBackingItemRepository, valueSetCodeRepository, valueSetCodeCountRepository);
 
-            this.ValueSetSummaryService = new ValueSetSummaryService(this.Logger, valueSetBackingItemRepository, valueSetCodeCountRepository);
+            this.ValueSetSummaryService = new SqlValueSetSummaryService(this.Logger, valueSetBackingItemRepository, valueSetCodeCountRepository);
         }
     }
 }

@@ -50,9 +50,10 @@
             IValueSetMeta meta,
             IEnumerable<ICodeSetCode> valueSetCodes);
 
+        // TODO move to a ClientTerm service
         void Save(IValueSet valueSet);
 
-        // Can only delete custom value sets
+        // TODO move to a ClientTerm service
         void Delete(IValueSet valueSet);
     }
 }

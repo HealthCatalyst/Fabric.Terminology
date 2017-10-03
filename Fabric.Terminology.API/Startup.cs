@@ -48,28 +48,12 @@
             }
 
             Log.Logger.Information("Initializing AutoMapper");
-            Mapper.Initialize(
-                cfg =>
-                    {
-                        cfg.CreateMap<ICodeSetCode, CodeSetCodeApiModel>();
-                        cfg.CreateMap<IValueSetCode, ValueSetCodeApiModel>();
-                        cfg.CreateMap<IValueSetCodeCount, ValueSetCodeCountApiModel>();
-                        cfg.CreateMap<IValueSetSummary, ValueSetItemApiModel>()
-                            .ForMember(
-                                dest => dest.Identifier,
-                                opt => opt.MapFrom(
-                                    src => src.ValueSetGuid.Equals(Guid.Empty)
-                                               ? Guid.NewGuid().ToString()
-                                               : src.ValueSetGuid.ToString()));
 
-                        cfg.CreateMap<IValueSet, ValueSetApiModel>()
-                            .ForMember(
-                                dest => dest.Identifier,
-                                opt => opt.MapFrom(
-                                    src => src.ValueSetGuid.Equals(Guid.Empty)
-                                               ? Guid.NewGuid().ToString()
-                                               : src.ValueSetGuid.ToString()));
-                    });
+            Mapper.Initialize(cfg =>
+                {
+                    cfg.AddProfile<ApiModelProfile>();
+                    //// add more profiles here
+                });
 
             app.UseStaticFiles()
                 .UseOwin()

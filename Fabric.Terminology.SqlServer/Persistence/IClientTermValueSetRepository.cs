@@ -1,9 +1,9 @@
 ﻿namespace Fabric.Terminology.SqlServer.Persistence
 {
-	using Fabric.Terminology.Domain;
-	using Fabric.Terminology.Domain.Models;
+    using Fabric.Terminology.Domain;
+    using Fabric.Terminology.Domain.Models;
 
-	public interface IClientTermValueSetRepository
+    public interface IClientTermValueSetRepository
     {
         Attempt<IValueSet> Add(IValueSet valueSet);
 

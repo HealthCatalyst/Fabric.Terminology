@@ -515,3 +515,4 @@ Fabric.Terminology.Domain.Exceptions.ValueSetOperationException: Failed to find 
 2017-10-03 14:22:14.726 -07:00 [Information] Completed loading appsettings.json
 2017-10-03 14:22:14.857 -07:00 [Information] BootManager finished.
 2017-10-03 14:23:57.083 -07:00 [Information] Completed indexing 1090 value sets.
+2017-10-03 15:44:24.959 -07:00 [Information] BootManager Initializing

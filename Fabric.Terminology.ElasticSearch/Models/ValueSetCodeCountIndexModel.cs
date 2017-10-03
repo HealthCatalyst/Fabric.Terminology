@@ -2,13 +2,15 @@
 {
     using System;
 
+    using Fabric.Terminology.Domain.Models;
+
     using Nest;
 
     [ElasticsearchType(Name = "valuesetcodecount")]
-    public class ValueSetCodeCountIndexModel
+    public class ValueSetCodeCountIndexModel : IValueSetCodeCount
     {
         [Keyword]
-        public string ValueSetGuid { get; internal set; }
+        public Guid ValueSetGuid { get; internal set; }
 
         [Keyword]
         public Guid CodeSystemGuid { get; internal set; }

@@ -44,7 +44,7 @@
             services.AddTransient<IValueSetBackingItemRepository, SqlValueSetBackingItemRepository>();
 
             services.AddTransient<SharedContext>(factory => factory.GetService<SharedContextFactory>().Create());
-            services.AddTransient<IValueSetService, ValueSetService>();
+            services.AddTransient<IValueSetService, SqlValueSetService>();
         }
 
         private TerminologySqlSettings LoadConfiguration()

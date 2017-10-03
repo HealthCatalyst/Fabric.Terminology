@@ -1,6 +1,6 @@
 ﻿namespace Fabric.Terminology.ElasticSearch.Indexer
 {
-    using Fabric.Terminology.ElasticSearch.Indexer.Nest;
+    using Fabric.Terminology.ElasticSearch.Elastic;
 
     using global::Nest;
 
