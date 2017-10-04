@@ -24,7 +24,9 @@
             this.DefinitionDescription = meta.DefinitionDescription;
             this.AuthoringSourceDescription = meta.AuthoringSourceDescription;
             this.SourceDescription = meta.SourceDescription;
-            this.ValueSetCodes = codeSetCodes.Select(c => new ValueSetCode(c)).ToList();
+            var codes = codeSetCodes.Select(c => new ValueSetCode(c)).ToList();
+            this.ValueSetCodes = codes;
+            this.CodeCounts = codes.GetCodeCountsFromCodes();
         }
 
         public IReadOnlyCollection<IValueSetCodeCount> CodeCounts { get; }
