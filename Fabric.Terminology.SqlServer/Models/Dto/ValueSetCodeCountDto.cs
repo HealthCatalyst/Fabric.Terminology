@@ -9,6 +9,8 @@ namespace Fabric.Terminology.SqlServer.Models.Dto
 
         public Guid CodeSystemGUID { get; set; }
 
+        public string CodeSystemNM { get; set; }
+
         public int CodeSystemPerValueSetNBR { get; set; }
     }
 }

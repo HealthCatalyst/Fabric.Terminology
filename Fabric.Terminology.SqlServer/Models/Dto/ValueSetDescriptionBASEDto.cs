@@ -14,7 +14,7 @@ namespace Fabric.Terminology.SqlServer.Models.Dto
         {
         }
 
-        public ValueSetDescriptionBASEDto(IValueSet valueSet)
+        public ValueSetDescriptionBASEDto(IValueSetBackingItem valueSet)
         {
             this.ValueSetGUID = valueSet.ValueSetGuid;
             this.ValueSetReferenceID = valueSet.ValueSetReferenceId;

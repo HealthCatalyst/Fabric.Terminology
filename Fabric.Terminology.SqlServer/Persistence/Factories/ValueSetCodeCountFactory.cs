@@ -12,6 +12,7 @@
             {
                 CodeCount = dto.CodeSystemPerValueSetNBR,
                 CodeSystemGuid = dto.CodeSystemGUID,
+                CodeSystemName = dto.CodeSystemNM,
                 ValueSetGuid = dto.ValueSetGUID
             };
         }
