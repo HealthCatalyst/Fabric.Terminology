@@ -8,6 +8,8 @@
 
         public Guid CodeSystemGuid { get; internal set; }
 
+        public string CodeSystemName { get; internal set; }
+
         public int CodeCount { get; internal set; }
     }
 }

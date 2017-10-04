@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Runtime.InteropServices.ComTypes;
 
     using CallMeMaybe;
 
@@ -54,6 +55,7 @@
 
             var valueSetDto = new ValueSetDescriptionBASEDto(valueSet);
             var codeDtos = valueSet.ValueSetCodes.Select(code => new ValueSetCodeDto(code)).ToList();
+            var countDtos = valueSet.CodeCounts.Select(count => new ValueSetCodeCountDto(count)).ToList();
 
             this.ClientTermContext.ChangeTracker.AutoDetectChangesEnabled = false;
             using (var transaction = this.ClientTermContext.Database.BeginTransaction())
@@ -62,9 +64,11 @@
                 {
                     this.ClientTermContext.ValueSetDescriptions.Add(valueSetDto);
                     this.ClientTermContext.ValueSetCodes.AddRange(codeDtos);
+                    this.ClientTermContext.ValueSetCodeCounts.AddRange(countDtos);
+
                     var changes = this.ClientTermContext.SaveChanges();
 
-                    var expectedChanges = codeDtos.Count + 1;
+                    var expectedChanges = codeDtos.Count + countDtos.Count + 1;
                     if (changes != expectedChanges)
                     {
                         return Attempt<IValueSet>.Failed(
@@ -103,7 +107,7 @@
             try
             {
                 this.ClientTermContext.BulkDelete(
-                    new[] { typeof(ValueSetDescriptionBASEDto), typeof(ValueSetCodeDto) },
+                    new[] { typeof(ValueSetDescriptionBASEDto), typeof(ValueSetCodeDto), typeof(ValueSetCodeCountDto) },
                     new Dictionary<string, object>
                     {
                         { nameof(ValueSetDescriptionBASEDto.ValueSetGUID), valueSet.ValueSetGuid }

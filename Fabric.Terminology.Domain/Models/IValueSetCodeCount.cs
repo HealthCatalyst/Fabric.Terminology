@@ -7,5 +7,7 @@
         Guid CodeSystemGuid { get; }
 
         int CodeCount { get; }
+
+        string CodeSystemName { get; }
     }
 }
