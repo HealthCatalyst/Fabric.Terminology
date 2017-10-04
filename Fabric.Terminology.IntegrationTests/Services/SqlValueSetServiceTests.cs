@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
 
     using Fabric.Terminology.API;
     using Fabric.Terminology.Domain.Models;
@@ -41,14 +42,10 @@
 
             // Act
             var valueSet = this.Profiler.ExecuteTimed(() => this.valueSetService.GetValueSet(valueSetGuid), $"Querying ValueSet {valueSetGuid}").Single();
-           // var summary = this.Profiler.ExecuteTimed(() => this.valueSetSummaryService.GetValueSetSummary(valueSetGuid), $"Querying ValueSetSummary {valueSetGuid}").Single();
+           //// var summary = this.Profiler.ExecuteTimed(() => this.valueSetSummaryService.GetValueSetSummary(valueSetGuid), $"Querying ValueSetSummary {valueSetGuid}").Single();
 
             this.Output.WriteLine(valueSet.Name);
             this.Output.WriteLine($"Code count: {valueSet.ValueSetCodes.Count}");
-            //foreach (var count in summary.CodeCounts)
-            //{
-            //    this.Output.WriteLine($"CodeSystem {count.CodeSystemGuid}: {count.CodeCount}");
-            //}
 
             // Assert
             valueSet.ValueSetGuid.Should().Be(valueSetGuid);
@@ -130,7 +127,28 @@
         }
 
         [Theory]
-        [InlineData("Add VS 1", 5)]
+        [InlineData("Code Count Check", 50)]
+        public void CanCreateValueSet(string name, int codeCount)
+        {
+            // Arrange
+            var apiModel = MockApiModelBuilder.ValueSetCreationApiModel(name, codeCount);
+
+            // Act
+            var attempt = this.valueSetService.Create(apiModel);
+
+            // Assert
+            attempt.Success.Should().BeTrue();
+            attempt.Result.HasValue.Should().BeTrue();
+
+            var vs = attempt.Result.Single();
+
+            vs.ValueSetCodes.Should().NotBeEmpty();
+            vs.CodeCounts.Should().NotBeEmpty();
+            vs.CodeCounts.Sum(cc => cc.CodeCount).Should().Be(codeCount);
+        }
+
+        [Theory]
+        [InlineData("Add VS 3", 5)]
         [InlineData("Add VS 2", 1000)]
         [InlineData("Add VS 4", 4000)]
         public void CanAddValueSet(string name, int codeCount)
@@ -152,7 +170,7 @@
             vs.Name.Should().BeEquivalentTo(name);
 
             // cleanup
-            this.valueSetService.Delete(vs);
+           this.valueSetService.Delete(vs);
         }
     }
 }

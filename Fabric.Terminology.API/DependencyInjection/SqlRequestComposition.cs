@@ -12,6 +12,7 @@
             container.Register<IValueSetCodeRepository, SqlValueSetCodeRepository>();
             container.Register<IValueSetCodeCountRepository, SqlValueSetCodeCountRepository>();
             container.Register<IValueSetBackingItemRepository, SqlValueSetBackingItemRepository>();
+            container.Register<IClientTermValueSetRepository, SqlClientTermValueSetRepository>();
         }
     }
 }

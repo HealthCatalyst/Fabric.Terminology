@@ -11,7 +11,7 @@
     {
         public static Attempt<IValueSet> Create(this IValueSetService service, ValueSetCreationApiModel model)
         {
-            return service.Create(model.Name, model, model.CodeSetCodes.Select(code => code.ToCodeSetCode()));
+            return service.Create(model.Name, model, model.CodeSetCodes.Select(code => code.ToCodeSetCode()).ToList());
         }
     }
 }

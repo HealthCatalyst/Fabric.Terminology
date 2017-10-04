@@ -50,6 +50,11 @@
             return this.sharedContext.ValueSetDescriptions.Any(dto => dto.ValueSetNM == name);
         }
 
+        public bool ValueSetGuidExists(Guid valueSetGuid)
+        {
+            return this.sharedContext.ValueSetDescriptions.Any(dto => dto.ValueSetGUID == valueSetGuid);
+        }
+
         public Maybe<IValueSetBackingItem> GetValueSetBackingItem(Guid valueSetGuid)
         {
             return this.GetValueSetBackingItem(valueSetGuid, new List<Guid>());

@@ -14,7 +14,6 @@
 
         internal SqlValueSetCodeRepository ValueSetCodeRepository { get; private set; }
 
-
         //internal IValueSetService ValueSetService { get; private set; }
 
         protected override bool ClientTermContextInMemory => true;

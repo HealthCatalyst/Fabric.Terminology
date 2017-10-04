@@ -4,7 +4,6 @@
     using System.Collections.Generic;
 
     using Fabric.Terminology.Domain.Models;
-    using Fabric.Terminology.Domain.Persistence;
     using Fabric.Terminology.IntegrationTests.Fixtures;
     using Fabric.Terminology.SqlServer.Persistence;
     using Fabric.Terminology.TestsBase;

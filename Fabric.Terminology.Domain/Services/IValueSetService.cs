@@ -9,7 +9,7 @@
     using Fabric.Terminology.Domain.Models;
 
     /// <summary>
-    /// Represents a service for interacting with ValueSets.
+    ///     Represents a service for interacting with ValueSets.
     /// </summary>
     public interface IValueSetService
     {
@@ -40,20 +40,25 @@
         Task<PagedCollection<IValueSet>> GetValueSetsAsync(
             string nameFilterText,
             IPagerSettings pagerSettings,
-            IEnumerable<Guid> codeSystemGuids, 
+            IEnumerable<Guid> codeSystemGuids,
             bool latestVersionsOnly = true);
 
         bool NameIsUnique(string name);
 
-        Attempt<IValueSet> Create(
-            string name,
-            IValueSetMeta meta,
-            IEnumerable<ICodeSetCode> valueSetCodes);
+        Attempt<IValueSet> Create(string name, IValueSetMeta meta, IReadOnlyCollection<ICodeSetCode> codeSetCodes);
 
-        // TODO move to a ClientTerm service
+        /// <summary>
+        ///     Saves a <see cref="IValueSet" />
+        /// </summary>
+        /// <param name="valueSet">The <see cref="IValueSet" /> to be saved</param>
+        /// <remarks>
+        ///     At this point, we can only save "new" value sets.  Updates are out of scope at the moment - To be discussed.
+        /// </remarks>
         void Save(IValueSet valueSet);
 
-        // TODO move to a ClientTerm service
+        // Can only delete custom value sets
         void Delete(IValueSet valueSet);
+
+        bool ValueSetGuidIsUnique(Guid valueSetGuid);
     }
 }

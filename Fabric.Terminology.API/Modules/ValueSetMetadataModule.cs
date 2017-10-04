@@ -68,7 +68,6 @@
                 },
                 new[] { TagsFactory.GetValueSetTag() });
 
-
             this.RouteDescriber.DescribeRouteWithParams(
                 "GetValueSetVersions",
                 "Gets all versions of a ValueSet",
@@ -81,7 +80,6 @@
                 },
                 new[] { ParameterFactory.GetValueSetReferenceId(), ParameterFactory.GetSummary(), ParameterFactory.GetCodeSystemGuidsArray() },
                 new[] { TagsFactory.GetValueSetVersionTag() });
-
 
             this.RouteDescriber.DescribeRouteWithParams(
                 "Search",
@@ -98,24 +96,24 @@
                 },
                 new[] { TagsFactory.GetValueSetSearchTag() });
 
-            //this.RouteDescriber.DescribeRouteWithParams(
-            //    "AddValueSet",
-            //    "Creates a new value set",
-            //    "Creates a new value set",
-            //    new[]
-            //    {
-            //        new HttpResponseMetadata<ValueSetApiModel> { Code = 200, Message = "OK" },
-            //        new HttpResponseMetadata { Code = 500, Message = "Internal Server Error" }
-            //    },
-            //    new[]
-            //    {
-            //        // ParameterFactory.GetContentType(),
-            //        new BodyParameter<ValueSetCreationApiModel>(modelCatalog) { Required = true, Name = "Model" }
-            //    },
-            //    new[]
-            //    {
-            //        TagsFactory.GetValueSetTag()
-            //    });
+            this.RouteDescriber.DescribeRouteWithParams(
+                "AddValueSet",
+                "Creates a new value set",
+                "Creates a new value set",
+                new[]
+                {
+                    new HttpResponseMetadata<ValueSetApiModel> { Code = 200, Message = "OK" },
+                    new HttpResponseMetadata { Code = 500, Message = "Internal Server Error" }
+                },
+                new[]
+                {
+                    // ParameterFactory.GetContentType(),
+                    new BodyParameter<ValueSetCreationApiModel>(modelCatalog) { Required = true, Name = "Model" }
+                },
+                new[]
+                {
+                    TagsFactory.GetValueSetTag()
+                });
         }
     }
 }

@@ -5,6 +5,8 @@
     using System.Linq;
     using System.Threading.Tasks;
 
+    using AutoMapper;
+
     using CallMeMaybe;
 
     using Fabric.Terminology.API.Configuration;
@@ -47,9 +49,9 @@
 
             this.Post("/search/", _ => this.Search(), null, "Search");
 
-            //this.Post("/", _ => this.AddValueSet(), null, "AddValueSet");
+            this.Post("/", _ => this.AddValueSet(), null, "AddValueSet");
 
-            //this.Delete("/{valueSetUniqueId}", parameters => this.DeleteValueSet(parameters), null, "DeleteValueSet");
+           // this.Delete("/{valueSetGuid}", parameters => this.DeleteValueSet(parameters), null, "DeleteValueSet");
         }
 
         private static ValueSetApiModel MapToValueSetApiModel(IValueSet vs, IReadOnlyCollection<Guid> codeSystemGuids) =>
@@ -194,33 +196,43 @@
             }
         }
 
-        //private object AddValueSet()
-        //{
-        //    try
-        //    {
-        //        var model = this.Bind<ValueSetCreationApiModel>();
-        //        var attempt = this.valueSetService.Create(model);
-        //        if (attempt.Success && attempt.Result.HasValue)
-        //        {
-        //            var valueSet = attempt.Result.Single();
-        //            this.valueSetService.Save(valueSet);
-        //            return valueSet.ValueSetItemApiModel(false);
-        //        }
+        private object AddValueSet()
+        {
+            try
+            {
+                var model = this.Bind<ValueSetCreationApiModel>();
+                var attempt = this.valueSetService.Create(model);
+                if (!attempt.Success || !attempt.Result.HasValue)
+                {
+                    throw attempt.Exception.HasValue
+                              ? attempt.Exception.Single()
+                              : new ArgumentException("Failed to add value set.");
+                }
 
-        //        throw attempt.Exception.HasValue ? attempt.Exception.Single() : new ArgumentException("Failed to add value set.");
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        this.Logger.Error(ex, ex.Message);
-        //        return this.CreateFailureResponse(
-        //            "Failed to create a value set",
-        //            HttpStatusCode.InternalServerError);
-        //    }
-        //}
+                var valueSet = attempt.Result.Single();
+                var validationResult = this.valueSetValidator.Validate(valueSet);
+                if (validationResult.IsValid)
+                {
+                    this.valueSetService.Save(valueSet);
+                    return Mapper.Map<IValueSet, ValueSetApiModel>(valueSet);
+                }
 
-        //private object DeleteValueSet(dynamic parameters)
-        //{
-        //    return this.CreateFailureResponse("Not implemented", HttpStatusCode.NotImplemented);
-        //}
+                throw new InvalidOperationException(
+                    "ValueSet validation failed: "
+                    + string.Join(Environment.NewLine, validationResult.Errors.Select(vr => vr.ErrorMessage)));
+            }
+            catch (Exception ex)
+            {
+                this.Logger.Error(ex, ex.Message);
+                return this.CreateFailureResponse(
+                    "Failed to create a value set",
+                    HttpStatusCode.InternalServerError);
+            }
+        }
+
+        private object DeleteValueSet(dynamic parameters)
+        {
+            return this.CreateFailureResponse("Not Implemented", HttpStatusCode.NotImplemented);
+        }
     }
 }
