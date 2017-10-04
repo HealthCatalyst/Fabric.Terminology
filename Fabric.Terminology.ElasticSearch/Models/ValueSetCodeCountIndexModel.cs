@@ -10,12 +10,12 @@
     public class ValueSetCodeCountIndexModel : IValueSetCodeCount
     {
         [Keyword]
-        public Guid ValueSetGuid { get; internal set; }
+        public Guid ValueSetGuid { get; set; }
 
         [Keyword]
-        public Guid CodeSystemGuid { get; internal set; }
+        public Guid CodeSystemGuid { get; set; }
 
         [Number]
-        public int CodeCount { get; internal set; }
+        public int CodeCount { get; set; }
     }
 }

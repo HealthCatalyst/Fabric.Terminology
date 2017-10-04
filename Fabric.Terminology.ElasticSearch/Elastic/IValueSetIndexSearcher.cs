@@ -12,9 +12,7 @@
     {
         Maybe<ValueSetIndexModel> Get(Guid valueSetGuid);
 
-        Maybe<ValueSetCodeIndexModel> Get(Guid valueSetGuid, IEnumerable<Guid> codeSystemGuids);
-
-        IReadOnlyCollection<ValueSetIndexModel> GetMultiple(IEnumerable<Guid> valueSetGuids, IEnumerable<Guid> codeSystemGuids);
+        IReadOnlyCollection<ValueSetIndexModel> GetMultiple(IEnumerable<Guid> valueSetGuids);
 
         IReadOnlyCollection<ValueSetIndexModel> GetVersions(string valueSetReferenceId);
 

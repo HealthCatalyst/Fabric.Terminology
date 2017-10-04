@@ -10,13 +10,13 @@
     public class CodeSetCodeIndexModel : ICodeSetCode
     {
         [Keyword]
-        public Guid CodeGuid { get; internal set; }
+        public Guid CodeGuid { get; set; }
 
         [Keyword]
-        public string Code { get; internal set; }
+        public string Code { get; set; }
 
         [Text]
-        public string Name { get; internal set; }
+        public string Name { get; set; }
 
         [Keyword]
         public Guid CodeSystemGuid { get; set; }

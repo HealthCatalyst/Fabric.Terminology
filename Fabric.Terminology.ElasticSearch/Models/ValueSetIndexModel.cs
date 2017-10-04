@@ -45,7 +45,7 @@
         [Boolean(NullValue = true, Store = true)]
         public bool IsLatestVersion { get; set; }
 
-        [Nested]
+        [Nested(IncludeInParent = true)]
         public IReadOnlyCollection<ValueSetCodeCountIndexModel> CodeCounts { get; set; }
 
         [Nested]

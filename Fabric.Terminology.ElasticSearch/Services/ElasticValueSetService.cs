@@ -28,36 +28,42 @@
 
         public Maybe<IValueSet> GetValueSet(Guid valueSetGuid)
         {
-            return this.searcher.Get(valueSetGuid)
-                .Select(model => new ValueSet(model, model.ValueSetCodes, model.CodeCounts) as IValueSet);
+            return this.searcher.Get(valueSetGuid).Select(Map);
         }
 
         public Maybe<IValueSet> GetValueSet(Guid valueSetGuid, IEnumerable<Guid> codeSystemGuids)
         {
-            throw new NotImplementedException();
+            return this.GetValueSet(valueSetGuid)
+                .Select(
+                    vs =>
+                        {
+                            return vs.CodeCounts.Any(cc => codeSystemGuids.Contains(cc.CodeSystemGuid)) ? vs : null;
+                        });
         }
 
         public Task<IReadOnlyCollection<IValueSet>> GetValueSets(IEnumerable<Guid> valueSetGuids)
         {
-            throw new NotImplementedException();
+            return Task.FromResult((IReadOnlyCollection<IValueSet>)this.searcher.GetMultiple(valueSetGuids).Select(Map));
         }
 
         public Task<IReadOnlyCollection<IValueSet>> GetValueSets(IEnumerable<Guid> valueSetGuids, IEnumerable<Guid> codeSystemGuids)
         {
-            throw new NotImplementedException();
+            return Task.FromResult((IReadOnlyCollection<IValueSet>)
+                this.searcher.GetMultiple(valueSetGuids)
+                    .Where(vs => vs.CodeCounts.Any(cc => codeSystemGuids.Contains(cc.CodeSystemGuid)))
+                    .Select(Map));
         }
 
         public Task<IReadOnlyCollection<IValueSet>> GetValueSetVersions(string valueSetReferenceId)
         {
-            return Task.FromResult((IReadOnlyCollection<IValueSet>)
-                this.searcher.GetVersions(valueSetReferenceId)
-                    .Select(vim => Maybe.From(new ValueSet(vim, vim.ValueSetCodes, vim.CodeCounts) as IValueSet))
-                    .Values());
+            var results = this.searcher.GetVersions(valueSetReferenceId).Select(Map).ToList();
+
+            return Task.FromResult((IReadOnlyCollection<IValueSet>)results);
         }
 
         public Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings settings, bool latestVersionsOnly = true)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(Map(this.searcher.GetPaged(settings, latestVersionsOnly)));
         }
 
         public Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings settings, IEnumerable<Guid> codeSystemGuids, bool latestVersionsOnly = true)
@@ -97,6 +103,22 @@
         public void Delete(IValueSet valueSet)
         {
             throw new NotImplementedException();
+        }
+
+        private static PagedCollection<IValueSet> Map(PagedCollection<ValueSetIndexModel> ip)
+        {
+            return new PagedCollection<IValueSet>
+            {
+                TotalPages = ip.TotalPages,
+                TotalItems = ip.TotalItems,
+                PagerSettings = ip.PagerSettings,
+                Values = ip.Values.Select(Map).ToList()
+            };
+        }
+
+        private static IValueSet Map(ValueSetIndexModel model)
+        {
+            return new ValueSet(model, model.ValueSetCodes, model.CodeCounts);
         }
     }
 }
