@@ -112,7 +112,7 @@
             int itemsPerPage = 50)
         {
             var pagerSettings = new PagerSettings { CurrentPage = pageNumber, ItemsPerPage = itemsPerPage };
-            var valueSets = await service.GetValueSetsAsync(pagerSettings);
+            var valueSets = await service.GetValueSetsAsync(pagerSettings, false); // we want all versions
             return valueSets;
         }
     }

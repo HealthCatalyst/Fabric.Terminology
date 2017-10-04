@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading.Tasks;
 
     using CallMeMaybe;
@@ -9,6 +10,8 @@
     using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Services;
+    using Fabric.Terminology.ElasticSearch.Elastic;
+    using Fabric.Terminology.ElasticSearch.Models;
 
     using Nest;
 
@@ -16,21 +19,17 @@
 
     public class ElasticValueSetService : IValueSetService
     {
-        private readonly ILogger logger;
+        private readonly IValueSetIndexSearcher searcher;
 
-        private readonly ElasticClient client;
-
-        public ElasticValueSetService(
-            ILogger logger,
-            ElasticClient client)
+        public ElasticValueSetService(IValueSetIndexSearcher searcher)
         {
-            this.logger = logger;
-            this.client = client;
+            this.searcher = searcher;
         }
 
         public Maybe<IValueSet> GetValueSet(Guid valueSetGuid)
         {
-            throw new NotImplementedException();
+            return this.searcher.Get(valueSetGuid)
+                .Select(model => new ValueSet(model, model.ValueSetCodes, model.CodeCounts) as IValueSet);
         }
 
         public Maybe<IValueSet> GetValueSet(Guid valueSetGuid, IEnumerable<Guid> codeSystemGuids)
@@ -50,7 +49,10 @@
 
         public Task<IReadOnlyCollection<IValueSet>> GetValueSetVersions(string valueSetReferenceId)
         {
-            throw new NotImplementedException();
+            return Task.FromResult((IReadOnlyCollection<IValueSet>)
+                this.searcher.GetVersions(valueSetReferenceId)
+                    .Select(vim => Maybe.From(new ValueSet(vim, vim.ValueSetCodes, vim.CodeCounts) as IValueSet))
+                    .Values());
         }
 
         public Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings settings, bool latestVersionsOnly = true)

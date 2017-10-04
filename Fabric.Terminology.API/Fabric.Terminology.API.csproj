@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Fabric.Terminology.Domain\Fabric.Terminology.Domain.csproj" />
+    <ProjectReference Include="..\Fabric.Terminology.ElasticSearch\Fabric.Terminology.ElasticSearch.csproj" />
     <ProjectReference Include="..\Fabric.Terminology.SqlServer\Fabric.Terminology.SqlServer.csproj" />
   </ItemGroup>
   <ItemGroup>
