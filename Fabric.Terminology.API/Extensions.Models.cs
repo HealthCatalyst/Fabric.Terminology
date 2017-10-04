@@ -60,8 +60,7 @@
 
         public static ICodeSetCode ToCodeSetCode(this CodeSetCodeApiModel model)
         {
-            throw new NotImplementedException();
-            //return Mapper.Build<CodeSetCode>(model);
+            return new CodeSetCode(model);
         }
 
         // acquired from Fabric.Authorization.Domain (renamed from ToError)
@@ -83,6 +82,27 @@
             };
 
             return error;
+        }
+
+        private class CodeSetCode : ICodeSetCode
+        {
+            public CodeSetCode(CodeSetCodeApiModel model)
+            {
+                this.CodeGuid = model.CodeGuid;
+                this.Code = model.Code;
+                this.Name = model.Name;
+                this.CodeSystemGuid = model.CodeSystemGuid;
+            }
+
+            public Guid CodeGuid { get; }
+
+            public string Code { get; }
+
+            public string Name { get; }
+
+            public Guid CodeSystemGuid { get; set; }
+
+            public string CodeSystemName { get; set; }
         }
     }
 }

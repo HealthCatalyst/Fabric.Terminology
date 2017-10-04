@@ -18,6 +18,7 @@
             if (valueSet is ValueSet realValueSet)
             {
                 realValueSet.ValueSetGuid = sequentialGuid;
+                realValueSet.ValueSetReferenceId = sequentialGuid.ToString();
             }
             else
             {

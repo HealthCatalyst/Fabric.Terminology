@@ -23,7 +23,7 @@
         }
 
         [Fact]
-        public void CanMapValueSetToValueSetItem()
+        public void CanMapValueSetToValueSetApiModel()
         {
             // Arrange
             var valueSet = DataHelper.SingleValueSet("1", 3);

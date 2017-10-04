@@ -9,8 +9,7 @@
     using Fabric.Terminology.Domain.Persistence;
     using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Persistence.DataContext;
-    using Fabric.Terminology.SqlServer.Persistence.Factories;
-
+    
     using Microsoft.EntityFrameworkCore;
 
     using Serilog;
@@ -50,12 +49,10 @@
 
         private IReadOnlyCollection<IValueSetCode> QueryValueSetCodes(Guid valueSetGuid)
         {
-            var factory = new ValueSetCodeFactory();
-
             try
             {
                 return this.sharedContext.ValueSetCodes.Where(dto => dto.ValueSetGUID == valueSetGuid)
-                    .Select(dto => factory.Build(dto))
+                    .Select(dto => new Models.Dto.ValueSetCode(dto))
                     .ToList();
             }
             catch (Exception ex)
@@ -67,13 +64,11 @@
 
         private ILookup<Guid, IValueSetCode> QueryValueSetCodeLookup(IEnumerable<Guid> valueSetGuids)
         {
-            var factory = new ValueSetCodeFactory();
-
             try
             {
                 return this.sharedContext.ValueSetCodes.Where(dto => valueSetGuids.Contains(dto.ValueSetGUID))
                     .AsNoTracking()
-                    .ToLookup(vsc => vsc.ValueSetGUID, vsc => factory.Build(vsc));
+                    .ToLookup(vsc => vsc.ValueSetGUID, vsc => (IValueSetCode)new Models.Dto.ValueSetCode(vsc));
             }
             catch (Exception ex)
             {

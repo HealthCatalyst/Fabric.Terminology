@@ -1,6 +1,5 @@
 ﻿namespace Fabric.Terminology.IntegrationTests.Fixtures
 {
-    using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence;
     using Fabric.Terminology.Domain.Services;
     using Fabric.Terminology.SqlServer.Caching;
@@ -38,9 +37,21 @@
                 cacheManagerFactory,
                 new PagingStrategyFactory());
 
-            this.ValueSetService = new ValueSetService(this.Logger, valueSetBackingItemRepository, valueSetCodeRepository, valueSetCodeCountRepository);
+            var sqlClientTermValueSetRepository = new SqlClientTermValueSetRepository(
+                this.ClientTermContext.AsLazy(),
+                this.Logger);
 
-            this.ValueSetSummaryService = new ValueSetSummaryService(this.Logger, valueSetBackingItemRepository, valueSetCodeCountRepository);
+            this.ValueSetService = new ValueSetService(
+                this.Logger,
+                valueSetBackingItemRepository,
+                valueSetCodeRepository,
+                valueSetCodeCountRepository,
+                sqlClientTermValueSetRepository);
+
+            this.ValueSetSummaryService = new ValueSetSummaryService(
+                this.Logger,
+                valueSetBackingItemRepository,
+                valueSetCodeCountRepository);
         }
     }
 }
