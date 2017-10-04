@@ -68,7 +68,6 @@
                 },
                 new[] { TagsFactory.GetValueSetTag() });
 
-
             this.RouteDescriber.DescribeRouteWithParams(
                 "GetValueSetVersions",
                 "Gets all versions of a ValueSet",
@@ -81,7 +80,6 @@
                 },
                 new[] { ParameterFactory.GetValueSetReferenceId(), ParameterFactory.GetSummary(), ParameterFactory.GetCodeSystemGuidsArray() },
                 new[] { TagsFactory.GetValueSetVersionTag() });
-
 
             this.RouteDescriber.DescribeRouteWithParams(
                 "Search",

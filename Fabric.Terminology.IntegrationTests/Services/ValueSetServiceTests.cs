@@ -42,14 +42,10 @@
 
             // Act
             var valueSet = this.Profiler.ExecuteTimed(() => this.valueSetService.GetValueSet(valueSetGuid), $"Querying ValueSet {valueSetGuid}").Single();
-           // var summary = this.Profiler.ExecuteTimed(() => this.valueSetSummaryService.GetValueSetSummary(valueSetGuid), $"Querying ValueSetSummary {valueSetGuid}").Single();
+           //// var summary = this.Profiler.ExecuteTimed(() => this.valueSetSummaryService.GetValueSetSummary(valueSetGuid), $"Querying ValueSetSummary {valueSetGuid}").Single();
 
             this.Output.WriteLine(valueSet.Name);
             this.Output.WriteLine($"Code count: {valueSet.ValueSetCodes.Count}");
-            //foreach (var count in summary.CodeCounts)
-            //{
-            //    this.Output.WriteLine($"CodeSystem {count.CodeSystemGuid}: {count.CodeCount}");
-            //}
 
             // Assert
             valueSet.ValueSetGuid.Should().Be(valueSetGuid);
@@ -174,7 +170,7 @@
             vs.Name.Should().BeEquivalentTo(name);
 
             // cleanup
-            this.valueSetService.Delete(vs);
+           this.valueSetService.Delete(vs);
         }
     }
 }
