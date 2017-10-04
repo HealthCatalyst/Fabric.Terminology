@@ -5,6 +5,7 @@
     using Fabric.Terminology.Domain.DependencyInjection;
     using Fabric.Terminology.Domain.Services;
     using Fabric.Terminology.SqlServer.Persistence.DataContext;
+    using Fabric.Terminology.SqlServer.Services;
 
     using Nancy.TinyIoc;
 
@@ -14,8 +15,8 @@
         {
             container.Register<SharedContext>((c, p) => c.Resolve<SharedContextFactory>().Create());
             container.Register<Lazy<ClientTermContext>>((c, p) => c.Resolve<ClientTermContextFactory>().CreateLazy());
-            container.Register<IValueSetService, ValueSetService>().AsSingleton();
-            container.Register<IValueSetSummaryService, ValueSetSummaryService>().AsSingleton();
+            container.Register<IValueSetService, SqlValueSetService>().AsSingleton();
+            container.Register<IValueSetSummaryService, SqlValueSetSummaryService>().AsSingleton();
         }
     }
 }

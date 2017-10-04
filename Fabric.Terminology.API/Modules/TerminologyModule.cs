@@ -2,14 +2,20 @@
 {
     using System;
     using System.Linq;
+
     using CallMeMaybe;
+
     using Fabric.Terminology.API.Configuration;
     using Fabric.Terminology.API.Models;
     using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Models;
+
     using Nancy;
     using Nancy.Responses.Negotiation;
+
     using Serilog;
+
+    using Constants = Fabric.Terminology.API.Constants;
 
     public abstract class TerminologyModule<T> : NancyModule
     {
@@ -34,10 +40,9 @@
 
             var selfLink = uriBuilder.ToString();
 
-            return this.Negotiate
-                .WithModel(model)
+            return this.Negotiate.WithModel(model)
                 .WithStatusCode(HttpStatusCode.Created)
-                .WithHeader(API.Constants.HttpResponseHeaders.Location, selfLink);
+                .WithHeader(Constants.HttpResponseHeaders.Location, selfLink);
         }
 
         protected Negotiator CreateFailureResponse(string message, HttpStatusCode statusCode)
@@ -45,7 +50,6 @@
             var error = ErrorFactory.CreateError<T>(message, statusCode);
             return this.Negotiate.WithModel(error).WithStatusCode(statusCode);
         }
-
 
         protected IPagerSettings GetPagerSettings()
         {
@@ -61,7 +65,7 @@
         protected bool GetSummarySetting()
         {
             var val = (string)this.Request.Query["$summary"];
-            bool.TryParse(val, out bool ret);
+            bool.TryParse(val, out var ret);
             return val.IsNullOrWhiteSpace() || ret;
         }
 

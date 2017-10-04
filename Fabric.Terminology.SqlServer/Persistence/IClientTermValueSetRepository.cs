@@ -1,9 +1,10 @@
-﻿namespace Fabric.Terminology.Domain.Persistence
+﻿namespace Fabric.Terminology.SqlServer.Persistence
 {
     using System;
 
     using CallMeMaybe;
 
+    using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Models;
 
     public interface IClientTermValueSetRepository

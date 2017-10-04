@@ -4,8 +4,8 @@
     using System.Collections.Generic;
     using System.Linq;
 
-    using Fabric.Terminology.Domain.Persistence;
     using Fabric.Terminology.IntegrationTests.Fixtures;
+    using Fabric.Terminology.SqlServer.Persistence;
     using Fabric.Terminology.TestsBase;
 
     using FluentAssertions;
