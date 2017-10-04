@@ -17,15 +17,19 @@
   <ItemGroup>
     <Compile Remove="Logs\**" />
     <Compile Remove="Properties\PublishProfiles\**" />
+    <Compile Remove="Services\**" />
     <Compile Remove="wwwroot\swagger\dist\**" />
     <Content Remove="Logs\**" />
     <Content Remove="Properties\PublishProfiles\**" />
+    <Content Remove="Services\**" />
     <Content Remove="wwwroot\swagger\dist\**" />
     <EmbeddedResource Remove="Logs\**" />
     <EmbeddedResource Remove="Properties\PublishProfiles\**" />
+    <EmbeddedResource Remove="Services\**" />
     <EmbeddedResource Remove="wwwroot\swagger\dist\**" />
     <None Remove="Logs\**" />
     <None Remove="Properties\PublishProfiles\**" />
+    <None Remove="Services\**" />
     <None Remove="wwwroot\swagger\dist\**" />
   </ItemGroup>
 
@@ -57,7 +61,4 @@
 		<DependentUpon>Extensions.cs</DependentUpon>
 	</Compile>
 	</ItemGroup>
-  <ItemGroup>
-    <Folder Include="Services\" />
-  </ItemGroup>
 </Project>

@@ -25,24 +25,26 @@
 
         public static IEnumerable<CodeSetCodeApiModel> CodeSetCodeApiModelCollection(int count = 10)
         {
+            var codeSystems = new List<Guid>
+            {
+                Guid.NewGuid(),
+                Guid.NewGuid()
+            }.ToArray();
+
             for (var i = 0; i < count; i++)
             {
-                yield return CodeSetCodeApiModel($"Code.Set.Code.{i}", $"Code.Set.Code.{i} Name");
+                yield return CodeSetCodeApiModel($"Code.Set.Code.{i}", $"Code.Set.Code.{i} Name", i % 2 == 0 ? codeSystems[0] : codeSystems[1]);
             }
         }
 
-        public static CodeSetCodeApiModel CodeSetCodeApiModel(string code, string name)
+        public static CodeSetCodeApiModel CodeSetCodeApiModel(string code, string name, Guid codeSystem)
         {
-            var codeSystem = new CodeSystem
-            {
-                CodeSystemGuid = Guid.NewGuid(),
-                Name = "TEST CODE SYSTEM"
-            };
-
             return new CodeSetCodeApiModel
             {
                 Code = code,
-                Name = name
+                Name = name,
+                CodeSystemGuid = codeSystem,
+                CodeSystemName = "Generated code system"
             };
         }
     }
