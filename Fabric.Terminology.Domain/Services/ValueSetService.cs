@@ -66,24 +66,39 @@ namespace Fabric.Terminology.Domain.Services
                         });
         }
 
-        public IReadOnlyCollection<IValueSet> GetValueSets(IEnumerable<Guid> valueSetGuids)
+        public Task<IReadOnlyCollection<IValueSet>> GetValueSets(IEnumerable<Guid> valueSetGuids)
         {
             return this.GetValueSets(valueSetGuids, new List<Guid>());
         }
 
-        public IReadOnlyCollection<IValueSet> GetValueSets(IEnumerable<Guid> valueSetGuids, IEnumerable<Guid> codeSystemGuids)
+        public async Task<IReadOnlyCollection<IValueSet>> GetValueSets(IEnumerable<Guid> valueSetGuids, IEnumerable<Guid> codeSystemGuids)
         {
             var setGuids = valueSetGuids as Guid[] ?? valueSetGuids.ToArray();
-            var backingItemTask = Task.Run(
-                () => this.valueSetBackingItemRepository.GetValueSetBackingItems(setGuids, codeSystemGuids));
+            var backingItems = this.valueSetBackingItemRepository.GetValueSetBackingItems(setGuids, codeSystemGuids);
 
-            var codesTask = Task.Run(() => this.valueSetCodeRepository.BuildValueSetCodesDictionary(setGuids));
+            var codes = await this.valueSetCodeRepository.BuildValueSetCodesDictionary(setGuids);
 
-            var countsTask = Task.Run(() => this.valueSetCodeCountRepository.BuildValueSetCountsDictionary(setGuids));
+            var counts = await this.valueSetCodeCountRepository.BuildValueSetCountsDictionary(setGuids);
 
-            Task.WaitAll(backingItemTask, codesTask, countsTask);
+            return this.BuildValueSets(backingItems, codes, counts);
+        }
 
-            return this.BuildValueSets(backingItemTask.Result, codesTask.Result, countsTask.Result);
+        public async Task<IReadOnlyCollection<IValueSet>> GetValueSetVersions(string valueSetReferenceId)
+        {
+            var backingItems = this.valueSetBackingItemRepository.GetValueSetBackingItemVersions(valueSetReferenceId);
+
+            if (!backingItems.Any())
+            {
+                return new List<IValueSet>();
+            }
+
+            var valueSetGuids = backingItems.Select(bi => bi.ValueSetGuid).ToList();
+
+            var codes = await this.valueSetCodeRepository.BuildValueSetCodesDictionary(valueSetGuids);
+
+            var counts = await this.valueSetCodeCountRepository.BuildValueSetCountsDictionary(valueSetGuids);
+
+            return this.BuildValueSets(backingItems, codes, counts);
         }
 
         public Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings settings, bool latestVersionsOnly = true)

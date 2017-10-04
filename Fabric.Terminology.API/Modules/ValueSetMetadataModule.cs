@@ -47,7 +47,7 @@
                     new HttpResponseMetadata { Code = 404, Message = "Not Found" },
                     new HttpResponseMetadata { Code = 500, Message = "Internal Server Error" }
                 },
-                new[] { ParameterFactory.GetValueSetGuidArray(), ParameterFactory.GetSummary(), ParameterFactory.GetCodeSystemCodesArray() },
+                new[] { ParameterFactory.GetValueSetGuidArray(), ParameterFactory.GetSummary(), ParameterFactory.GetCodeSystemGuidsArray() },
                 new[] { TagsFactory.GetValueSetTag() });
 
             this.RouteDescriber.DescribeRouteWithParams(
@@ -64,9 +64,24 @@
                     ParameterFactory.GetSkip(),
                     ParameterFactory.GetTop(settings.DefaultItemsPerPage),
                     ParameterFactory.GetSummary(),
-                    ParameterFactory.GetCodeSystemCodesArray()
+                    ParameterFactory.GetCodeSystemGuidsArray()
                 },
                 new[] { TagsFactory.GetValueSetTag() });
+
+
+            this.RouteDescriber.DescribeRouteWithParams(
+                "GetValueSetVersions",
+                "Gets all versions of a ValueSet",
+                "Gets all versions of a ValueSet by it's published ID (Usually OID)",
+                new[]
+                {
+                    new HttpResponseMetadata<ValueSetApiModel> { Code = 200, Message = "OK" },
+                    new HttpResponseMetadata { Code = 404, Message = "Not Found" },
+                    new HttpResponseMetadata { Code = 500, Message = "Internal Server Error" }
+                },
+                new[] { ParameterFactory.GetValueSetReferenceId(), ParameterFactory.GetSummary(), ParameterFactory.GetCodeSystemGuidsArray() },
+                new[] { TagsFactory.GetValueSetVersionTag() });
+
 
             this.RouteDescriber.DescribeRouteWithParams(
                 "Search",

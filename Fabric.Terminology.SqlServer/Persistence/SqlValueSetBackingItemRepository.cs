@@ -65,7 +65,7 @@
             return this.GetValueSetBackingItems(new[] { valueSetGuid }, codeSystemGuids).FirstMaybe();
         }
 
-        public IReadOnlyCollection<IValueSetBackingItem> GetValueSetBackingItems(string valueSetReferenceId)
+        public IReadOnlyCollection<IValueSetBackingItem> GetValueSetBackingItemVersions(string valueSetReferenceId)
         {
             // We have to query here since we use the Guid for the cache key but the results
             // are cached for use in subesequent requests.
