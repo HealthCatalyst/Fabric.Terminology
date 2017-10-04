@@ -1,6 +1,7 @@
 ﻿namespace Fabric.Terminology.SqlServer.Persistence
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
 
     using CallMeMaybe;
@@ -101,19 +102,12 @@
             using (var transaction = this.ClientTermContext.Database.BeginTransaction())
             try
             {
-                var valueSetDto = this.ClientTermContext.ValueSetDescriptions.Find(valueSet.ValueSetGuid);
-                if (valueSetDto == null)
-                {
-                    throw new ValueSetNotFoundException(
-                        $"ValueSet with {nameof(IValueSet.ValueSetGuid)} {valueSet.ValueSetGuid} was not found.");
-                }
-
-                var codes = this.ClientTermContext.ValueSetCodes.Where(
-                    code => code.ValueSetGUID == valueSetDto.ValueSetGUID);
-                this.ClientTermContext.ValueSetCodes.RemoveRange(codes);
-                this.ClientTermContext.ValueSetDescriptions.Remove(valueSetDto);
-                this.ClientTermContext.SaveChanges();
-
+                this.ClientTermContext.BulkDelete(
+                    new[] { typeof(ValueSetDescriptionBASEDto), typeof(ValueSetCodeDto) },
+                    new Dictionary<string, object>
+                    {
+                        { nameof(ValueSetDescriptionBASEDto.ValueSetGUID), valueSet.ValueSetGuid }
+                    });
                 transaction.Commit();
             }
             catch (Exception ex)
