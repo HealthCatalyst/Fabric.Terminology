@@ -1,4 +1,4 @@
-﻿namespace Fabric.Terminology.ElasticSearch.Indexer.Configuration
+﻿namespace Fabric.Terminology.ElasticSearch.Configuration
 {
     using AutoMapper;
 
