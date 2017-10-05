@@ -9,6 +9,7 @@
 
     using Fabric.Terminology.Domain.Exceptions;
     using Fabric.Terminology.Domain.Models;
+    using Fabric.Terminology.Domain.Persistence;
     using Fabric.Terminology.Domain.Services;
     using Fabric.Terminology.SqlServer.Persistence;
 

@@ -48,8 +48,8 @@
 
         public Task<IReadOnlyCollection<IValueSet>> GetValueSets(IEnumerable<Guid> valueSetGuids, IEnumerable<Guid> codeSystemGuids)
         {
-            return Task.FromResult((IReadOnlyCollection<IValueSet>)
-                this.searcher.GetMultiple(valueSetGuids)
+            return Task.FromResult(
+                (IReadOnlyCollection<IValueSet>)this.searcher.GetMultiple(valueSetGuids)
                     .Where(vs => vs.CodeCounts.Any(cc => codeSystemGuids.Contains(cc.CodeSystemGuid)))
                     .Select(Map));
         }
@@ -90,7 +90,7 @@
             throw new NotImplementedException();
         }
 
-        public Attempt<IValueSet> Create(string name, IValueSetMeta meta, IEnumerable<ICodeSetCode> valueSetCodes)
+        public Attempt<IValueSet> Create(string name, IValueSetMeta meta, IReadOnlyCollection<ICodeSetCode> codeSetCodes)
         {
             throw new NotImplementedException();
         }
@@ -101,6 +101,11 @@
         }
 
         public void Delete(IValueSet valueSet)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool ValueSetGuidIsUnique(Guid valueSetGuid)
         {
             throw new NotImplementedException();
         }

@@ -17,5 +17,8 @@
 
         [Number]
         public int CodeCount { get; set; }
+
+        [Text]
+        public string CodeSystemName { get; set; }
     }
 }

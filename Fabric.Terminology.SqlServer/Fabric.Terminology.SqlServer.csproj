@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <None Include="Extensions.DbContext.cs" />
+    <None Include="Services\SqlValueSetService.cs" />
   </ItemGroup>
 
   <ItemGroup>

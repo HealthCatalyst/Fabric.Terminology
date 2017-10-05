@@ -1,4 +1,4 @@
-namespace Fabric.Terminology.Domain.Services
+namespace Fabric.Terminology.SqlServer.Services
 {
     using System;
     using System.Collections.Generic;
@@ -7,13 +7,16 @@ namespace Fabric.Terminology.Domain.Services
 
     using CallMeMaybe;
 
+    using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Exceptions;
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence;
+    using Fabric.Terminology.Domain.Services;
+    using Fabric.Terminology.SqlServer.Persistence;
 
     using Serilog;
 
-    public class ValueSetService : IValueSetService
+    public class SqlValueSetService : IValueSetService
     {
         private readonly IValueSetBackingItemRepository valueSetBackingItemRepository;
 
@@ -25,7 +28,7 @@ namespace Fabric.Terminology.Domain.Services
 
         private readonly IClientTermValueSetRepository clientTermValueSetRepository;
 
-        public ValueSetService(
+        public SqlValueSetService(
             ILogger logger,
             IValueSetBackingItemRepository valueSetBackingItemRepository,
             IValueSetCodeRepository valueSetCodeRepository,
@@ -59,11 +62,11 @@ namespace Fabric.Terminology.Domain.Services
             return this.valueSetBackingItemRepository.GetValueSetBackingItem(valueSetGuid, codeSystemGuids)
                 .Select(
                     backingItem =>
-                        {
-                            var codes = this.valueSetCodeRepository.GetValueSetCodes(valueSetGuid);
-                            var counts = this.valueSetCodeCountRepository.GetValueSetCodeCounts(valueSetGuid);
-                            return new ValueSet(backingItem, codes, counts) as IValueSet;
-                        });
+                    {
+                        var codes = this.valueSetCodeRepository.GetValueSetCodes(valueSetGuid);
+                        var counts = this.valueSetCodeCountRepository.GetValueSetCodeCounts(valueSetGuid);
+                        return new ValueSet(backingItem, codes, counts) as IValueSet;
+                    });
         }
 
         public Task<IReadOnlyCollection<IValueSet>> GetValueSets(IEnumerable<Guid> valueSetGuids)

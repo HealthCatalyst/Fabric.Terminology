@@ -7,9 +7,9 @@
     using Fabric.Terminology.SqlServer.Services;
     using Fabric.Terminology.TestsBase.Fixtures;
 
-    public class ServiceFixture : RepositoryFixtureBase
+    public class SqlServiceFixture : RepositoryFixtureBase
     {
-        public ServiceFixture()
+        public SqlServiceFixture()
         {
             this.Initialize();
         }

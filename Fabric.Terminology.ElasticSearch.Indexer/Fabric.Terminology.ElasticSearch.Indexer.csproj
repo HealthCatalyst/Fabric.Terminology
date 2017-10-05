@@ -8,6 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Nest\**" />
+    <EmbeddedResource Remove="Nest\**" />
+    <None Remove="Nest\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="appsettings.json">
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -34,8 +40,5 @@
     <Compile Update="BootManager.*.cs">
       <DependentUpon>BootManager.cs</DependentUpon>
     </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Nest\" />
   </ItemGroup>
 </Project>

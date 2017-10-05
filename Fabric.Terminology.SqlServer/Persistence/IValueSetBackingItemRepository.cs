@@ -1,4 +1,4 @@
-﻿namespace Fabric.Terminology.Domain.Persistence
+﻿namespace Fabric.Terminology.SqlServer.Persistence
 {
     using System;
     using System.Collections.Generic;
@@ -20,11 +20,20 @@
 
         IReadOnlyCollection<IValueSetBackingItem> GetValueSetBackingItems(IEnumerable<Guid> valueSetGuids);
 
-        IReadOnlyCollection<IValueSetBackingItem> GetValueSetBackingItems(IEnumerable<Guid> valueSetGuids, IEnumerable<Guid> codeSystemGuids);
+        IReadOnlyCollection<IValueSetBackingItem> GetValueSetBackingItems(
+            IEnumerable<Guid> valueSetGuids,
+            IEnumerable<Guid> codeSystemGuids);
 
-        Task<PagedCollection<IValueSetBackingItem>> GetValueSetBackingItemsAsync(IPagerSettings pagerSettings, IEnumerable<Guid> codeSystemGuids, bool latestVersionsOnly = true);
+        Task<PagedCollection<IValueSetBackingItem>> GetValueSetBackingItemsAsync(
+            IPagerSettings pagerSettings,
+            IEnumerable<Guid> codeSystemGuids,
+            bool latestVersionsOnly = true);
 
-        Task<PagedCollection<IValueSetBackingItem>> GetValueSetBackingItemsAsync(string filterText, IPagerSettings pagerSettings, IEnumerable<Guid> codeSystemGuids, bool latestVersionsOnly = true);
+        Task<PagedCollection<IValueSetBackingItem>> GetValueSetBackingItemsAsync(
+            string filterText,
+            IPagerSettings pagerSettings,
+            IEnumerable<Guid> codeSystemGuids,
+            bool latestVersionsOnly = true);
 
         bool ValueSetGuidExists(Guid valueSetGuid);
     }

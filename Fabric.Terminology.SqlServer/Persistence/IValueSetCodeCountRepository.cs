@@ -1,15 +1,16 @@
 ﻿namespace Fabric.Terminology.SqlServer.Persistence
 {
-	using System;
-	using System.Collections.Generic;
-	using System.Threading.Tasks;
+    using System;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
 
-	using Fabric.Terminology.Domain.Models;
+    using Fabric.Terminology.Domain.Models;
 
-	public interface IValueSetCodeCountRepository
+    public interface IValueSetCodeCountRepository
     {
         IReadOnlyCollection<IValueSetCodeCount> GetValueSetCodeCounts(Guid valueSetGuid);
 
-        Task<Dictionary<Guid, IReadOnlyCollection<IValueSetCodeCount>>> BuildValueSetCountsDictionary(IEnumerable<Guid> valueSetGuids);
+        Task<Dictionary<Guid, IReadOnlyCollection<IValueSetCodeCount>>> BuildValueSetCountsDictionary(
+            IEnumerable<Guid> valueSetGuids);
     }
 }
