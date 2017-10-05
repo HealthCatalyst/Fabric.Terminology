@@ -12,7 +12,7 @@
     {
         public ElasticServiceFixture()
         {
-            var factory = new ElasticConnectionFactory();
+            var factory = new ElasticConnectionFactory(this.Logger);
             this.ElasticClient = factory.Create();
 
             var searcher = new ValueSetIndexSearcher(this.Logger, this.ElasticClient, new PagingStrategyFactory());
@@ -26,5 +26,7 @@
         public IValueSetService ValueSetService { get; }
 
         public IValueSetSummaryService ValueSetSummaryService { get; }
+
+        protected override bool EnableLogging => true;
     }
 }

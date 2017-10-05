@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="automapper" Version="6.1.1" />
     <PackageReference Include="CallMeMaybe" Version="0.6.6" />
     <PackageReference Include="NEST" Version="5.5.0" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
@@ -16,10 +17,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Fabric.Terminology.Domain\Fabric.Terminology.Domain.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Configuration\" />
   </ItemGroup>
 
 </Project>

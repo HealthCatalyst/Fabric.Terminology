@@ -164,5 +164,42 @@
             summaryPage.TotalPages.Should().BeGreaterThan(0);
             summaryPage.Values.Count.Should().BeLessOrEqualTo(itemsPerPage);
         }
+
+        [Theory]
+        [InlineData(10, 1)]
+        [InlineData(20, 2)]
+        [InlineData(20, 3)]
+        [InlineData(100, 1)]
+        [InlineData(100, 2)]
+        public void CanGetIcd9AndIcd10ValueSetPages(int itemsPerPage, int pageNumber)
+        {
+            // Arrange
+            var codeSystemGuids = new List<Guid>
+            {
+                Guid.Parse("87f53b39-2edf-4045-82cf-93010055a5b8"), // ICD10
+                Guid.Parse("87846e70-ca84-4d5d-b414-c301f7bfefaa") // ICD9
+            };
+
+            var pagerSettings = new PagerSettings { CurrentPage = pageNumber, ItemsPerPage = itemsPerPage };
+
+            // Act
+            var page = this.Profiler.ExecuteTimed(async () =>
+                await this.valueSetService.GetValueSetsAsync(pagerSettings, codeSystemGuids));
+
+            var summaryPage = this.Profiler.ExecuteTimed(async () =>
+                await this.valueSetSummaryService.GetValueSetSummariesAsync(pagerSettings, codeSystemGuids));
+
+            this.Output.WriteLine($"Total Values {page.TotalItems}");
+            this.Output.WriteLine($"Total Pages {page.TotalPages}");
+
+            // Assert
+            page.TotalItems.Should().BeGreaterThan(0);
+            page.TotalPages.Should().BeGreaterThan(0);
+            page.Values.Count.Should().BeLessOrEqualTo(itemsPerPage);
+
+            summaryPage.TotalItems.Should().BeGreaterThan(0);
+            summaryPage.TotalPages.Should().BeGreaterThan(0);
+            summaryPage.Values.Count.Should().BeLessOrEqualTo(itemsPerPage);
+        }
     }
 }

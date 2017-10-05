@@ -8,7 +8,7 @@
 
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Services;
-    using Fabric.Terminology.ElasticSearch.Indexer.Configuration;
+    using Fabric.Terminology.ElasticSearch.Configuration;
     using Fabric.Terminology.ElasticSearch.Models;
 
     using global::Nest;

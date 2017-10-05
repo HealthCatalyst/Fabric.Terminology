@@ -68,21 +68,21 @@
 
         public Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings settings, IEnumerable<Guid> codeSystemGuids, bool latestVersionsOnly = true)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(Map(this.searcher.GetPaged(settings, codeSystemGuids, latestVersionsOnly)));
         }
 
-        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(string nameFilterText, IPagerSettings pagerSettings, bool latestVersionsOnly = true)
+        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(string nameFilterText, IPagerSettings settings, bool latestVersionsOnly = true)
         {
             throw new NotImplementedException();
         }
 
         public Task<PagedCollection<IValueSet>> GetValueSetsAsync(
             string nameFilterText,
-            IPagerSettings pagerSettings,
+            IPagerSettings settings,
             IEnumerable<Guid> codeSystemGuids,
             bool latestVersionsOnly = true)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(Map(this.searcher.GetPaged(nameFilterText, settings, codeSystemGuids, latestVersionsOnly)));
         }
 
         public bool NameIsUnique(string name)

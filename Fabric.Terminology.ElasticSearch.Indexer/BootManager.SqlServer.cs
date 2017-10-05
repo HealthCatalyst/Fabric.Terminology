@@ -35,10 +35,13 @@
 
             services.AddSingleton<ICachingManagerFactory, CachingManagerFactory>();
 
-            // TODO consider using AddDbContext<T>
             services.AddSingleton<SharedContextFactory>();
+            services.AddSingleton<ClientTermContextFactory>();
             services.AddSingleton<IPagingStrategyFactory, PagingStrategyFactory>();
 
+            services.AddTransient<Lazy<ClientTermContext>>(factory => factory.GetService<ClientTermContextFactory>().CreateLazy());
+
+            services.AddTransient<IClientTermValueSetRepository, SqlClientTermValueSetRepository>();
             services.AddTransient<IValueSetCodeRepository, SqlValueSetCodeRepository>();
             services.AddTransient<IValueSetCodeCountRepository, SqlValueSetCodeCountRepository>();
             services.AddTransient<IValueSetBackingItemRepository, SqlValueSetBackingItemRepository>();

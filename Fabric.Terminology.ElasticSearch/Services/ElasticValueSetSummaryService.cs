@@ -12,10 +12,6 @@
     using Fabric.Terminology.ElasticSearch.Elastic;
     using Fabric.Terminology.ElasticSearch.Models;
 
-    using Nest;
-
-    using Serilog;
-
     public class ElasticValueSetSummaryService : IValueSetSummaryService
     {
         private readonly IValueSetIndexSearcher searcher;
@@ -42,13 +38,16 @@
 
         public Task<IReadOnlyCollection<IValueSetSummary>> GetValueSetSummaries(IEnumerable<Guid> valueSetGuids)
         {
-            return Task.FromResult((IReadOnlyCollection<IValueSetSummary>)this.searcher.GetMultiple(valueSetGuids).Select(Map));
+            return Task.FromResult(
+                (IReadOnlyCollection<IValueSetSummary>)this.searcher.GetMultiple(valueSetGuids).Select(Map));
         }
 
-        public Task<IReadOnlyCollection<IValueSetSummary>> GetValueSetSummaries(IEnumerable<Guid> valueSetGuids, IEnumerable<Guid> codeSystemGuids)
+        public Task<IReadOnlyCollection<IValueSetSummary>> GetValueSetSummaries(
+            IEnumerable<Guid> valueSetGuids,
+            IEnumerable<Guid> codeSystemGuids)
         {
-            return Task.FromResult((IReadOnlyCollection<IValueSetSummary>)
-                this.searcher.GetMultiple(valueSetGuids)
+            return Task.FromResult(
+                (IReadOnlyCollection<IValueSetSummary>)this.searcher.GetMultiple(valueSetGuids)
                     .Where(vs => vs.CodeCounts.Any(cc => codeSystemGuids.Contains(cc.CodeSystemGuid)))
                     .Select(Map));
         }
@@ -60,28 +59,36 @@
             return Task.FromResult((IReadOnlyCollection<IValueSetSummary>)results);
         }
 
-        public Task<PagedCollection<IValueSetSummary>> GetValueSetSummariesAsync(IPagerSettings settings, bool latestVersionsOnly = true)
+        public Task<PagedCollection<IValueSetSummary>> GetValueSetSummariesAsync(
+            IPagerSettings settings,
+            bool latestVersionsOnly = true)
         {
             return Task.FromResult(Map(this.searcher.GetPaged(settings, latestVersionsOnly)));
         }
 
-        public Task<PagedCollection<IValueSetSummary>> GetValueSetSummariesAsync(IPagerSettings settings, IEnumerable<Guid> codeSystemGuids, bool latestVersionsOnly = true)
+        public Task<PagedCollection<IValueSetSummary>> GetValueSetSummariesAsync(
+            IPagerSettings settings,
+            IEnumerable<Guid> codeSystemGuids,
+            bool latestVersionsOnly = true)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(Map(this.searcher.GetPaged(settings, codeSystemGuids, latestVersionsOnly)));
         }
 
-        public Task<PagedCollection<IValueSetSummary>> GetValueSetSummariesAsync(string nameFilterText, IPagerSettings pagerSettings, bool latestVersionsOnly = true)
+        public Task<PagedCollection<IValueSetSummary>> GetValueSetSummariesAsync(
+            string nameFilterText,
+            IPagerSettings pagerSettings,
+            bool latestVersionsOnly = true)
         {
             throw new NotImplementedException();
         }
 
         public Task<PagedCollection<IValueSetSummary>> GetValueSetSummariesAsync(
             string nameFilterText,
-            IPagerSettings pagerSettings,
+            IPagerSettings settings,
             IEnumerable<Guid> codeSystemGuids,
             bool latestVersionsOnly = true)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(Map(this.searcher.GetPaged(nameFilterText, settings, codeSystemGuids, latestVersionsOnly)));
         }
 
         private static PagedCollection<IValueSetSummary> Map(PagedCollection<ValueSetIndexModel> ip)
