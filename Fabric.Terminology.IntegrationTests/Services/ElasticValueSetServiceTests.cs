@@ -92,7 +92,6 @@
         [InlineData("b209106e-2dff-4e85-ae71-c2fdec3385f0")]
         [InlineData("601ab4c1-c6e7-42b6-b055-4db2a8227914")]
         [InlineData("d7ba46ff-31d2-4135-b5a3-758734c78971")]
-        [InlineData("35f6b1a6-a72b-48f5-b319-f6ccaf15734d")]
         public void CanGetValueSetSummaryByGuidWithCodeSystem(string valueSetUniqueId)
         {
             // Arrange

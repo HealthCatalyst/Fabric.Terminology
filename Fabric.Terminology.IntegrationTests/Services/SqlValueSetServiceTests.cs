@@ -147,7 +147,7 @@
             vs.CodeCounts.Sum(cc => cc.CodeCount).Should().Be(codeCount);
         }
 
-        [Theory]
+        [Theory(Skip = "run only manually")]
         [InlineData("Add VS 3", 5)]
         [InlineData("Add VS 2", 1000)]
         [InlineData("Add VS 4", 4000)]
