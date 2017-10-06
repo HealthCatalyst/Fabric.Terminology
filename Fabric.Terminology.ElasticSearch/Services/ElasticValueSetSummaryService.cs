@@ -32,7 +32,12 @@
                 .Select(
                     vss =>
                         {
-                            return vss.CodeCounts.Any(cc => codeSystemGuids.Contains(cc.CodeSystemGuid)) ? vss : null;
+                            var systemGuids = codeSystemGuids as Guid[] ?? codeSystemGuids.ToArray();
+                            return systemGuids.Any()
+                                       ? vss.CodeCounts.Any(cc => systemGuids.Contains(cc.CodeSystemGuid))
+                                             ? vss
+                                             : null
+                                       : vss;
                         });
         }
 

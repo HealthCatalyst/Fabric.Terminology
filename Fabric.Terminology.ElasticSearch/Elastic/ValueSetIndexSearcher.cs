@@ -76,14 +76,12 @@
             var response = latestVersionsOnly
                                ? this.client.Search<ValueSetIndexModel>(
                                    g => g.Index(IndexAlias)
-                                       .From(settings.CurrentPage - 1)
-                                       .Size(settings.ItemsPerPage)
+                                       .FromPagerSettings(settings)
                                        .Query(q => q.Bool(m => m.Filter(n => n.Term("isLatestVersion", true))))
                                        .Sort(p => p.Field("name.keyword", SortOrder.Ascending)))
                                : this.client.Search<ValueSetIndexModel>(
                                    g => g.Index(IndexAlias)
-                                       .From(settings.CurrentPage - 1)
-                                       .Size(settings.ItemsPerPage)
+                                       .FromPagerSettings(settings)
                                        .Sort(p => p.Field("name.keyword", SortOrder.Ascending)));
 
             return this.Map(settings, response);
@@ -97,8 +95,7 @@
             var response = latestVersionsOnly
                                ? this.client.Search<ValueSetIndexModel>(
                                    g => g.Index(IndexAlias)
-                                       .From(settings.CurrentPage - 1)
-                                       .Size(settings.ItemsPerPage)
+                                       .FromPagerSettings(settings)
                                        .Query(
                                            q => q.Bool(
                                                m => m.Must(
@@ -109,8 +106,7 @@
                                        .Sort(p => p.Field("name.keyword", SortOrder.Ascending)))
                                : this.client.Search<ValueSetIndexModel>(
                                    g => g.Index(IndexAlias)
-                                       .From(settings.CurrentPage - 1)
-                                       .Size(settings.ItemsPerPage)
+                                       .FromPagerSettings(settings)
                                        .Query(
                                            q => q.Terms(
                                                p => p.Field("codeCounts.codeSystemGuid").Terms(codeSystemGuids)))
@@ -128,8 +124,7 @@
 
                 this.client.Search<ValueSetIndexModel>(
                 g => g.Index(IndexAlias)
-                    .From(settings.CurrentPage - 1)
-                    .Size(settings.ItemsPerPage)
+                    .FromPagerSettings(settings)
                     .Query(
                         q => q.Bool(
                             m => m.Must(
@@ -141,8 +136,7 @@
 
                     this.client.Search<ValueSetIndexModel>(
                         g => g.Index(IndexAlias)
-                            .From(settings.CurrentPage - 1)
-                            .Size(settings.ItemsPerPage)
+                            .FromPagerSettings(settings)
                             .Query(
                                 q => q.Bool(
                                     m => m.Must(
@@ -163,8 +157,7 @@
             var response = latestVersionsOnly ?
                 this.client.Search<ValueSetIndexModel>(
                     g => g.Index(IndexAlias)
-                        .From(settings.CurrentPage - 1)
-                        .Size(settings.ItemsPerPage)
+                        .FromPagerSettings(settings)
                         .Query(
                             q => q.Bool(
                                 m => m.Must(
@@ -181,8 +174,7 @@
 
                     this.client.Search<ValueSetIndexModel>(
                         g => g.Index(IndexAlias)
-                            .From(settings.CurrentPage - 1)
-                            .Size(settings.ItemsPerPage)
+                            .FromPagerSettings(settings)
                             .Query(
                                 q => q.Bool(
                                     m => m.Must(
@@ -222,6 +214,7 @@
                 this.logger.Error(response.OriginalException, response.DebugInformation);
                 return new List<ValueSetIndexModel>();
             }
+
             return response.Documents;
         }
     }

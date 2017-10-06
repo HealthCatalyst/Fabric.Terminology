@@ -1,11 +1,19 @@
 ﻿namespace Fabric.Terminology.API
 {
+    using System;
+
     using Fabric.Terminology.API.Configuration;
     using Fabric.Terminology.API.DependencyInjection;
     using Fabric.Terminology.API.Validators;
     using Fabric.Terminology.Domain.Models;
+    using Fabric.Terminology.Domain.Persistence;
+    using Fabric.Terminology.Domain.Services;
+    using Fabric.Terminology.ElasticSearch.Configuration;
     using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Configuration;
+    using Fabric.Terminology.SqlServer.Persistence;
+    using Fabric.Terminology.SqlServer.Persistence.DataContext;
+    using Fabric.Terminology.SqlServer.Services;
 
     using JetBrains.Annotations;
 
@@ -66,6 +74,9 @@
 
             container.Register<IAppConfiguration>(this.appConfig);
             container.Register<IMemoryCacheSettings>(this.appConfig.TerminologySqlSettings);
+            container.Register<TerminologySqlSettings>((c, s) => c.Resolve<IAppConfiguration>().TerminologySqlSettings);
+            container.Register<ElasticSearchSettings>((c, s) => c.Resolve<IAppConfiguration>().ElasticSearchSettings);
+
             container.Register<ILogger>(this.logger);
 
             // Caching
@@ -81,7 +92,12 @@
             container.Register<ICachingManagerFactory, CachingManagerFactory>().AsSingleton();
 
             // Persistence (Must precede service registration)
+            container.Register<IPagingStrategyFactory, PagingStrategyFactory>().AsSingleton();
             container.ComposeFrom<SqlAppComposition>();
+            if (this.appConfig.ElasticSearchSettings.Enabled)
+            {
+                container.ComposeFrom<ElasticSearchAppComposition>();
+            }
         }
 
         protected override void ConfigureRequestContainer(
@@ -90,8 +106,10 @@
         {
             base.ConfigureRequestContainer(container, context);
 
-            container.ComposeFrom<SqlRequestComposition>();
-            container.ComposeFrom<ServicesRequestComposition>();
+            if (!this.appConfig.ElasticSearchSettings.Enabled)
+            {
+                container.ComposeFrom<SqlServicesComposition>();
+            }
             container.Register<ValueSetValidator>();
         }
 

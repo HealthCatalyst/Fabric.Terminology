@@ -4,6 +4,9 @@
     using System.Diagnostics;
     using System.Text;
 
+    using Fabric.Terminology.Domain;
+    using Fabric.Terminology.ElasticSearch.Configuration;
+
     using Nest;
 
     using Serilog;
@@ -13,21 +16,29 @@
     {
         private readonly ILogger logger;
 
-        public ElasticConnectionFactory(ILogger logger)
+        private readonly ElasticSearchSettings settings;
+
+        public ElasticConnectionFactory(ILogger logger, ElasticSearchSettings settings)
         {
             this.logger = logger;
+            this.settings = settings;
         }
 
         public ElasticClient Create(bool enableTrace = false) => new ElasticClient(this.GetConnectionSettings(enableTrace));
 
-        private static Uri CreateUri(int port) => new Uri("http://localhost:" + port);
+        private Uri CreateUri()
+        {
+            var protocol = this.settings.UseSsl ? "https" : "http";
+            var port = !this.settings.Port.IsNullOrWhiteSpace() ? $":{this.settings.Port}" : string.Empty;
+            return new Uri($"{protocol}://{this.settings.Hostname}{port}");
+        }
 
         private ConnectionSettings GetConnectionSettings(bool enableTrace)
         {
-            var settings = new ConnectionSettings(CreateUri(9200));
+            var connectionSettings = new ConnectionSettings(this.CreateUri());
             if (enableTrace)
             {
-                settings.PrettyJson().DisableDirectStreaming()
+                connectionSettings.PrettyJson().DisableDirectStreaming()
                     .OnRequestCompleted(
                         details =>
                             {
@@ -37,7 +48,7 @@
                             });
             }
 
-            return settings;
+            return connectionSettings;
         }
     }
 }
