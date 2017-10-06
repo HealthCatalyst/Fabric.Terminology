@@ -4,6 +4,7 @@
     using Fabric.Terminology.Domain.Services;
     using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Persistence;
+    using Fabric.Terminology.SqlServer.Services;
     using Fabric.Terminology.TestsBase.Fixtures;
 
     public class ServiceFixture : RepositoryFixtureBase
@@ -41,14 +42,14 @@
                 this.ClientTermContext.AsLazy(),
                 this.Logger);
 
-            this.ValueSetService = new ValueSetService(
+            this.ValueSetService = new SqlValueSetService(
                 this.Logger,
                 valueSetBackingItemRepository,
                 valueSetCodeRepository,
                 valueSetCodeCountRepository,
                 sqlClientTermValueSetRepository);
 
-            this.ValueSetSummaryService = new ValueSetSummaryService(
+            this.ValueSetSummaryService = new SqlValueSetSummaryService(
                 this.Logger,
                 valueSetBackingItemRepository,
                 valueSetCodeCountRepository);

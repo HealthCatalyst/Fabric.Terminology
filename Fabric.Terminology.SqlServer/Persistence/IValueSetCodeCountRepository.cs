@@ -1,4 +1,4 @@
-﻿namespace Fabric.Terminology.Domain.Persistence
+﻿namespace Fabric.Terminology.SqlServer.Persistence
 {
     using System;
     using System.Collections.Generic;

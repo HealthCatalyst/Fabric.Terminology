@@ -50,8 +50,7 @@
                 Description = "Indicates ValueSets returned should be partial summaries - e.g. codes listing is not complete and intended to be used for presentation.",
                 Required = false,
                 In = ParameterIn.Query,
-                Type = "boolean",
-                Default = true
+                Type = "boolean"
             };
         }
 
@@ -76,7 +75,6 @@
                 Description = "Skip 'X' number of pages for the 'current' page",
                 In = ParameterIn.Query,
                 Required = false,
-                Default = 0,
                 Type = "integer"
             };
         }
@@ -89,7 +87,6 @@
                 Description = "The number of items to be included in a page",
                 In = ParameterIn.Query,
                 Required = false,
-                Default = defaultItemsPerPage,
                 Type = "integer"
             };
         }

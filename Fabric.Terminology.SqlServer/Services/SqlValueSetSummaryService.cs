@@ -1,4 +1,4 @@
-﻿namespace Fabric.Terminology.Domain.Services
+﻿namespace Fabric.Terminology.SqlServer.Services
 {
     using System;
     using System.Collections.Generic;
@@ -9,11 +9,12 @@
 
     using Fabric.Terminology.Domain.Exceptions;
     using Fabric.Terminology.Domain.Models;
-    using Fabric.Terminology.Domain.Persistence;
+    using Fabric.Terminology.Domain.Services;
+    using Fabric.Terminology.SqlServer.Persistence;
 
     using Serilog;
 
-    public class ValueSetSummaryService : IValueSetSummaryService
+    public class SqlValueSetSummaryService : IValueSetSummaryService
     {
         private readonly IValueSetBackingItemRepository valueSetBackingItemRepository;
 
@@ -21,7 +22,7 @@
 
         private readonly ILogger logger;
 
-        public ValueSetSummaryService(
+        public SqlValueSetSummaryService(
             ILogger logger,
             IValueSetBackingItemRepository valueSetBackingItemRepository,
             IValueSetCodeCountRepository valueSetCodeCountRepository)
@@ -52,7 +53,9 @@
             return this.GetValueSetSummaries(valueSetGuids, new List<Guid>());
         }
 
-        public async Task<IReadOnlyCollection<IValueSetSummary>> GetValueSetSummaries(IEnumerable<Guid> valueSetGuids, IEnumerable<Guid> codeSystemGuids)
+        public async Task<IReadOnlyCollection<IValueSetSummary>> GetValueSetSummaries(
+            IEnumerable<Guid> valueSetGuids,
+            IEnumerable<Guid> codeSystemGuids)
         {
             var setGuids = valueSetGuids as Guid[] ?? valueSetGuids.ToArray();
             var backingItems = this.valueSetBackingItemRepository.GetValueSetBackingItems(setGuids, codeSystemGuids);
@@ -71,12 +74,16 @@
                 return new List<IValueSetSummary>();
             }
 
-            var counts = await this.valueSetCodeCountRepository.BuildValueSetCountsDictionary(backingItems.Select(bi => bi.ValueSetGuid).ToList());
+            var counts =
+                await this.valueSetCodeCountRepository.BuildValueSetCountsDictionary(
+                    backingItems.Select(bi => bi.ValueSetGuid).ToList());
 
             return this.BuildValueSetSummaries(backingItems, counts);
         }
 
-        public Task<PagedCollection<IValueSetSummary>> GetValueSetSummariesAsync(IPagerSettings settings, bool latestVersionsOnly = true)
+        public Task<PagedCollection<IValueSetSummary>> GetValueSetSummariesAsync(
+            IPagerSettings settings,
+            bool latestVersionsOnly = true)
         {
             return this.GetValueSetSummariesAsync(settings, new List<Guid>());
         }
