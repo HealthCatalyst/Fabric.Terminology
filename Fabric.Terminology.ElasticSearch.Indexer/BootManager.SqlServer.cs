@@ -19,12 +19,9 @@
     {
         private void RegisterSqlServices(IServiceCollection services)
         {
-            var settings = this.LoadConfiguration();
-            services.AddSingleton(settings);
+            services.AddSingleton<IMemoryCacheSettings>(this.configuration.TerminologySqlSettings);
 
-            services.AddSingleton<IMemoryCacheSettings>(settings);
-
-            if (settings.MemoryCacheEnabled)
+            if (this.configuration.TerminologySqlSettings.MemoryCacheEnabled)
             {
                 services.AddSingleton<IMemoryCacheProvider, MemoryCacheProvider>();
             }
@@ -50,7 +47,7 @@
             services.AddTransient<IValueSetService, SqlValueSetService>();
         }
 
-        private TerminologySqlSettings LoadConfiguration()
+        private IndexerConfiguration LoadConfiguration()
         {
             var config = new ConfigurationBuilder().SetBasePath(Path.Combine(AppContext.BaseDirectory))
                 .AddJsonFile("appsettings.json")
@@ -59,7 +56,7 @@
             config.Bind(settings);
 
             this.logger.Information("Completed loading appsettings.json");
-            return settings.TerminologySqlSettings;
+            return settings;
         }
     }
 }
