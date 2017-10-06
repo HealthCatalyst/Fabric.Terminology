@@ -76,10 +76,10 @@
 
         public Task<PagedCollection<IValueSetSummary>> GetValueSetSummariesAsync(
             string nameFilterText,
-            IPagerSettings pagerSettings,
+            IPagerSettings settings,
             bool latestVersionsOnly = true)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(Map(this.searcher.GetPaged(nameFilterText, settings, latestVersionsOnly)));
         }
 
         public Task<PagedCollection<IValueSetSummary>> GetValueSetSummariesAsync(
@@ -88,7 +88,8 @@
             IEnumerable<Guid> codeSystemGuids,
             bool latestVersionsOnly = true)
         {
-            return Task.FromResult(Map(this.searcher.GetPaged(nameFilterText, settings, codeSystemGuids, latestVersionsOnly)));
+            return Task.FromResult(
+                Map(this.searcher.GetPaged(nameFilterText, settings, codeSystemGuids, latestVersionsOnly)));
         }
 
         private static PagedCollection<IValueSetSummary> Map(PagedCollection<ValueSetIndexModel> ip)

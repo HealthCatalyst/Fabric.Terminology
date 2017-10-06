@@ -13,10 +13,6 @@
     using Fabric.Terminology.ElasticSearch.Elastic;
     using Fabric.Terminology.ElasticSearch.Models;
 
-    using Nest;
-
-    using Serilog;
-
     public class ElasticValueSetService : IValueSetService
     {
         private readonly IValueSetIndexSearcher searcher;
@@ -61,19 +57,27 @@
             return Task.FromResult((IReadOnlyCollection<IValueSet>)results);
         }
 
-        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings settings, bool latestVersionsOnly = true)
+        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(
+            IPagerSettings settings,
+            bool latestVersionsOnly = true)
         {
             return Task.FromResult(Map(this.searcher.GetPaged(settings, latestVersionsOnly)));
         }
 
-        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings settings, IEnumerable<Guid> codeSystemGuids, bool latestVersionsOnly = true)
+        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(
+            IPagerSettings settings,
+            IEnumerable<Guid> codeSystemGuids,
+            bool latestVersionsOnly = true)
         {
             return Task.FromResult(Map(this.searcher.GetPaged(settings, codeSystemGuids, latestVersionsOnly)));
         }
 
-        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(string nameFilterText, IPagerSettings settings, bool latestVersionsOnly = true)
+        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(
+            string nameFilterText,
+            IPagerSettings settings,
+            bool latestVersionsOnly = true)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(Map(this.searcher.GetPaged(nameFilterText, settings, latestVersionsOnly)));
         }
 
         public Task<PagedCollection<IValueSet>> GetValueSetsAsync(
@@ -87,12 +91,12 @@
 
         public bool NameIsUnique(string name)
         {
-            throw new NotImplementedException();
+            return !this.searcher.GetByName(name).HasValue;
         }
 
         public Attempt<IValueSet> Create(string name, IValueSetMeta meta, IReadOnlyCollection<ICodeSetCode> codeSetCodes)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("");
         }
 
         public void Save(IValueSet valueSet)
@@ -107,7 +111,7 @@
 
         public bool ValueSetGuidIsUnique(Guid valueSetGuid)
         {
-            throw new NotImplementedException();
+            return !this.GetValueSet(valueSetGuid).HasValue;
         }
 
         private static PagedCollection<IValueSet> Map(PagedCollection<ValueSetIndexModel> ip)

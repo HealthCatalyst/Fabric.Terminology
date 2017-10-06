@@ -12,13 +12,23 @@
     {
         Maybe<ValueSetIndexModel> Get(Guid valueSetGuid);
 
+        Maybe<ValueSetIndexModel> GetByName(string name);
+
         IReadOnlyCollection<ValueSetIndexModel> GetMultiple(IEnumerable<Guid> valueSetGuids);
 
         IReadOnlyCollection<ValueSetIndexModel> GetVersions(string valueSetReferenceId);
 
         PagedCollection<ValueSetIndexModel> GetPaged(IPagerSettings settings, bool latestVersionsOnly = true);
 
-        PagedCollection<ValueSetIndexModel> GetPaged(IPagerSettings settings, IEnumerable<Guid> codeSystemGuids, bool latestVersionsOnly = true);
+        PagedCollection<ValueSetIndexModel> GetPaged(
+            IPagerSettings settings,
+            IEnumerable<Guid> codeSystemGuids,
+            bool latestVersionsOnly = true);
+
+        PagedCollection<ValueSetIndexModel> GetPaged(
+            string nameFilterText,
+            IPagerSettings pagerSettings,
+            bool latestVersionsOnly = true);
 
         PagedCollection<ValueSetIndexModel> GetPaged(
             string nameFilterText,

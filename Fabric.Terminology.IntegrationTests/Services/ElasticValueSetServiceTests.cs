@@ -14,6 +14,7 @@
 
     using Xunit;
     using Xunit.Abstractions;
+    using Xunit.Sdk;
 
     public class ElasticValueSetServiceTests : OutputTestBase, IClassFixture<ElasticServiceFixture>
     {
@@ -191,6 +192,7 @@
 
             this.Output.WriteLine($"Total Values {page.TotalItems}");
             this.Output.WriteLine($"Total Pages {page.TotalPages}");
+            this.Output.WriteLine($"Values count: {page.Values.Count}");
 
             // Assert
             page.TotalItems.Should().BeGreaterThan(0);
@@ -200,6 +202,50 @@
             summaryPage.TotalItems.Should().BeGreaterThan(0);
             summaryPage.TotalPages.Should().BeGreaterThan(0);
             summaryPage.Values.Count.Should().BeLessOrEqualTo(itemsPerPage);
+        }
+
+        [Theory]
+        [InlineData(10, 1, "cancer")]
+        [InlineData(20, 2, "cancer ")]
+        [InlineData(20, 3, "2.16.840.1.113883.3.526.3.1139")] // ACE Inhibitor or ARB
+        public void CanSearchByNameAndReferenceId(int itemsPerPage, int pageNumber, string term)
+        {
+            var pagerSettings = new PagerSettings { CurrentPage = pageNumber, ItemsPerPage = itemsPerPage };
+
+            // Act
+            var page = this.Profiler.ExecuteTimed(async () =>
+                await this.valueSetService.GetValueSetsAsync(term, pagerSettings));
+
+            var summaryPage = this.Profiler.ExecuteTimed(async () =>
+                await this.valueSetSummaryService.GetValueSetSummariesAsync(term, pagerSettings));
+
+            this.Output.WriteLine($"Total Values {page.TotalItems}");
+            this.Output.WriteLine($"Total Pages {page.TotalPages}");
+            this.Output.WriteLine($"Values count: {page.Values.Count}");
+
+            // Assert
+            page.TotalItems.Should().BeGreaterThan(0);
+            page.TotalPages.Should().BeGreaterThan(0);
+            page.Values.Count.Should().BeLessOrEqualTo(itemsPerPage);
+
+            summaryPage.TotalItems.Should().BeGreaterThan(0);
+            summaryPage.TotalPages.Should().BeGreaterThan(0);
+            summaryPage.Values.Count.Should().BeLessOrEqualTo(itemsPerPage);
+        }
+
+        [Theory]
+        [InlineData("cancer", false)]
+        [InlineData("Cancer", false)]
+        [InlineData("Disney World", true)]
+        public void NameIsUnique(string name, bool expected)
+        {
+            // Arrange
+
+            // Act
+            var isUnique = this.valueSetService.NameIsUnique(name);
+
+            // Assert
+            isUnique.Should().Be(expected);
         }
     }
 }

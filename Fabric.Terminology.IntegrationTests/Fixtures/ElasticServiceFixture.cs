@@ -13,7 +13,7 @@
         public ElasticServiceFixture()
         {
             var factory = new ElasticConnectionFactory(this.Logger);
-            this.ElasticClient = factory.Create();
+            this.ElasticClient = factory.Create(true);
 
             var searcher = new ValueSetIndexSearcher(this.Logger, this.ElasticClient, new PagingStrategyFactory());
 
