@@ -1,6 +1,8 @@
 ﻿namespace Fabric.Terminology.ElasticSearch.Indexer
 {
+    using Fabric.Terminology.ElasticSearch.Configuration;
     using Fabric.Terminology.ElasticSearch.Elastic;
+    using Fabric.Terminology.ElasticSearch.Indexer.Configuration;
 
     using global::Nest;
 
@@ -10,6 +12,7 @@
     {
         private void RegisterNestServices(IServiceCollection services)
         {
+            services.AddSingleton<ElasticSearchSettings>(factory => factory.GetService<IndexerConfiguration>().ElasticSearchSettings);
             services.AddTransient<ElasticConnectionFactory>();
             services.AddSingleton<ElasticClient>(factory => factory.GetService<ElasticConnectionFactory>().Create());
         }

@@ -1,0 +1,28 @@
+2017-10-06 16:58:23.777 -07:00 [Information] BootManager Initializing
+2017-10-06 16:58:24.296 -07:00 [Information] Completed loading appsettings.json
+2017-10-06 16:58:24.495 -07:00 [Information] BootManager finished.
+2017-10-06 16:59:10.339 -07:00 [Information] BootManager Initializing
+2017-10-06 16:59:10.841 -07:00 [Information] Completed loading appsettings.json
+2017-10-06 16:59:11.065 -07:00 [Information] BootManager finished.
+2017-10-06 17:01:19.908 -07:00 [Information] BootManager Initializing
+2017-10-06 17:01:20.476 -07:00 [Information] Completed loading appsettings.json
+2017-10-06 17:01:20.685 -07:00 [Information] BootManager finished.
+2017-10-06 17:03:08.795 -07:00 [Information] BootManager Initializing
+2017-10-06 17:03:09.337 -07:00 [Information] Completed loading appsettings.json
+2017-10-06 17:03:16.551 -07:00 [Information] BootManager finished.
+2017-10-06 17:06:30.883 -07:00 [Information] BootManager Initializing
+2017-10-06 17:06:31.549 -07:00 [Information] Completed loading appsettings.json
+2017-10-06 17:06:34.426 -07:00 [Information] BootManager finished.
+2017-10-06 17:07:27.323 -07:00 [Information] BootManager Initializing
+2017-10-06 17:07:27.854 -07:00 [Information] Completed loading appsettings.json
+2017-10-06 17:08:54.393 -07:00 [Information] BootManager Initializing
+2017-10-06 17:08:54.996 -07:00 [Information] Completed loading appsettings.json
+2017-10-06 17:08:55.208 -07:00 [Information] BootManager finished.
+2017-10-06 17:09:43.061 -07:00 [Information] BootManager Initializing
+2017-10-06 17:09:43.773 -07:00 [Information] Completed loading appsettings.json
+2017-10-06 17:09:43.961 -07:00 [Information] BootManager finished.
+2017-10-06 17:10:51.645 -07:00 [Information] BootManager Initializing
+2017-10-06 17:10:52.209 -07:00 [Information] Completed loading appsettings.json
+2017-10-06 17:10:52.417 -07:00 [Information] BootManager finished.
+2017-10-06 17:11:17.860 -07:00 [Error] Failed to match codes with every valueset.
+Fabric.Terminology.Domain.Exceptions.ValueSetOperationException: Failed to find ValueSetCode collection for every ValueSetBackingItem (ValueSetDescription)

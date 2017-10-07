@@ -19,7 +19,11 @@
     {
         private void RegisterSqlServices(IServiceCollection services)
         {
-            services.AddSingleton<IMemoryCacheSettings>(this.configuration.TerminologySqlSettings);
+            services.AddSingleton<TerminologySqlSettings>(
+                factory => factory.GetService<IndexerConfiguration>().TerminologySqlSettings);
+
+            services.AddSingleton<IMemoryCacheSettings>(
+                factory => factory.GetService<TerminologySqlSettings>());
 
             if (this.configuration.TerminologySqlSettings.MemoryCacheEnabled)
             {
