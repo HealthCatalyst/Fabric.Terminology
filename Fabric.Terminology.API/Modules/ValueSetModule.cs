@@ -27,11 +27,14 @@
 
         private readonly IValueSetSummaryService valueSetSummaryService;
 
+        private readonly IClientTermValueSetService clientTermValueSetService;
+
         private readonly ValueSetValidator valueSetValidator;
 
         public ValueSetModule(
                 IValueSetService valueSetService,
                 IValueSetSummaryService valueSetSummaryService,
+                IClientTermValueSetService clientTermValueSetService,
                 IAppConfiguration config,
                 ILogger logger,
                 ValueSetValidator valueSetValidator)
@@ -39,6 +42,7 @@
         {
             this.valueSetService = valueSetService;
             this.valueSetSummaryService = valueSetSummaryService;
+            this.clientTermValueSetService = clientTermValueSetService;
             this.valueSetValidator = valueSetValidator;
 
             this.Get("/", _ => this.GetValueSetPage(), null, "GetPaged");
@@ -201,7 +205,7 @@
             try
             {
                 var model = this.Bind<ValueSetCreationApiModel>();
-                var attempt = this.valueSetService.Create(model);
+                var attempt = this.clientTermValueSetService.Create(model);
                 if (!attempt.Success || !attempt.Result.HasValue)
                 {
                     throw attempt.Exception.HasValue
@@ -213,7 +217,7 @@
                 var validationResult = this.valueSetValidator.Validate(valueSet);
                 if (validationResult.IsValid)
                 {
-                    this.valueSetService.Save(valueSet);
+                    this.clientTermValueSetService.Save(valueSet);
                     return Mapper.Map<IValueSet, ValueSetApiModel>(valueSet);
                 }
 

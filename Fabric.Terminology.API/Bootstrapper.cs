@@ -3,7 +3,6 @@
     using Fabric.Terminology.API.Configuration;
     using Fabric.Terminology.API.DependencyInjection;
     using Fabric.Terminology.API.Validators;
-    using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Configuration;
 

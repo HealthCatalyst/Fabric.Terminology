@@ -9,9 +9,9 @@
 
     public static partial class Extensions
     {
-        public static Attempt<IValueSet> Create(this IValueSetService service, ValueSetCreationApiModel model)
+        public static Attempt<IValueSet> Create(this IClientTermValueSetService service, ValueSetCreationApiModel model)
         {
-            return service.Create(model.Name, model, model.CodeSetCodes.Select(code => code.ToCodeSetCode()).ToList());
+            return service.Create(model.Name, model, model.CodeSetCodes.ToList());
         }
     }
 }

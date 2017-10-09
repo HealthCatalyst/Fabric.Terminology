@@ -9,11 +9,11 @@
 
     public class ValueSetValidator : AbstractValidator<IValueSet>
     {
-        private readonly IValueSetService service;
+        private readonly IClientTermValueSetService service;
 
-        public ValueSetValidator(IValueSetService valueSetService)
+        public ValueSetValidator(IClientTermValueSetService clientTermValueSetService)
         {
-            this.service = valueSetService;
+            this.service = clientTermValueSetService;
             this.ConfigureRules();
         }
 
@@ -25,7 +25,7 @@
 
             this.RuleFor(vs => vs.Name).NotEmpty().WithMessage("Please specify a Name for this client");
 
-            this.RuleFor(vs => vs.ValueSetGuid).NotEmpty().Must(this.BeUnique);
+            // this.RuleFor(vs => vs.ValueSetGuid).NotEmpty().Must(this.BeUnique);
         }
 
         private bool BeUnique(string name)
