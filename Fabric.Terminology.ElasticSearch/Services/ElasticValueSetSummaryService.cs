@@ -44,17 +44,23 @@
         public Task<IReadOnlyCollection<IValueSetSummary>> GetValueSetSummaries(IEnumerable<Guid> valueSetGuids)
         {
             return Task.FromResult(
-                (IReadOnlyCollection<IValueSetSummary>)this.searcher.GetMultiple(valueSetGuids).Select(Map));
+                (IReadOnlyCollection<IValueSetSummary>)this.searcher.GetMultiple(valueSetGuids).Select(Map).ToList());
         }
 
         public Task<IReadOnlyCollection<IValueSetSummary>> GetValueSetSummaries(
             IEnumerable<Guid> valueSetGuids,
             IEnumerable<Guid> codeSystemGuids)
         {
+            var systemGuids = codeSystemGuids as Guid[] ?? codeSystemGuids.ToArray();
+            if (!systemGuids.Any())
+            {
+                return this.GetValueSetSummaries(valueSetGuids);
+            }
+
             return Task.FromResult(
                 (IReadOnlyCollection<IValueSetSummary>)this.searcher.GetMultiple(valueSetGuids)
-                    .Where(vs => vs.CodeCounts.Any(cc => codeSystemGuids.Contains(cc.CodeSystemGuid)))
-                    .Select(Map));
+                    .Where(vs => vs.CodeCounts.Any(cc => systemGuids.Contains(cc.CodeSystemGuid)))
+                    .Select(Map).ToList());
         }
 
         public Task<IReadOnlyCollection<IValueSetSummary>> GetValueSetVersions(string valueSetReferenceId)

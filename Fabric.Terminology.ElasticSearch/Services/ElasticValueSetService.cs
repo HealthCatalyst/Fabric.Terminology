@@ -49,9 +49,15 @@
 
         public Task<IReadOnlyCollection<IValueSet>> GetValueSets(IEnumerable<Guid> valueSetGuids, IEnumerable<Guid> codeSystemGuids)
         {
+            var systemGuids = codeSystemGuids as Guid[] ?? codeSystemGuids.ToArray();
+            if (!systemGuids.Any())
+            {
+                return this.GetValueSets(valueSetGuids);
+            }
+
             return Task.FromResult(
                 (IReadOnlyCollection<IValueSet>)this.searcher.GetMultiple(valueSetGuids)
-                    .Where(vs => vs.CodeCounts.Any(cc => codeSystemGuids.Contains(cc.CodeSystemGuid)))
+                    .Where(vs => vs.CodeCounts.Any(cc => systemGuids.Contains(cc.CodeSystemGuid)))
                     .Select(Map).ToList());
         }
 
