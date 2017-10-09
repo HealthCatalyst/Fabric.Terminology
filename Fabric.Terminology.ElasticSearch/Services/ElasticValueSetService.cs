@@ -44,7 +44,7 @@
 
         public Task<IReadOnlyCollection<IValueSet>> GetValueSets(IEnumerable<Guid> valueSetGuids)
         {
-            return Task.FromResult((IReadOnlyCollection<IValueSet>)this.searcher.GetMultiple(valueSetGuids).Select(Map));
+            return Task.FromResult((IReadOnlyCollection<IValueSet>)this.searcher.GetMultiple(valueSetGuids).Select(Map).ToList());
         }
 
         public Task<IReadOnlyCollection<IValueSet>> GetValueSets(IEnumerable<Guid> valueSetGuids, IEnumerable<Guid> codeSystemGuids)
@@ -52,7 +52,7 @@
             return Task.FromResult(
                 (IReadOnlyCollection<IValueSet>)this.searcher.GetMultiple(valueSetGuids)
                     .Where(vs => vs.CodeCounts.Any(cc => codeSystemGuids.Contains(cc.CodeSystemGuid)))
-                    .Select(Map));
+                    .Select(Map).ToList());
         }
 
         public Task<IReadOnlyCollection<IValueSet>> GetValueSetVersions(string valueSetReferenceId)

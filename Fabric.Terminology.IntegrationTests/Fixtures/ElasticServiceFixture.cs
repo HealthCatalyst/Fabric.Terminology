@@ -17,7 +17,7 @@
                 new ElasticSearchSettings { Enabled = true, Hostname = "localhost", Port = "9200", UseSsl = false };
 
             var factory = new ElasticConnectionFactory(this.Logger, settings);
-            this.ElasticClient = factory.Create(true);
+            this.ElasticClient = factory.Create();
 
             var searcher = new ValueSetIndexSearcher(this.Logger, this.ElasticClient, new PagingStrategyFactory());
 

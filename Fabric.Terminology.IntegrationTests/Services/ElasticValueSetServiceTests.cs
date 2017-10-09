@@ -32,6 +32,27 @@
             this.valueSetSummaryService = fixture.ValueSetSummaryService;
         }
 
+        [Fact]
+        public void CanGetValueSetList()
+        {
+            // Arrange
+            var valueSetGuids = new Guid[]
+            {
+                Guid.Parse("00149FF4-480E-4625-8281-500FB6D327E3"),
+                Guid.Parse("003DB2E6-77F1-4449-B085-044B20BD179C"),
+                Guid.Parse( "01F981E5-2C94-4850-B6DA-03BBAF46E3ED"),
+                Guid.Parse("1297BB11-927B-438C-9715-853FED36C300"),
+                Guid.Parse("17316FBA-0D34-400A-B30E-47895EFAD962")
+            };
+
+            // Act
+            var valueSets = this.Profiler.ExecuteTimed(() => this.valueSetService.GetValueSets(valueSetGuids));
+            this.Output.WriteLine($"ValueSet count: {valueSets.Count}");
+
+            // Assert
+            valueSets.Count.Should().Be(valueSetGuids.Length);
+        }
+
         [Theory]
         [InlineData("b209106e-2dff-4e85-ae71-c2fdec3385f0")]
         [InlineData("601ab4c1-c6e7-42b6-b055-4db2a8227914")]
