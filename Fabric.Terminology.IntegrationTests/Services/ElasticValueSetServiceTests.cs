@@ -253,20 +253,5 @@
             summaryPage.TotalPages.Should().BeGreaterThan(0);
             summaryPage.Values.Count.Should().BeLessOrEqualTo(itemsPerPage);
         }
-
-        [Theory]
-        [InlineData("cancer", false)]
-        [InlineData("Cancer", false)]
-        [InlineData("Disney World", true)]
-        public void NameIsUnique(string name, bool expected)
-        {
-            // Arrange
-
-            // Act
-            var isUnique = this.valueSetService.NameIsUnique(name);
-
-            // Assert
-            isUnique.Should().Be(expected);
-        }
     }
 }

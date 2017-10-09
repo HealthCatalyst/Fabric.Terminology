@@ -2,14 +2,11 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
 
-    using Fabric.Terminology.API;
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Services;
     using Fabric.Terminology.IntegrationTests.Fixtures;
     using Fabric.Terminology.TestsBase;
-    using Fabric.Terminology.TestsBase.Mocks;
 
     using FluentAssertions;
 
@@ -18,13 +15,13 @@
     using Xunit;
     using Xunit.Abstractions;
 
-    public class ValueSetServiceTests : OutputTestBase, IClassFixture<ServiceFixture>
+    public class SqlValueSetServiceTests : OutputTestBase, IClassFixture<SqlServiceFixture>
     {
         private readonly IValueSetService valueSetService;
 
         private readonly IValueSetSummaryService valueSetSummaryService;
 
-        public ValueSetServiceTests(ServiceFixture fixture, [NotNull] ITestOutputHelper output)
+        public SqlValueSetServiceTests(SqlServiceFixture fixture, [NotNull] ITestOutputHelper output)
             : base(output)
         {
             this.valueSetService = fixture.ValueSetService;

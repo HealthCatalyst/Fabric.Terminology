@@ -14,15 +14,8 @@
     {
         public void Compose(TinyIoCContainer container)
         {
-            container.Register<IValueSetCodeRepository, SqlValueSetCodeRepository>();
-            container.Register<IValueSetCodeCountRepository, SqlValueSetCodeCountRepository>();
-            container.Register<IValueSetBackingItemRepository, SqlValueSetBackingItemRepository>();
-            container.Register<IClientTermValueSetRepository, SqlClientTermValueSetRepository>();
-            container.Register<SharedContext>((c, p) => c.Resolve<SharedContextFactory>().Create());
-            container.Register<Lazy<ClientTermContext>>((c, p) => c.Resolve<ClientTermContextFactory>().CreateLazy());
             container.Register<IValueSetService, SqlValueSetService>().AsSingleton();
             container.Register<IValueSetSummaryService, SqlValueSetSummaryService>().AsSingleton();
-            container.Register<IClientTermValueSetService, SqlClientTermValueSetService>().AsSingleton();
         }
     }
 }

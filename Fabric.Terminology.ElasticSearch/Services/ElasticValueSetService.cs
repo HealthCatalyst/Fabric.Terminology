@@ -7,7 +7,6 @@
 
     using CallMeMaybe;
 
-    using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Services;
     using Fabric.Terminology.ElasticSearch.Elastic;
@@ -98,31 +97,6 @@
             bool latestVersionsOnly = true)
         {
             return Task.FromResult(Map(this.searcher.GetPaged(nameFilterText, settings, codeSystemGuids, latestVersionsOnly)));
-        }
-
-        public bool NameIsUnique(string name)
-        {
-            return !this.searcher.GetByName(name).HasValue;
-        }
-
-        public Attempt<IValueSet> Create(string name, IValueSetMeta meta, IReadOnlyCollection<ICodeSetCode> codeSetCodes)
-        {
-            throw new NotImplementedException("");
-        }
-
-        public void Save(IValueSet valueSet)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Delete(IValueSet valueSet)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool ValueSetGuidIsUnique(Guid valueSetGuid)
-        {
-            return !this.GetValueSet(valueSetGuid).HasValue;
         }
 
         private static PagedCollection<IValueSet> Map(PagedCollection<ValueSetIndexModel> ip)

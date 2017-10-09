@@ -106,10 +106,21 @@
         {
             base.ConfigureRequestContainer(container, context);
 
+            container.Register<SharedContext>((c, p) => c.Resolve<SharedContextFactory>().Create());
+            container.Register<Lazy<ClientTermContext>>((c, p) => c.Resolve<ClientTermContextFactory>().CreateLazy());
+            container.Register<IValueSetCodeRepository, SqlValueSetCodeRepository>();
+            container.Register<IValueSetCodeCountRepository, SqlValueSetCodeCountRepository>();
+            container.Register<IValueSetBackingItemRepository, SqlValueSetBackingItemRepository>();
+
+            // ClientTerm services are always SQL
+            container.Register<IClientTermValueSetRepository, SqlClientTermValueSetRepository>();
+            container.Register<IClientTermValueSetService, SqlClientTermValueSetService>().AsSingleton();
+
             if (!this.appConfig.ElasticSearchSettings.Enabled)
             {
                 container.ComposeFrom<SqlServicesComposition>();
             }
+
             container.Register<ValueSetValidator>();
         }
 
