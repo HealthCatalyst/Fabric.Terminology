@@ -18,13 +18,13 @@
     using Xunit;
     using Xunit.Abstractions;
 
-    public class SqlValueSetServiceTests : OutputTestBase, IClassFixture<SqlServiceFixture>
+    public class ValueSetServiceTests : OutputTestBase, IClassFixture<ServiceFixture>
     {
         private readonly IValueSetService valueSetService;
 
         private readonly IValueSetSummaryService valueSetSummaryService;
 
-        public SqlValueSetServiceTests(SqlServiceFixture fixture, [NotNull] ITestOutputHelper output)
+        public ValueSetServiceTests(ServiceFixture fixture, [NotNull] ITestOutputHelper output)
             : base(output)
         {
             this.valueSetService = fixture.ValueSetService;
@@ -124,53 +124,6 @@
 
             // Assert
             versions.Should().NotBeEmpty();
-        }
-
-        [Theory]
-        [InlineData("Code Count Check", 50)]
-        public void CanCreateValueSet(string name, int codeCount)
-        {
-            // Arrange
-            var apiModel = MockApiModelBuilder.ValueSetCreationApiModel(name, codeCount);
-
-            // Act
-            var attempt = this.valueSetService.Create(apiModel);
-
-            // Assert
-            attempt.Success.Should().BeTrue();
-            attempt.Result.HasValue.Should().BeTrue();
-
-            var vs = attempt.Result.Single();
-
-            vs.ValueSetCodes.Should().NotBeEmpty();
-            vs.CodeCounts.Should().NotBeEmpty();
-            vs.CodeCounts.Sum(cc => cc.CodeCount).Should().Be(codeCount);
-        }
-
-        [Theory(Skip = "run only manually")]
-        [InlineData("Add VS 3", 5)]
-        [InlineData("Add VS 2", 1000)]
-        [InlineData("Add VS 4", 4000)]
-        public void CanAddValueSet(string name, int codeCount)
-        {
-            // Arrange
-            var apiModel = MockApiModelBuilder.ValueSetCreationApiModel(name, codeCount);
-            var attempt = this.valueSetService.Create(apiModel);
-            attempt.Success.Should().BeTrue();
-            attempt.Result.HasValue.Should().BeTrue();
-
-            var vs = attempt.Result.Single();
-
-            // Act
-            this.Profiler.ExecuteTimed(() => this.valueSetService.Save(vs));
-
-            // Assert
-            vs.ValueSetGuid.Should().NotBe(Guid.Empty);
-            vs.ValueSetCodes.Count.Should().Be(codeCount);
-            vs.Name.Should().BeEquivalentTo(name);
-
-            // cleanup
-           this.valueSetService.Delete(vs);
         }
     }
 }

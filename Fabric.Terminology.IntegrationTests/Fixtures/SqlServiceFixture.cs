@@ -18,6 +18,8 @@
 
         public IValueSetSummaryService ValueSetSummaryService { get; private set; }
 
+        public IClientTermValueSetService ClientTermValueSetService { get; private set; }
+
         private void Initialize()
         {
             var cacheManagerFactory = new CachingManagerFactory(this.Cache);
@@ -46,7 +48,11 @@
                 this.Logger,
                 valueSetBackingItemRepository,
                 valueSetCodeRepository,
-                valueSetCodeCountRepository,
+                valueSetCodeCountRepository);
+
+            this.ClientTermValueSetService = new SqlClientTermValueSetService(
+                this.Logger,
+                valueSetBackingItemRepository,
                 sqlClientTermValueSetRepository);
 
             this.ValueSetSummaryService = new SqlValueSetSummaryService(
