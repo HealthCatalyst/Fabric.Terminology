@@ -53,12 +53,12 @@ namespace Fabric.Terminology.SqlServer.Services
                     });
         }
 
-        public Task<IReadOnlyCollection<IValueSet>> GetValueSets(IEnumerable<Guid> valueSetGuids)
+        public Task<IReadOnlyCollection<IValueSet>> GetValueSetsListAsync(IEnumerable<Guid> valueSetGuids)
         {
-            return this.GetValueSets(valueSetGuids, new List<Guid>());
+            return this.GetValueSetsListAsync(valueSetGuids, new List<Guid>());
         }
 
-        public async Task<IReadOnlyCollection<IValueSet>> GetValueSets(IEnumerable<Guid> valueSetGuids, IEnumerable<Guid> codeSystemGuids)
+        public async Task<IReadOnlyCollection<IValueSet>> GetValueSetsListAsync(IEnumerable<Guid> valueSetGuids, IEnumerable<Guid> codeSystemGuids)
         {
             var setGuids = valueSetGuids as Guid[] ?? valueSetGuids.ToArray();
             var backingItems = this.valueSetBackingItemRepository.GetValueSetBackingItems(setGuids, codeSystemGuids);
@@ -70,7 +70,7 @@ namespace Fabric.Terminology.SqlServer.Services
             return this.BuildValueSets(backingItems, codes, counts);
         }
 
-        public async Task<IReadOnlyCollection<IValueSet>> GetValueSetVersions(string valueSetReferenceId)
+        public async Task<IReadOnlyCollection<IValueSet>> GetValueSetVersionsAsync(string valueSetReferenceId)
         {
             var backingItems = this.valueSetBackingItemRepository.GetValueSetBackingItemVersions(valueSetReferenceId);
 

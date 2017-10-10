@@ -2,14 +2,11 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
 
-    using Fabric.Terminology.API;
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Services;
     using Fabric.Terminology.IntegrationTests.Fixtures;
     using Fabric.Terminology.TestsBase;
-    using Fabric.Terminology.TestsBase.Mocks;
 
     using FluentAssertions;
 
@@ -63,7 +60,7 @@
             };
 
             // Act
-            var valueSets = this.Profiler.ExecuteTimed(() => this.valueSetService.GetValueSets(valueSetGuids));
+            var valueSets = this.Profiler.ExecuteTimed(() => this.valueSetService.GetValueSetsListAsync(valueSetGuids));
 
             // Assert
             valueSets.Should().NotBeEmpty();
@@ -106,7 +103,7 @@
             // Arrange
 
             // Act
-            var versions = this.Profiler.ExecuteTimed(async () => await this.valueSetService.GetValueSetVersions(valueSetReferenceId));
+            var versions = this.Profiler.ExecuteTimed(async () => await this.valueSetService.GetValueSetVersionsAsync(valueSetReferenceId));
 
             // Assert
             versions.Should().NotBeEmpty();
@@ -120,7 +117,7 @@
             // Arrange
 
             // Act
-            var versions = this.Profiler.ExecuteTimed(async () => await this.valueSetSummaryService.GetValueSetVersions(valueSetReferenceId));
+            var versions = this.Profiler.ExecuteTimed(async () => await this.valueSetSummaryService.GetValueSetVersionsAsync(valueSetReferenceId));
 
             // Assert
             versions.Should().NotBeEmpty();
