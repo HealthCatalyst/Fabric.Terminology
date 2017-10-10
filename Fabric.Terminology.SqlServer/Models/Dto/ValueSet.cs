@@ -20,7 +20,7 @@ namespace Fabric.Terminology.SqlServer.Models.Dto
             this.VersionDate = descDto.VersionDTS;
             this.DefinitionDescription = descDto.DefinitionDSC;
             this.SourceDescription = descDto.SourceDSC;
-            this.OriginGuid = descDto.OriginGUID;
+            this.OriginGuid = descDto.OriginGUID.GetValueOrDefault();
             this.ClientCode = descDto.ClientCD;
             this.ValueSetCodes = codeDtos.Select(cd => new ValueSetCode(cd)).ToList();
         }
