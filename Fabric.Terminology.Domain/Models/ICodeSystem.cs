@@ -7,5 +7,13 @@
         Guid CodeSystemGuid { get; }
 
         string Name { get; }
+
+        DateTime VersionDate { get; }
+
+        string Description { get; }
+
+        string Copyright { get; }
+
+        string Owner { get; }
     }
 }
