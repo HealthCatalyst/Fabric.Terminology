@@ -10,7 +10,5 @@
         IReadOnlyCollection<ICodeSystem> GetAll();
 
         ICodeSystem GetCodeSystem(Guid codeSystemGuid);
-
-        IReadOnlyCollection<ICodeSetCode> GetCodeSystemCodes(Guid codeSystemGuid);
     }
 }
