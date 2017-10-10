@@ -48,7 +48,7 @@ namespace Fabric.Terminology.SqlServer.Models.Dto
 
         public string StatusCD { get; set; }
 
-        public Guid OriginGUID { get; set; }
+        public Guid? OriginGUID { get; set; }
 
         public string ClientCD { get; set; }
 

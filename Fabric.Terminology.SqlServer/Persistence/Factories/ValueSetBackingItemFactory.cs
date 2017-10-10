@@ -16,7 +16,7 @@
                 IsCustom = dto.ClientTermFLG == "Y",
                 IsLatestVersion = dto.LatestVersionFLG == "Y",
                 Name = dto.ValueSetNM,
-                OriginGuid = dto.OriginGUID,
+                OriginGuid = dto.OriginGUID.GetValueOrDefault(),
                 SourceDescription = dto.SourceDSC,
                 ValueSetGuid = dto.ValueSetGUID,
                 ValueSetReferenceId = dto.ValueSetReferenceID,
