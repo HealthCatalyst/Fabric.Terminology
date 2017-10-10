@@ -9,6 +9,7 @@
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Services;
     using Fabric.Terminology.ElasticSearch.Configuration;
+    using Fabric.Terminology.ElasticSearch.Elastic;
     using Fabric.Terminology.ElasticSearch.Models;
 
     using global::Nest;
@@ -42,6 +43,8 @@
         {
             var client = container.GetService<ElasticClient>();
             CleanIndex(client);
+
+            var indexer = container.GetService<IValueSetIndexer>();
 
             var service = container.GetService<IValueSetService>();
             var currentPage = 1;
