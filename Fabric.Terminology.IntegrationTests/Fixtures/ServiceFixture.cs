@@ -20,6 +20,8 @@
 
         public IClientTermValueSetService ClientTermValueSetService { get; private set; }
 
+        public ICodeSystemService CodeSystemService { get; private set; }
+
         private void Initialize()
         {
             var cacheManagerFactory = new CachingManagerFactory(this.Cache);
@@ -44,6 +46,8 @@
                 this.ClientTermContext.AsLazy(),
                 this.Logger);
 
+            var sqlCodeSystemRepository = new SqlCodeSystemRepository(this.SharedContext, this.Logger);
+
             this.ValueSetService = new SqlValueSetService(
                 this.Logger,
                 valueSetBackingItemRepository,
@@ -59,6 +63,8 @@
                 this.Logger,
                 valueSetBackingItemRepository,
                 valueSetCodeCountRepository);
+
+            this.CodeSystemService = new SqlCodeSystemService(sqlCodeSystemRepository);
         }
     }
 }
