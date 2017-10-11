@@ -19,6 +19,8 @@ namespace Fabric.Terminology.SqlServer.Models.Dto
 
         public string OwnerDSC { get; set; }
 
+        public int CodeCountNBR { get; set; }
+
         public DateTime LastModifiedDTS { get; set; }
     }
 }

@@ -50,5 +50,14 @@
                 Name = $"{TerminologyVersion.Route}/codesystems"
             };
         }
+
+        public static Tag GetMultipleCodeSystemTag()
+        {
+            return new Tag
+            {
+                Description = "Operations relating to getting multiple code systems",
+                Name = $"{TerminologyVersion.Route}/codesystems/multiple/"
+            };
+        }
     }
 }

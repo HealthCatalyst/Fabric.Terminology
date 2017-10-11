@@ -42,11 +42,13 @@
                 cacheManagerFactory,
                 new PagingStrategyFactory());
 
-            var sqlClientTermValueSetRepository = new SqlClientTermValueSetRepository(
-                this.ClientTermContext.AsLazy(),
-                this.Logger);
+            var sqlClientTermValueSetRepository =
+                new SqlClientTermValueSetRepository(this.ClientTermContext.AsLazy(), this.Logger);
 
-            var sqlCodeSystemRepository = new SqlCodeSystemRepository(this.SharedContext, this.Logger);
+            var sqlCodeSystemRepository = new SqlCodeSystemRepository(
+                this.SharedContext,
+                this.Logger,
+                new CodeSystemCachingManager(this.Cache));
 
             this.ValueSetService = new SqlValueSetService(
                 this.Logger,

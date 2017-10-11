@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Fabric.Terminology.SqlServer.Persistence.Factories
+﻿namespace Fabric.Terminology.SqlServer.Persistence.Factories
 {
     using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Models;
@@ -18,6 +16,7 @@ namespace Fabric.Terminology.SqlServer.Persistence.Factories
                 Description = dto.CodeSystemDSC.IsNullOrWhiteSpace() ? string.Empty : dto.CodeSystemDSC,
                 Name = dto.CodeSystemNM,
                 Owner = dto.OwnerDSC.IsNullOrWhiteSpace() ? string.Empty : dto.OwnerDSC,
+                CodeCount = dto.CodeCountNBR,
                 VersionDate = dto.VersionDTS
             };
         }

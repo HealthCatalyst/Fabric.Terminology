@@ -15,5 +15,7 @@
         public string Copyright { get; set; }
 
         public string Owner { get; set; }
+
+        public int CodeCount { get; set; }
     }
 }
