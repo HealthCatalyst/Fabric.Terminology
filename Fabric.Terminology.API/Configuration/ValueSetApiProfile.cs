@@ -7,9 +7,9 @@
     using Fabric.Terminology.API.Models;
     using Fabric.Terminology.Domain.Models;
 
-    internal class ApiModelProfile : Profile
+    internal class ValueSetApiProfile : Profile
     {
-        public ApiModelProfile()
+        public ValueSetApiProfile()
         {
             this.CreateMap<ICodeSetCode, CodeSetCodeApiModel>();
             this.CreateMap<IValueSetCode, ValueSetCodeApiModel>();
