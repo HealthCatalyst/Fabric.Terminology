@@ -14,7 +14,7 @@
 
     using Serilog;
 
-    internal class SqlCodeSystemRepository : ISqlCodeSystemRepository
+    internal class SqlCodeSystemRepository : ICodeSystemRepository
     {
         private readonly SharedContext sharedContext;
 

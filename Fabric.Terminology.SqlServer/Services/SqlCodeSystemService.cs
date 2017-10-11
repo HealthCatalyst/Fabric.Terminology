@@ -11,9 +11,9 @@
 
     internal class SqlCodeSystemService : ICodeSystemService
     {
-        private readonly ISqlCodeSystemRepository codeSystemRepository;
+        private readonly ICodeSystemRepository codeSystemRepository;
 
-        public SqlCodeSystemService(ISqlCodeSystemRepository codeSystemRepository)
+        public SqlCodeSystemService(ICodeSystemRepository codeSystemRepository)
         {
             this.codeSystemRepository = codeSystemRepository;
         }

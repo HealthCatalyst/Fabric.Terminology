@@ -41,5 +41,14 @@
                 Name = $"{TerminologyVersion.Route}/valuesets/search/"
             };
         }
+
+        public static Tag GetCodeSystemTag()
+        {
+            return new Tag()
+            {
+                Description = "Operations related to code systems",
+                Name = $"{TerminologyVersion.Route}/codesystems"
+            };
+        }
     }
 }

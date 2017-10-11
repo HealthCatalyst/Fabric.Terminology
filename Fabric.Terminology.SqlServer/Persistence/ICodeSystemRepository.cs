@@ -7,7 +7,7 @@
 
     using Fabric.Terminology.Domain.Models;
 
-    internal interface ISqlCodeSystemRepository
+    internal interface ICodeSystemRepository
     {
         IReadOnlyCollection<ICodeSystem> GetAll(params Guid[] codeSystemGuids);
 
