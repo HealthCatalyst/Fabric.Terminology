@@ -49,12 +49,12 @@
                         });
         }
 
-        public Task<IReadOnlyCollection<IValueSetSummary>> GetValueSetSummaries(IEnumerable<Guid> valueSetGuids)
+        public Task<IReadOnlyCollection<IValueSetSummary>> GetValueSetSummariesListAsync(IEnumerable<Guid> valueSetGuids)
         {
-            return this.GetValueSetSummaries(valueSetGuids, new List<Guid>());
+            return this.GetValueSetSummariesListAsync(valueSetGuids, new List<Guid>());
         }
 
-        public async Task<IReadOnlyCollection<IValueSetSummary>> GetValueSetSummaries(
+        public async Task<IReadOnlyCollection<IValueSetSummary>> GetValueSetSummariesListAsync(
             IEnumerable<Guid> valueSetGuids,
             IEnumerable<Guid> codeSystemGuids)
         {
@@ -66,7 +66,7 @@
             return this.BuildValueSetSummaries(backingItems, counts);
         }
 
-        public async Task<IReadOnlyCollection<IValueSetSummary>> GetValueSetVersions(string valueSetReferenceId)
+        public async Task<IReadOnlyCollection<IValueSetSummary>> GetValueSetVersionsAsync(string valueSetReferenceId)
         {
             var backingItems = this.valueSetBackingItemRepository.GetValueSetBackingItemVersions(valueSetReferenceId);
 

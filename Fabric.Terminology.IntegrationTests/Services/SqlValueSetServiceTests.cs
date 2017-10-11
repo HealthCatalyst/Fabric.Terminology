@@ -60,7 +60,7 @@
             };
 
             // Act
-            var valueSets = this.Profiler.ExecuteTimed(() => this.valueSetService.GetValueSets(valueSetGuids));
+            var valueSets = this.Profiler.ExecuteTimed(() => this.valueSetService.GetValueSetsListAsync(valueSetGuids));
 
             // Assert
             valueSets.Should().NotBeEmpty();
@@ -103,7 +103,7 @@
             // Arrange
 
             // Act
-            var versions = this.Profiler.ExecuteTimed(async () => await this.valueSetService.GetValueSetVersions(valueSetReferenceId));
+            var versions = this.Profiler.ExecuteTimed(async () => await this.valueSetService.GetValueSetVersionsAsync(valueSetReferenceId));
 
             // Assert
             versions.Should().NotBeEmpty();
@@ -117,7 +117,7 @@
             // Arrange
 
             // Act
-            var versions = this.Profiler.ExecuteTimed(async () => await this.valueSetSummaryService.GetValueSetVersions(valueSetReferenceId));
+            var versions = this.Profiler.ExecuteTimed(async () => await this.valueSetSummaryService.GetValueSetVersionsAsync(valueSetReferenceId));
 
             // Assert
             versions.Should().NotBeEmpty();

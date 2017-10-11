@@ -64,6 +64,8 @@
         private static ValueSetItemApiModel MapToValueSetItemApiModel(IValueSetSummary vss, IReadOnlyCollection<Guid> codeSystemGuids) =>
                 vss.ToValueSetItemApiModel(codeSystemGuids);
 
+        private static async Task<T> Execute<T>(Func<Task<T>> query) => await query.Invoke();
+
         private object GetValueSet(Guid valueSetGuid, IReadOnlyCollection<Guid> codeSystemGuids, bool summary = true)
         {
             try
@@ -87,7 +89,7 @@
             }
         }
 
-        private async Task<object> GetValueSets(string valueSetGuids)
+        private object GetValueSets(string valueSetGuids)
         {
             try
             {
@@ -105,11 +107,14 @@
                     return this.CreateFailureResponse("An array of value set ids is required.", HttpStatusCode.BadRequest);
                 }
 
-                return summary ? (await this.valueSetSummaryService.GetValueSetSummaries(guids, codeSystemGuids))
-                                    .Select(vs => vs.ToValueSetItemApiModel(codeSystemGuids)) :
+                return summary
+                           ? Execute(() => this.valueSetSummaryService.GetValueSetSummariesListAsync(guids, codeSystemGuids))
+                               .Result.Select(vss => vss.ToValueSetItemApiModel(codeSystemGuids))
+                               .ToList()
 
-                                (await this.valueSetService.GetValueSets(guids, codeSystemGuids))
-                                    .Select(vs => vs.ToValueSetApiModel(codeSystemGuids));
+                           : (IReadOnlyCollection<object>)Execute(() => this.valueSetService.GetValueSetsListAsync(guids, codeSystemGuids))
+                               .Result.Select(vs => vs.ToValueSetApiModel(codeSystemGuids))
+                               .ToList();
             }
             catch (Exception ex)
             {
@@ -120,19 +125,21 @@
             }
         }
 
-        private async Task<object> GetValueSetVersions(string valueSetReferenceId)
+        private object GetValueSetVersions(string valueSetReferenceId)
         {
             try
             {
                 var codeSystemGuids = this.GetCodeSystems();
                 var summary = this.GetSummarySetting();
 
-                var versions = (summary
-                        ? (await this.valueSetSummaryService.GetValueSetVersions(valueSetReferenceId))
+
+
+                var versions = summary
+                        ? Execute(() => this.valueSetSummaryService.GetValueSetVersionsAsync(valueSetReferenceId)).Result
                             .Select(vss => vss.ToValueSetItemApiModel(codeSystemGuids))
 
-                        : (await this.valueSetSummaryService.GetValueSetVersions(valueSetReferenceId))
-                            .Select(vs => vs.ToValueSetItemApiModel(codeSystemGuids))).ToList();
+                        : Execute(() => this.valueSetSummaryService.GetValueSetVersionsAsync(valueSetReferenceId)).Result
+                            .Select(vs => vs.ToValueSetItemApiModel(codeSystemGuids)).ToList();
 
                 if (!versions.Any())
                 {
