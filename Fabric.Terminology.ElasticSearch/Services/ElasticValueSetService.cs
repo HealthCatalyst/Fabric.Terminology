@@ -41,17 +41,17 @@
                         });
         }
 
-        public Task<IReadOnlyCollection<IValueSet>> GetValueSets(IEnumerable<Guid> valueSetGuids)
+        public Task<IReadOnlyCollection<IValueSet>> GetValueSetsListAsync(IEnumerable<Guid> valueSetGuids)
         {
             return Task.FromResult((IReadOnlyCollection<IValueSet>)this.searcher.GetMultiple(valueSetGuids).Select(Map).ToList());
         }
 
-        public Task<IReadOnlyCollection<IValueSet>> GetValueSets(IEnumerable<Guid> valueSetGuids, IEnumerable<Guid> codeSystemGuids)
+        public Task<IReadOnlyCollection<IValueSet>> GetValueSetsListAsync(IEnumerable<Guid> valueSetGuids, IEnumerable<Guid> codeSystemGuids)
         {
             var systemGuids = codeSystemGuids as Guid[] ?? codeSystemGuids.ToArray();
             if (!systemGuids.Any())
             {
-                return this.GetValueSets(valueSetGuids);
+                return this.GetValueSetsListAsync(valueSetGuids);
             }
 
             return Task.FromResult(
@@ -60,7 +60,7 @@
                     .Select(Map).ToList());
         }
 
-        public Task<IReadOnlyCollection<IValueSet>> GetValueSetVersions(string valueSetReferenceId)
+        public Task<IReadOnlyCollection<IValueSet>> GetValueSetVersionsAsync(string valueSetReferenceId)
         {
             var results = this.searcher.GetVersions(valueSetReferenceId).Select(Map).ToList();
 
