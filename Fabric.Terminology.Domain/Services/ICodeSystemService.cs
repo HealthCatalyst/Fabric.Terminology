@@ -3,12 +3,14 @@
     using System;
     using System.Collections.Generic;
 
+    using CallMeMaybe;
+
     using Fabric.Terminology.Domain.Models;
 
     public interface ICodeSystemService
     {
-        IReadOnlyCollection<ICodeSystem> GetAll();
+        Maybe<ICodeSystem> GetCodeSystem(Guid codeSystemGuid);
 
-        ICodeSystem GetCodeSystem(Guid codeSystemGuid);
+        IReadOnlyCollection<ICodeSystem> GetAll(params Guid[] codeSystemGuids);
     }
 }
