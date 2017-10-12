@@ -6,15 +6,6 @@
 
     internal static class TagsFactory
     {
-        public static Tag GetVersionTag()
-        {
-            return new Tag
-            {
-                Description = $"Shared Terminology API services Version {TerminologyVersion.AssemblyVersion}",
-                Name = TerminologyVersion.Route
-            };
-        }
-
         public static Tag GetValueSetTag()
         {
             return new Tag
@@ -24,21 +15,21 @@
             };
         }
 
-        public static Tag GetValueSetVersionTag()
+        public static Tag GetCodeSystemTag()
         {
-            return new Tag
+            return new Tag()
             {
-                Description = "Operations related to Shared Terminology Value Sets Versions",
-                Name = $"{TerminologyVersion.Route}/valuesets/versions/"
+                Description = "Operations related to code systems",
+                Name = $"{TerminologyVersion.Route}/codesystems"
             };
         }
 
-        public static Tag GetValueSetSearchTag()
+        public static Tag GetCodeSystemCodeTag()
         {
-            return new Tag
+            return new Tag()
             {
-                Description = "Search operations relating to ValueSets",
-                Name = $"{TerminologyVersion.Route}/valuesets/search/"
+                Description = "Operations related to code systems",
+                Name = $"{TerminologyVersion.Route}/codes"
             };
         }
     }

@@ -2,7 +2,7 @@
 {
     using System;
 
-    public class ValueSetCodeApiModel : CodeSetCodeApiModel
+    public class ValueSetCodeApiModel : CodeSystemCodeApiModel
     {
         public Guid ValueSetGuid { get; set; }
     }

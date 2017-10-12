@@ -17,7 +17,7 @@
             this.CodeCounts = counts;
         }
 
-        internal ValueSet(string name, IValueSetMeta meta, IEnumerable<ICodeSetCode> codeSetCodes)
+        internal ValueSet(string name, IValueSetMeta meta, IEnumerable<ICodeSystemCode> codeSetCodes)
         {
             this.Name = name;
             this.VersionDate = meta.VersionDate;

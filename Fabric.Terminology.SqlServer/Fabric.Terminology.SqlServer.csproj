@@ -14,6 +14,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Models\Dto\ValueSetCode.cs" />
     <Compile Remove="Persistence\Factories\ValueSetFullCodeListMapper.cs" />
     <Compile Remove="Persistence\Factories\ValueSetMapperBase.cs" />
     <Compile Remove="Persistence\Factories\ValueSetShortCodeListMapper.cs" />

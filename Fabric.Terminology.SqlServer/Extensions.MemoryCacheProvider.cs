@@ -16,11 +16,9 @@
             return cache.GetItem(key).Select(o => (T)o);
         }
 
-        public static T GetItem<T>(this IMemoryCacheProvider cache, string key, Func<object> getter)
+        public static Maybe<T> GetItem<T>(this IMemoryCacheProvider cache, string key, Func<object> getter)
         {
-            return cache.GetItem(key, getter)
-                    .Select(o => (T)o)
-                    .Else(() => throw new InvalidCastException($"Failed to get an item of type {typeof(T)}"));
+            return cache.GetItem(key, getter).Select(o => (T)o);
         }
     }
 }

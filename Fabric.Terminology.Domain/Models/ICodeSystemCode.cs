@@ -2,10 +2,8 @@ namespace Fabric.Terminology.Domain.Models
 {
     using System;
 
-    public interface ICodeSetCode
+    public interface ICodeSystemCode : IHaveCodeGuid
     {
-        Guid CodeGuid { get; }
-
         string Code { get; }
 
         string Name { get; }
@@ -13,5 +11,7 @@ namespace Fabric.Terminology.Domain.Models
         Guid CodeSystemGuid { get; set; }
 
         string CodeSystemName { get; set; }
+
+        bool Retired { get; set; }
     }
 }

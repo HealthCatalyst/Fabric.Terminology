@@ -49,7 +49,7 @@ namespace Fabric.Terminology.SqlServer.Services
                     {
                         var codes = this.valueSetCodeRepository.GetValueSetCodes(valueSetGuid);
                         var counts = this.valueSetCodeCountRepository.GetValueSetCodeCounts(valueSetGuid);
-                        return new ValueSet(backingItem, codes, counts) as IValueSet;
+                        return BuildValueSet(backingItem, codes, counts);
                     });
         }
 
@@ -98,15 +98,15 @@ namespace Fabric.Terminology.SqlServer.Services
             return this.GetValueSetsAsync(string.Empty, settings, codeSystemGuids, latestVersionsOnly);
         }
 
-        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(string nameFilterText, IPagerSettings pagerSettings, bool latestVersionsOnly = true)
+        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(string filterText, IPagerSettings pagerSettings, bool latestVersionsOnly = true)
         {
-            return this.GetValueSetsAsync(nameFilterText, pagerSettings, new List<Guid>(), latestVersionsOnly);
+            return this.GetValueSetsAsync(filterText, pagerSettings, new List<Guid>(), latestVersionsOnly);
         }
 
-        public async Task<PagedCollection<IValueSet>> GetValueSetsAsync(string nameFilterText, IPagerSettings pagerSettings, IEnumerable<Guid> codeSystemGuids, bool latestVersionsOnly = true)
+        public async Task<PagedCollection<IValueSet>> GetValueSetsAsync(string filterText, IPagerSettings pagerSettings, IEnumerable<Guid> codeSystemGuids, bool latestVersionsOnly = true)
         {
             var backingItemPage = await this.valueSetBackingItemRepository.GetValueSetBackingItemsAsync(
-                                      nameFilterText,
+                                      filterText,
                                       pagerSettings,
                                       codeSystemGuids,
                                       latestVersionsOnly);
@@ -118,6 +118,14 @@ namespace Fabric.Terminology.SqlServer.Services
             var counts = await this.valueSetCodeCountRepository.BuildValueSetCountsDictionary(valueSetGuids);
 
             return this.BuildValueSetsPage(backingItemPage, codes, counts);
+        }
+
+        private static IValueSet BuildValueSet(
+            IValueSetBackingItem item,
+            IReadOnlyCollection<IValueSetCode> codes,
+            IReadOnlyCollection<IValueSetCodeCount> counts)
+        {
+            return new ValueSet(item, codes, counts);
         }
 
         private PagedCollection<IValueSet> BuildValueSetsPage(
@@ -144,7 +152,7 @@ namespace Fabric.Terminology.SqlServer.Services
                     item => codesDictionary.GetMaybe(item.ValueSetGuid)
                         .Select(
                             codes => countsDictionary.GetMaybe(item.ValueSetGuid)
-                                .Select(counts => new ValueSet(item, codes, counts))))
+                                .Select(counts => BuildValueSet(item, codes, counts))))
                 .Values().ToList();
 
             if (valueSets.Count == backingItems.Count)

@@ -3,7 +3,7 @@ namespace Fabric.Terminology.SqlServer.Models.Dto
 {
     using System;
 
-    public class CodeSetCodeDto
+    public class CodeSystemCodeDto
     {
         public Guid CodeGUID { get; set; }
 
@@ -11,10 +11,14 @@ namespace Fabric.Terminology.SqlServer.Models.Dto
 
         public string CodeDSC { get; set; }
 
-        public Guid CodeSystemGuid { get; set; }
+        public Guid CodeSystemGUID { get; set; }
 
         public DateTime LastModifiedDTS { get; set; }
 
         public DateTime LastLoadDTS { get; set; }
+
+        public string RetiredFLG { get; set; }
+
+        public CodeSystemDto CodeSystem { get; set; }
     }
 }

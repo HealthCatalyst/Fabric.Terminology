@@ -9,7 +9,7 @@ namespace Fabric.Terminology.Domain.Services
     {
         bool NameIsUnique(string name);
 
-        Attempt<IValueSet> Create(string name, IValueSetMeta meta, IReadOnlyCollection<ICodeSetCode> codeSetCodes);
+        Attempt<IValueSet> Create(string name, IValueSetMeta meta, IReadOnlyCollection<ICodeSystemCode> codeSetCodes);
 
         /// <summary>
         ///     Saves a <see cref="IValueSet" />

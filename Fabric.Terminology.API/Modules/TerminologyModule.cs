@@ -62,37 +62,6 @@
             };
         }
 
-        protected bool GetSummarySetting()
-        {
-            var val = (string)this.Request.Query["$summary"];
-            bool.TryParse(val, out var ret);
-            return val.IsNullOrWhiteSpace() || ret;
-        }
-
-        protected FindByTermQuery EnsureQueryModel(FindByTermQuery model)
-        {
-            if (model.PagerSettings == null)
-            {
-                model.PagerSettings = new PagerSettings
-                {
-                    CurrentPage = 1,
-                    ItemsPerPage = this.Config.TerminologySqlSettings.DefaultItemsPerPage
-                };
-            }
-
-            if (model.CodeSystemGuids == null)
-            {
-                model.CodeSystemGuids = new Guid[] { };
-            }
-
-            if (model.Term == null)
-            {
-                model.Term = string.Empty;
-            }
-
-            return model;
-        }
-
         protected string[] CreateParameterArray(string value)
         {
             if (value.IsNullOrWhiteSpace())

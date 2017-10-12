@@ -8,12 +8,11 @@
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Persistence.DataContext;
+    using Fabric.Terminology.SqlServer.Persistence.Factories;
 
     using Microsoft.EntityFrameworkCore;
 
     using Serilog;
-
-    using ValueSetCode = Fabric.Terminology.SqlServer.Models.Dto.ValueSetCode;
 
     internal class SqlValueSetCodeRepository : IValueSetCodeRepository
     {
@@ -50,8 +49,11 @@
         {
             try
             {
+                var factory = new ValueSetCodeFactory();
                 return this.sharedContext.ValueSetCodes.Where(dto => dto.ValueSetGUID == valueSetGuid)
-                    .Select(dto => new ValueSetCode(dto))
+                    .AsNoTracking()
+                    .ToList()
+                    .Select(factory.Build)
                     .ToList();
             }
             catch (Exception ex)
@@ -65,9 +67,10 @@
         {
             try
             {
+                var factory = new ValueSetCodeFactory();
                 return this.sharedContext.ValueSetCodes.Where(dto => valueSetGuids.Contains(dto.ValueSetGUID))
                     .AsNoTracking()
-                    .ToLookup(vsc => vsc.ValueSetGUID, vsc => (IValueSetCode)new ValueSetCode(vsc));
+                    .ToLookup(vsc => vsc.ValueSetGUID, vsc => factory.Build(vsc));
             }
             catch (Exception ex)
             {

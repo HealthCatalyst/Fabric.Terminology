@@ -20,9 +20,14 @@
 
         public IClientTermValueSetService ClientTermValueSetService { get; private set; }
 
+        public ICodeSystemService CodeSystemService { get; private set; }
+
+        public ICodeSystemCodeService CodeSystemCodeService { get; private set; }
+
         private void Initialize()
         {
             var cacheManagerFactory = new CachingManagerFactory(this.Cache);
+            var pagingStrategyFactory = new PagingStrategyFactory();
 
             var valueSetCodeRepository = new SqlValueSetCodeRepository(
                 this.SharedContext,
@@ -38,11 +43,21 @@
                 this.SharedContext,
                 this.Logger,
                 cacheManagerFactory,
-                new PagingStrategyFactory());
+                pagingStrategyFactory);
 
-            var sqlClientTermValueSetRepository = new SqlClientTermValueSetRepository(
-                this.ClientTermContext.AsLazy(),
-                this.Logger);
+            var sqlClientTermValueSetRepository =
+                new SqlClientTermValueSetRepository(this.ClientTermContext.AsLazy(), this.Logger);
+
+            var sqlCodeSystemRepository = new SqlCodeSystemRepository(
+                this.SharedContext,
+                this.Logger,
+                new CodeSystemCachingManager(this.Cache));
+
+            var sqlCodeSystemCodeRepository = new SqlCodeSystemCodeRepository(
+                this.SharedContext,
+                this.Logger,
+                new CodeSystemCodeCachingManager(this.Cache),
+                pagingStrategyFactory);
 
             this.ValueSetService = new SqlValueSetService(
                 this.Logger,
@@ -59,6 +74,10 @@
                 this.Logger,
                 valueSetBackingItemRepository,
                 valueSetCodeCountRepository);
+
+            this.CodeSystemService = new SqlCodeSystemService(sqlCodeSystemRepository);
+
+            this.CodeSystemCodeService = new SqlCodeSystemCodeService(sqlCodeSystemCodeRepository);
         }
     }
 }

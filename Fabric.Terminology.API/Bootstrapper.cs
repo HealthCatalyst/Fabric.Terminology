@@ -90,6 +90,8 @@
             }
 
             container.Register<ICachingManagerFactory, CachingManagerFactory>().AsSingleton();
+            container.Register<ICodeSystemCachingManager, CodeSystemCachingManager>().AsSingleton();
+            container.Register<ICodeSystemCodeCachingManager, CodeSystemCodeCachingManager>().AsSingleton();
 
             // Persistence (Must precede service registration)
             container.Register<IPagingStrategyFactory, PagingStrategyFactory>().AsSingleton();

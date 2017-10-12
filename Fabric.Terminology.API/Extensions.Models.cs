@@ -58,9 +58,16 @@
             };
         }
 
-        public static ICodeSetCode ToCodeSetCode(this CodeSetCodeApiModel model)
+        public static PagedCollection<CodeSystemCodeApiModel> ToCodeSystemCodeApiModelPage(
+            this PagedCollection<ICodeSystemCode> items)
         {
-            return new CodeSetCode(model);
+            return new PagedCollection<CodeSystemCodeApiModel>
+            {
+                PagerSettings = items.PagerSettings,
+                TotalItems = items.TotalItems,
+                TotalPages = items.TotalPages,
+                Values = items.Values.Select(Mapper.Map<CodeSystemCodeApiModel>).ToList()
+            };
         }
 
         // acquired from Fabric.Authorization.Domain (renamed from ToError)
@@ -82,27 +89,6 @@
             };
 
             return error;
-        }
-
-        private class CodeSetCode : ICodeSetCode
-        {
-            public CodeSetCode(CodeSetCodeApiModel model)
-            {
-                this.CodeGuid = model.CodeGuid;
-                this.Code = model.Code;
-                this.Name = model.Name;
-                this.CodeSystemGuid = model.CodeSystemGuid;
-            }
-
-            public Guid CodeGuid { get; }
-
-            public string Code { get; }
-
-            public string Name { get; }
-
-            public Guid CodeSystemGuid { get; set; }
-
-            public string CodeSystemName { get; set; }
         }
     }
 }

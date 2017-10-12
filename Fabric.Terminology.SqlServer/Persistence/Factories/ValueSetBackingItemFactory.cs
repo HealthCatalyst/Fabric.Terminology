@@ -4,16 +4,15 @@
     using Fabric.Terminology.Domain.Persistence.Factories;
     using Fabric.Terminology.SqlServer.Models.Dto;
 
-    internal sealed class ValueSetBackingItemFactory : IModelFactory<ValueSetDescriptionDto, IValueSetBackingItem>
+    internal sealed class ValueSetBackingItemFactory : IModelFactory<ValueSetDescriptionBaseDto, IValueSetBackingItem>
     {
-        public IValueSetBackingItem Build(ValueSetDescriptionDto dto)
+        public IValueSetBackingItem Build(ValueSetDescriptionBaseDto dto)
         {
             return new ValueSetBackingItem
             {
                 AuthoringSourceDescription = dto.AuthorityDSC,
                 ClientCode = dto.ClientCD,
                 DefinitionDescription = dto.DefinitionDSC,
-                IsCustom = dto.ClientTermFLG == "Y",
                 IsLatestVersion = dto.LatestVersionFLG == "Y",
                 Name = dto.ValueSetNM,
                 OriginGuid = dto.OriginGUID.GetValueOrDefault(),
@@ -22,6 +21,13 @@
                 ValueSetReferenceId = dto.ValueSetReferenceID,
                 VersionDate = dto.VersionDTS
             };
+        }
+
+        public IValueSetBackingItem Build(ValueSetDescriptionDto dto)
+        {
+            var item = this.Build((ValueSetDescriptionBaseDto)dto);
+            ((ValueSetBackingItem)item).IsCustom = dto.ClientTermFLG == "Y";
+            return item;
         }
     }
 }
