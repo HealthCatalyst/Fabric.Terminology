@@ -5,14 +5,15 @@
     using System.Linq;
     using System.Threading.Tasks;
 
+    using CallMeMaybe;
+
     using Fabric.Terminology.Domain.Models;
 
     public interface IValueSetCachingManager<TResult>
         where TResult : class, IHaveValueSetGuid
     {
-        TResult GetOrSet(Guid valueSetGuid, Func<TResult> value);
+        Maybe<TResult> GetOrSet(Guid valueSetGuid, Func<TResult> value);
 
-        TResult GetOrQuery(Guid valueSetGuid, Func<Guid, TResult> doQuery);
 
         IReadOnlyCollection<TResult> GetMultipleOrQuery(
             Guid valueSetGuid,

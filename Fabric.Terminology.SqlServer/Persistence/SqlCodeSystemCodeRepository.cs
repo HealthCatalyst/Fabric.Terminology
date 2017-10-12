@@ -40,7 +40,7 @@
         {
             try
             {
-                return Maybe.From(this.codeSystemCodeCachingManager.GetOrSet(codeGuid, this.QueryCodeSystemCode));
+                return this.codeSystemCodeCachingManager.GetOrSet(codeGuid, this.QueryCodeSystemCode);
             }
             catch (Exception ex)
             {

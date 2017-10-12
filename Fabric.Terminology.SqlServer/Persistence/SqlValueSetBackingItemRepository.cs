@@ -71,6 +71,7 @@
             // are cached for use in subesequent requests.
             return this.QueryValueSetBackingItems(valueSetReferenceId)
                 .Select(bi => this.cacheManager.GetOrSet(bi.ValueSetGuid, () => bi))
+                .Values()
                 .ToList();
         }
 
@@ -94,7 +95,7 @@
 
             backingItems.AddRange(
                 this.QueryValueSetBackingItems(remaining, codeSystemGuids.ToList())
-                    .Select(bi => this.cacheManager.GetOrSet(bi.ValueSetGuid, () => bi)));
+                    .Select(bi => this.cacheManager.GetOrSet(bi.ValueSetGuid, () => bi)).Values());
 
             return backingItems;
         }
@@ -158,7 +159,7 @@
 
             return pagingStrategy.CreatePagedCollection(
                     items.Select(i => this.cacheManager.GetOrSet(i.ValueSetGUID, () => factory.Build(i))
-                ),
+                ).Values(),
                 count,
                 pagerSettings);
         }

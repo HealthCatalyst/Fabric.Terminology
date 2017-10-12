@@ -33,14 +33,13 @@
         {
             try
             {
-                var model = (Maybe<object>)this.codeSystemCodeService
+                return this.codeSystemCodeService
                     .GetCodeSystemCode(codeGuid)
-                    .Select(Mapper.Map<CodeSystemCodeApiModel>);
-
-                return model.Else(() =>
-                    this.CreateFailureResponse(
-                        "Code sytem with codeSystemGuid was not found",
-                        HttpStatusCode.NotFound));
+                    .Select(m => (object)Mapper.Map<CodeSystemCodeApiModel>(m))
+                    .Else(
+                        this.CreateFailureResponse(
+                            "Code sytem with codeSystemGuid was not found",
+                            HttpStatusCode.NotFound));
             }
             catch (Exception ex)
             {

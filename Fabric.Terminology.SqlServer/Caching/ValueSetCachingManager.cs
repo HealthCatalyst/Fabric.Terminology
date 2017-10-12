@@ -20,21 +20,15 @@
             this.cache = cache;
         }
 
-        public TResult GetOrSet(Guid valueSetGuid, Func<TResult> value)
+        public Maybe<TResult> GetOrSet(Guid valueSetGuid, Func<TResult> value)
         {
             return this.cache.GetItem<TResult>(GetCacheKey(valueSetGuid), value);
         }
 
-        public TResult GetOrQuery(
-            Guid valueSetGuid,
-            Func<Guid, TResult> doQuery)
-        {
-            return this.cache.GetItem<TResult>(GetCacheKey(valueSetGuid), () => doQuery(valueSetGuid));
-        }
-
         public IReadOnlyCollection<TResult> GetMultipleOrQuery(Guid valueSetGuid, Func<Guid, IReadOnlyCollection<TResult>> doQuery)
         {
-            return this.cache.GetItem<IReadOnlyCollection<TResult>>(GetCacheKey(valueSetGuid), () => doQuery(valueSetGuid));
+            return this.cache.GetItem<IReadOnlyCollection<TResult>>(GetCacheKey(valueSetGuid), () => doQuery(valueSetGuid))
+                .Else(new List<TResult>());
         }
 
         public IReadOnlyCollection<TResult> GetMultipleWithFallBack(
@@ -52,7 +46,7 @@
 
             items.AddRange(
                     getLookup(remaining)
-                    .Select(bi => this.cache.GetItem<TResult>(GetCacheKey(bi.Key), () => bi)));
+                    .Select(bi => this.cache.GetItem<TResult>(GetCacheKey(bi.Key), () => bi)).Values());
 
             return items;
         }
@@ -85,7 +79,11 @@
                         // Add queried values to cache
                         foreach (var key in lookup.Select(g => g.Key))
                         {
-                            codes.Add(key, this.cache.GetItem<IReadOnlyCollection<TResult>>(GetCacheKey(key), () => lookup[key].ToList()));
+                            var values = this.cache.GetItem<IReadOnlyCollection<TResult>>(
+                                GetCacheKey(key),
+                                () => lookup[key].ToList()).Else(new List<TResult>());
+
+                            codes.Add(key, values);
                         }
 
                         return codes;

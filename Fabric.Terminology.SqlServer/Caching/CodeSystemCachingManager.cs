@@ -17,7 +17,7 @@
             this.cache = cache;
         }
 
-        public ICodeSystem GetOrSet(Guid codeSystemGuid, Func<Guid, ICodeSystem> doQuery)
+        public Maybe<ICodeSystem> GetOrSet(Guid codeSystemGuid, Func<Guid, ICodeSystem> doQuery)
         {
             return this.cache.GetItem<ICodeSystem>(GetCacheKey(codeSystemGuid), () => doQuery(codeSystemGuid));
         }
@@ -32,7 +32,8 @@
                                   : doQuery(includeZeroCountCodeSystems, codeSystemGuids);
 
             return codeSystems.Select(cs => this.cache.GetItem<ICodeSystem>(GetCacheKey(cs.CodeSystemGuid), () => cs))
-                .ToList();
+                    .Values()
+                    .ToList();
 
             IReadOnlyCollection<ICodeSystem> CombineCachedAndQueried(Guid[] keys)
             {

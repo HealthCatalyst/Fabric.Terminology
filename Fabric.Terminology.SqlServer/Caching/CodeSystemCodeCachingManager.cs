@@ -3,6 +3,8 @@
     using System;
     using System.Collections.Generic;
 
+    using CallMeMaybe;
+
     using Fabric.Terminology.Domain.Models;
 
     internal class CodeSystemCodeCachingManager : ICodeSystemCodeCachingManager
@@ -14,7 +16,7 @@
             this.cache = cache;
         }
 
-        public ICodeSystemCode GetOrSet(Guid codeGuid, Func<Guid, ICodeSystemCode> doQuery)
+        public Maybe<ICodeSystemCode> GetOrSet(Guid codeGuid, Func<Guid, ICodeSystemCode> doQuery)
         {
             return this.cache.GetItem<ICodeSystemCode>(GetCacheKey(codeGuid), () => doQuery(codeGuid));
         }

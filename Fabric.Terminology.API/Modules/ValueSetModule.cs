@@ -50,7 +50,11 @@
 
             this.Get("/{valueSetGuid}", parameters => this.GetValueSet(parameters.valueSetGuid), null, "GetValueSet");
 
-            this.Get("/versions/{referenceId}", parameters => this.GetValueSetVersions(parameters.referenceId), null, "GetValueSetVersions");
+            this.Get(
+                "/versions/{referenceId}",
+                parameters => this.GetValueSetVersions(parameters.referenceId),
+                null, 
+                "GetValueSetVersions");
 
             this.Post("/multiple/", _ => this.GetValueSets(), null, "GetValueSets");
 
@@ -91,13 +95,13 @@
                 var codeSystemGuids = this.GetCodeSystems();
                 var summary = this.GetSummarySetting();
 
-                var model = summary ? (Maybe<object>)this.valueSetSummaryService
+                var model = summary ? this.valueSetSummaryService
                                         .GetValueSetSummary(valueSetGuid, codeSystemGuids)
-                                        .Select(vs => vs.ToValueSetItemApiModel(codeSystemGuids)) :
+                                        .Select(vs => (object)vs.ToValueSetItemApiModel(codeSystemGuids)) :
 
                                       this.valueSetService
                                         .GetValueSet(valueSetGuid, codeSystemGuids)
-                                        .Select(vs => vs.ToValueSetApiModel(codeSystemGuids));
+                                        .Select(vs => (object)vs.ToValueSetApiModel(codeSystemGuids));
 
                 return model.Else(() => this.CreateFailureResponse("ValueSet with matching ID was not found", HttpStatusCode.NotFound));
             }

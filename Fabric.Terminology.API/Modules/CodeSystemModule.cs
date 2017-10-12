@@ -64,14 +64,12 @@
         {
             try
             {
-                var model = (Maybe<object>)this.codeSystemService
-                            .GetCodeSystem(codeSystemGuid)
-                            .Select(Mapper.Map<CodeSystemApiModel>);
-
-                return model.Else(() =>
-                    this.CreateFailureResponse(
-                        "Code sytem with codeSystemGuid was not found",
-                        HttpStatusCode.NotFound));
+                return this.codeSystemService.GetCodeSystem(codeSystemGuid)
+                    .Select(cs => (object)Mapper.Map<CodeSystemApiModel>(cs))
+                    .Else(
+                        this.CreateFailureResponse(
+                            "Code sytem with codeSystemGuid was not found",
+                            HttpStatusCode.NotFound));
             }
             catch (Exception ex)
             {

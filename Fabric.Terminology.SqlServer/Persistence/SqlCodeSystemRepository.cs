@@ -37,7 +37,7 @@
         {
             try
             {
-                return Maybe.From(this.codeSystemCachingManager.GetOrSet(codeSystemGuid, this.QueryCodeSystem));
+                return this.codeSystemCachingManager.GetOrSet(codeSystemGuid, this.QueryCodeSystem);
             }
             catch (Exception ex)
             {

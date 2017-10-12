@@ -3,11 +3,13 @@
     using System;
     using System.Collections.Generic;
 
+    using CallMeMaybe;
+
     using Fabric.Terminology.Domain.Models;
 
     public interface ICodeSystemCodeCachingManager
     {
-        ICodeSystemCode GetOrSet(Guid codeGuid, Func<Guid, ICodeSystemCode> doQuery);
+        Maybe<ICodeSystemCode> GetOrSet(Guid codeGuid, Func<Guid, ICodeSystemCode> doQuery);
 
         IReadOnlyCollection<ICodeSystemCode> GetMultipleOrQuery(
             Func<bool, Guid[], IReadOnlyCollection<ICodeSystemCode>> doQuery,
