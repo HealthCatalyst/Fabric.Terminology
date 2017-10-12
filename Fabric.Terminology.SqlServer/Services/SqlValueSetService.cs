@@ -49,7 +49,7 @@ namespace Fabric.Terminology.SqlServer.Services
                     {
                         var codes = this.valueSetCodeRepository.GetValueSetCodes(valueSetGuid);
                         var counts = this.valueSetCodeCountRepository.GetValueSetCodeCounts(valueSetGuid);
-                        return new ValueSet(backingItem, codes, counts) as IValueSet;
+                        return BuildValueSet(backingItem, codes, counts);
                     });
         }
 
@@ -120,6 +120,14 @@ namespace Fabric.Terminology.SqlServer.Services
             return this.BuildValueSetsPage(backingItemPage, codes, counts);
         }
 
+        private static IValueSet BuildValueSet(
+            IValueSetBackingItem item,
+            IReadOnlyCollection<IValueSetCode> codes,
+            IReadOnlyCollection<IValueSetCodeCount> counts)
+        {
+            return new ValueSet(item, codes, counts);
+        }
+
         private PagedCollection<IValueSet> BuildValueSetsPage(
             PagedCollection<IValueSetBackingItem> backingItemPage,
             IDictionary<Guid, IReadOnlyCollection<IValueSetCode>> codesDictionary,
@@ -144,7 +152,7 @@ namespace Fabric.Terminology.SqlServer.Services
                     item => codesDictionary.GetMaybe(item.ValueSetGuid)
                         .Select(
                             codes => countsDictionary.GetMaybe(item.ValueSetGuid)
-                                .Select(counts => new ValueSet(item, codes, counts))))
+                                .Select(counts => BuildValueSet(item, codes, counts))))
                 .Values().ToList();
 
             if (valueSets.Count == backingItems.Count)

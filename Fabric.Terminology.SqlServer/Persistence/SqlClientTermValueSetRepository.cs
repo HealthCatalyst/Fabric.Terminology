@@ -3,22 +3,19 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Runtime.InteropServices.ComTypes;
 
     using CallMeMaybe;
 
     using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Exceptions;
     using Fabric.Terminology.Domain.Models;
-    using Fabric.Terminology.Domain.Persistence;
     using Fabric.Terminology.SqlServer.Models.Dto;
     using Fabric.Terminology.SqlServer.Persistence.DataContext;
+    using Fabric.Terminology.SqlServer.Persistence.Factories;
 
     using Microsoft.EntityFrameworkCore;
 
     using Serilog;
-
-    using ValueSet = Fabric.Terminology.SqlServer.Models.Dto.ValueSet;
 
     internal class SqlClientTermValueSetRepository : IClientTermValueSetRepository
     {
@@ -44,16 +41,20 @@
                 return Maybe.Not;
             }
 
-            var codes = this.ClientTermContext.ValueSetCodes.Where(vsc => vsc.ValueSetGUID == valueSetGuid).ToList();
+            var factory = new ValueSetBackingItemFactory();
+            var item = factory.Build(desc);
 
-            return new Maybe<IValueSet>(new ValueSet(desc, codes));
+            var codes = this.GetCodes(item.ValueSetGuid);
+            var counts = this.GetCodeCounts(item.ValueSetGuid);
+
+            return new Maybe<IValueSet>(new ValueSet(item, codes, counts));
         }
 
         public Attempt<IValueSet> Add(IValueSet valueSet)
         {
             valueSet.SetIdsForCustomInsert();
 
-            var valueSetDto = new ValueSetDescriptionBASEDto(valueSet);
+            var valueSetDto = new ValueSetDescriptionBaseDto(valueSet);
             var codeDtos = valueSet.ValueSetCodes.Select(code => new ValueSetCodeDto(code)).ToList();
             var countDtos = valueSet.CodeCounts.Select(count => new ValueSetCodeCountDto(count)).ToList();
 
@@ -107,10 +108,10 @@
             try
             {
                 this.ClientTermContext.BulkDelete(
-                    new[] { typeof(ValueSetDescriptionBASEDto), typeof(ValueSetCodeDto), typeof(ValueSetCodeCountDto) },
+                    new[] { typeof(ValueSetDescriptionBaseDto), typeof(ValueSetCodeDto), typeof(ValueSetCodeCountDto) },
                     new Dictionary<string, object>
                     {
-                        { nameof(ValueSetDescriptionBASEDto.ValueSetGUID), valueSet.ValueSetGuid }
+                        { nameof(ValueSetDescriptionBaseDto.ValueSetGUID), valueSet.ValueSetGuid }
                     });
                 transaction.Commit();
             }
@@ -122,6 +123,22 @@
                 this.logger.Error(operationException, "Failed to delete custom ValueSet");
                 throw operationException;
             }
+        }
+
+        private IReadOnlyCollection<IValueSetCode> GetCodes(Guid valueSetGuid)
+        {
+            var factory = new ValueSetCodeFactory();
+            var codes = this.ClientTermContext.ValueSetCodes.Where(vsc => vsc.ValueSetGUID == valueSetGuid).ToList();
+
+            return codes.Select(factory.Build).ToList();
+        }
+
+        private IReadOnlyCollection<IValueSetCodeCount> GetCodeCounts(Guid valueSetGuid)
+        {
+            var factory = new ValueSetCodeCountFactory();
+            var counts = this.ClientTermContext.ValueSetCodeCounts.Where(vscc => vscc.ValueSetGUID == valueSetGuid).ToList();
+
+            return counts.Select(factory.Build).ToList();
         }
     }
 }

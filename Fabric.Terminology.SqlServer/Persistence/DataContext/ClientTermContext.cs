@@ -19,7 +19,7 @@
 
         public DbSet<ValueSetCodeDto> ValueSetCodes { get; set; }
 
-        public DbSet<ValueSetDescriptionBASEDto> ValueSetDescriptions { get; set; }
+        public DbSet<ValueSetDescriptionBaseDto> ValueSetDescriptions { get; set; }
 
         public DbSet<ValueSetCodeCountDto> ValueSetCodeCounts { get; set; }
 
@@ -41,8 +41,8 @@
             modelBuilder.Entity<ValueSetCodeCountDto>().ToTable("ValueSetCodeCountBASE", "ClientTerm");
             modelBuilder.Entity<ValueSetCodeCountDto>().HasKey(record => new { record.ValueSetGUID, record.CodeSystemGUID });
 
-            modelBuilder.Entity<ValueSetDescriptionBASEDto>().ToTable("ValueSetDescriptionBASE", "ClientTerm");
-            modelBuilder.Entity<ValueSetDescriptionBASEDto>().HasKey(e => e.ValueSetGUID);
+            modelBuilder.Entity<ValueSetDescriptionBaseDto>().ToTable("ValueSetDescriptionBASE", "ClientTerm");
+            modelBuilder.Entity<ValueSetDescriptionBaseDto>().HasKey(e => e.ValueSetGUID);
 
             base.OnModelCreating(modelBuilder);
         }
