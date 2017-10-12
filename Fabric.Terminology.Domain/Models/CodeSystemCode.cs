@@ -13,5 +13,7 @@ namespace Fabric.Terminology.Domain.Models
         public string Code { get; internal set; }
 
         public string Name { get; internal set; }
+
+        public bool Retired { get; set; }
     }
 }

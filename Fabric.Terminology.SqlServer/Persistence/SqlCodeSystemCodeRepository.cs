@@ -14,7 +14,6 @@
     using Fabric.Terminology.SqlServer.Persistence.Factories;
 
     using Microsoft.EntityFrameworkCore;
-    using Microsoft.EntityFrameworkCore.Query;
 
     using Serilog;
 
@@ -49,9 +48,20 @@
             }
         }
 
-        public Task<IReadOnlyCollection<ICodeSystemCode>> GetCodeSystemCodesListAsync(IEnumerable<Guid> codeGuids)
+        public IReadOnlyCollection<ICodeSystemCode> GetCodeSystemCodes(IEnumerable<Guid> codeGuids)
         {
-            throw new NotImplementedException();
+            try
+            {
+                return this.codeSystemCodeCachingManager.GetMultipleOrQuery(
+                    this.QueryCodeSystemCodeList,
+                    true,
+                    codeGuids.ToArray());
+            }
+            catch (Exception ex)
+            {
+                this.logger.Error(ex, $"Failed to get a list CodeSystemCodes");
+                throw;
+            }
         }
 
         public Task<PagedCollection<IValueSet>> GetCodeSystemCodesAsync(
@@ -73,6 +83,18 @@
             var factory = new CodeSystemCodeFactory();
             var dto = this.GetBaseQuery().SingleOrDefault(d => d.CodeGUID == codeGuid);
             return dto != null ? factory.Build(dto) : null;
+        }
+
+        private IReadOnlyCollection<ICodeSystemCode> QueryCodeSystemCodeList(bool includeRetired, Guid[] codeGuids)
+        {
+            var factory = new CodeSystemCodeFactory();
+            var dtos = this.GetBaseQuery().Where(dto => codeGuids.Contains(dto.CodeGUID));
+            if (!includeRetired)
+            {
+                dtos = dtos.Where(dto => dto.Retired == "N");
+            }
+
+            return dtos.ToList().Select(factory.Build).ToList();
         }
     }
 }

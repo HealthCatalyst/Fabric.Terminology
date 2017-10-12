@@ -11,5 +11,7 @@ namespace Fabric.Terminology.Domain.Models
         Guid CodeSystemGuid { get; set; }
 
         string CodeSystemName { get; set; }
+
+        bool Retired { get; set; }
     }
 }

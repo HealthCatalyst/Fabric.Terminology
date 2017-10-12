@@ -24,7 +24,6 @@
 
         public ICodeSystemCodeService CodeSystemCodeService { get; private set; }
 
-
         private void Initialize()
         {
             var cacheManagerFactory = new CachingManagerFactory(this.Cache);

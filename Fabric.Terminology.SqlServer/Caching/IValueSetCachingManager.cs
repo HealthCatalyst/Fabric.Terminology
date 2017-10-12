@@ -14,20 +14,17 @@
     {
         Maybe<TResult> GetOrSet(Guid valueSetGuid, Func<TResult> value);
 
-
         IReadOnlyCollection<TResult> GetMultipleOrQuery(
             Guid valueSetGuid,
             Func<Guid, IReadOnlyCollection<TResult>> doQuery);
 
         Task<Dictionary<Guid, IReadOnlyCollection<TResult>>> GetCachedValueDictionary(
             IEnumerable<Guid> valueSetGuids,
-            Func<IEnumerable<Guid>,
-            ILookup<Guid, TResult>> doQuery);
+            Func<IEnumerable<Guid>, ILookup<Guid, TResult>> doQuery);
 
         IReadOnlyCollection<TResult> GetMultipleWithFallBack(
             IEnumerable<Guid> valueSetGuids,
-            Func<IEnumerable<Guid>,
-            ILookup<Guid, TResult>> getLookup);
+            Func<IEnumerable<Guid>, ILookup<Guid, TResult>> getLookup);
 
         IReadOnlyCollection<TResult> GetMultipleExisting(IEnumerable<Guid> valueSetGuids);
     }

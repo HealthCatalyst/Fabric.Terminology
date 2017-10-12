@@ -24,7 +24,7 @@
             return this.codeSystemCodeRepository.GetCodeSystemCode(codeGuid);
         }
 
-        public Task<IReadOnlyCollection<ICodeSystemCode>> GetCodeSystemCodesListAsync(IEnumerable<Guid> codeGuids)
+        public IReadOnlyCollection<ICodeSystemCode> GetCodeSystemCodes(IEnumerable<Guid> codeGuids)
         {
             throw new NotImplementedException();
         }

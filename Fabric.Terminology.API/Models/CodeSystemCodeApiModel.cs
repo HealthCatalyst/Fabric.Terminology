@@ -15,5 +15,7 @@
         public Guid CodeSystemGuid { get; set; }
 
         public string CodeSystemName { get; set; }
+
+        public bool Retired { get; set; }
     }
 }
