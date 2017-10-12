@@ -98,15 +98,15 @@ namespace Fabric.Terminology.SqlServer.Services
             return this.GetValueSetsAsync(string.Empty, settings, codeSystemGuids, latestVersionsOnly);
         }
 
-        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(string nameFilterText, IPagerSettings pagerSettings, bool latestVersionsOnly = true)
+        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(string filterText, IPagerSettings pagerSettings, bool latestVersionsOnly = true)
         {
-            return this.GetValueSetsAsync(nameFilterText, pagerSettings, new List<Guid>(), latestVersionsOnly);
+            return this.GetValueSetsAsync(filterText, pagerSettings, new List<Guid>(), latestVersionsOnly);
         }
 
-        public async Task<PagedCollection<IValueSet>> GetValueSetsAsync(string nameFilterText, IPagerSettings pagerSettings, IEnumerable<Guid> codeSystemGuids, bool latestVersionsOnly = true)
+        public async Task<PagedCollection<IValueSet>> GetValueSetsAsync(string filterText, IPagerSettings pagerSettings, IEnumerable<Guid> codeSystemGuids, bool latestVersionsOnly = true)
         {
             var backingItemPage = await this.valueSetBackingItemRepository.GetValueSetBackingItemsAsync(
-                                      nameFilterText,
+                                      filterText,
                                       pagerSettings,
                                       codeSystemGuids,
                                       latestVersionsOnly);
