@@ -2,7 +2,7 @@ namespace Fabric.Terminology.Domain.Models
 {
     using System;
 
-    internal class CodeSetCode : ICodeSetCode
+    internal class CodeSystemCode : ICodeSystemCode
     {
         public Guid CodeGuid { get; internal set; }
 

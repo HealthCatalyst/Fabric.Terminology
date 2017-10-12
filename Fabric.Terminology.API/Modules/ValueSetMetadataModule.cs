@@ -23,7 +23,7 @@
             : base(modelCatalog, tagCatalog)
         {
             modelCatalog.AddModels(
-                typeof(CodeSetCodeApiModel),
+                typeof(CodeSystemCodeApiModel),
                 typeof(FindByTermQuery),
                 typeof(PagedCollection<ValueSetApiModel>),
                 typeof(PagedCollection<ValueSetItemApiModel>),

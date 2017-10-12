@@ -18,8 +18,8 @@
             Mapper.Initialize(
                 cfg =>
                     {
-                        cfg.CreateMap<ICodeSetCode, CodeSetCodeApiModel>();
-                        cfg.CreateMap<CodeSetCodeApiModel, CodeSetCode>();
+                        cfg.CreateMap<ICodeSystemCode, CodeSystemCodeApiModel>();
+                        cfg.CreateMap<CodeSystemCodeApiModel, CodeSystemCode>();
                         cfg.CreateMap<IValueSetCode, ValueSetCodeApiModel>();
 
                         cfg.CreateMap<IValueSet, ValueSetApiModel>()

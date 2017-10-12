@@ -58,9 +58,9 @@
             };
         }
 
-        public static ICodeSetCode ToCodeSetCode(this CodeSetCodeApiModel model)
+        public static ICodeSystemCode ToCodeSetCode(this CodeSystemCodeApiModel model)
         {
-            return new CodeSetCode(model);
+            return new CodeSystemCode(model);
         }
 
         // acquired from Fabric.Authorization.Domain (renamed from ToError)
@@ -84,9 +84,9 @@
             return error;
         }
 
-        private class CodeSetCode : ICodeSetCode
+        private class CodeSystemCode : ICodeSystemCode
         {
-            public CodeSetCode(CodeSetCodeApiModel model)
+            public CodeSystemCode(CodeSystemCodeApiModel model)
             {
                 this.CodeGuid = model.CodeGuid;
                 this.Code = model.Code;

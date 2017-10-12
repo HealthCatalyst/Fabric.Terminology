@@ -5,7 +5,7 @@
     /// <summary>
     /// Marker interface for a ValueSetCode
     /// </summary>
-    public interface IValueSetCode : ICodeSetCode, IHaveValueSetGuid
+    public interface IValueSetCode : ICodeSystemCode, IHaveValueSetGuid
     {
     }
 }

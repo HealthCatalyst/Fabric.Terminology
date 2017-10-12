@@ -23,7 +23,7 @@
             };
         }
 
-        public static IEnumerable<CodeSetCodeApiModel> CodeSetCodeApiModelCollection(int count = 10)
+        public static IEnumerable<CodeSystemCodeApiModel> CodeSetCodeApiModelCollection(int count = 10)
         {
             var codeSystems = new List<Guid>
             {
@@ -37,9 +37,9 @@
             }
         }
 
-        public static CodeSetCodeApiModel CodeSetCodeApiModel(string code, string name, Guid codeSystem)
+        public static CodeSystemCodeApiModel CodeSetCodeApiModel(string code, string name, Guid codeSystem)
         {
-            return new CodeSetCodeApiModel
+            return new CodeSystemCodeApiModel
             {
                 Code = code,
                 Name = name,

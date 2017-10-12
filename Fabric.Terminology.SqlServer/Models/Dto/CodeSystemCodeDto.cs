@@ -3,7 +3,7 @@ namespace Fabric.Terminology.SqlServer.Models.Dto
 {
     using System;
 
-    public class CodeSetCodeDto
+    public class CodeSystemCodeDto
     {
         public Guid CodeGUID { get; set; }
 

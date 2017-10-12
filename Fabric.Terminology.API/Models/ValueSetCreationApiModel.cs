@@ -6,6 +6,6 @@
     {
         public string Name { get; set; }
 
-        public IEnumerable<CodeSetCodeApiModel> CodeSetCodes { get; set; }
+        public IEnumerable<CodeSystemCodeApiModel> CodeSetCodes { get; set; }
     }
 }

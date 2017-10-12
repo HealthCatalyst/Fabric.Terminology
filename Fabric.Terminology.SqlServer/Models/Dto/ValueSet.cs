@@ -4,6 +4,8 @@ namespace Fabric.Terminology.SqlServer.Models.Dto
     using System.Collections.Generic;
     using System.Linq;
 
+    using Fabric.Terminology.SqlServer.Persistence.Factories;
+
     internal class ValueSet : Domain.Models.ValueSet
     {
         public ValueSet()
@@ -14,6 +16,9 @@ namespace Fabric.Terminology.SqlServer.Models.Dto
             ValueSetDescriptionBASEDto descDto,
             IReadOnlyCollection<ValueSetCodeDto> codeDtos)
         {
+            // TODO FixMe!!!
+            var factory = new ValueSetCodeFactory();
+
             this.ValueSetGuid = descDto.ValueSetGUID;
             this.ValueSetReferenceId = descDto.ValueSetReferenceID;
             this.Name = descDto.ValueSetNM;
@@ -22,7 +27,7 @@ namespace Fabric.Terminology.SqlServer.Models.Dto
             this.SourceDescription = descDto.SourceDSC;
             this.OriginGuid = descDto.OriginGUID.GetValueOrDefault();
             this.ClientCode = descDto.ClientCD;
-            this.ValueSetCodes = codeDtos.Select(cd => new ValueSetCode(cd)).ToList();
+            this.ValueSetCodes = codeDtos.Select(factory.Build).ToList();
         }
     }
 }

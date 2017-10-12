@@ -11,7 +11,7 @@
     {
         public ValueSetApiProfile()
         {
-            this.CreateMap<ICodeSetCode, CodeSetCodeApiModel>();
+            this.CreateMap<ICodeSystemCode, CodeSystemCodeApiModel>();
             this.CreateMap<IValueSetCode, ValueSetCodeApiModel>();
             this.CreateMap<IValueSetCodeCount, ValueSetCodeCountApiModel>();
             this.CreateMap<IValueSetSummary, ValueSetItemApiModel>()
