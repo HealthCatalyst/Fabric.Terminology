@@ -4,15 +4,14 @@
 
     internal static class ParameterFactory
     {
-        public static Parameter GetValueSetGuidArray()
+        public static Parameter GetValueSetGuid()
         {
             return new Parameter
             {
                 Name = "valueSetGuid",
                 In = ParameterIn.Path,
                 Required = true,
-                CollectionFormat = CollectionFormats.Csv,
-                Description = "A CSV string of ValueSetGuids",
+                Description = "The ValueSet Guid",
                 Type = "string"
             };
         }

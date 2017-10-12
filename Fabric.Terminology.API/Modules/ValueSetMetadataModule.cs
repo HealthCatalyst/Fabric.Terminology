@@ -39,16 +39,36 @@
             // /{valueSetGuid}
             this.RouteDescriber.DescribeRouteWithParams(
                 "GetValueSet",
-                "Returns one or more ValueSet(s) by ValueSetGuid(s)",
-                "Gets a ValueSet by it's ValueSetGuid or a collection of ValueSets by CSV of ValueSetGuid(s)",
+                "Returns a ValueSet by it's ValueSetGuid",
+                "Gets a ValueSet by it's ValueSetGuid",
                 new[]
                 {
                     new HttpResponseMetadata<ValueSetApiModel> { Code = 200, Message = "OK" },
                     new HttpResponseMetadata { Code = 404, Message = "Not Found" },
                     new HttpResponseMetadata { Code = 500, Message = "Internal Server Error" }
                 },
-                new[] { ParameterFactory.GetValueSetGuidArray(), ParameterFactory.GetSummary(), ParameterFactory.GetCodeSystemGuidsArray() },
+                new[]
+                {
+                    ParameterFactory.GetValueSetGuid(),
+                    ParameterFactory.GetSummary(),
+                    ParameterFactory.GetCodeSystemGuidsArray()
+                },
                 new[] { TagsFactory.GetValueSetTag() });
+
+            this.RouteDescriber.DescribeRouteWithParams(
+                "GetValueSets",
+                "Gets multiple ValueSets",
+                "Gets a collection of ValueSet's given a collection of ValueSetGuid(s)",
+                new[]
+                {
+                    new HttpResponseMetadata<PagedCollection<ValueSetApiModel>> { Code = 200, Message = "OK" },
+                    new HttpResponseMetadata { Code = 500, Message = "Internal Server Error" }
+                },
+                new[]
+                {
+                    new BodyParameter<MultipleValueSetsQuery>(modelCatalog) { Required = true, Name = "Model" }
+                },
+                new[] { TagsFactory.GetMultipleValueSetsTag() });
 
             this.RouteDescriber.DescribeRouteWithParams(
                 "GetPaged",

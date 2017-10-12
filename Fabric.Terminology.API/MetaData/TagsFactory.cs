@@ -24,6 +24,15 @@
             };
         }
 
+        public static Tag GetMultipleValueSetsTag()
+        {
+            return new Tag
+            {
+                Description = "Operations relating to getting multiple ValueSets",
+                Name = $"{TerminologyVersion.Route}/valuesets/multiple/"
+            };
+        }
+
         public static Tag GetValueSetVersionTag()
         {
             return new Tag
