@@ -23,12 +23,13 @@
         }
 
         public IReadOnlyCollection<ICodeSystem> GetMultipleOrQuery(
-            Func<Guid[], IReadOnlyCollection<ICodeSystem>> doQuery,
+            Func<bool, Guid[], IReadOnlyCollection<ICodeSystem>> doQuery,
+            bool includeZeroCountCodeSystems,
             params Guid[] codeSystemGuids)
         {
             var codeSystems = codeSystemGuids.Any()
                                   ? CombineCachedAndQueried(codeSystemGuids)
-                                  : doQuery(codeSystemGuids);
+                                  : doQuery(includeZeroCountCodeSystems, codeSystemGuids);
 
             return codeSystems.Select(cs => this.cache.GetItem<ICodeSystem>(GetCacheKey(cs.CodeSystemGuid), () => cs))
                 .ToList();
@@ -41,7 +42,7 @@
                 var remaining = distinct.Except(combined.Select(e => e.CodeSystemGuid)).ToList();
                 if (remaining.Any())
                 {
-                    combined.AddRange(doQuery(remaining.ToArray()));
+                    combined.AddRange(doQuery(includeZeroCountCodeSystems, remaining.ToArray()));
                 }
 
                 return combined;
