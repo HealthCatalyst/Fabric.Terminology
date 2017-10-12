@@ -24,6 +24,15 @@
             };
         }
 
+        public static Tag GetMultipleValueSetsTag()
+        {
+            return new Tag
+            {
+                Description = "Operations relating to getting multiple ValueSets",
+                Name = $"{TerminologyVersion.Route}/valuesets/multiple/"
+            };
+        }
+
         public static Tag GetValueSetVersionTag()
         {
             return new Tag
@@ -39,6 +48,24 @@
             {
                 Description = "Search operations relating to ValueSets",
                 Name = $"{TerminologyVersion.Route}/valuesets/search/"
+            };
+        }
+
+        public static Tag GetCodeSystemTag()
+        {
+            return new Tag()
+            {
+                Description = "Operations related to code systems",
+                Name = $"{TerminologyVersion.Route}/codesystems"
+            };
+        }
+
+        public static Tag GetMultipleCodeSystemTag()
+        {
+            return new Tag
+            {
+                Description = "Operations relating to getting multiple code systems",
+                Name = $"{TerminologyVersion.Route}/codesystems/multiple/"
             };
         }
     }

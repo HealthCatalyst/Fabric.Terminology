@@ -36,7 +36,7 @@
             var co = new TestObject { ValueSetGuid = Guid.NewGuid(), Text = text };
 
             // Act
-            var cached = this.cachingManager.GetOrSet(co.ValueSetGuid, co);
+            var cached = this.cachingManager.GetOrSet(co.ValueSetGuid, () => co);
 
             // Assert
             this.wrappedCache.CachedItems.ContainsKey(GetCacheKey(co.ValueSetGuid)).Should().BeTrue();

@@ -4,8 +4,6 @@
 
     using Fabric.Terminology.Domain.Models;
 
-    using Swagger.ObjectModel;
-
     public class CodeSetCodeApiModel : ICodeSetCode
     {
         public Guid CodeGuid { get; set; }

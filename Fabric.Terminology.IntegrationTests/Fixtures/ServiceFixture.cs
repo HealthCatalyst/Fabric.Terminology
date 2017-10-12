@@ -20,6 +20,8 @@
 
         public IClientTermValueSetService ClientTermValueSetService { get; private set; }
 
+        public ICodeSystemService CodeSystemService { get; private set; }
+
         private void Initialize()
         {
             var cacheManagerFactory = new CachingManagerFactory(this.Cache);
@@ -40,9 +42,13 @@
                 cacheManagerFactory,
                 new PagingStrategyFactory());
 
-            var sqlClientTermValueSetRepository = new SqlClientTermValueSetRepository(
-                this.ClientTermContext.AsLazy(),
-                this.Logger);
+            var sqlClientTermValueSetRepository =
+                new SqlClientTermValueSetRepository(this.ClientTermContext.AsLazy(), this.Logger);
+
+            var sqlCodeSystemRepository = new SqlCodeSystemRepository(
+                this.SharedContext,
+                this.Logger,
+                new CodeSystemCachingManager(this.Cache));
 
             this.ValueSetService = new SqlValueSetService(
                 this.Logger,
@@ -59,6 +65,8 @@
                 this.Logger,
                 valueSetBackingItemRepository,
                 valueSetCodeCountRepository);
+
+            this.CodeSystemService = new SqlCodeSystemService(sqlCodeSystemRepository);
         }
     }
 }

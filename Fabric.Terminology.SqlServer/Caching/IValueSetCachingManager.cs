@@ -10,8 +10,6 @@
     public interface IValueSetCachingManager<TResult>
         where TResult : class, IHaveValueSetGuid
     {
-        TResult GetOrSet(Guid valueSetGuid, TResult value);
-
         TResult GetOrSet(Guid valueSetGuid, Func<TResult> value);
 
         TResult GetOrQuery(Guid valueSetGuid, Func<Guid, TResult> doQuery);

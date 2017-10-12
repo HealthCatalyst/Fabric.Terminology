@@ -1,4 +1,4 @@
-﻿namespace Fabric.Terminology.Domain.Services
+﻿namespace Fabric.Terminology.SqlServer.Persistence
 {
     using System;
     using System.Collections.Generic;
@@ -7,10 +7,10 @@
 
     using Fabric.Terminology.Domain.Models;
 
-    public interface ICodeSystemService
+    internal interface ICodeSystemRepository
     {
-        Maybe<ICodeSystem> GetCodeSystem(Guid codeSystemGuid);
-
         IReadOnlyCollection<ICodeSystem> GetAll(params Guid[] codeSystemGuids);
+
+        Maybe<ICodeSystem> GetCodeSystem(Guid codeSystemGuid);
     }
 }
