@@ -7,7 +7,9 @@
 
     using CallMeMaybe;
 
+    using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Models;
+    using Fabric.Terminology.Domain.Persistence;
     using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Models.Dto;
     using Fabric.Terminology.SqlServer.Persistence.DataContext;
@@ -23,15 +25,19 @@
 
         private readonly ILogger logger;
 
+        private readonly IPagingStrategyFactory pagingStrategyFactory;
+
         private readonly ICodeSystemCodeCachingManager codeSystemCodeCachingManager;
 
         public SqlCodeSystemCodeRepository(
             SharedContext sharedContext,
             ILogger logger,
-            ICodeSystemCodeCachingManager codeSystemCodeCachingManager)
+            ICodeSystemCodeCachingManager codeSystemCodeCachingManager,
+            IPagingStrategyFactory pagingStrategyFactory)
         {
             this.sharedContext = sharedContext;
             this.logger = logger;
+            this.pagingStrategyFactory = pagingStrategyFactory;
             this.codeSystemCodeCachingManager = codeSystemCodeCachingManager;
         }
 
@@ -64,37 +70,76 @@
             }
         }
 
-        public Task<PagedCollection<IValueSet>> GetCodeSystemCodesAsync(
+        public Task<PagedCollection<ICodeSystemCode>> GetCodeSystemCodesAsync(
             string filterText,
             IPagerSettings pagerSettings,
             IEnumerable<Guid> codeSystemGuids,
             bool includeRetired)
         {
-            throw new NotImplementedException();
+            var dtos = this.GetBaseQuery(includeRetired);
+            var systemGuids = codeSystemGuids as Guid[] ?? codeSystemGuids.ToArray();
+            if (systemGuids.Any())
+            {
+                dtos = dtos.Where(dto => systemGuids.Contains(dto.CodeSystemGUID));
+            }
+
+            if (filterText.IsNullOrWhiteSpace())
+            {
+                dtos = dtos.Where(dto => dto.CodeDSC.Contains(filterText) || dto.CodeCD.StartsWith(filterText));
+            }
+
+            return this.CreatePagedCollectionAsync(dtos, pagerSettings);
         }
 
-        private IQueryable<CodeSystemCodeDto> GetBaseQuery()
+        private IQueryable<CodeSystemCodeDto> GetBaseQuery(bool includeRetired)
         {
-            return this.sharedContext.CodeSystemCodes.Include(codeDto => codeDto.CodeSystem);
+            return includeRetired
+                       ? this.sharedContext.CodeSystemCodes.Include(codeDto => codeDto.CodeSystem)
+                       : this.sharedContext.CodeSystemCodes.Include(codeDto => codeDto.CodeSystem)
+                           .Where(dto => dto.Retired == "N");
         }
 
         private ICodeSystemCode QueryCodeSystemCode(Guid codeGuid)
         {
             var factory = new CodeSystemCodeFactory();
-            var dto = this.GetBaseQuery().SingleOrDefault(d => d.CodeGUID == codeGuid);
+            var dto = this.GetBaseQuery(true).SingleOrDefault(d => d.CodeGUID == codeGuid);
             return dto != null ? factory.Build(dto) : null;
         }
 
         private IReadOnlyCollection<ICodeSystemCode> QueryCodeSystemCodeList(bool includeRetired, Guid[] codeGuids)
         {
             var factory = new CodeSystemCodeFactory();
-            var dtos = this.GetBaseQuery().Where(dto => codeGuids.Contains(dto.CodeGUID));
+            var dtos = this.GetBaseQuery(includeRetired).Where(dto => codeGuids.Contains(dto.CodeGUID));
             if (!includeRetired)
             {
                 dtos = dtos.Where(dto => dto.Retired == "N");
             }
 
             return dtos.ToList().Select(factory.Build).ToList();
+        }
+
+        private async Task<PagedCollection<ICodeSystemCode>> CreatePagedCollectionAsync(
+            IQueryable<CodeSystemCodeDto> source,
+            IPagerSettings pagerSettings)
+        {
+            var defaultItemsPerPage = this.sharedContext.Settings.DefaultItemsPerPage;
+            var pagingStrategy = this.pagingStrategyFactory.GetPagingStrategy<ICodeSystemCode>(defaultItemsPerPage);
+
+            pagingStrategy.EnsurePagerSettings(pagerSettings);
+
+            var count = await source.CountAsync();
+            var items = await source.OrderBy(dto => dto.CodeDSC)
+                            .Skip((pagerSettings.CurrentPage - 1) * pagerSettings.ItemsPerPage)
+                            .Take(pagerSettings.ItemsPerPage)
+                            .ToListAsync();
+
+            var factory = new CodeSystemCodeFactory();
+
+            return pagingStrategy.CreatePagedCollection(
+                items.Select(i => this.codeSystemCodeCachingManager.GetOrSet(i.CodeGUID, () => factory.Build(i))
+                ).Values(),
+                count,
+                pagerSettings);
         }
     }
 }

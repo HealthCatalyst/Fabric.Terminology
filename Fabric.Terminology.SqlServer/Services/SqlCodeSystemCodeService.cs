@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading.Tasks;
 
     using CallMeMaybe;
@@ -26,20 +27,23 @@
 
         public IReadOnlyCollection<ICodeSystemCode> GetCodeSystemCodes(IEnumerable<Guid> codeGuids)
         {
-            throw new NotImplementedException();
+            return this.codeSystemCodeRepository.GetCodeSystemCodes(codeGuids);
         }
 
         public Task<PagedCollection<ICodeSystemCode>> GetCodeSystemCodesAsync(IPagerSettings settings, bool includeRetired = false)
         {
-            throw new NotImplementedException();
+            return this.GetCodeSystemCodesAsync(settings, Enumerable.Empty<Guid>(), includeRetired);
         }
 
-        public Task<PagedCollection<ICodeSystemCode>> GetCodeSystemCodesAsync(IPagerSettings settings, IEnumerable<Guid> codeSystemGuids, bool includeRetired = false)
+        public Task<PagedCollection<ICodeSystemCode>> GetCodeSystemCodesAsync(
+            IPagerSettings settings,
+            IEnumerable<Guid> codeSystemGuids,
+            bool includeRetired = false)
         {
-            throw new NotImplementedException();
+            return this.GetCodeSystemCodesAsync(string.Empty, settings, codeSystemGuids,includeRetired);
         }
 
-        public Task<PagedCollection<IValueSet>> GetCodeSystemCodesAsync(
+        public Task<PagedCollection<ICodeSystemCode>> GetCodeSystemCodesAsync(
             string filterText,
             IPagerSettings pagerSettings,
             IEnumerable<Guid> codeSystemGuids,

@@ -14,7 +14,7 @@
 
         IReadOnlyCollection<ICodeSystemCode> GetCodeSystemCodes(IEnumerable<Guid> codeGuids);
 
-        Task<PagedCollection<IValueSet>> GetCodeSystemCodesAsync(
+        Task<PagedCollection<ICodeSystemCode>> GetCodeSystemCodesAsync(
             string filterText,
             IPagerSettings pagerSettings,
             IEnumerable<Guid> codeSystemGuids,

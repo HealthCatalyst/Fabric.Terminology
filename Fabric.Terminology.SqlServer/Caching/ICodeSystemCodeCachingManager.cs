@@ -9,6 +9,8 @@
 
     public interface ICodeSystemCodeCachingManager
     {
+        Maybe<ICodeSystemCode> GetOrSet(Guid codeGuid, Func<ICodeSystemCode> getter);
+
         Maybe<ICodeSystemCode> GetOrSet(Guid codeGuid, Func<Guid, ICodeSystemCode> doQuery);
 
         IReadOnlyCollection<ICodeSystemCode> GetMultipleOrQuery(

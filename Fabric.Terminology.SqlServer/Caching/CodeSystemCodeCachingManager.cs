@@ -17,6 +17,11 @@
             this.cache = cache;
         }
 
+        public Maybe<ICodeSystemCode> GetOrSet(Guid codeGuid, Func<ICodeSystemCode> getter)
+        {
+            return this.cache.GetItem<ICodeSystemCode>(GetCacheKey(codeGuid), getter);
+        }
+
         public Maybe<ICodeSystemCode> GetOrSet(Guid codeGuid, Func<Guid, ICodeSystemCode> doQuery)
         {
             return this.cache.GetItem<ICodeSystemCode>(GetCacheKey(codeGuid), () => doQuery(codeGuid));
