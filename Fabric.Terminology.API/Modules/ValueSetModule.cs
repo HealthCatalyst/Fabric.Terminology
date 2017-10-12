@@ -69,11 +69,25 @@
 
         private static async Task<T> Execute<T>(Func<Task<T>> query) => await query.Invoke();
 
-        private object GetValueSet(string valueSetUniqueId)
+        private static MultipleValueSetsQuery EnsureQueryModel(MultipleValueSetsQuery model)
+        {
+            if (model.ValueSetGuids == null)
+            {
+                model.ValueSetGuids = new Guid[] { };
+            }
+
+            if (model.CodeSystemGuids == null)
+            {
+                model.CodeSystemGuids = new Guid[] { };
+            }
+
+            return model;
+        }
+
+        private object GetValueSet(Guid valueSetGuid)
         {
             try
             {
-                var valueSetGuid = Guid.Parse(valueSetUniqueId);
                 var codeSystemGuids = this.GetCodeSystems();
                 var summary = this.GetSummarySetting();
 
@@ -89,9 +103,9 @@
             }
             catch (ValueSetNotFoundException ex)
             {
-                this.Logger.Error(ex, ex.Message, valueSetUniqueId);
+                this.Logger.Error(ex, ex.Message, valueSetGuid.ToString());
                 return this.CreateFailureResponse(
-                    $"The ValueSet with id: {valueSetUniqueId} was not found.",
+                    $"The ValueSet with id: {valueSetGuid} was not found.",
                     HttpStatusCode.InternalServerError);
             }
         }
@@ -100,7 +114,7 @@
         {
             try
             {
-                var model = this.EnsureQueryModel(this.Bind<MultipleValueSetsQuery>(new BindingConfig { BodyOnly = true }));
+                var model = EnsureQueryModel(this.Bind<MultipleValueSetsQuery>(new BindingConfig { BodyOnly = true }));
 
                 if (!model.ValueSetGuids.Any())
                 {
@@ -251,21 +265,6 @@
             var val = (string)this.Request.Query["$summary"];
             bool.TryParse(val, out var ret);
             return val.IsNullOrWhiteSpace() || ret;
-        }
-
-        private MultipleValueSetsQuery EnsureQueryModel(MultipleValueSetsQuery model)
-        {
-            if (model.ValueSetGuids == null)
-            {
-                model.ValueSetGuids = new Guid[] { };
-            }
-
-            if (model.CodeSystemGuids == null)
-            {
-                model.CodeSystemGuids = new Guid[] { };
-            }
-
-            return model;
         }
 
         private FindByTermQuery EnsureQueryModel(FindByTermQuery model)

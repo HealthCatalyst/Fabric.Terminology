@@ -60,12 +60,12 @@
             }
         }
 
-        private object GetCodeSystem(string codeSystemUniqueId)
+        private object GetCodeSystem(Guid codeSystemGuid)
         {
             try
             {
                 var model = (Maybe<object>)this.codeSystemService
-                            .GetCodeSystem(Guid.Parse(codeSystemUniqueId))
+                            .GetCodeSystem(codeSystemGuid)
                             .Select(Mapper.Map<CodeSystemApiModel>);
 
                 return model.Else(() =>
