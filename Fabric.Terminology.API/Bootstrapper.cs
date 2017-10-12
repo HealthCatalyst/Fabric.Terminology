@@ -118,10 +118,16 @@
             container.Register<IClientTermValueSetRepository, SqlClientTermValueSetRepository>();
             container.Register<IClientTermValueSetService, SqlClientTermValueSetService>().AsSingleton();
 
+            container.Register<ICodeSystemRepository, SqlCodeSystemRepository>();
+            container.Register<ICodeSystemCodeRepository, SqlCodeSystemCodeRepository>();
+
             if (!this.appConfig.ElasticSearchSettings.Enabled)
             {
                 container.ComposeFrom<SqlServicesComposition>();
             }
+
+            container.Register<ICodeSystemService, SqlCodeSystemService>().AsSingleton();
+            container.Register<ICodeSystemCodeService, SqlCodeSystemCodeService>().AsSingleton();
 
             container.Register<ValueSetValidator>();
         }

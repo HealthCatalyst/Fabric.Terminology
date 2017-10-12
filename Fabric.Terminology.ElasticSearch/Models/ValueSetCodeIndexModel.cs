@@ -7,9 +7,11 @@
     using Nest;
 
     [ElasticsearchType(Name = "valuesetcode")]
-    public class ValueSetCodeIndexModel : CodeSetCodeIndexModel, IValueSetCode
+    public class ValueSetCodeIndexModel : CodeSystemCodeIndexModel, IValueSetCode
     {
         [Keyword]
         public Guid ValueSetGuid { get; set; }
+
+        public bool Retired { get; set; }
     }
 }

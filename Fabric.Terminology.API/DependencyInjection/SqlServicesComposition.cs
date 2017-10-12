@@ -16,6 +16,7 @@
         {
             container.Register<IValueSetService, SqlValueSetService>().AsSingleton();
             container.Register<IValueSetSummaryService, SqlValueSetSummaryService>().AsSingleton();
+
         }
     }
 }

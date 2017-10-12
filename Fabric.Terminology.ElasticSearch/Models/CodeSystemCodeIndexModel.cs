@@ -6,8 +6,8 @@
 
     using Nest;
 
-    [ElasticsearchType(Name = "codesetcode")]
-    public class CodeSetCodeIndexModel : ICodeSetCode
+    [ElasticsearchType(Name = "codesystemcode")]
+    public class CodeSystemCodeIndexModel : ICodeSystemCode
     {
         [Keyword]
         public Guid CodeGuid { get; set; }
@@ -23,5 +23,7 @@
 
         [Text]
         public string CodeSystemName { get; set; }
+
+        public bool Retired { get; set; }
     }
 }

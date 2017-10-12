@@ -9,7 +9,7 @@
     {
         public IndexModelProfile()
         {
-            this.CreateMap<ICodeSetCode, CodeSetCodeIndexModel>();
+            this.CreateMap<ICodeSystemCode, CodeSystemCodeIndexModel>();
             this.CreateMap<IValueSetCode, ValueSetCodeIndexModel>();
             this.CreateMap<IValueSetCodeCount, ValueSetCodeCountIndexModel>();
             this.CreateMap<IValueSet, ValueSetIndexModel>()
