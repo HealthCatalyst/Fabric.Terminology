@@ -83,7 +83,7 @@
                 dtos = dtos.Where(dto => systemGuids.Contains(dto.CodeSystemGUID));
             }
 
-            if (filterText.IsNullOrWhiteSpace())
+            if (!filterText.IsNullOrWhiteSpace())
             {
                 dtos = dtos.Where(dto => dto.CodeDSC.Contains(filterText) || dto.CodeCD.StartsWith(filterText));
             }
@@ -96,7 +96,7 @@
             return includeRetired
                        ? this.sharedContext.CodeSystemCodes.Include(codeDto => codeDto.CodeSystem)
                        : this.sharedContext.CodeSystemCodes.Include(codeDto => codeDto.CodeSystem)
-                           .Where(dto => dto.Retired == "N");
+                           .Where(dto => dto.RetiredFLG == "N");
         }
 
         private ICodeSystemCode QueryCodeSystemCode(Guid codeGuid)
@@ -108,11 +108,16 @@
 
         private IReadOnlyCollection<ICodeSystemCode> QueryCodeSystemCodeList(bool includeRetired, Guid[] codeGuids)
         {
+            if (!codeGuids.Any())
+            {
+                return new List<ICodeSystemCode>();
+            }
+
             var factory = new CodeSystemCodeFactory();
             var dtos = this.GetBaseQuery(includeRetired).Where(dto => codeGuids.Contains(dto.CodeGUID));
             if (!includeRetired)
             {
-                dtos = dtos.Where(dto => dto.Retired == "N");
+                dtos = dtos.Where(dto => dto.RetiredFLG == "N");
             }
 
             return dtos.ToList().Select(factory.Build).ToList();

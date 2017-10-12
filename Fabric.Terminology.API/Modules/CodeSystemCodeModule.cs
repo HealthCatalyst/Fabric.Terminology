@@ -1,6 +1,8 @@
 ﻿namespace Fabric.Terminology.API.Modules
 {
     using System;
+    using System.Linq;
+    using System.Threading.Tasks;
 
     using AutoMapper;
 
@@ -8,9 +10,11 @@
 
     using Fabric.Terminology.API.Configuration;
     using Fabric.Terminology.API.Models;
+    using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Services;
 
     using Nancy;
+    using Nancy.ModelBinding;
 
     using Serilog;
 
@@ -26,7 +30,23 @@
         {
             this.codeSystemCodeService = codeSystemCodeService;
 
-            this.Get("/{codeGuid}", parameters => this.GetCodeSystemCode(parameters.codeGuid), null, "GetCodeSystemCode");
+            this.Get("/", _ => this.GetCodeSystemCodePage(), null, "GetPagedCodeSystemCodes");
+
+            this.Get("/{codeGuid}", parameters => this.GetCodeSystemCode(parameters.codeGuid), null, "GetCodeSystemCodes");
+
+            this.Post("/multiple/", _ => this.GetMultiple(), null, "GetCodeSystemCodes");
+
+            this.Post("/search/", _ => this.Search(), null, "SearchCodeSystemCodes");
+        }
+
+        private static MultipleCodeSystemCodeQuery EnsureQueryModel(MultipleCodeSystemCodeQuery model)
+        {
+            if (model.CodeGuids == null)
+            {
+                model.CodeGuids = new Guid[] { };
+            }
+
+            return model;
         }
 
         private object GetCodeSystemCode(Guid codeGuid)
@@ -48,6 +68,85 @@
                     $"Failed to get CodeSystemCode. {ex.Message}",
                     HttpStatusCode.InternalServerError);
             }
+        }
+
+        private async Task<object> GetCodeSystemCodePage()
+        {
+            try
+            {
+                var pagerSettings = this.GetPagerSettings();
+                var codeSystemGuids = this.GetCodeSystems();
+
+                return (await this.codeSystemCodeService.GetCodeSystemCodesAsync(pagerSettings, codeSystemGuids))
+                    .ToCodeSystemCodeApiModelPage();
+            }
+            catch (Exception ex)
+            {
+                this.Logger.Error(ex, ex.Message);
+                return this.CreateFailureResponse(
+                    "Failed to retrieve the page of code system codes",
+                    HttpStatusCode.InternalServerError);
+            }
+        }
+
+        private object GetMultiple()
+        {
+            try
+            {
+                var model = EnsureQueryModel(this.Bind<MultipleCodeSystemCodeQuery>(new BindingConfig { BodyOnly = true }));
+
+                return this.codeSystemCodeService.GetCodeSystemCodes(model.CodeGuids)
+                    .Select(Mapper.Map<CodeSystemCodeApiModel>);
+            }
+            catch (Exception ex)
+            {
+                this.Logger.Error(ex, ex.Message);
+                return this.CreateFailureResponse(
+                    ex.Message,
+                    HttpStatusCode.InternalServerError);
+            }
+        }
+
+        private async Task<object> Search()
+        {
+            try
+            {
+                var model = this.EnsureQueryModel(this.Bind<FindByTermQuery>(new BindingConfig { BodyOnly = true }));
+
+                return (await this.codeSystemCodeService.GetCodeSystemCodesAsync(
+                            model.Term,
+                            model.PagerSettings,
+                            model.CodeSystemGuids)).ToCodeSystemCodeApiModelPage();
+            }
+            catch (Exception ex)
+            {
+                this.Logger.Error(ex, ex.Message);
+                return this.CreateFailureResponse(ex.Message, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        private FindByTermQuery EnsureQueryModel(FindByTermQuery model)
+        {
+            if (model.PagerSettings == null)
+            {
+                model.PagerSettings = new PagerSettings
+                {
+                    CurrentPage = 1,
+                    ItemsPerPage = this.Config.TerminologySqlSettings.DefaultItemsPerPage
+                };
+            }
+
+            if (model.CodeSystemGuids == null)
+            {
+                model.CodeSystemGuids = new Guid[] { };
+            }
+
+            if (model.Term == null)
+            {
+                model.Term = string.Empty;
+            }
+
+            return model;
         }
     }
 }

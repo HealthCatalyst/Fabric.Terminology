@@ -1,7 +1,5 @@
 ﻿namespace Fabric.Terminology.API.Models
 {
-    using System;
-
     using Fabric.Terminology.Domain.Models;
 
     using Newtonsoft.Json;
@@ -13,8 +11,5 @@
 
         [JsonProperty("pagerSettings")]
         public PagerSettings PagerSettings { get; set; }
-
-        [JsonProperty("summary")]
-        public bool Summary { get; set; } = true;
     }
 }

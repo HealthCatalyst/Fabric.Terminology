@@ -23,7 +23,7 @@
             : base(modelCatalog, tagCatalog)
         {
             modelCatalog.AddModels(
-                typeof(FindByTermQuery),
+                typeof(ValueSetFindByTermQuery),
                 typeof(PagedCollection<ValueSetApiModel>),
                 typeof(PagedCollection<ValueSetItemApiModel>),
                 typeof(PagerSettings),
@@ -111,7 +111,7 @@
                 },
                 new[]
                 {
-                    new BodyParameter<FindByTermQuery>(modelCatalog) { Required = true, Name = "Model" }
+                    new BodyParameter<ValueSetFindByTermQuery>(modelCatalog) { Required = true, Name = "Model" }
                 },
                 new[] { TagsFactory.GetValueSetTag() });
 

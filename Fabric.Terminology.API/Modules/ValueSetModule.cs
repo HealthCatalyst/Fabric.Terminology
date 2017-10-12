@@ -218,7 +218,7 @@
         {
             try
             {
-                var model = this.EnsureQueryModel(this.Bind<FindByTermQuery>(new BindingConfig { BodyOnly = true }));
+                var model = this.EnsureQueryModel(this.Bind<ValueSetFindByTermQuery>(new BindingConfig { BodyOnly = true }));
 
                 var codeSystemGuids = model.CodeSystemGuids.ToList();
 
@@ -283,7 +283,7 @@
             return val.IsNullOrWhiteSpace() || ret;
         }
 
-        private FindByTermQuery EnsureQueryModel(FindByTermQuery model)
+        private ValueSetFindByTermQuery EnsureQueryModel(ValueSetFindByTermQuery model)
         {
             if (model.PagerSettings == null)
             {

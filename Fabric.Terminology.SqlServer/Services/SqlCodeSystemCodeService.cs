@@ -37,6 +37,14 @@
 
         public Task<PagedCollection<ICodeSystemCode>> GetCodeSystemCodesAsync(
             IPagerSettings settings,
+            Guid codeSystemGuid,
+            bool includeRetired = false)
+        {
+            return this.GetCodeSystemCodesAsync(settings, new[] { codeSystemGuid }, includeRetired);
+        }
+
+        public Task<PagedCollection<ICodeSystemCode>> GetCodeSystemCodesAsync(
+            IPagerSettings settings,
             IEnumerable<Guid> codeSystemGuids,
             bool includeRetired = false)
         {
@@ -49,7 +57,11 @@
             IEnumerable<Guid> codeSystemGuids,
             bool includeRetired = false)
         {
-            throw new NotImplementedException();
+            return this.codeSystemCodeRepository.GetCodeSystemCodesAsync(
+                filterText,
+                pagerSettings,
+                codeSystemGuids,
+                includeRetired);
         }
     }
 }

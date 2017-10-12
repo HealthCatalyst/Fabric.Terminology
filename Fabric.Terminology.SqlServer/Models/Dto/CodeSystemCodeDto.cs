@@ -17,7 +17,7 @@ namespace Fabric.Terminology.SqlServer.Models.Dto
 
         public DateTime LastLoadDTS { get; set; }
 
-        public string Retired { get; set; }
+        public string RetiredFLG { get; set; }
 
         public CodeSystemDto CodeSystem { get; set; }
     }

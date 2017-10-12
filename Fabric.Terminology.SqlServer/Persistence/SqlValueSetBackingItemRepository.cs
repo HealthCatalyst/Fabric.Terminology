@@ -170,6 +170,11 @@
 
             try
             {
+                if (valueSetGuids.Any())
+                {
+                    return new List<IValueSetBackingItem>();
+                }
+
                 var dtos = this.DbSet.Where(dto => valueSetGuids.Contains(dto.ValueSetGUID));
 
                 if (codeSystemGuids.Any())

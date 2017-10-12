@@ -58,6 +58,18 @@
             };
         }
 
+        public static PagedCollection<CodeSystemCodeApiModel> ToCodeSystemCodeApiModelPage(
+            this PagedCollection<ICodeSystemCode> items)
+        {
+            return new PagedCollection<CodeSystemCodeApiModel>
+            {
+                PagerSettings = items.PagerSettings,
+                TotalItems = items.TotalItems,
+                TotalPages = items.TotalPages,
+                Values = items.Values.Select(Mapper.Map<CodeSystemCodeApiModel>).ToList()
+            };
+        }
+
         // acquired from Fabric.Authorization.Domain (renamed from ToError)
         public static Error ToError(this ValidationResult validationResult)
         {

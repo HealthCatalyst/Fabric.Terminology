@@ -21,7 +21,7 @@
                 Code = dto.CodeCD,
                 CodeGuid = dto.CodeGUID,
                 CodeSystemName = dto.CodeSystem.CodeSystemNM,
-                Retired = dto.Retired == "Y",
+                Retired = dto.RetiredFLG == "Y",
                 Name = dto.CodeDSC
             };
         }

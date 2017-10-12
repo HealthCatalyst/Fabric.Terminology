@@ -16,7 +16,15 @@
 
         Task<PagedCollection<ICodeSystemCode>> GetCodeSystemCodesAsync(IPagerSettings settings, bool includeRetired = false);
 
-        Task<PagedCollection<ICodeSystemCode>> GetCodeSystemCodesAsync(IPagerSettings settings, IEnumerable<Guid> codeSystemGuids, bool includeRetired = false);
+        Task<PagedCollection<ICodeSystemCode>> GetCodeSystemCodesAsync(
+            IPagerSettings settings,
+            Guid codeSystemGuid,
+            bool includeRetired = false);
+
+        Task<PagedCollection<ICodeSystemCode>> GetCodeSystemCodesAsync(
+            IPagerSettings settings,
+            IEnumerable<Guid> codeSystemGuids,
+            bool includeRetired = false);
 
         Task<PagedCollection<ICodeSystemCode>> GetCodeSystemCodesAsync(
             string filterText,
