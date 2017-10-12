@@ -64,7 +64,7 @@
                 {
                     new BodyParameter<MultipleCodeSystemQuery>(modelCatalog) { Required = true, Name = "Model" }
                 },
-                new[] { TagsFactory.GetMultipleCodeSystemTag() });
+                new[] { TagsFactory.GetCodeSystemTag() });
         }
     }
 }
