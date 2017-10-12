@@ -41,7 +41,7 @@
             }
             catch (Exception ex)
             {
-                this.logger.Error(ex, $"Failed to GetCodeSystem with Guid: {codeSystemGuid}");
+                this.logger.Error(ex, $"Failed to get CodeSystem with Guid: {codeSystemGuid}");
                 throw;
             }
         }
@@ -67,7 +67,7 @@
         private ICodeSystem QueryCodeSystem(Guid codeSystemGuid)
         {
             var factory = new CodeSystemFactory();
-            var dto = this.sharedContext.CodeSystems.SingleOrDefault(d => d.CodeSystemGuid == codeSystemGuid);
+            var dto = this.sharedContext.CodeSystems.SingleOrDefault(d => d.CodeSystemGUID == codeSystemGuid);
             return dto != null ? factory.Build(dto) : null;
         }
 
@@ -81,7 +81,7 @@
 
             if (codeSystemGuids.Any())
             {
-                dtos = dtos.Where(dto => codeSystemGuids.Contains(dto.CodeSystemGuid));
+                dtos = dtos.Where(dto => codeSystemGuids.Contains(dto.CodeSystemGUID));
             }
 
             dtos = dtos.AsNoTracking();

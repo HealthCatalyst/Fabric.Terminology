@@ -11,7 +11,7 @@
         {
             return new CodeSystem
             {
-                CodeSystemGuid = dto.CodeSystemGuid,
+                CodeSystemGuid = dto.CodeSystemGUID,
                 Copyright = dto.CopyrightDSC.IsNullOrWhiteSpace() ? string.Empty : dto.CopyrightDSC,
                 Description = dto.CodeSystemDSC.IsNullOrWhiteSpace() ? string.Empty : dto.CodeSystemDSC,
                 Name = dto.CodeSystemNM,

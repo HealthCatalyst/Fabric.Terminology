@@ -28,6 +28,18 @@
             };
         }
 
+        public static Parameter GetCodeGuid()
+        {
+            return new Parameter
+            {
+                Name = "codeGuid",
+                In = ParameterIn.Path,
+                Required = true,
+                Description = "The codeGuid for the code system code",
+                Type = "string"
+            };
+        }
+
         public static Parameter GetCodeSystemGuidsArray()
         {
             return new Parameter

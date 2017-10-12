@@ -23,5 +23,14 @@
                 Name = $"{TerminologyVersion.Route}/codesystems"
             };
         }
+
+        public static Tag GetCodeSystemCodeTag()
+        {
+            return new Tag()
+            {
+                Description = "Operations related to code systems",
+                Name = $"{TerminologyVersion.Route}/codes"
+            };
+        }
     }
 }

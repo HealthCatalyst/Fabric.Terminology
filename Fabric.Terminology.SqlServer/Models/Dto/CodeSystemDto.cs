@@ -2,10 +2,12 @@
 namespace Fabric.Terminology.SqlServer.Models.Dto
 {
     using System;
+    using System.ComponentModel.DataAnnotations.Schema;
 
     public class CodeSystemDto
     {
-        public Guid CodeSystemGuid { get; set; }
+        [ForeignKey("CodeSystemCodeDto")]
+        public Guid CodeSystemGUID { get; set; }
 
         public string CodeSystemNM { get; set; }
 

@@ -22,6 +22,9 @@
 
         public ICodeSystemService CodeSystemService { get; private set; }
 
+        public ICodeSystemCodeService CodeSystemCodeService { get; private set; }
+
+
         private void Initialize()
         {
             var cacheManagerFactory = new CachingManagerFactory(this.Cache);
@@ -50,6 +53,11 @@
                 this.Logger,
                 new CodeSystemCachingManager(this.Cache));
 
+            var sqlCodeSystemCodeRepository = new SqlCodeSystemCodeRepository(
+                this.SharedContext,
+                this.Logger,
+                new CodeSystemCodeCachingManager(this.Cache));
+
             this.ValueSetService = new SqlValueSetService(
                 this.Logger,
                 valueSetBackingItemRepository,
@@ -67,6 +75,8 @@
                 valueSetCodeCountRepository);
 
             this.CodeSystemService = new SqlCodeSystemService(sqlCodeSystemRepository);
+
+            this.CodeSystemCodeService = new SqlCodeSystemCodeService(sqlCodeSystemCodeRepository);
         }
     }
 }
