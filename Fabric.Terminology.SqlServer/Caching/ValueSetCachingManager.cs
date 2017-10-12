@@ -20,26 +20,21 @@
             this.cache = cache;
         }
 
-        public TResult GetOrSet(Guid valueSetGuid, TResult value)
-        {
-            return this.cache.GetItem<TResult>(this.GetCacheKey(valueSetGuid), () => value);
-        }
-
         public TResult GetOrSet(Guid valueSetGuid, Func<TResult> value)
         {
-            return this.cache.GetItem<TResult>(this.GetCacheKey(valueSetGuid), value);
+            return this.cache.GetItem<TResult>(GetCacheKey(valueSetGuid), value);
         }
 
         public TResult GetOrQuery(
             Guid valueSetGuid,
             Func<Guid, TResult> doQuery)
         {
-            return this.cache.GetItem<TResult>(this.GetCacheKey(valueSetGuid), () => doQuery(valueSetGuid));
+            return this.cache.GetItem<TResult>(GetCacheKey(valueSetGuid), () => doQuery(valueSetGuid));
         }
 
         public IReadOnlyCollection<TResult> GetMultipleOrQuery(Guid valueSetGuid, Func<Guid, IReadOnlyCollection<TResult>> doQuery)
         {
-            return this.cache.GetItem<IReadOnlyCollection<TResult>>(this.GetCacheKey(valueSetGuid), () => doQuery(valueSetGuid));
+            return this.cache.GetItem<IReadOnlyCollection<TResult>>(GetCacheKey(valueSetGuid), () => doQuery(valueSetGuid));
         }
 
         public IReadOnlyCollection<TResult> GetMultipleWithFallBack(
@@ -57,7 +52,7 @@
 
             items.AddRange(
                     getLookup(remaining)
-                    .Select(bi => this.cache.GetItem<TResult>(this.GetCacheKey(bi.Key), () => bi)));
+                    .Select(bi => this.cache.GetItem<TResult>(GetCacheKey(bi.Key), () => bi)));
 
             return items;
         }
@@ -90,7 +85,7 @@
                         // Add queried values to cache
                         foreach (var key in lookup.Select(g => g.Key))
                         {
-                            codes.Add(key, this.cache.GetItem<IReadOnlyCollection<TResult>>(this.GetCacheKey(key), () => lookup[key].ToList()));
+                            codes.Add(key, this.cache.GetItem<IReadOnlyCollection<TResult>>(GetCacheKey(key), () => lookup[key].ToList()));
                         }
 
                         return codes;
@@ -99,16 +94,16 @@
 
         public IReadOnlyCollection<TResult> GetMultipleExisting(IEnumerable<Guid> valueSetGuids)
         {
-            return valueSetGuids.Select(key => this.cache.GetItem<TResult>(this.GetCacheKey(key))).Values().ToList();
+            return valueSetGuids.Select(key => this.cache.GetItem<TResult>(GetCacheKey(key))).Values().ToList();
         }
+
+        private static string GetCacheKey(Guid valueSetGuid) => $"{typeof(TResult)}-{valueSetGuid}";
 
         private Maybe<Tuple<Guid, IReadOnlyCollection<TResult>>> GetCachedPartialValueSetAsTuple(Guid valueSetGuid)
         {
-            return this.cache.GetItem(this.GetCacheKey(valueSetGuid))
+            return this.cache.GetItem(GetCacheKey(valueSetGuid))
                 .OfType<IReadOnlyCollection<TResult>>()
                 .Select(x => new Tuple<Guid, IReadOnlyCollection<TResult>>(valueSetGuid, x));
         }
-
-        private string GetCacheKey(Guid valueSetGuid) => $"{typeof(TResult)}-{valueSetGuid}";
     }
 }

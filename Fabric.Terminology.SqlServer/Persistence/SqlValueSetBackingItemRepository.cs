@@ -70,7 +70,7 @@
             // We have to query here since we use the Guid for the cache key but the results
             // are cached for use in subesequent requests.
             return this.QueryValueSetBackingItems(valueSetReferenceId)
-                .Select(bi => this.cacheManager.GetOrSet(bi.ValueSetGuid, bi))
+                .Select(bi => this.cacheManager.GetOrSet(bi.ValueSetGuid, () => bi))
                 .ToList();
         }
 
@@ -79,7 +79,9 @@
             return this.GetValueSetBackingItems(valueSetGuids, new List<Guid>());
         }
 
-        public IReadOnlyCollection<IValueSetBackingItem> GetValueSetBackingItems(IEnumerable<Guid> valueSetGuids, IEnumerable<Guid> codeSystemGuids)
+        public IReadOnlyCollection<IValueSetBackingItem> GetValueSetBackingItems(
+            IEnumerable<Guid> valueSetGuids,
+            IEnumerable<Guid> codeSystemGuids)
         {
             var setGuids = valueSetGuids as Guid[] ?? valueSetGuids.ToArray();
             var backingItems = this.cacheManager.GetMultipleExisting(setGuids).ToList();
@@ -92,7 +94,7 @@
 
             backingItems.AddRange(
                 this.QueryValueSetBackingItems(remaining, codeSystemGuids.ToList())
-                    .Select(bi => this.cacheManager.GetOrSet(bi.ValueSetGuid, bi)));
+                    .Select(bi => this.cacheManager.GetOrSet(bi.ValueSetGuid, () => bi)));
 
             return backingItems;
         }

@@ -12,6 +12,7 @@
     using Fabric.Terminology.API.Configuration;
     using Fabric.Terminology.API.Models;
     using Fabric.Terminology.API.Validators;
+    using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Exceptions;
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Services;
@@ -132,8 +133,6 @@
                 var codeSystemGuids = this.GetCodeSystems();
                 var summary = this.GetSummarySetting();
 
-
-
                 var versions = summary
                         ? Execute(() => this.valueSetSummaryService.GetValueSetVersionsAsync(valueSetReferenceId)).Result
                             .Select(vss => vss.ToValueSetItemApiModel(codeSystemGuids))
@@ -244,6 +243,37 @@
         private object DeleteValueSet(dynamic parameters)
         {
             return this.CreateFailureResponse("Not Implemented", HttpStatusCode.NotImplemented);
+        }
+
+        private bool GetSummarySetting()
+        {
+            var val = (string)this.Request.Query["$summary"];
+            bool.TryParse(val, out var ret);
+            return val.IsNullOrWhiteSpace() || ret;
+        }
+
+        private FindByTermQuery EnsureQueryModel(FindByTermQuery model)
+        {
+            if (model.PagerSettings == null)
+            {
+                model.PagerSettings = new PagerSettings
+                {
+                    CurrentPage = 1,
+                    ItemsPerPage = this.Config.TerminologySqlSettings.DefaultItemsPerPage
+                };
+            }
+
+            if (model.CodeSystemGuids == null)
+            {
+                model.CodeSystemGuids = new Guid[] { };
+            }
+
+            if (model.Term == null)
+            {
+                model.Term = string.Empty;
+            }
+
+            return model;
         }
     }
 }

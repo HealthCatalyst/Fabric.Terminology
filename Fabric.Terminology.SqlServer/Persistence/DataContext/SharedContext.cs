@@ -23,6 +23,8 @@
 
         public DbSet<ValueSetDescriptionDto> ValueSetDescriptions { get; set; }
 
+        public DbSet<CodeSystemDto> CodeSystems { get; set; }
+
         // Used for testing
         internal bool IsInMemory { get; set; }
 
@@ -35,14 +37,15 @@
                 throw new ArgumentNullException(nameof(modelBuilder));
             }
 
-            modelBuilder.Entity<ValueSetCodeDto>().ToTable("ValueSetCode", "Terminology");
-            modelBuilder.Entity<ValueSetCodeDto>().HasKey(code => new { code.CodeCD, code.ValueSetGUID });
+            modelBuilder.Entity<ValueSetCodeDto>().ToTable("ValueSetCode", "Terminology")
+                .HasKey(code => new { code.CodeCD, code.ValueSetGUID });
 
-            modelBuilder.Entity<ValueSetCodeCountDto>().ToTable("ValueSetCodeCount", "Terminology");
-            modelBuilder.Entity<ValueSetCodeCountDto>().HasKey(record => new { record.ValueSetGUID, record.CodeSystemGUID });
+            modelBuilder.Entity<ValueSetCodeCountDto>().ToTable("ValueSetCodeCount", "Terminology")
+                .HasKey(record => new { record.ValueSetGUID, record.CodeSystemGUID });
 
-            modelBuilder.Entity<ValueSetDescriptionDto>().ToTable("ValueSetDescription", "Terminology");
-            modelBuilder.Entity<ValueSetDescriptionDto>().HasKey(e => e.ValueSetGUID);
+            modelBuilder.Entity<ValueSetDescriptionDto>().ToTable("ValueSetDescription", "Terminology").HasKey(e => e.ValueSetGUID);
+
+            modelBuilder.Entity<CodeSystemDto>().ToTable("CodeSystem", "Terminology").HasKey(e => e.CodeSystemGuid);
 
             base.OnModelCreating(modelBuilder);
         }

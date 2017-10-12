@@ -17,6 +17,18 @@
             };
         }
 
+        public static Parameter GetCodeSystemGuid()
+        {
+            return new Parameter
+            {
+                Name = "codeSystemGuid",
+                In = ParameterIn.Path,
+                Required = true,
+                Description = "The codeSystemGuid for the Code System",
+                Type = "string"
+            };
+        }
+
         public static Parameter GetCodeSystemGuidsArray()
         {
             return new Parameter

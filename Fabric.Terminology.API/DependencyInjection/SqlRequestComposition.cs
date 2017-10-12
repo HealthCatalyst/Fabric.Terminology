@@ -1,7 +1,6 @@
 ﻿namespace Fabric.Terminology.API.DependencyInjection
 {
     using Fabric.Terminology.Domain.DependencyInjection;
-    using Fabric.Terminology.Domain.Persistence;
     using Fabric.Terminology.SqlServer.Persistence;
     using Nancy.TinyIoc;
 
@@ -13,6 +12,8 @@
             container.Register<IValueSetCodeCountRepository, SqlValueSetCodeCountRepository>();
             container.Register<IValueSetBackingItemRepository, SqlValueSetBackingItemRepository>();
             container.Register<IClientTermValueSetRepository, SqlClientTermValueSetRepository>();
+
+            container.Register<ICodeSystemRepository, SqlCodeSystemRepository>();
         }
     }
 }
