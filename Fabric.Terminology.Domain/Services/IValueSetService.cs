@@ -33,12 +33,12 @@
             bool latestVersionsOnly = true);
 
         Task<PagedCollection<IValueSet>> GetValueSetsAsync(
-            string nameFilterText,
+            string filterText,
             IPagerSettings pagerSettings,
             bool latestVersionsOnly = true);
 
         Task<PagedCollection<IValueSet>> GetValueSetsAsync(
-            string nameFilterText,
+            string filterText,
             IPagerSettings pagerSettings,
             IEnumerable<Guid> codeSystemGuids,
             bool latestVersionsOnly = true);

@@ -2,18 +2,18 @@
 {
     using System;
 
-    internal class ValueSetCode : CodeSetCode, IValueSetCode
+    internal class ValueSetCode : CodeSystemCode, IValueSetCode
     {
         public ValueSetCode()
         {
         }
 
-        internal ValueSetCode(ICodeSetCode codeSetCode)
+        internal ValueSetCode(ICodeSystemCode codeSystemCode)
         {
-            this.Code = codeSetCode.Code;
-            this.Name = codeSetCode.Name;
-            this.CodeSystemGuid = codeSetCode.CodeSystemGuid;
-            this.CodeSystemName = codeSetCode.CodeSystemName;
+            this.Code = codeSystemCode.Code;
+            this.Name = codeSystemCode.Name;
+            this.CodeSystemGuid = codeSystemCode.CodeSystemGuid;
+            this.CodeSystemName = codeSystemCode.CodeSystemName;
         }
 
         public Guid ValueSetGuid { get; internal set; }

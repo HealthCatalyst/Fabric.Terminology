@@ -6,15 +6,15 @@ namespace Fabric.Terminology.SqlServer.Models.Dto
 
     using Fabric.Terminology.Domain.Models;
 
-    internal class ValueSetDescriptionBASEDto
+    internal class ValueSetDescriptionBaseDto
     {
         private static readonly EmptySamdBinding EmptyBinding = new EmptySamdBinding();
 
-        public ValueSetDescriptionBASEDto()
+        public ValueSetDescriptionBaseDto()
         {
         }
 
-        public ValueSetDescriptionBASEDto(IValueSetBackingItem valueSet)
+        public ValueSetDescriptionBaseDto(IValueSetBackingItem valueSet)
         {
             this.ValueSetGUID = valueSet.ValueSetGuid;
             this.ValueSetReferenceID = valueSet.ValueSetReferenceId;

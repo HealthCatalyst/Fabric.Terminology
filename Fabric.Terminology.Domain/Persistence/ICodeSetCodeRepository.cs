@@ -9,8 +9,8 @@
     {
         int CountCodes(IEnumerable<string> codeSystemCodes);
 
-        Task<PagedCollection<ICodeSetCode>> GetCodesAsync(IPagerSettings pagerSettings);
+        Task<PagedCollection<ICodeSystemCode>> GetCodesAsync(IPagerSettings pagerSettings);
 
-        Task<PagedCollection<ICodeSetCode>> GetCodesAsync(IPagerSettings pagerSettings, IEnumerable<string> codeSystemCodes);
+        Task<PagedCollection<ICodeSystemCode>> GetCodesAsync(IPagerSettings pagerSettings, IEnumerable<string> codeSystemCodes);
     }
 }

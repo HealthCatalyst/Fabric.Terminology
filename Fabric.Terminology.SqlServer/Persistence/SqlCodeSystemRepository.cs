@@ -37,20 +37,25 @@
         {
             try
             {
-                return Maybe.From(this.codeSystemCachingManager.GetOrSet(codeSystemGuid, this.QueryCodeSystem));
+                return this.codeSystemCachingManager.GetOrSet(codeSystemGuid, this.QueryCodeSystem);
             }
             catch (Exception ex)
             {
-                this.logger.Error(ex, $"Failed to GetCodeSystem with Guid: {codeSystemGuid}");
+                this.logger.Error(ex, $"Failed to get CodeSystem with Guid: {codeSystemGuid}");
                 throw;
             }
         }
 
         public IReadOnlyCollection<ICodeSystem> GetAll(params Guid[] codeSystemGuids)
         {
+            return this.GetAll(false, codeSystemGuids);
+        }
+
+        public IReadOnlyCollection<ICodeSystem> GetAll(bool includeZeroCountCodeSystems, params Guid[] codeSystemGuids)
+        {
             try
             {
-                return this.codeSystemCachingManager.GetMultipleOrQuery(this.QueryAll, codeSystemGuids);
+                return this.codeSystemCachingManager.GetMultipleOrQuery(this.QueryAll, includeZeroCountCodeSystems, codeSystemGuids);
             }
             catch (Exception ex)
             {
@@ -62,20 +67,24 @@
         private ICodeSystem QueryCodeSystem(Guid codeSystemGuid)
         {
             var factory = new CodeSystemFactory();
-            var dto = this.sharedContext.CodeSystems.SingleOrDefault(d => d.CodeSystemGuid == codeSystemGuid);
+            var dto = this.sharedContext.CodeSystems.SingleOrDefault(d => d.CodeSystemGUID == codeSystemGuid);
             return dto != null ? factory.Build(dto) : null;
         }
 
-        private IReadOnlyCollection<ICodeSystem> QueryAll(params Guid[] codeSystemGuids)
+        private IReadOnlyCollection<ICodeSystem> QueryAll(bool includeZeroCountCodeSystems, params Guid[] codeSystemGuids)
         {
             var factory = new CodeSystemFactory();
 
-            var dtos = this.sharedContext.CodeSystems.AsNoTracking();
+            var dtos = !includeZeroCountCodeSystems ?
+                this.sharedContext.CodeSystems.Where(dto => dto.CodeCountNBR > 0) :
+                this.sharedContext.CodeSystems;
 
-            // TODO inquire about the decision to only return code systems that have associated codes
-            dtos = codeSystemGuids.Any() ?
-                dtos.Where(dto => codeSystemGuids.Contains(dto.CodeSystemGuid)) :
-                dtos.Where(dto => dto.CodeCountNBR > 0);
+            if (codeSystemGuids.Any())
+            {
+                dtos = dtos.Where(dto => codeSystemGuids.Contains(dto.CodeSystemGUID));
+            }
+
+            dtos = dtos.AsNoTracking();
 
             return dtos.OrderBy(dto => dto.CodeSystemNM).Select(factory.Build).ToList();
         }

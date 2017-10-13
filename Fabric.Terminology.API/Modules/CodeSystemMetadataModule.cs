@@ -20,11 +20,9 @@
             ISwaggerTagCatalog tagCatalog)
             : base(modelCatalog, tagCatalog)
         {
-            modelCatalog.AddModels(
-                typeof(CodeSystemApiModel),
-                typeof(MultipleCodeSystemQuery),
-                typeof(Guid)
-            );
+            modelCatalog.AddModel<CodeSystemApiModel>();
+            modelCatalog.AddModel<MultipleCodeSystemQuery>();
+            modelCatalog.AddModel<Guid>();
 
             this.RouteDescriber.DescribeRouteWithParams(
                 "GetAll",
@@ -64,7 +62,7 @@
                 {
                     new BodyParameter<MultipleCodeSystemQuery>(modelCatalog) { Required = true, Name = "Model" }
                 },
-                new[] { TagsFactory.GetMultipleCodeSystemTag() });
+                new[] { TagsFactory.GetCodeSystemTag() });
         }
     }
 }

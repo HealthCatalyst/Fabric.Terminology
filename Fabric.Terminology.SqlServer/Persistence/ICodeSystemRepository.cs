@@ -11,6 +11,8 @@
     {
         IReadOnlyCollection<ICodeSystem> GetAll(params Guid[] codeSystemGuids);
 
+        IReadOnlyCollection<ICodeSystem> GetAll(bool includeZeroCountCodeSystems, params Guid[] codeSystemGuids);
+
         Maybe<ICodeSystem> GetCodeSystem(Guid codeSystemGuid);
     }
 }

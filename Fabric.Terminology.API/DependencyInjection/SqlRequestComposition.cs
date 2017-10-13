@@ -14,6 +14,7 @@
             container.Register<IClientTermValueSetRepository, SqlClientTermValueSetRepository>();
 
             container.Register<ICodeSystemRepository, SqlCodeSystemRepository>();
+            container.Register<ICodeSystemCodeRepository, SqlCodeSystemCodeRepository>();
         }
     }
 }

@@ -23,8 +23,7 @@
             : base(modelCatalog, tagCatalog)
         {
             modelCatalog.AddModels(
-                typeof(CodeSetCodeApiModel),
-                typeof(FindByTermQuery),
+                typeof(ValueSetFindByTermQuery),
                 typeof(PagedCollection<ValueSetApiModel>),
                 typeof(PagedCollection<ValueSetItemApiModel>),
                 typeof(PagerSettings),
@@ -68,7 +67,7 @@
                 {
                     new BodyParameter<MultipleValueSetsQuery>(modelCatalog) { Required = true, Name = "Model" }
                 },
-                new[] { TagsFactory.GetMultipleValueSetsTag() });
+                new[] { TagsFactory.GetValueSetTag() });
 
             this.RouteDescriber.DescribeRouteWithParams(
                 "GetPaged",
@@ -99,7 +98,7 @@
                     new HttpResponseMetadata { Code = 500, Message = "Internal Server Error" }
                 },
                 new[] { ParameterFactory.GetValueSetReferenceId(), ParameterFactory.GetSummary(), ParameterFactory.GetCodeSystemGuidsArray() },
-                new[] { TagsFactory.GetValueSetVersionTag() });
+                new[] { TagsFactory.GetValueSetTag() });
 
             this.RouteDescriber.DescribeRouteWithParams(
                 "Search",
@@ -112,9 +111,9 @@
                 },
                 new[]
                 {
-                    new BodyParameter<FindByTermQuery>(modelCatalog) { Required = true, Name = "Model" }
+                    new BodyParameter<ValueSetFindByTermQuery>(modelCatalog) { Required = true, Name = "Model" }
                 },
-                new[] { TagsFactory.GetValueSetSearchTag() });
+                new[] { TagsFactory.GetValueSetTag() });
 
             this.RouteDescriber.DescribeRouteWithParams(
                 "AddValueSet",

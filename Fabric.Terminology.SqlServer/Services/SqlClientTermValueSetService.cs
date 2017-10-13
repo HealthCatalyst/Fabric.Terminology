@@ -51,7 +51,7 @@ namespace Fabric.Terminology.SqlServer.Services
             return !this.valueSetBackingItemRepository.ValueSetGuidExists(valueSetGuid);
         }
 
-        public Attempt<IValueSet> Create(string name, IValueSetMeta meta, IReadOnlyCollection<ICodeSetCode> codeSetCodes)
+        public Attempt<IValueSet> Create(string name, IValueSetMeta meta, IReadOnlyCollection<ICodeSystemCode> codeSetCodes)
         {
             if (!this.NameIsUnique(name))
             {

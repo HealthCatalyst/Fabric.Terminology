@@ -25,6 +25,8 @@
 
         public DbSet<CodeSystemDto> CodeSystems { get; set; }
 
+        public DbSet<CodeSystemCodeDto> CodeSystemCodes { get; set; }
+
         // Used for testing
         internal bool IsInMemory { get; set; }
 
@@ -45,7 +47,10 @@
 
             modelBuilder.Entity<ValueSetDescriptionDto>().ToTable("ValueSetDescription", "Terminology").HasKey(e => e.ValueSetGUID);
 
-            modelBuilder.Entity<CodeSystemDto>().ToTable("CodeSystem", "Terminology").HasKey(e => e.CodeSystemGuid);
+            modelBuilder.Entity<CodeSystemDto>().ToTable("CodeSystem", "Terminology").HasKey(e => e.CodeSystemGUID);
+
+            modelBuilder.Entity<CodeSystemCodeDto>().ToTable("Code", "Terminology")
+                .HasKey(e => e.CodeGUID);
 
             base.OnModelCreating(modelBuilder);
         }

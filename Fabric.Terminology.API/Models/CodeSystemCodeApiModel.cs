@@ -4,7 +4,7 @@
 
     using Fabric.Terminology.Domain.Models;
 
-    public class CodeSetCodeApiModel : ICodeSetCode
+    public class CodeSystemCodeApiModel : ICodeSystemCode
     {
         public Guid CodeGuid { get; set; }
 
@@ -15,5 +15,7 @@
         public Guid CodeSystemGuid { get; set; }
 
         public string CodeSystemName { get; set; }
+
+        public bool Retired { get; set; }
     }
 }

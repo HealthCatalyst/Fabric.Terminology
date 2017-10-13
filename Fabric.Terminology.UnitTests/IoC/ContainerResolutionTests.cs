@@ -26,7 +26,6 @@
         public void CanResolveCachingManagerFactory()
         {
             // Arrange
-
             var prim = Primitive.IsPrimitive(typeof(Guid));
 
             // Act

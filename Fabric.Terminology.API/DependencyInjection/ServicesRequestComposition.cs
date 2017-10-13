@@ -19,6 +19,7 @@
             container.Register<IValueSetSummaryService, SqlValueSetSummaryService>().AsSingleton();
             container.Register<IClientTermValueSetService, SqlClientTermValueSetService>().AsSingleton();
             container.Register<ICodeSystemService, SqlCodeSystemService>().AsSingleton();
+            container.Register<ICodeSystemCodeService, SqlCodeSystemCodeService>().AsSingleton();
         }
     }
 }

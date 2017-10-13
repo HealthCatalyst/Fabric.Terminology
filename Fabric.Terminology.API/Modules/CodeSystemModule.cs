@@ -60,18 +60,16 @@
             }
         }
 
-        private object GetCodeSystem(string codeSystemUniqueId)
+        private object GetCodeSystem(Guid codeSystemGuid)
         {
             try
             {
-                var model = (Maybe<object>)this.codeSystemService
-                            .GetCodeSystem(Guid.Parse(codeSystemUniqueId))
-                            .Select(Mapper.Map<CodeSystemApiModel>);
-
-                return model.Else(() =>
-                    this.CreateFailureResponse(
-                        "Code sytem with codeSystemGuid was not found",
-                        HttpStatusCode.NotFound));
+                return this.codeSystemService.GetCodeSystem(codeSystemGuid)
+                    .Select(cs => (object)Mapper.Map<CodeSystemApiModel>(cs))
+                    .Else(
+                        this.CreateFailureResponse(
+                            "Code sytem with codeSystemGuid was not found",
+                            HttpStatusCode.NotFound));
             }
             catch (Exception ex)
             {
