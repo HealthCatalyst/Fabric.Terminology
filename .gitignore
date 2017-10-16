@@ -213,3 +213,4 @@ ModelManifest.xml
 bower_components
 Fabric.Terminology.Domain/bin/
 Fabric.Terminology.API/Logs/
+Fabric.Terminology.ElasticSearch.Indexer/Logs/
