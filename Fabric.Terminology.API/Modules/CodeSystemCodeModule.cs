@@ -32,7 +32,7 @@
 
             this.Get("/", _ => this.GetCodeSystemCodePage(), null, "GetPagedCodeSystemCodes");
 
-            this.Get("/{codeGuid}", parameters => this.GetCodeSystemCode(parameters.codeGuid), null, "GetCodeSystemCodes");
+            this.Get("/{codeGuid}", parameters => this.GetCodeSystemCode(parameters.codeGuid), null, "GetCodeSystemCode");
 
             this.Post("/multiple/", _ => this.GetMultiple(), null, "GetCodeSystemCodes");
 
