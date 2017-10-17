@@ -11,16 +11,14 @@
 
     using FluentAssertions;
 
-    using Newtonsoft.Json;
-
     using Xunit;
     using Xunit.Abstractions;
 
-    public class ClientTermValueSetServiceTests : OutputTestBase, IClassFixture<ServiceFixture>
+    public class ClientTermValueSetServiceTests : OutputTestBase, IClassFixture<SqlServiceFixture>
     {
         private readonly IClientTermValueSetService clientTermValueSetService;
 
-        public ClientTermValueSetServiceTests(ServiceFixture fixture, ITestOutputHelper output)
+        public ClientTermValueSetServiceTests(SqlServiceFixture fixture, ITestOutputHelper output)
             : base(output)
         {
             this.clientTermValueSetService = fixture.ClientTermValueSetService;

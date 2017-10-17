@@ -15,13 +15,13 @@
     using Xunit;
     using Xunit.Abstractions;
 
-    public class ValueSetServiceTests : OutputTestBase, IClassFixture<ServiceFixture>
+    public class SqlValueSetServiceTests : OutputTestBase, IClassFixture<SqlServiceFixture>
     {
         private readonly IValueSetService valueSetService;
 
         private readonly IValueSetSummaryService valueSetSummaryService;
 
-        public ValueSetServiceTests(ServiceFixture fixture, [NotNull] ITestOutputHelper output)
+        public SqlValueSetServiceTests(SqlServiceFixture fixture, [NotNull] ITestOutputHelper output)
             : base(output)
         {
             this.valueSetService = fixture.ValueSetService;

@@ -170,7 +170,7 @@
 
             try
             {
-                if (valueSetGuids.Any())
+                if (!valueSetGuids.Any())
                 {
                     return new List<IValueSetBackingItem>();
                 }
