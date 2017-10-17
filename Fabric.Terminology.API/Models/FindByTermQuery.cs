@@ -1,17 +1,15 @@
 ﻿namespace Fabric.Terminology.API.Models
 {
-    using System.Collections.Generic;
-
     using Fabric.Terminology.Domain.Models;
 
-    public class FindByTermQuery
+    using Newtonsoft.Json;
+
+    public class FindByTermQuery : MultipleCodeSystemQuery
     {
+        [JsonProperty("term")]
         public string Term { get; set; }
 
+        [JsonProperty("pagerSettings")]
         public PagerSettings PagerSettings { get; set; }
-
-        public IEnumerable<string> CodeSystemCodes { get; set; }
-
-        public bool Summary { get; set; } = true;
     }
 }

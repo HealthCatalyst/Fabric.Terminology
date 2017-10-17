@@ -16,7 +16,7 @@
 
         public static IValueSet SingleValueSet(MockValueSetSettings settings)
         {
-            var valueSetId = $"value.set.id.{settings.IdSuffix}";
+            var valueSetGuid = Guid.NewGuid();
 
             var codes = new List<IValueSetCode>();
 
@@ -26,24 +26,22 @@
                     new ValueSetCode
                     {
                         Code = $"code{i}",
-                        CodeSystem = new CodeSystem { Code = "cd1", Name = "cd1", Version = "cd1version" },
+                        CodeSystemGuid = Guid.NewGuid(),
                         Name = $"code{i}",
-                        RevisionDate = null,
-                        ValueSetId = valueSetId,
-                        VersionDescription = "version"
+                        CodeGuid = Guid.Empty,
+                        ValueSetGuid = valueSetGuid
                     });
             }
 
             return new ValueSet
             {
-                ValueSetId = valueSetId,
+                ValueSetGuid = valueSetGuid,
                 AuthoringSourceDescription = "author",
                 IsCustom = true,
                 Name = $"test{settings.IdSuffix}",
-                PurposeDescription = "purpose",
+                DefinitionDescription = "purpose",
                 SourceDescription = "source",
-                ValueSetCodesCount = settings.ValueSetCodeCount,
-                VersionDescription = "version",
+                ClientCode = "TEST001",
                 ValueSetCodes = codes
             };
         }

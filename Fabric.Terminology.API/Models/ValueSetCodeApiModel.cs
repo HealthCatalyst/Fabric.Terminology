@@ -1,11 +1,9 @@
 ﻿namespace Fabric.Terminology.API.Models
 {
-    public class ValueSetCodeApiModel : CodeSetCodeApiModel
+    using System;
+
+    public class ValueSetCodeApiModel : CodeSystemCodeApiModel
     {
-        public string ValueSetUniqueId { get; set; }
-
-        public string ValueSetOId { get; set; }
-
-        public string ValueSetId { get; set; }
+        public Guid ValueSetGuid { get; set; }
     }
 }

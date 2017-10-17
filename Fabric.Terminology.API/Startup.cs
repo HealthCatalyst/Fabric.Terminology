@@ -7,7 +7,6 @@
     using Fabric.Terminology.API.Configuration;
     using Fabric.Terminology.API.Logging;
     using Fabric.Terminology.API.Models;
-    using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Models;
 
     using Microsoft.AspNetCore.Builder;
@@ -49,21 +48,13 @@
             }
 
             Log.Logger.Information("Initializing AutoMapper");
-            Mapper.Initialize(
-                cfg =>
-                    {
-                        cfg.CreateMap<ICodeSetCode, CodeSetCodeApiModel>();
-                        cfg.CreateMap<CodeSetCodeApiModel, CodeSetCode>();
-                        cfg.CreateMap<IValueSetCode, ValueSetCodeApiModel>();
 
-                        cfg.CreateMap<IValueSet, ValueSetApiModel>()
-                            .ForMember(
-                                dest => dest.Identifier,
-                                opt => opt.MapFrom(
-                                    src => src.ValueSetId.IsNullOrWhiteSpace()
-                                               ? Guid.NewGuid().ToString()
-                                               : src.ValueSetId));
-                    });
+            Mapper.Initialize(cfg =>
+                {
+                    cfg.AddProfile<ValueSetApiProfile>();
+                    cfg.AddProfile<CodeSystemApiProfile>();
+                    cfg.AddProfile<CodeSystemCodeApiProfile>();
+                });
 
             app.UseStaticFiles()
                 .UseOwin()

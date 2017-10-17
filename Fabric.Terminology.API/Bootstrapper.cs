@@ -65,7 +65,6 @@
 
             container.Register<IAppConfiguration>(this.appConfig);
             container.Register<IMemoryCacheSettings>(this.appConfig.TerminologySqlSettings);
-            container.Register(this.appConfig.ValueSetSettings);
             container.Register<ILogger>(this.logger);
 
             // Caching
@@ -77,6 +76,10 @@
             {
                 container.Register<IMemoryCacheProvider, NullMemoryCacheProvider>().AsSingleton();
             }
+
+            container.Register<ICachingManagerFactory, CachingManagerFactory>().AsSingleton();
+            container.Register<ICodeSystemCachingManager, CodeSystemCachingManager>().AsSingleton();
+            container.Register<ICodeSystemCodeCachingManager, CodeSystemCodeCachingManager>().AsSingleton();
 
             // Persistence (Must precede service registration)
             container.ComposeFrom<SqlAppComposition>();

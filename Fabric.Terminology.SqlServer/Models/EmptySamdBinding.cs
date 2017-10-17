@@ -14,10 +14,6 @@ namespace Fabric.Terminology.SqlServer.Models
 
         public string BindingNM => "ValueSetCodeClient";
 
-
-        public DateTime GetLastLoadDTS(DateTime? lastLoad = null)
-        {
-            return lastLoad ?? DateTime.UtcNow;
-        }
+        public DateTime LastLoadDts => DateTime.UtcNow;
     }
 }

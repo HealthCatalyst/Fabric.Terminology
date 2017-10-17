@@ -1,21 +1,18 @@
 ﻿namespace Fabric.Terminology.SqlServer.Caching
 {
     using System;
-    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Threading;
+
+    using CallMeMaybe;
 
     using Fabric.Terminology.SqlServer.Configuration;
-    using Fabric.Terminology.SqlServer.Threading;
-
-    using JetBrains.Annotations;
 
     using Microsoft.Extensions.Caching.Memory;
 
     internal class MemoryCacheProvider : IMemoryCacheProvider
     {
-        private readonly ReaderWriterLockSlim locker = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
+        private readonly object locker = new object();
 
         private IMemoryCache memCache = Create();
 
@@ -32,7 +29,7 @@
 
         public void ClearAll()
         {
-            using (new SlimWriterLock(this.locker))
+            lock (this.locker)
             {
                 this.memCache.Dispose();
                 this.memCache = Create();
@@ -42,45 +39,31 @@
 
         public void ClearItem(string key)
         {
-            using (new SlimWriterLock(this.locker))
+            if (this.memCache.Get(key) == null)
             {
-                if (this.memCache.Get(key) == null)
-                {
-                    return;
-                }
-                this.memCache.Remove(key);
-            }
-        }
-
-        [CanBeNull]
-        public object GetItem(string key)
-        {
-            object result;
-            bool success;
-            using (new SlimWriterLock(this.locker))
-            {
-                success = this.memCache.TryGetValue(key, out result);
+                return;
             }
 
-            return success ? result : null;
+            this.memCache.Remove(key);
         }
 
-        public object GetItem(string key, Func<object> getItem)
+        public Maybe<object> GetItem(string key)
         {
-            return this.GetItem(key, getItem, TimeSpan.FromMinutes(5), false);
+            this.memCache.TryGetValue(key, out object result);
+            return Maybe.From(result);
+        }
+
+        public Maybe<object> GetItem(string key, Func<object> getItem)
+        {
+            return this.GetItem(key, getItem, TimeSpan.FromMinutes(5), true);
         }
 
         public IEnumerable<object> GetItems(params string[] cacheKeys)
         {
-            if (!cacheKeys.Any())
-            {
-                return Enumerable.Empty<object>();
-            }
-
-            return cacheKeys.Select(this.GetItem).Where(x => x != null);
+            return !cacheKeys.Any() ? Enumerable.Empty<object>() : cacheKeys.Select(this.GetItem).Values();
         }
 
-        public object GetItem(string key, Func<object> getItem, TimeSpan? timeout, bool isSliding = false)
+        public Maybe<object> GetItem(string key, Func<object> getItem, TimeSpan? timeout, bool isSliding = true)
         {
             if (!this.memCache.TryGetValue(key, out object value))
             {
@@ -102,13 +85,9 @@
 
                     this.memCache.Set(key, value, options);
                 }
-                else
-                {
-                    throw new NullReferenceException("Attempt to cache a null object.");
-                }
             }
 
-            return value;
+            return Maybe.From(value);
         }
 
         private static IMemoryCache Create()

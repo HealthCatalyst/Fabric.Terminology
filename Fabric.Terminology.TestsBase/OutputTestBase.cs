@@ -1,5 +1,7 @@
 ﻿namespace Fabric.Terminology.TestsBase
 {
+    using System;
+
     using Xunit.Abstractions;
 
     public abstract class OutputTestBase

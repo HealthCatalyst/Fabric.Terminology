@@ -3,15 +3,12 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Linq.Expressions;
     using System.Threading.Tasks;
 
     using Fabric.Terminology.Domain.Models;
-    using Fabric.Terminology.Domain.Persistence;
-    using Fabric.Terminology.Domain.Persistence.Mapping;
-    using Fabric.Terminology.SqlServer.Models.Dto;
+    using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Persistence.DataContext;
-    using Fabric.Terminology.SqlServer.Persistence.Mapping;
+    using Fabric.Terminology.SqlServer.Persistence.Factories;
 
     using Microsoft.EntityFrameworkCore;
 
@@ -19,121 +16,67 @@
 
     internal class SqlValueSetCodeRepository : IValueSetCodeRepository
     {
-        private readonly Lazy<ClientTermContext> clientTermContext;
+        private readonly IValueSetCachingManager<IValueSetCode> cacheManager;
 
-        private readonly IPagingStrategy<ValueSetCodeDto, IValueSetCode> pagingStrategy;        
+        private readonly ILogger logger;
+
+        private readonly SharedContext sharedContext;
 
         public SqlValueSetCodeRepository(
             SharedContext sharedContext,
-            Lazy<ClientTermContext> clientTermContext,
             ILogger logger,
-            IPagingStrategy<ValueSetCodeDto, IValueSetCode> pagingStrategy)
+            ICachingManagerFactory cachingManagerFactory)
         {
-            this.SharedContext = sharedContext;
-            this.clientTermContext = clientTermContext;
-            this.Logger = logger;
-            this.pagingStrategy = pagingStrategy;
+            this.sharedContext = sharedContext;
+            this.logger = logger;
+            this.cacheManager = cachingManagerFactory.ResolveFor<IValueSetCode>();
         }
 
-        protected SharedContext SharedContext { get; }
-
-        protected ILogger Logger { get; }
-
-        protected Expression<Func<ValueSetCodeDto, string>> SortExpression => sortBy => sortBy.CodeDSC;
-
-        protected DbSet<ValueSetCodeDto> DbSet => this.SharedContext.ValueSetCodes;
-
-        protected DbSet<ValueSetCodeDto> CustomDbSet => this.clientTermContext.Value.ValueSetCodes;
-
-        public int CountValueSetCodes(string valueSetUniqueId, IEnumerable<string> codeSystemCodes)
+        public IReadOnlyCollection<IValueSetCode> GetValueSetCodes(Guid valueSetGuid)
         {
-            var systemCodes = codeSystemCodes as string[] ?? codeSystemCodes.ToArray();
-            return systemCodes.Any()
-                       ? this.DbSet.Count(
-                           dto => dto.ValueSetUniqueID == valueSetUniqueId && systemCodes.Contains(dto.CodeSystemCD))
-                       : this.DbSet.Count(dto => dto.ValueSetUniqueID == valueSetUniqueId);
+            return this.cacheManager.GetMultipleOrQuery(valueSetGuid, this.QueryValueSetCodes)
+                .OrderBy(code => code.Name)
+                .ToList();
         }
 
-        public IReadOnlyCollection<IValueSetCode> GetValueSetCodes(
-            string valueSetUniqueId,
-            IEnumerable<string> codeSystemCodes)
+        public Task<Dictionary<Guid, IReadOnlyCollection<IValueSetCode>>> BuildValueSetCodesDictionary(
+            IEnumerable<Guid> valueSetGuids)
         {
-            var dtos = this.DbSet.Where(dto => dto.ValueSetUniqueID == valueSetUniqueId);
+            return this.cacheManager.GetCachedValueDictionary(valueSetGuids, this.QueryValueSetCodeLookup);
+        }
 
-            var systemCodes = codeSystemCodes as string[] ?? codeSystemCodes.ToArray();
-            if (systemCodes.Any())
+        private IReadOnlyCollection<IValueSetCode> QueryValueSetCodes(Guid valueSetGuid)
+        {
+            try
             {
-                dtos = dtos.Where(dto => systemCodes.Contains(dto.CodeSystemCD));
+                var factory = new ValueSetCodeFactory();
+                return this.sharedContext.ValueSetCodes.Where(dto => dto.ValueSetGUID == valueSetGuid)
+                    .AsNoTracking()
+                    .ToList()
+                    .Select(factory.Build)
+                    .ToList();
             }
-
-            dtos = dtos.OrderBy(this.SortExpression);
-
-            var mapper = new ValueSetCodeMapper();
-
-            return dtos.Select(dto => mapper.Map(dto)).ToList().AsReadOnly();
-        }
-
-        /// <remarks>
-        /// Entity Framework does not support PARTITION BY and "will most likely generate the query using CROSS APPLY"
-        /// Attempt to use straight also resulted in several warnings indicating that certain portions of the query could
-        /// not be translated and the expression would be evaluated in the CLR after the execution (so no performance gain).
-        /// </remarks>
-        /// <seealso cref="https://stackoverflow.com/questions/43906840/row-number-over-partition-by-order-by-in-entity-framework"/>
-        public Task<ILookup<string, IValueSetCode>> LookupValueSetCodes(
-            IEnumerable<string> valueSetUniqueIds,
-            IEnumerable<string> codeSystemCodes,
-            int count = 5)
-        {
-            var setIds = valueSetUniqueIds as string[] ?? valueSetUniqueIds.ToArray();
-            if (!setIds.Any())
+            catch (Exception ex)
             {
-                return Task.FromResult(Enumerable.Empty<IValueSetCode>().ToLookup(vs => vs.ValueSetUniqueId, vs => vs));
+                this.logger.Error(ex, "Failed to query ValueSetCodes by ValueSetGUID");
+                throw;
             }
+        }
 
-            var mapper = new ValueSetCodeMapper();
-
-            var escapedSetIds = string.Join(",", setIds.Select(EscapeForSqlString).Select(v => "'" + v + "'"));
-
-            var innerSql =
-                $@"SELECT vsc.BindingID, vsc.BindingNM, vsc.CodeCD, vsc.CodeDSC, vsc.CodeSystemCD, vsc.CodeSystemNM, vsc.CodeSystemVersionTXT,
-vsc.LastLoadDTS, vsc.RevisionDTS, vsc.SourceDSC, vsc.ValueSetUniqueID, vsc.ValueSetID, vsc.ValueSetNM, vsc.ValueSetOID, vsc.VersionDSC,
-ROW_NUMBER() OVER (PARTITION BY vsc.ValueSetUniqueID ORDER BY vsc.ValueSetUniqueID) AS rownum 
-FROM [Terminology].[ValueSetCode] vsc WHERE vsc.ValueSetUniqueID IN ({escapedSetIds})";
-
-            var systemCodes = codeSystemCodes as string[] ?? codeSystemCodes.ToArray();
-            if (systemCodes.Any())
+        private ILookup<Guid, IValueSetCode> QueryValueSetCodeLookup(IEnumerable<Guid> valueSetGuids)
+        {
+            try
             {
-                var escapedCodes = string.Join(
-                    ",",
-                    systemCodes.Select(EscapeForSqlString).Select(v => "'" + v + "'"));
-                innerSql += $" AND vsc.CodeSystemCD IN ({escapedCodes})";
+                var factory = new ValueSetCodeFactory();
+                return this.sharedContext.ValueSetCodes.Where(dto => valueSetGuids.Contains(dto.ValueSetGUID))
+                    .AsNoTracking()
+                    .ToLookup(vsc => vsc.ValueSetGUID, vsc => factory.Build(vsc));
             }
-
-            var sql =
-                $@"SELECT vscr.BindingID, vscr.BindingNM, vscr.CodeCD, vscr.CodeDSC, vscr.CodeSystemCD, vscr.CodeSystemNM, vscr.CodeSystemVersionTXT,
-vscr.LastLoadDTS, vscr.RevisionDTS, vscr.SourceDSC, vscr.ValueSetUniqueID, vscr.ValueSetID, vscr.ValueSetNM, vscr.ValueSetOID, vscr.VersionDSC, vscr.rownum
-FROM ({innerSql}) vscr
-WHERE vscr.rownum <= {count}
-ORDER BY vscr.CodeDSC";
-
-            return Task.Run(() => this.DbSet.FromSql(sql).ToLookup(vsc => vsc.ValueSetUniqueID, vsc => mapper.Map(vsc)));
-        }
-
-        //// Used for testing.  codeSystemCodes parameter not used by required for mapper.
-        internal IReadOnlyCollection<IValueSetCode> GetCustomValueSetCodes(string valueSetUniqueId, IEnumerable<string> codeSystemCodes)
-        {
-            var all = this.CustomDbSet.ToList();
-
-            var dtos = this.CustomDbSet.Where(dto => dto.ValueSetUniqueID == valueSetUniqueId).OrderBy(this.SortExpression).ToList();
-
-            var mapper = new ValueSetCodeMapper();
-
-            return dtos.Select(dto => mapper.Map(dto)).ToList().AsReadOnly();
-        }
-
-        private static string EscapeForSqlString(string input)
-        {
-            return input.Replace("'", "''");
+            catch (Exception ex)
+            {
+                this.logger.Error(ex, "Failed to query for ValueSetCode lookup for collection of ValueSetGUIDs");
+                throw;
+            }
         }
     }
 }

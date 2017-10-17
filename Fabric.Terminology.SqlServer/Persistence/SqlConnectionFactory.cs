@@ -11,7 +11,10 @@
 
         public SqlConnectionFactory(string connnectionString)
         {
-            if (connnectionString.IsNullOrWhiteSpace()) throw new ArgumentNullException(nameof(connnectionString));
+            if (connnectionString.IsNullOrWhiteSpace())
+            {
+                throw new ArgumentNullException(nameof(connnectionString));
+            }
 
             this.connString = connnectionString;
         }

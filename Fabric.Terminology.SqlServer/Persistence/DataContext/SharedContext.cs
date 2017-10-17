@@ -19,7 +19,13 @@
 
         public DbSet<ValueSetCodeDto> ValueSetCodes { get; set; }
 
+        public DbSet<ValueSetCodeCountDto> ValueSetCounts { get; set; }
+
         public DbSet<ValueSetDescriptionDto> ValueSetDescriptions { get; set; }
+
+        public DbSet<CodeSystemDto> CodeSystems { get; set; }
+
+        public DbSet<CodeSystemCodeDto> CodeSystemCodes { get; set; }
 
         // Used for testing
         internal bool IsInMemory { get; set; }
@@ -33,13 +39,19 @@
                 throw new ArgumentNullException(nameof(modelBuilder));
             }
 
-            modelBuilder.Entity<ValueSetCodeDto>().ToTable("ValueSetCode", "Terminology");
-            modelBuilder.Entity<ValueSetCodeDto>().Property(e => e.BindingNM).IsUnicode(false);
-            modelBuilder.Entity<ValueSetCodeDto>().HasKey(code => new { code.CodeCD, code.ValueSetUniqueID });
+            modelBuilder.Entity<ValueSetCodeDto>().ToTable("ValueSetCode", "Terminology")
+                .HasKey(code => new { code.CodeCD, code.ValueSetGUID });
 
-            modelBuilder.Entity<ValueSetDescriptionDto>().ToTable("ValueSetDescription", "Terminology");
-            modelBuilder.Entity<ValueSetDescriptionDto>().Property(e => e.BindingNM).IsUnicode(false);
-            modelBuilder.Entity<ValueSetDescriptionDto>().HasKey(e => e.ValueSetUniqueID);
+            modelBuilder.Entity<ValueSetCodeCountDto>().ToTable("ValueSetCodeCount", "Terminology")
+                .HasKey(record => new { record.ValueSetGUID, record.CodeSystemGUID });
+
+            modelBuilder.Entity<ValueSetDescriptionDto>().ToTable("ValueSetDescription", "Terminology").HasKey(e => e.ValueSetGUID);
+
+            modelBuilder.Entity<CodeSystemDto>().ToTable("CodeSystem", "Terminology").HasKey(e => e.CodeSystemGUID);
+
+            modelBuilder.Entity<CodeSystemCodeDto>().ToTable("Code", "Terminology")
+                .HasKey(e => e.CodeGUID);
+
             base.OnModelCreating(modelBuilder);
         }
     }

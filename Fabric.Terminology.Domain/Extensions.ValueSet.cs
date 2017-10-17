@@ -1,6 +1,7 @@
 ﻿namespace Fabric.Terminology.Domain
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
 
     using Fabric.Terminology.Domain.Models;
@@ -13,13 +14,12 @@
     {
         public static void SetIdsForCustomInsert(this IValueSet valueSet)
         {
-            var sequentialGuid = GuidComb.GenerateComb().ToString();
+            var sequentialGuid = GuidComb.GenerateComb();
 
             if (valueSet is ValueSet realValueSet)
             {
-                realValueSet.ValueSetUniqueId = sequentialGuid;
-                realValueSet.ValueSetId = sequentialGuid;
-                realValueSet.ValueSetOId = sequentialGuid;
+                realValueSet.ValueSetGuid = sequentialGuid;
+                realValueSet.ValueSetReferenceId = sequentialGuid.ToString();
             }
             else
             {
@@ -28,16 +28,29 @@
 
             foreach (var code in valueSet.ValueSetCodes.Cast<ValueSetCode>())
             {
-                code.ValueSetUniqueId = sequentialGuid;
-                code.ValueSetId = sequentialGuid;
-                code.ValueSetOId = sequentialGuid;
-                code.ValueSetName = valueSet.Name;
+                code.ValueSetGuid = sequentialGuid;
+            }
+
+            foreach (var count in valueSet.CodeCounts.Cast<ValueSetCodeCount>())
+            {
+                count.ValueSetGuid = sequentialGuid;
             }
         }
 
-        internal static bool IsNew(this IValueSet valueSet)
+        internal static IReadOnlyCollection<IValueSetCodeCount> GetCodeCountsFromCodes(this IEnumerable<IValueSetCode> codes)
         {
-            return Guid.TryParse(valueSet.ValueSetUniqueId, out Guid empty) && empty.Equals(Guid.Empty);
+            var valueSetCodes = codes as IValueSetCode[] ?? codes.ToArray();
+            var codeSystems = valueSetCodes.Select(c => c.CodeSystemGuid).Distinct();
+            return
+                codeSystems.Select(codeSystemGuid => new { codeSystemGuid = codeSystemGuid, valueSetCode = valueSetCodes.First(c => c.CodeSystemGuid == codeSystemGuid) })
+                .Select(
+                    o => new ValueSetCodeCount
+                    {
+                        CodeSystemGuid = o.codeSystemGuid,
+                        CodeCount = valueSetCodes.Count(c => c.CodeSystemGuid == o.codeSystemGuid),
+                        ValueSetGuid = o.valueSetCode.ValueSetGuid,
+                        CodeSystemName = o.valueSetCode.CodeSystemName
+                    }).Cast<IValueSetCodeCount>().ToList();
         }
     }
 }

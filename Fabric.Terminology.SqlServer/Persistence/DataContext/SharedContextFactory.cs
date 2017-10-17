@@ -24,6 +24,7 @@
         public override SharedContext Create(bool useInMemory = false)
         {
             var context = base.Create(useInMemory);
+
             // Shared Terminology data is read only so there is no reason to ever track the entities.
             context.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
             return context;

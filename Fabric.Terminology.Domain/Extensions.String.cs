@@ -1,7 +1,9 @@
 ﻿namespace Fabric.Terminology.Domain
 {
     /// <summary>
-    /// Extension methods for <see cref="System.String"/>
+    /// Extension methods for <see>
+    ///         <cref>System.String</cref>
+    ///     </see>
     /// </summary>
     public static partial class Extensions
     {

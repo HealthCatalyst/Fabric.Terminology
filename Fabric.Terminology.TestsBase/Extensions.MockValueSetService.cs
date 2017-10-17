@@ -34,7 +34,6 @@
             return mockService;
         }
 
-
         public static Mock<IValueSetService> SetupGetValueSets(this Mock<IValueSetService> mockService, IEnumerable<IValueSet> valueSets)
         {
             mockService.Setup(

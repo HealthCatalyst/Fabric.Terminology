@@ -16,38 +16,35 @@
             {
                 Name = name,
                 AuthoringSourceDescription = "Test Authoring Source Description",
-                PurposeDescription = "Test Purpose Description",
+                DefinitionDescription = "Test Purpose Description",
                 SourceDescription = "Test Source Description",
-                VersionDescription = "Test Version Description",
-                CodeSetCodes = CodeSetCodeApiModelCollection(codeCount)
+                CodeSetCodes = CodeSetCodeApiModelCollection(codeCount),
+                VersionDate = DateTime.UtcNow
             };
         }
 
-        public static IEnumerable<CodeSetCodeApiModel> CodeSetCodeApiModelCollection(int count = 10)
+        public static IEnumerable<CodeSystemCodeApiModel> CodeSetCodeApiModelCollection(int count = 10)
         {
+            var codeSystems = new List<Guid>
+            {
+                Guid.NewGuid(),
+                Guid.NewGuid()
+            }.ToArray();
+
             for (var i = 0; i < count; i++)
             {
-                yield return CodeSetCodeApiModel($"Code.Set.Code.{i}", $"Code.Set.Code.{i} Name");
+                yield return CodeSetCodeApiModel($"Code.Set.Code.{i}", $"Code.Set.Code.{i} Name", i % 2 == 0 ? codeSystems[0] : codeSystems[1]);
             }
         }
 
-        public static CodeSetCodeApiModel CodeSetCodeApiModel(string code, string name)
+        public static CodeSystemCodeApiModel CodeSetCodeApiModel(string code, string name, Guid codeSystem)
         {
-            var codeSystem = new CodeSystem
-            {
-                Code = "TEST-CODE-SYSTEM",
-                Name = "TEST CODE SYSTEM",
-                Version = "TEST-CODE-SYSTEM-VERSION"
-            };
-
-            return new CodeSetCodeApiModel
+            return new CodeSystemCodeApiModel
             {
                 Code = code,
                 Name = name,
-                SourceDescription = "TEST Source",
-                VersionDescription = "TEST Version",
-                CodeSystem = codeSystem,
-                LastLoadDate = DateTime.UtcNow
+                CodeSystemGuid = codeSystem,
+                CodeSystemName = "Generated code system"
             };
         }
     }

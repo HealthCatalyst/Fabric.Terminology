@@ -15,12 +15,21 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CallMeMaybe" Version="0.6.6.42-alpha" />
+    <Compile Remove="Persistence\IValueSetBackingItemRepository.cs" />
+    <Compile Remove="Persistence\IValueSetCodeCountRepository.cs" />
+    <Compile Remove="Persistence\IValueSetCodeRepository.cs" />
+    <Compile Remove="Services\ValueSetService.cs" />
+    <Compile Remove="Services\ValueSetSummaryService.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CallMeMaybe" Version="0.6.6" />
     <PackageReference Include="FluentValidation" Version="7.1.1" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" Version="11.0.0" />
+    <PackageReference Include="Serilog" Version="2.4.0" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.0.2" />
   </ItemGroup>
 

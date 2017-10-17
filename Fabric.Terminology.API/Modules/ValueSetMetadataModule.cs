@@ -1,6 +1,6 @@
 ﻿namespace Fabric.Terminology.API.Modules
 {
-    using System.Collections.Generic;
+    using System;
 
     using Fabric.Terminology.API.MetaData;
     using Fabric.Terminology.API.Models;
@@ -23,27 +23,50 @@
             : base(modelCatalog, tagCatalog)
         {
             modelCatalog.AddModels(
-                typeof(CodeSetCodeApiModel),
-                typeof(CodeSystem),
-                typeof(FindByTermQuery),
+                typeof(ValueSetFindByTermQuery),
                 typeof(PagedCollection<ValueSetApiModel>),
+                typeof(PagedCollection<ValueSetItemApiModel>),
                 typeof(PagerSettings),
                 typeof(ValueSetApiModel),
+                typeof(ValueSetItemApiModel),
                 typeof(ValueSetCodeApiModel),
-                typeof(ValueSetCreationApiModel));
+                typeof(ValueSetCodeCountApiModel),
+                typeof(ValueSetCreationApiModel),
+                typeof(Guid)
+                );
 
-            // /{valueSetId}
+            // /{valueSetGuid}
             this.RouteDescriber.DescribeRouteWithParams(
                 "GetValueSet",
-                "Returns one or more ValueSet(s) by ValueSetUniqueId(s)",
-                "Gets a ValueSet by it's ValueSetUniqueId or a collection of ValueSets by CSV of ValueSetUniqueId(s)",
+                "Returns a ValueSet by it's ValueSetGuid",
+                "Gets a ValueSet by it's ValueSetGuid",
                 new[]
                 {
                     new HttpResponseMetadata<ValueSetApiModel> { Code = 200, Message = "OK" },
                     new HttpResponseMetadata { Code = 404, Message = "Not Found" },
                     new HttpResponseMetadata { Code = 500, Message = "Internal Server Error" }
                 },
-                new[] { ParameterFactory.GetValueSetIdArray(), ParameterFactory.GetSummary(), ParameterFactory.GetCodeSystemCodesArray() },
+                new[]
+                {
+                    ParameterFactory.GetValueSetGuid(),
+                    ParameterFactory.GetSummary(),
+                    ParameterFactory.GetCodeSystemGuidsArray()
+                },
+                new[] { TagsFactory.GetValueSetTag() });
+
+            this.RouteDescriber.DescribeRouteWithParams(
+                "GetValueSets",
+                "Gets multiple ValueSets",
+                "Gets a collection of ValueSet's given a collection of ValueSetGuid(s)",
+                new[]
+                {
+                    new HttpResponseMetadata<PagedCollection<ValueSetApiModel>> { Code = 200, Message = "OK" },
+                    new HttpResponseMetadata { Code = 500, Message = "Internal Server Error" }
+                },
+                new[]
+                {
+                    new BodyParameter<MultipleValueSetsQuery>(modelCatalog) { Required = true, Name = "Model" }
+                },
                 new[] { TagsFactory.GetValueSetTag() });
 
             this.RouteDescriber.DescribeRouteWithParams(
@@ -60,13 +83,25 @@
                     ParameterFactory.GetSkip(),
                     ParameterFactory.GetTop(settings.DefaultItemsPerPage),
                     ParameterFactory.GetSummary(),
-                    ParameterFactory.GetCodeSystemCodesArray()
+                    ParameterFactory.GetCodeSystemGuidsArray()
                 },
                 new[] { TagsFactory.GetValueSetTag() });
 
+            this.RouteDescriber.DescribeRouteWithParams(
+                "GetValueSetVersions",
+                "Gets all versions of a ValueSet",
+                "Gets all versions of a ValueSet by it's published ID (Usually OID)",
+                new[]
+                {
+                    new HttpResponseMetadata<ValueSetApiModel> { Code = 200, Message = "OK" },
+                    new HttpResponseMetadata { Code = 404, Message = "Not Found" },
+                    new HttpResponseMetadata { Code = 500, Message = "Internal Server Error" }
+                },
+                new[] { ParameterFactory.GetValueSetReferenceId(), ParameterFactory.GetSummary(), ParameterFactory.GetCodeSystemGuidsArray() },
+                new[] { TagsFactory.GetValueSetTag() });
 
             this.RouteDescriber.DescribeRouteWithParams(
-                "Find",
+                "Search",
                 "Search by 'Name' of ValueSet operation",
                 "Gets a paged collection of ValueSet's matching the 'Name' filter",
                 new[]
@@ -76,10 +111,9 @@
                 },
                 new[]
                 {
-                    //ParameterFactory.GetContentType(),
-                    new BodyParameter<FindByTermQuery>(modelCatalog) { Required = false }
+                    new BodyParameter<ValueSetFindByTermQuery>(modelCatalog) { Required = true, Name = "Model" }
                 },
-                new[] { TagsFactory.GetValueSetFindTag() });
+                new[] { TagsFactory.GetValueSetTag() });
 
             this.RouteDescriber.DescribeRouteWithParams(
                 "AddValueSet",
@@ -92,8 +126,8 @@
                 },
                 new[]
                 {
-                    //ParameterFactory.GetContentType(),
-                    new BodyParameter<ValueSetCreationApiModel>(modelCatalog) { Required = true }
+                    // ParameterFactory.GetContentType(),
+                    new BodyParameter<ValueSetCreationApiModel>(modelCatalog) { Required = true, Name = "Model" }
                 },
                 new[]
                 {

@@ -17,26 +17,36 @@
   <ItemGroup>
     <Compile Remove="Logs\**" />
     <Compile Remove="Properties\PublishProfiles\**" />
+    <Compile Remove="Services\**" />
     <Compile Remove="wwwroot\swagger\dist\**" />
     <Content Remove="Logs\**" />
     <Content Remove="Properties\PublishProfiles\**" />
+    <Content Remove="Services\**" />
     <Content Remove="wwwroot\swagger\dist\**" />
     <EmbeddedResource Remove="Logs\**" />
     <EmbeddedResource Remove="Properties\PublishProfiles\**" />
+    <EmbeddedResource Remove="Services\**" />
     <EmbeddedResource Remove="wwwroot\swagger\dist\**" />
     <None Remove="Logs\**" />
     <None Remove="Properties\PublishProfiles\**" />
+    <None Remove="Services\**" />
     <None Remove="wwwroot\swagger\dist\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="automapper" Version="6.1.0" />
+    <Compile Remove="Modules\ClientTermValueSetModule.cs" />
+    <Compile Remove="Modules\ValueSetBackingItemModule.cs" />
+    <Compile Remove="Modules\ValueSetSummaryModule.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="automapper" Version="6.1.1" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore" Version="1.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Owin" Version="1.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="1.1.2" />
     <PackageReference Include="Nancy" Version="2.0.0-clinteastwood" />
-    <PackageReference Include="Nancy.Swagger" Version="2.2.0-alpha" />
+    <PackageReference Include="Nancy.Swagger" Version="2.2.29-alpha" />
     <PackageReference Include="semver" Version="2.0.4" />
     <PackageReference Include="Serilog" Version="2.4.0" />
     <PackageReference Include="Serilog.Sinks.Literate" Version="2.1.0" />

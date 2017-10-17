@@ -1,11 +1,12 @@
 ﻿namespace Fabric.Terminology.IntegrationTests.Repositories
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Fabric.Terminology.Domain.Persistence;
+
     using Fabric.Terminology.IntegrationTests.Fixtures;
+    using Fabric.Terminology.SqlServer.Persistence;
     using Fabric.Terminology.TestsBase;
-    using Fabric.Terminology.TestsBase.Mocks;
 
     using FluentAssertions;
 
@@ -23,44 +24,40 @@
         private IValueSetCodeRepository ValueSetCodeRepository { get; }
 
         [Theory]
-        [Trait(TestTraits.Category, TestCategory.LongRunning)]
-        [InlineData("413B430E-42EC-41B2-939A-4A4E757124DD")]
-        [InlineData("5389CD6C-10E2-443E-A7A9-E0C1C6A0325F")]
-        [InlineData("E729FD76-77FA-4897-B855-DDCB67E8B648")]
-        [InlineData("93E5CCB3-6937-4391-A7E8-64D7E8683384")]
-        public void GetValueSetCodes(string valueSetUniqueId)
+        [InlineData("35F6B1A6-A72B-48F5-B319-F6CCAF15734D")]
+        public void GetValueSetCodes(string key)
         {
             // Arrange
-            // Handled in inline data
+            var valueSetGuid = Guid.Parse(key);
 
             // Act
-            var codes = this.Profiler.ExecuteTimed(() => this.ValueSetCodeRepository.GetValueSetCodes(valueSetUniqueId, new string[] { }), $"Querying ValueSetId = {valueSetUniqueId}");
-            this.Output.WriteLine($"Result count: {codes.Count}");
+            var codes = this.Profiler.ExecuteTimed(() => this.ValueSetCodeRepository.GetValueSetCodes(valueSetGuid), $"Querying ValueSetGuid {valueSetGuid}");
 
             // Assert
-            Assert.True(codes.Any());
+            codes.Should().NotBeEmpty();
+            codes.All(c => c.ValueSetGuid == valueSetGuid).Should().BeTrue();
         }
 
         [Fact]
-        public void LookupValueSetCodes()
+        public void GetValueSetCodesForMultipleValueSets()
         {
             // Arrange
-            var ids = new List<string>
+            var testValues = new List<Tuple<Guid, int>>
             {
-                "413B430E-42EC-41B2-939A-4A4E757124DD",
-                "5389CD6C-10E2-443E-A7A9-E0C1C6A0325F",
-                "E729FD76-77FA-4897-B855-DDCB67E8B648",
-                "93E5CCB3-6937-4391-A7E8-64D7E8683384"
+                new Tuple<Guid, int>(new Guid("A2216AAC-8513-43D8-85C2-00057F92394B"), 30), // hypertension
+                new Tuple<Guid, int>(new Guid("31EA98DC-D050-47A2-9435-002C19CEBF8F"), 57), // kidney failure
+                new Tuple<Guid, int>(new Guid("35F6B1A6-A72B-48F5-B319-F6CCAF15734D"), 424) // diabetes
             };
 
-            var builder = new MockDbSetBuilder<string>();
-            var mockDbSet = builder.Build(ids);
-
             // Act
-            var lookup = this.Profiler.ExecuteTimed(() => this.ValueSetCodeRepository.LookupValueSetCodes(mockDbSet.Object.ToList(), new string[] { }));
+            var codeDictionary = this.Profiler.ExecuteTimed(async () => await this.ValueSetCodeRepository.BuildValueSetCodesDictionary(testValues.Select(t => t.Item1)));
 
             // Assert
-            lookup.Should().NotBeNull();
+            codeDictionary.Keys.Count.Should().Be(3);
+            foreach (var tv in testValues)
+            {
+                codeDictionary[tv.Item1].Count.Should().Be(tv.Item2);
+            }
         }
     }
 }

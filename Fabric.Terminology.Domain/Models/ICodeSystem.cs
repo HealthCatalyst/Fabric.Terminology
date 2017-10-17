@@ -1,17 +1,21 @@
 ﻿namespace Fabric.Terminology.Domain.Models
 {
+    using System;
+
     public interface ICodeSystem
     {
-        /// <summary>
-        /// Gets the code system's unique "code".
-        /// </summary>
-        /// <remarks>
-        /// Maps to Terminology.ValueSetCode field CodeSystemCD Field
-        /// </remarks>
-        string Code { get; }
+        Guid CodeSystemGuid { get; }
 
         string Name { get; }
 
-        string Version { get; }
+        DateTime VersionDate { get; }
+
+        string Description { get; }
+
+        string Copyright { get; }
+
+        string Owner { get; }
+
+        int CodeCount { get; }
     }
 }

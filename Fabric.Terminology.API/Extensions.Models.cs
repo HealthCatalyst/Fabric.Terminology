@@ -1,5 +1,7 @@
 ﻿namespace Fabric.Terminology.API
 {
+    using System;
+    using System.Collections.Generic;
     using System.Linq;
 
     using AutoMapper;
@@ -11,39 +13,61 @@
 
     public static partial class Extensions
     {
+        public static ValueSetApiModel ToValueSetApiModel(this IValueSet valueSet) =>
+            valueSet.ToValueSetApiModel(new List<Guid>());
+
         public static ValueSetApiModel ToValueSetApiModel(
             this IValueSet valueSet,
-            bool summary = true,
-            int shortListCount = 5)
+            IReadOnlyCollection<Guid> codeSystemGuids)
         {
             var apiModel = Mapper.Map<IValueSet, ValueSetApiModel>(valueSet);
-            if (!summary)
+            if (codeSystemGuids.Any())
             {
-                return apiModel;
+                apiModel.CodeCounts = apiModel.CodeCounts.Where(cc => codeSystemGuids.Contains(cc.CodeSystemGuid)).ToList();
+                apiModel.ValueSetCodes = apiModel.ValueSetCodes.Where(csc => codeSystemGuids.Contains(csc.CodeSystemGuid)).ToList();
             }
-
-            apiModel.ValueSetCodes = apiModel.ValueSetCodes.Take(shortListCount).ToList().AsReadOnly();
 
             return apiModel;
         }
 
-        public static PagedCollection<ValueSetApiModel> ToValueSetApiModelPage(
-            this PagedCollection<IValueSet> valuesets,
-            bool summaries = true,
-            int shortListCount = 5)
+        public static ValueSetItemApiModel ToValueSetItemApiModel(this IValueSetSummary valueSetSummary) =>
+            valueSetSummary.ToValueSetItemApiModel(new List<Guid>());
+
+        public static ValueSetItemApiModel ToValueSetItemApiModel(
+            this IValueSetSummary valueSetSummary,
+            IReadOnlyCollection<Guid> codeSystemGuids)
         {
-            return new PagedCollection<ValueSetApiModel>
+            var apiModel = Mapper.Map<IValueSetSummary, ValueSetItemApiModel>(valueSetSummary);
+            if (codeSystemGuids.Any())
             {
-                PagerSettings = valuesets.PagerSettings,
-                TotalItems = valuesets.TotalItems,
-                TotalPages = valuesets.TotalPages,
-                Values = valuesets.Values.Select(vs => vs.ToValueSetApiModel(summaries, shortListCount)).ToList()
+                apiModel.CodeCounts = apiModel.CodeCounts.Where(cc => codeSystemGuids.Contains(cc.CodeSystemGuid)).ToList();
+            }
+
+            return apiModel;
+        }
+
+        public static PagedCollection<ValueSetItemApiModel> ToValueSetApiModelPage<T>(this PagedCollection<T> items, IReadOnlyCollection<Guid> codeSystemGuids, Func<T, IReadOnlyCollection<Guid>, ValueSetItemApiModel> mapper)
+            where T : IValueSetSummary
+        {
+            return new PagedCollection<ValueSetItemApiModel>
+            {
+                PagerSettings = items.PagerSettings,
+                TotalItems = items.TotalItems,
+                TotalPages = items.TotalPages,
+                Values = items.Values.Select(vsi => mapper(vsi, codeSystemGuids)).ToList()
             };
         }
 
-        public static ICodeSetCode ToCodeSetCode(this CodeSetCodeApiModel model)
+        public static PagedCollection<CodeSystemCodeApiModel> ToCodeSystemCodeApiModelPage(
+            this PagedCollection<ICodeSystemCode> items)
         {
-            return Mapper.Map<CodeSetCode>(model);
+            return new PagedCollection<CodeSystemCodeApiModel>
+            {
+                PagerSettings = items.PagerSettings,
+                TotalItems = items.TotalItems,
+                TotalPages = items.TotalPages,
+                Values = items.Values.Select(Mapper.Map<CodeSystemCodeApiModel>).ToList()
+            };
         }
 
         // acquired from Fabric.Authorization.Domain (renamed from ToError)
@@ -60,7 +84,7 @@
 
             var error = new Error
             {
-                Message = details.Count > 1 ? "Multiple Errors" : details.FirstOrDefault().Message,
+                Message = details.Count > 1 ? "Multiple Errors" : details.First().Message,
                 Details = details.ToArray()
             };
 

@@ -9,7 +9,7 @@
     {
         /// <summary>
         /// Generates a sequential guid
-        /// Based on MVCForum adaptation by Lee Messenger 
+        /// Based on MVCForum adaptation by Lee Messenger
         /// </summary>
         /// <returns>
         /// The sequential <see cref="Guid"/>.
@@ -47,6 +47,5 @@
 
             return new Guid(destinationArray);
         }
-
     }
 }

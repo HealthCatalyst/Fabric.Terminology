@@ -1,13 +1,11 @@
 ﻿namespace Fabric.Terminology.Domain.Models
 {
-    public interface IValueSetCode : ICodeSetCode
+    using System;
+
+    /// <summary>
+    /// Marker interface for a ValueSetCode
+    /// </summary>
+    public interface IValueSetCode : ICodeSystemCode, IHaveValueSetGuid
     {
-        string ValueSetUniqueId { get; }
-
-        string ValueSetOId { get; }
-
-        string ValueSetId { get; }
-
-        string ValueSetName { get; }
     }
 }

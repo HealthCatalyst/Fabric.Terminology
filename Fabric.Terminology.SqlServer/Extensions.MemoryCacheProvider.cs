@@ -1,28 +1,24 @@
 ﻿namespace Fabric.Terminology.SqlServer
 {
-    using System.Collections.Generic;
+    using System;
 
-    using Fabric.Terminology.Domain.Models;
+    using CallMeMaybe;
+
     using Fabric.Terminology.SqlServer.Caching;
-
-    using JetBrains.Annotations;
 
     /// <summary>
     /// Extension methods for <see cref="IMemoryCacheProvider"/>
     /// </summary>
     public static partial class Extensions
     {
-        [CanBeNull]
-        internal static IValueSet GetCachedValueSetWithAllCodes(this IMemoryCacheProvider cache, string valueSetId, IEnumerable<string> codeSystemCodes)
+        public static Maybe<T> GetItem<T>(this IMemoryCacheProvider cache, string key)
         {
-            var cacheKey = CacheKeys.ValueSetKey(valueSetId, codeSystemCodes);
-            var fnd = (IValueSet)cache.GetItem(cacheKey);
-            if (fnd != null && fnd.AllCodesLoaded)
-            {
-                return fnd;
-            }
+            return cache.GetItem(key).Select(o => (T)o);
+        }
 
-            return null;
+        public static Maybe<T> GetItem<T>(this IMemoryCacheProvider cache, string key, Func<object> getter)
+        {
+            return cache.GetItem(key, getter).Select(o => (T)o);
         }
     }
 }

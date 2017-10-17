@@ -4,20 +4,43 @@
 
     internal static class ParameterFactory
     {
-        public static Parameter GetValueSetIdArray()
+        public static Parameter GetValueSetGuid()
         {
             return new Parameter
             {
-                Name = "valueSetUniqueId",
+                Name = "valueSetGuid",
                 In = ParameterIn.Path,
                 Required = true,
-                CollectionFormat = CollectionFormats.Csv,
-                Description = "A CSV string of ValueSetIds",
+                Description = "The ValueSet Guid",
                 Type = "string"
             };
         }
 
-        public static Parameter GetCodeSystemCodesArray()
+        public static Parameter GetCodeSystemGuid()
+        {
+            return new Parameter
+            {
+                Name = "codeSystemGuid",
+                In = ParameterIn.Path,
+                Required = true,
+                Description = "The codeSystemGuid for the Code System",
+                Type = "string"
+            };
+        }
+
+        public static Parameter GetCodeGuid()
+        {
+            return new Parameter
+            {
+                Name = "codeGuid",
+                In = ParameterIn.Path,
+                Required = true,
+                Description = "The codeGuid for the code system code",
+                Type = "string"
+            };
+        }
+
+        public static Parameter GetCodeSystemGuidsArray()
         {
             return new Parameter
             {
@@ -25,7 +48,19 @@
                 In = ParameterIn.Query,
                 Required = false,
                 CollectionFormat = CollectionFormats.Csv,
-                Description = "An array of Code System Codes (CodeSystemCD) - used to filter ValueSet Codes",
+                Description = "An array of Code System identifiers (CodeSystemGUID) - used to filter ValueSet Codes",
+                Type = "string"
+            };
+        }
+
+        public static Parameter GetValueSetReferenceId()
+        {
+            return new Parameter
+            {
+                Name = "referenceId",
+                Description = "The published ValueSet (usually the OID)",
+                Required = true,
+                In = ParameterIn.Path,
                 Type = "string"
             };
         }
@@ -38,8 +73,7 @@
                 Description = "Indicates ValueSets returned should be partial summaries - e.g. codes listing is not complete and intended to be used for presentation.",
                 Required = false,
                 In = ParameterIn.Query,
-                Type = "boolean",
-                Default = true
+                Type = "boolean"
             };
         }
 
@@ -64,7 +98,6 @@
                 Description = "Skip 'X' number of pages for the 'current' page",
                 In = ParameterIn.Query,
                 Required = false,
-                Default = 0,
                 Type = "integer"
             };
         }
@@ -77,7 +110,6 @@
                 Description = "The number of items to be included in a page",
                 In = ParameterIn.Query,
                 Required = false,
-                Default = defaultItemsPerPage,
                 Type = "integer"
             };
         }
