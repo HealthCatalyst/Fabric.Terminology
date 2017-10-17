@@ -56,8 +56,7 @@
                 return this.codeSystemCodeService
                     .GetCodeSystemCode(codeGuid)
                     .Select(m => (object)Mapper.Map<CodeSystemCodeApiModel>(m))
-                    .Else(
-                        this.CreateFailureResponse(
+                    .Else(() => this.CreateFailureResponse(
                             "Code sytem with codeSystemGuid was not found",
                             HttpStatusCode.NotFound));
             }
