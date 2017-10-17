@@ -12,11 +12,11 @@
     using Xunit;
     using Xunit.Abstractions;
 
-    public class CodeSystemServiceTests : OutputTestBase, IClassFixture<ServiceFixture>
+    public class CodeSystemServiceTests : OutputTestBase, IClassFixture<SqlServiceFixture>
     {
         private readonly ICodeSystemService codeSystemService;
 
-        public CodeSystemServiceTests(ServiceFixture fixture, ITestOutputHelper output)
+        public CodeSystemServiceTests(SqlServiceFixture fixture, ITestOutputHelper output)
             : base(output)
         {
             this.codeSystemService = fixture.CodeSystemService;
