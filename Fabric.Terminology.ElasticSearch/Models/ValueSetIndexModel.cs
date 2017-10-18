@@ -8,7 +8,7 @@
     using Nest;
 
     [ElasticsearchType(Name = "valueset")]
-    public class ValueSetIndexModel : IValueSetBackingItem
+    public class ValueSetIndexModel : IValueSetBackingItem, IIndexModel
     {
         [Text]
         public string Id { get; set; }

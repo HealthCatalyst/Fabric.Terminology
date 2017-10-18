@@ -22,7 +22,10 @@
             string alias,
             IEnumerable<string> indexNames)
         {
-            foreach (var name in indexNames) descriptor.Remove(r => r.Alias(alias).Index(name));
+            foreach (var name in indexNames)
+            {
+                descriptor.Remove(r => r.Alias(alias).Index(name));
+            }
 
             return descriptor;
         }

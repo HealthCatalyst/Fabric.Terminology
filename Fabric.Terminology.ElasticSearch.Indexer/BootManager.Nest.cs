@@ -15,7 +15,7 @@
             services.AddSingleton<ElasticSearchSettings>(factory => factory.GetService<IndexerConfiguration>().ElasticSearchSettings);
             services.AddTransient<ElasticConnectionFactory>();
             services.AddSingleton<ElasticClient>(factory => factory.GetService<ElasticConnectionFactory>().Create());
-            services.AddSingleton<IValueSetIndexer, ValueSetIndexer>();
+            services.AddSingleton<ITerminologyIndexer, TerminologyIndexer>();
         }
     }
 }

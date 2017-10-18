@@ -46,9 +46,13 @@
             services.AddTransient<IValueSetCodeRepository, SqlValueSetCodeRepository>();
             services.AddTransient<IValueSetCodeCountRepository, SqlValueSetCodeCountRepository>();
             services.AddTransient<IValueSetBackingItemRepository, SqlValueSetBackingItemRepository>();
+            services.AddTransient<ICodeSystemRepository, SqlCodeSystemRepository>();
+            services.AddTransient<ICodeSystemCodeRepository, SqlCodeSystemCodeRepository>();
 
             services.AddTransient<SharedContext>(factory => factory.GetService<SharedContextFactory>().Create());
             services.AddTransient<IValueSetService, SqlValueSetService>();
+            services.AddTransient<ICodeSystemService, SqlCodeSystemService>();
+            services.AddTransient<ICodeSystemCodeService, SqlCodeSystemCodeService>();
         }
 
         private IndexerConfiguration LoadConfiguration()
