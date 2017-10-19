@@ -7,8 +7,11 @@
     using Nest;
 
     [ElasticsearchType(Name = "codesystemcode")]
-    public class CodeSystemCodeIndexModel : ICodeSystemCode
+    public class CodeSystemCodeIndexModel : ICodeSystemCode, IIndexModel
     {
+        [Text]
+        public string Id { get; set; }
+
         [Keyword]
         public Guid CodeGuid { get; set; }
 

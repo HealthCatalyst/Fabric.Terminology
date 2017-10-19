@@ -1,25 +1,24 @@
 ﻿namespace Fabric.Terminology.ElasticSearch.Indexer
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
 
     using AutoMapper;
 
-    using Fabric.Terminology.Domain.Models;
-    using Fabric.Terminology.Domain.Services;
     using Fabric.Terminology.ElasticSearch.Configuration;
     using Fabric.Terminology.ElasticSearch.Elastic;
-    using Fabric.Terminology.ElasticSearch.Models;
-
-    using global::Nest;
 
     using Microsoft.Extensions.DependencyInjection;
 
+    using Nest;
+
     using Serilog;
 
-    public class Program
+    public partial class Program
     {
         private const string IndexName = "valuesets";
 
@@ -40,6 +39,11 @@
             var arg = string.Empty;
             while (arg != "exit")
             {
+                if (arg == "success")
+                {
+                    Thread.Sleep(2500);
+                }
+
                 Console.Clear();
                 Console.Write(GetMenu());
                 arg = Console.ReadLine();
@@ -48,13 +52,15 @@
                 {
                     case "1":
                         // Index value sets
-                        Task.Run(async () => await IndexValueSetsByPage());
+                        arg = Task.Run(async () => await IndexValueSetsByPage()).Result;
                         break;
                     case "2":
                         // Index Code Systems
+                        arg = IndexCodeSystems();
                         break;
                     case "3":
                         // Index Code System Codes
+                        arg = Task.Run(async () => await IndexCodeSystemCodes()).Result;
                         break;
                     case "":
                         arg = "exit";
@@ -79,106 +85,49 @@
             return File.ReadAllText(fileName);
         }
 
-
-        private static async Task IndexValueSetsByPage()
-        {
-            var indexer = container.GetService<ITerminologyIndexer>();
-            var indexName = CreateNewIndexForAlias(indexer, Constants.ValueSetIndexAlias);
-
-            var service = container.GetService<IValueSetService>();
-            var currentPage = 1;
-            var page = await QueryPageAndIndex(indexer, service, indexName, currentPage);
-            Console.WriteLine($"Completed indexing page {currentPage} of {page.TotalPages}");
-
-            while (currentPage < page.TotalPages)
-            {
-                currentPage++;
-                page = await QueryPageAndIndex(indexer, service, indexName, currentPage);
-                Console.WriteLine($"Completed indexing page {currentPage} of {page.TotalPages}");
-            }
-
-            Console.WriteLine($"Completed indexing {page.TotalItems} value sets.");
-            logger.Information($"Completed indexing {page.TotalItems} value sets.");
-
-            Console.WriteLine("-------- ALIASING -------------");
-            Console.WriteLine($"Checking if alias {Constants.ValueSetIndexAlias} exists on older indexes");
-            var existing = indexer.GetIndexesForAlias(Constants.ValueSetIndexAlias);
-            if (existing.Any())
-            {
-                var joined = string.Join(", ", existing);
-                Console.WriteLine($"Alias currently assigned to ${joined}");
-            }
-
-            Console.WriteLine($"Assigning alias {Constants.ValueSetIndexAlias} to {indexName}");
-            indexer.ReassignAlias(indexName, Constants.ValueSetIndexAlias);
-
-            if (existing.Any())
-            {
-                foreach (var idx in existing)
-                {
-                    Console.WriteLine($"Deleting old index {idx}");
-                    indexer.DropIndex(idx);
-                }
-            }
-        }
-
-        private static string CreateNewIndexForAlias(ITerminologyIndexer indexer, string alias)
+        private static string CreateNewIndexForAlias(ITerminologyIndexer indexer, string alias, Func<string, CreateIndexDescriptor> getDescriptor)
         {
             var indexName = indexer.GetNameForIndexByConvention(alias);
             Console.WriteLine(Environment.NewLine);
             Console.WriteLine($"Creating new index {indexName}");
 
+            indexer.CreateIndex(indexName, getDescriptor(indexName));
+
             return indexName;
         }
 
-        private static void CleanIndex(ElasticClient client)
+        private static IReadOnlyCollection<string> ReassignAlias(ITerminologyIndexer indexer, string newIndexName, string alias)
         {
-            var request = new IndexExistsRequest(IndexName);
-            var result = client.IndexExists(request);
-            if (result.Exists)
+            Console.WriteLine("-------- ALIASING -------------");
+            Console.WriteLine($"Checking if alias {alias} exists on older indexes");
+            var existing = indexer.GetIndexesForAlias(alias);
+            if (existing.Any())
             {
-                client.DeleteIndex(IndexName);
+                var joined = string.Join(", ", existing);
+                Console.WriteLine($"Alias currently assigned to {joined}");
+                logger.Information($"{alias} Alias currently assigned to {joined}");
             }
 
-            client.CreateIndex(
-                IndexName,
-                c => c.Mappings(
-                    m => m.Map<ValueSetIndexModel>(t => t.AutoMap())
-                        .Map<ValueSetCodeIndexModel>(t => t.AutoMap())
-                        .Map<ValueSetCodeCountIndexModel>(t => t.AutoMap())
-                ));
+            Console.WriteLine($"Reassigning alias {alias} to {newIndexName}");
+            logger.Information($"Reassigning alias {alias} to {newIndexName}");
+            indexer.ReassignAlias(newIndexName, alias);
+
+            return existing;
         }
 
-        private static async Task<PagedCollection<IValueSet>> QueryPageAndIndex(
-            ITerminologyIndexer indexer,
-            IValueSetService service,
-            string indexName,
-            int pageNumber = 1)
+        private static void RemoveOrphanedIndices(ITerminologyIndexer indexer, IReadOnlyCollection<string> indices)
         {
-            try
+            if (!indices.Any())
             {
-                var page = await GetValueSetPage(service, pageNumber);
-                var mapped = page.Values.Select(Mapper.Map<IValueSet, ValueSetIndexModel>);
-
-                indexer.IndexMany(mapped, indexName);
-
-                return page;
+                return;
             }
-            catch (Exception e)
+
+            foreach (var idx in indices)
             {
-                Console.WriteLine(e);
-                throw;
+                Console.WriteLine($"Deleting old index {idx}");
+                indexer.DropIndex(idx);
+                logger.Information($"Deleted index {idx}");
             }
-        }
-
-        private static async Task<PagedCollection<IValueSet>> GetValueSetPage(
-            IValueSetService service,
-            int pageNumber,
-            int itemsPerPage = 50)
-        {
-            var pagerSettings = new PagerSettings { CurrentPage = pageNumber, ItemsPerPage = itemsPerPage };
-            var valueSets = await service.GetValueSetsAsync(pagerSettings, false); // we want all versions
-            return valueSets;
         }
     }
 }

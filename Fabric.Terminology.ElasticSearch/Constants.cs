@@ -4,8 +4,8 @@
     {
         public const string ValueSetIndexAlias = "valuesets";
 
-        public const string CodeSystemIndexAlias = "codesystem";
+        public const string CodeSystemIndexAlias = "codesystems";
 
-        public const string CodeSystemCodeIndexAlias = "codesystemcode";
+        public const string CodeSystemCodeIndexAlias = "codesystemcodes";
     }
 }

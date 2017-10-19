@@ -9,11 +9,17 @@
     {
         public IndexModelProfile()
         {
-            this.CreateMap<ICodeSystemCode, CodeSystemCodeIndexModel>();
+            this.CreateMap<ICodeSystemCode, CodeSystemCodeIndexModel>()
+                .ForMember(d => d.Id, o => o.MapFrom(s => s.CodeGuid.ToString()));
+
             this.CreateMap<IValueSetCode, ValueSetCodeIndexModel>();
             this.CreateMap<IValueSetCodeCount, ValueSetCodeCountIndexModel>();
+
             this.CreateMap<IValueSet, ValueSetIndexModel>()
                 .ForMember(d => d.Id, o => o.MapFrom(s => s.ValueSetGuid.ToString()));
+
+            this.CreateMap<ICodeSystem, CodeSystemIndexModel>()
+                .ForMember(d => d.Id, o => o.MapFrom(s => s.CodeSystemGuid.ToString()));
         }
     }
 }

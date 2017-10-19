@@ -35,6 +35,8 @@
             }
 
             services.AddSingleton<ICachingManagerFactory, CachingManagerFactory>();
+            services.AddSingleton<ICodeSystemCachingManager, CodeSystemCachingManager>();
+            services.AddSingleton<ICodeSystemCodeCachingManager, CodeSystemCodeCachingManager>();
 
             services.AddSingleton<SharedContextFactory>();
             services.AddSingleton<ClientTermContextFactory>();

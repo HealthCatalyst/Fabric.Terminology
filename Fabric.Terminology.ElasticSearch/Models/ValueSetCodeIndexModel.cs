@@ -11,7 +11,5 @@
     {
         [Keyword]
         public Guid ValueSetGuid { get; set; }
-
-        public bool Retired { get; set; }
     }
 }

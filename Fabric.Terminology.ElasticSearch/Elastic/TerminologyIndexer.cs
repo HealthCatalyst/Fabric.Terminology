@@ -35,18 +35,16 @@
         {
             var success = true;
             var indexModels = models as T[] ?? models.ToArray();
-            foreach (var batch in indexModels.Batch(1000))
-            {
-                var indexResponse = this.client.Bulk(
-                    s => s.IndexMany(
-                        batch,
-                        (bulkDescriptor, record) => bulkDescriptor.Index(indexName).Document(record)));
 
-                if (!indexResponse.IsValid)
-                {
-                    this.logger.Error(indexResponse.OriginalException, indexResponse.DebugInformation);
-                    success = false;
-                }
+            var indexResponse = this.client.Bulk(
+                s => s.IndexMany(
+                    indexModels,
+                    (bulkDescriptor, record) => bulkDescriptor.Index(indexName).Document(record)));
+
+            if (!indexResponse.IsValid)
+            {
+                this.logger.Error(indexResponse.OriginalException, indexResponse.DebugInformation);
+                success = false;
             }
 
             return success;
