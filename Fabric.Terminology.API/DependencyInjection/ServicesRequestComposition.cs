@@ -17,6 +17,7 @@
             container.Register<Lazy<ClientTermContext>>((c, p) => c.Resolve<ClientTermContextFactory>().CreateLazy());
             container.Register<IValueSetService, SqlValueSetService>().AsSingleton();
             container.Register<IValueSetSummaryService, SqlValueSetSummaryService>().AsSingleton();
+            container.Register<IValueSetCodeService, SqlValueSetCodeService>().AsSingleton();
             container.Register<IClientTermValueSetService, SqlClientTermValueSetService>().AsSingleton();
             container.Register<ICodeSystemService, SqlCodeSystemService>().AsSingleton();
             container.Register<ICodeSystemCodeService, SqlCodeSystemCodeService>().AsSingleton();

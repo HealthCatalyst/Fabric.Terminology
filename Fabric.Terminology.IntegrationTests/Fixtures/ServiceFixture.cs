@@ -32,7 +32,8 @@
             var valueSetCodeRepository = new SqlValueSetCodeRepository(
                 this.SharedContext,
                 this.Logger,
-                cacheManagerFactory);
+                cacheManagerFactory,
+                pagingStrategyFactory);
 
             var valueSetCodeCountRepository = new SqlValueSetCodeCountRepository(
                 this.SharedContext,
