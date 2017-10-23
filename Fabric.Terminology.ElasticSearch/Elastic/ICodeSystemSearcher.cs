@@ -12,5 +12,9 @@
         Maybe<CodeSystemIndexModel> Get(Guid codeSystemGuid);
 
         IReadOnlyCollection<CodeSystemIndexModel> GetAll(params Guid[] codeSystemGuids);
+
+        IReadOnlyCollection<CodeSystemIndexModel> GetAll(
+            bool includeZeroCountCodeSystems,
+            params Guid[] codeSystemGuids);
     }
 }

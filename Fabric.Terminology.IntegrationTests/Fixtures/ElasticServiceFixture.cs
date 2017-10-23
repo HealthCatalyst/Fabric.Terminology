@@ -21,8 +21,11 @@
 
             var searcher = new ValueSetIndexSearcher(this.Logger, this.ElasticClient, new PagingStrategyFactory());
 
+            var codeSystemSearcher = new CodeSystemSearcher(this.Logger, this.ElasticClient);
+
             this.ValueSetService = new ElasticValueSetService(searcher);
             this.ValueSetSummaryService = new ElasticValueSetSummaryService(searcher);
+            this.CodeSystemService = new ElasticCodeSystemService(codeSystemSearcher);
         }
 
         public ElasticClient ElasticClient { get; }
@@ -30,6 +33,8 @@
         public IValueSetService ValueSetService { get; }
 
         public IValueSetSummaryService ValueSetSummaryService { get; }
+
+        public ICodeSystemService CodeSystemService { get; }
 
         protected override bool EnableLogging => true;
     }

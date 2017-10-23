@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
 
     using CallMeMaybe;
 
@@ -41,13 +42,26 @@
 
         public IReadOnlyCollection<CodeSystemIndexModel> GetAll(params Guid[] codeSystemGuids)
         {
-            var response = this.client.Search<CodeSystemIndexModel>(
-                g => g.Index(IndexAlias)
-                .From(0)
-                .Size(int.MaxValue)
-                .Query(q => q.Terms(p => p.Field("codeSystemGuid").Terms(codeSystemGuids))));
+            return this.GetAll(false, codeSystemGuids);
+        }
 
-            return this.Map(response);
+        public IReadOnlyCollection<CodeSystemIndexModel> GetAll(bool includeZeroCountCodeSystems, params Guid[] codeSystemGuids)
+        {
+            var descriptor = new SearchDescriptor<CodeSystemIndexModel>().Index(IndexAlias).From(0).Size(Constants.NestMaxPageSize);
+
+            if (codeSystemGuids.Any())
+            {
+                descriptor = descriptor.Query(q => q.Terms(f => f.Field("codeSystemGuid").Terms(codeSystemGuids)));
+            }
+
+            if (!includeZeroCountCodeSystems)
+            {
+                descriptor = descriptor.Query(q => q.Range(r => r.Field("codeCount").GreaterThan(0)));
+            }
+
+            var response = this.client.Search<CodeSystemIndexModel>(descriptor);
+
+            return this.Map(response).OrderBy(cs => cs.Name).ToList();
         }
 
         private IReadOnlyCollection<CodeSystemIndexModel> Map(
