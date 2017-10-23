@@ -16,7 +16,7 @@
 
     internal class ValueSetIndexSearcher : IValueSetIndexSearcher
     {
-        private const string IndexAlias = "valuesets";
+        private const string IndexAlias = Constants.ValueSetIndexAlias;
 
         private readonly ElasticClient client;
 
