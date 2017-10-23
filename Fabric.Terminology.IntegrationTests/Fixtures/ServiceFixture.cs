@@ -7,16 +7,14 @@
     using Fabric.Terminology.SqlServer.Services;
     using Fabric.Terminology.TestsBase.Fixtures;
 
-    public class SqlServiceFixture : RepositoryFixtureBase
+    public class ServiceFixture : RepositoryFixtureBase
     {
-        public SqlServiceFixture()
+        public ServiceFixture()
         {
             this.Initialize();
         }
 
         public IValueSetService ValueSetService { get; private set; }
-
-        public IValueSetCodeService ValueSetCodeService { get; private set; }
 
         public IValueSetSummaryService ValueSetSummaryService { get; private set; }
 
@@ -67,8 +65,6 @@
                 valueSetBackingItemRepository,
                 valueSetCodeRepository,
                 valueSetCodeCountRepository);
-
-            this.ValueSetCodeService = new SqlValueSetCodeService(valueSetCodeRepository);
 
             this.ClientTermValueSetService = new SqlClientTermValueSetService(
                 this.Logger,
