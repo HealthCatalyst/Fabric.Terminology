@@ -16,6 +16,8 @@
 
         public IValueSetService ValueSetService { get; private set; }
 
+        public IValueSetCodeService ValueSetCodeService { get; private set; }
+
         public IValueSetSummaryService ValueSetSummaryService { get; private set; }
 
         public IClientTermValueSetService ClientTermValueSetService { get; private set; }
@@ -32,7 +34,8 @@
             var valueSetCodeRepository = new SqlValueSetCodeRepository(
                 this.SharedContext,
                 this.Logger,
-                cacheManagerFactory);
+                cacheManagerFactory,
+                pagingStrategyFactory);
 
             var valueSetCodeCountRepository = new SqlValueSetCodeCountRepository(
                 this.SharedContext,
@@ -64,6 +67,8 @@
                 valueSetBackingItemRepository,
                 valueSetCodeRepository,
                 valueSetCodeCountRepository);
+
+            this.ValueSetCodeService = new SqlValueSetCodeService(valueSetCodeRepository);
 
             this.ClientTermValueSetService = new SqlClientTermValueSetService(
                 this.Logger,

@@ -8,33 +8,30 @@
     using Fabric.Terminology.Domain.Services;
     using Fabric.Terminology.SqlServer.Persistence;
 
-    using Serilog;
-
     internal class SqlValueSetCodeService : IValueSetCodeService
     {
-        private readonly ILogger logger;
-
         private readonly IValueSetCodeRepository valueSetCodeRepository;
 
-        public SqlValueSetCodeService(ILogger logger, IValueSetCodeRepository valueSetCodeRepository)
+        public SqlValueSetCodeService(IValueSetCodeRepository valueSetCodeRepository)
         {
-            this.logger = logger;
             this.valueSetCodeRepository = valueSetCodeRepository;
         }
 
         public IReadOnlyCollection<IValueSetCode> GetValueSetCodes(Guid valueSetGuid)
         {
-            throw new NotImplementedException();
+            return this.valueSetCodeRepository.GetValueSetCodes(valueSetGuid);
         }
 
         public IReadOnlyCollection<IValueSetCode> GetValueSetCodesByCodeGuid(Guid codeGuid)
         {
-            throw new NotImplementedException();
+            return this.valueSetCodeRepository.GetValueSetCodesByCodeGuid(codeGuid);
         }
 
-        public Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(Guid valueSetGuid, IPagerSettings settings)
+        public Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(
+            Guid valueSetGuid,
+            IPagerSettings settings)
         {
-            throw new NotImplementedException();
+            return this.GetValueSetCodesAsync(valueSetGuid, settings, new List<Guid>());
         }
 
         public Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(
@@ -42,7 +39,7 @@
             IPagerSettings settings,
             IEnumerable<Guid> codeSystemGuids)
         {
-            throw new NotImplementedException();
+            return this.GetValueSetCodesAsync(string.Empty, valueSetGuid, settings, codeSystemGuids);
         }
 
         public Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(
@@ -51,7 +48,11 @@
             IPagerSettings settings,
             IEnumerable<Guid> codeSystemGuids)
         {
-            throw new NotImplementedException();
+            return this.valueSetCodeRepository.GetValueSetCodesAsync(
+                filterText,
+                valueSetGuid,
+                settings,
+                codeSystemGuids);
         }
     }
 }

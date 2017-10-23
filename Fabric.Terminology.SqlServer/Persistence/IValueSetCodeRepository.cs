@@ -10,6 +10,14 @@
     {
         IReadOnlyCollection<IValueSetCode> GetValueSetCodes(Guid valueSetGuid);
 
+        IReadOnlyCollection<IValueSetCode> GetValueSetCodesByCodeGuid(Guid codeGuid);
+
+        Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(
+            string filterText,
+            Guid valueSetGuid,
+            IPagerSettings settings,
+            IEnumerable<Guid> codeSystemGuids);
+
         Task<Dictionary<Guid, IReadOnlyCollection<IValueSetCode>>> BuildValueSetCodesDictionary(
             IEnumerable<Guid> valueSetGuids);
     }
