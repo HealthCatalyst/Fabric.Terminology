@@ -20,7 +20,8 @@
             this.ValueSetCodeRepository = new SqlValueSetCodeRepository(
                 this.SharedContext,
                 this.Logger,
-                new CachingManagerFactory(this.Cache));
+                new CachingManagerFactory(this.Cache),
+                new PagingStrategyFactory());
         }
     }
 }

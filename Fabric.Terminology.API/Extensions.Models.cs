@@ -46,7 +46,10 @@
             return apiModel;
         }
 
-        public static PagedCollection<ValueSetItemApiModel> ToValueSetApiModelPage<T>(this PagedCollection<T> items, IReadOnlyCollection<Guid> codeSystemGuids, Func<T, IReadOnlyCollection<Guid>, ValueSetItemApiModel> mapper)
+        public static PagedCollection<ValueSetItemApiModel> ToValueSetApiModelPage<T>(
+            this PagedCollection<T> items,
+            IReadOnlyCollection<Guid> codeSystemGuids,
+            Func<T, IReadOnlyCollection<Guid>, ValueSetItemApiModel> mapper)
             where T : IValueSetSummary
         {
             return new PagedCollection<ValueSetItemApiModel>
@@ -55,6 +58,18 @@
                 TotalItems = items.TotalItems,
                 TotalPages = items.TotalPages,
                 Values = items.Values.Select(vsi => mapper(vsi, codeSystemGuids)).ToList()
+            };
+        }
+
+        public static PagedCollection<ValueSetCodeApiModel> ToValueSetCodeApiModelPage(
+            this PagedCollection<IValueSetCode> items)
+        {
+            return new PagedCollection<ValueSetCodeApiModel>
+            {
+                PagerSettings = items.PagerSettings,
+                TotalItems = items.TotalItems,
+                TotalPages = items.TotalPages,
+                Values = items.Values.Select(Mapper.Map<ValueSetCodeApiModel>).ToList()
             };
         }
 
