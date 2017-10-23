@@ -4,6 +4,8 @@
     {
         public const string ValueSetIndexAlias = "valuesets";
 
+        public const string ValueSetCodesIndexAlias = "valuesetcodes";
+
         public const string CodeSystemIndexAlias = "codesystems";
 
         public const string CodeSystemCodeIndexAlias = "codesystemcodes";

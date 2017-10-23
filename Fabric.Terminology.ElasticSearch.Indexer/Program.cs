@@ -55,10 +55,13 @@
                         arg = Task.Run(async () => await IndexValueSetsByPage()).Result;
                         break;
                     case "2":
+                        arg = Task.Run(async () => await IndexValueSetCodesByPage()).Result;
+                        break;
+                    case "3":
                         // Index Code Systems
                         arg = IndexCodeSystems();
                         break;
-                    case "3":
+                    case "4":
                         // Index Code System Codes
                         arg = Task.Run(async () => await IndexCodeSystemCodes()).Result;
                         break;

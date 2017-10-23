@@ -12,7 +12,8 @@
             this.CreateMap<ICodeSystemCode, CodeSystemCodeIndexModel>()
                 .ForMember(d => d.Id, o => o.MapFrom(s => s.CodeGuid.ToString()));
 
-            this.CreateMap<IValueSetCode, ValueSetCodeIndexModel>();
+            this.CreateMap<IValueSetCode, ValueSetCodeIndexModel>()
+                .ForMember(d => d.Id, o => o.MapFrom(s => $"{s.ValueSetGuid}-{s.Code}"));
             this.CreateMap<IValueSetCodeCount, ValueSetCodeCountIndexModel>();
 
             this.CreateMap<IValueSet, ValueSetIndexModel>()

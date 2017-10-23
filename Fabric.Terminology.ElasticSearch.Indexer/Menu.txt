@@ -3,8 +3,10 @@
 
 	1) Index ValueSets
 
-	2) Index CodeSysetms
+	2) Index ValueSetCodes
 
-	3) Index CodeSystemCodes
+	3) Index CodeSysetms
+
+	4) Index CodeSystemCodes
 
   Select (1 - 3 or ENTER to exit): 

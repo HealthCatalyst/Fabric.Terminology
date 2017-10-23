@@ -55,6 +55,7 @@
             services.AddTransient<IValueSetService, SqlValueSetService>();
             services.AddTransient<ICodeSystemService, SqlCodeSystemService>();
             services.AddTransient<ICodeSystemCodeService, SqlCodeSystemCodeService>();
+            services.AddTransient<IValueSetCodeService, SqlValueSetCodeService>();
         }
 
         private IndexerConfiguration LoadConfiguration()
