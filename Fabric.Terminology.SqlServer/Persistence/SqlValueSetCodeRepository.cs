@@ -68,11 +68,39 @@
 
         public Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(
             string filterText,
+            IPagerSettings settings,
+            IEnumerable<Guid> codeSystemGuids)
+        {
+            var dtos = this.GetValueSetCodeQueryable(filterText, settings, codeSystemGuids);
+
+            return this.CreatePagedCollectionAsync(dtos, settings);
+        }
+
+        public Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(
+            string filterText,
             Guid valueSetGuid,
             IPagerSettings settings,
             IEnumerable<Guid> codeSystemGuids)
         {
-            var dtos = this.sharedContext.ValueSetCodes.Where(dto => dto.ValueSetGUID == valueSetGuid);
+            var dtos = this.GetValueSetCodeQueryable(filterText, settings, codeSystemGuids);
+
+            dtos = dtos.Where(dto => dto.ValueSetGUID == valueSetGuid);
+
+            return this.CreatePagedCollectionAsync(dtos, settings);
+        }
+
+        public Task<Dictionary<Guid, IReadOnlyCollection<IValueSetCode>>> BuildValueSetCodesDictionary(
+            IEnumerable<Guid> valueSetGuids)
+        {
+            return this.cacheManager.GetCachedValueDictionary(valueSetGuids, this.QueryValueSetCodeLookup);
+        }
+
+        private IQueryable<ValueSetCodeDto> GetValueSetCodeQueryable(
+            string filterText,
+            IPagerSettings settings,
+            IEnumerable<Guid> codeSystemGuids)
+        {
+            var dtos = this.sharedContext.ValueSetCodes.AsQueryable();
 
             if (!filterText.IsNullOrWhiteSpace())
             {
@@ -85,13 +113,7 @@
                 dtos = dtos.Where(dto => systemCodes.Contains(dto.CodeSystemGuid));
             }
 
-            return this.CreatePagedCollectionAsync(dtos, settings);
-        }
-
-        public Task<Dictionary<Guid, IReadOnlyCollection<IValueSetCode>>> BuildValueSetCodesDictionary(
-            IEnumerable<Guid> valueSetGuids)
-        {
-            return this.cacheManager.GetCachedValueDictionary(valueSetGuids, this.QueryValueSetCodeLookup);
+            return dtos;
         }
 
         private IReadOnlyCollection<IValueSetCode> QueryValueSetCodes(Guid valueSetGuid)

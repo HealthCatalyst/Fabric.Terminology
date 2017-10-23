@@ -27,9 +27,19 @@
             return this.valueSetCodeRepository.GetValueSetCodesByCodeGuid(codeGuid);
         }
 
+        public Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(IPagerSettings settings)
+        {
+            return this.GetValueSetCodesAsync(settings, new List<Guid>());
+        }
+
         public Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(
-            Guid valueSetGuid,
-            IPagerSettings settings)
+            IPagerSettings settings,
+            IEnumerable<Guid> codeSystemGuids)
+        {
+            return this.GetValueSetCodesAsync(string.Empty, settings, codeSystemGuids);
+        }
+
+        public Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(Guid valueSetGuid, IPagerSettings settings)
         {
             return this.GetValueSetCodesAsync(valueSetGuid, settings, new List<Guid>());
         }
@@ -40,6 +50,14 @@
             IEnumerable<Guid> codeSystemGuids)
         {
             return this.GetValueSetCodesAsync(string.Empty, valueSetGuid, settings, codeSystemGuids);
+        }
+
+        public Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(
+            string filterText,
+            IPagerSettings settings,
+            IEnumerable<Guid> codeSystemGuids)
+        {
+            return this.valueSetCodeRepository.GetValueSetCodesAsync(filterText, settings, codeSystemGuids);
         }
 
         public Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(

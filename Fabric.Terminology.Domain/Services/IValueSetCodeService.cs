@@ -18,10 +18,19 @@
         /// </remarks>
         IReadOnlyCollection<IValueSetCode> GetValueSetCodesByCodeGuid(Guid codeGuid);
 
+        Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(IPagerSettings settings);
+
+        Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(IPagerSettings settings, IEnumerable<Guid> codeSystemGuids);
+
         Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(Guid valueSetGuid, IPagerSettings settings);
 
         Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(
             Guid valueSetGuid,
+            IPagerSettings settings,
+            IEnumerable<Guid> codeSystemGuids);
+
+        Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(
+            string filterText,
             IPagerSettings settings,
             IEnumerable<Guid> codeSystemGuids);
 

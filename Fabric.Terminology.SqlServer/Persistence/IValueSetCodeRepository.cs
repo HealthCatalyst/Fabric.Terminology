@@ -14,6 +14,11 @@
 
         Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(
             string filterText,
+            IPagerSettings settings,
+            IEnumerable<Guid> codeSystemGuids);
+
+        Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(
+            string filterText,
             Guid valueSetGuid,
             IPagerSettings settings,
             IEnumerable<Guid> codeSystemGuids);

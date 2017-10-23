@@ -10,8 +10,17 @@
         {
             return new Tag
             {
-                Description = "Operations related to Shared Terminology Value Sets",
+                Description = "Operations related to Shared Terminology value sets",
                 Name = $"{TerminologyVersion.Route}/valuesets/"
+            };
+        }
+
+        public static Tag GetValueSetCodeTag()
+        {
+            return new Tag
+            {
+                Description = "Operations related to Shared Terminology value set codes",
+                Name = $"{TerminologyVersion.Route}/valuesetcodes/"
             };
         }
 

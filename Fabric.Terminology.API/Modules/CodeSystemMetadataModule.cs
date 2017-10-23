@@ -30,7 +30,7 @@
                 "Gets a collection of all available code systems",
                 new[]
                 {
-                    new HttpResponseMetadata<CodeSystemApiModel> { Code = 200, Message = "OK" },
+                    new HttpResponseMetadata<IEnumerable<CodeSystemApiModel>> { Code = 200, Message = "OK" },
                     new HttpResponseMetadata { Code = 500, Message = "Internal Server Error" }
                 },
                 new Parameter[] { },

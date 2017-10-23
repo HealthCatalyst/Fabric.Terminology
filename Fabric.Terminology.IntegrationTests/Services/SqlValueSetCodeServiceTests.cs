@@ -76,5 +76,28 @@
             codes.Should().NotBeEmpty();
             this.Output.WriteLine($"Code count: {codes.Count}");
         }
+
+        [Theory]
+        [InlineData(10, 1)]
+        [InlineData(20, 2)]
+        [InlineData(20, 3)]
+        [InlineData(100, 1)]
+        [InlineData(100, 2)]
+        public void GetValueSetCodes(int itemsPerPage, int pageNumber)
+        {
+            // Arrange
+            var pagerSettings = new PagerSettings { CurrentPage = pageNumber, ItemsPerPage = itemsPerPage };
+
+            // Act
+            var page = this.Profiler.ExecuteTimed(async () => await this.valueSetCodeService.GetValueSetCodesAsync(pagerSettings));
+
+            this.Output.WriteLine($"Total Values {page.TotalItems}");
+            this.Output.WriteLine($"Total Pages {page.TotalPages}");
+
+            // Assert
+            page.TotalItems.Should().BeGreaterThan(0);
+            page.TotalPages.Should().BeGreaterThan(0);
+            page.Values.Count.Should().BeLessOrEqualTo(itemsPerPage);
+        }
     }
 }
