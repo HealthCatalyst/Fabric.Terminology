@@ -2,7 +2,7 @@
 {
     using System.Collections.Generic;
 
-    internal class CsvQueryResult : ICsvQueryResult
+    internal class BatchCodeSystemCodeResult : IBatchCodeSystemCodeResult
     {
         public IReadOnlyCollection<ICodeSystemCode> Matches { get; set; }
 

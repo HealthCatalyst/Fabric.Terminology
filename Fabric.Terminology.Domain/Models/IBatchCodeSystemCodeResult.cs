@@ -2,7 +2,7 @@
 {
     using System.Collections.Generic;
 
-    public interface ICsvQueryResult
+    public interface IBatchCodeSystemCodeResult
     {
         IReadOnlyCollection<ICodeSystemCode> Matches { get; }
 

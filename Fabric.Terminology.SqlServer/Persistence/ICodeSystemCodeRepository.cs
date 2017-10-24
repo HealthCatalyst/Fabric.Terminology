@@ -14,7 +14,7 @@
 
         IReadOnlyCollection<ICodeSystemCode> GetCodeSystemCodes(IEnumerable<Guid> codeGuids);
 
-        Task<ICsvQueryResult> GetCodeSystemCodesBatchAsync(
+        Task<IBatchCodeSystemCodeResult> GetCodeSystemCodesBatchAsync(
             IEnumerable<string> codes,
             IEnumerable<Guid> codeSystemGuids);
 

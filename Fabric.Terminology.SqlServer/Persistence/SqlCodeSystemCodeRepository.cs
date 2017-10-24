@@ -3,7 +3,6 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Linq.Expressions;
     using System.Threading.Tasks;
 
     using CallMeMaybe;
@@ -71,7 +70,7 @@
             }
         }
 
-        public async Task<ICsvQueryResult> GetCodeSystemCodesBatchAsync(
+        public async Task<IBatchCodeSystemCodeResult> GetCodeSystemCodesBatchAsync(
             IEnumerable<string> codes,
             IEnumerable<Guid> codeSystemGuids)
         {
@@ -87,7 +86,7 @@
                 found.AddRange(unique);
             }
 
-            return new CsvQueryResult
+            return new BatchCodeSystemCodeResult
             {
                 Matches = found,
                 NotFound = codesHash.Where(c => !found.Exists(f => f.Code == c)).ToList()

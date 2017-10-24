@@ -30,12 +30,12 @@
             return this.codeSystemCodeRepository.GetCodeSystemCodes(codeGuids);
         }
 
-        public Task<ICsvQueryResult> GetCodeSystemCodesBatchAsync(IEnumerable<string> codes)
+        public Task<IBatchCodeSystemCodeResult> GetCodeSystemCodesBatchAsync(IEnumerable<string> codes)
         {
             return this.GetCodeSystemCodesBatchAsync(codes, new List<Guid>());
         }
 
-        public Task<ICsvQueryResult> GetCodeSystemCodesBatchAsync(IEnumerable<string> codes, IEnumerable<Guid> codeSystemGuids)
+        public Task<IBatchCodeSystemCodeResult> GetCodeSystemCodesBatchAsync(IEnumerable<string> codes, IEnumerable<Guid> codeSystemGuids)
         {
             return this.codeSystemCodeRepository.GetCodeSystemCodesBatchAsync(codes, codeSystemGuids);
         }
