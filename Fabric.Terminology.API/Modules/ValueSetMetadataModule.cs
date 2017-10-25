@@ -57,7 +57,7 @@
                 new[] { TagsFactory.GetValueSetTag() });
 
             this.RouteDescriber.DescribeRouteWithParams(
-                "GetValueSets",
+                "GetMultipleValueSets",
                 "Gets multiple ValueSets",
                 "Gets a collection of ValueSet's given a collection of ValueSetGuid(s)",
                 new[]
@@ -85,7 +85,8 @@
                     ParameterFactory.GetSkip(),
                     ParameterFactory.GetTop(settings.DefaultItemsPerPage),
                     ParameterFactory.GetSummary(),
-                    ParameterFactory.GetCodeSystemGuidsArray()
+                    ParameterFactory.GetCodeSystemGuidsArray(),
+                    ParameterFactory.GetStatusCode()
                 },
                 new[] { TagsFactory.GetValueSetTag() });
 

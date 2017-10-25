@@ -25,22 +25,28 @@
 
         Task<IReadOnlyCollection<IValueSet>> GetValueSetVersionsAsync(string valueSetReferenceId);
 
-        Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings settings, bool latestVersionsOnly = true);
+        Task<PagedCollection<IValueSet>> GetValueSetsAsync(
+            IPagerSettings settings,
+            ValueSetStatusCode statusCode = ValueSetStatusCode.Active,
+            bool latestVersionsOnly = true);
 
         Task<PagedCollection<IValueSet>> GetValueSetsAsync(
             IPagerSettings settings,
             IEnumerable<Guid> codeSystemGuids,
+            ValueSetStatusCode statusCode = ValueSetStatusCode.Active,
             bool latestVersionsOnly = true);
 
         Task<PagedCollection<IValueSet>> GetValueSetsAsync(
             string filterText,
             IPagerSettings pagerSettings,
+            ValueSetStatusCode statusCode = ValueSetStatusCode.Active,
             bool latestVersionsOnly = true);
 
         Task<PagedCollection<IValueSet>> GetValueSetsAsync(
             string filterText,
             IPagerSettings pagerSettings,
             IEnumerable<Guid> codeSystemGuids,
+            ValueSetStatusCode statusCode = ValueSetStatusCode.Active,
             bool latestVersionsOnly = true);
     }
 }

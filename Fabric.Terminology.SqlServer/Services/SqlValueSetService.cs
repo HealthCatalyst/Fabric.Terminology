@@ -7,6 +7,7 @@ namespace Fabric.Terminology.SqlServer.Services
 
     using CallMeMaybe;
 
+    using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Exceptions;
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Services;
@@ -58,7 +59,9 @@ namespace Fabric.Terminology.SqlServer.Services
             return this.GetValueSetsListAsync(valueSetGuids, new List<Guid>());
         }
 
-        public async Task<IReadOnlyCollection<IValueSet>> GetValueSetsListAsync(IEnumerable<Guid> valueSetGuids, IEnumerable<Guid> codeSystemGuids)
+        public async Task<IReadOnlyCollection<IValueSet>> GetValueSetsListAsync(
+            IEnumerable<Guid> valueSetGuids,
+            IEnumerable<Guid> codeSystemGuids)
         {
             var setGuids = valueSetGuids as Guid[] ?? valueSetGuids.ToArray();
             var backingItems = this.valueSetBackingItemRepository.GetValueSetBackingItems(setGuids, codeSystemGuids);
@@ -88,27 +91,44 @@ namespace Fabric.Terminology.SqlServer.Services
             return this.BuildValueSets(backingItems, codes, counts);
         }
 
-        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings settings, bool latestVersionsOnly = true)
+        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(
+            IPagerSettings settings,
+            ValueSetStatusCode statusCode = ValueSetStatusCode.Active,
+            bool latestVersionsOnly = true)
         {
-            return this.GetValueSetsAsync(settings, new List<Guid>(), latestVersionsOnly);
+            return this.GetValueSetsAsync(settings, new List<Guid>(), statusCode, latestVersionsOnly);
         }
 
-        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings settings, IEnumerable<Guid> codeSystemGuids, bool latestVersionsOnly = true)
+        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(
+            IPagerSettings settings,
+            IEnumerable<Guid> codeSystemGuids,
+            ValueSetStatusCode statusCode = ValueSetStatusCode.Active,
+            bool latestVersionsOnly = true)
         {
-            return this.GetValueSetsAsync(string.Empty, settings, codeSystemGuids, latestVersionsOnly);
+            return this.GetValueSetsAsync(string.Empty, settings, codeSystemGuids, statusCode, latestVersionsOnly);
         }
 
-        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(string filterText, IPagerSettings pagerSettings, bool latestVersionsOnly = true)
+        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(
+            string filterText,
+            IPagerSettings pagerSettings,
+            ValueSetStatusCode statusCode = ValueSetStatusCode.Active,
+            bool latestVersionsOnly = true)
         {
-            return this.GetValueSetsAsync(filterText, pagerSettings, new List<Guid>(), latestVersionsOnly);
+            return this.GetValueSetsAsync(filterText, pagerSettings, new List<Guid>(), statusCode, latestVersionsOnly);
         }
 
-        public async Task<PagedCollection<IValueSet>> GetValueSetsAsync(string filterText, IPagerSettings pagerSettings, IEnumerable<Guid> codeSystemGuids, bool latestVersionsOnly = true)
+        public async Task<PagedCollection<IValueSet>> GetValueSetsAsync(
+            string filterText,
+            IPagerSettings pagerSettings,
+            IEnumerable<Guid> codeSystemGuids,
+            ValueSetStatusCode statusCode = ValueSetStatusCode.Active,
+            bool latestVersionsOnly = true)
         {
             var backingItemPage = await this.valueSetBackingItemRepository.GetValueSetBackingItemsAsync(
                                       filterText,
                                       pagerSettings,
                                       codeSystemGuids,
+                                      statusCode,
                                       latestVersionsOnly);
 
             var valueSetGuids = backingItemPage.Values.Select(bi => bi.ValueSetGuid).ToList();

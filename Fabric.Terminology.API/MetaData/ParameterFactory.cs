@@ -77,6 +77,19 @@
             };
         }
 
+        public static Parameter GetStatusCode()
+        {
+            return new Parameter
+            {
+                Name = "$status",
+                Description = "The ValueSet status code.  Valid values are 'Active', 'Draft', 'Archived'",
+                Required = false,
+                In = ParameterIn.Query,
+                Type = "string",
+                Enum = new[] { "Active", "Draft", "Archived" }
+            };
+        }
+
         public static Parameter GetContentType()
         {
             return new Parameter

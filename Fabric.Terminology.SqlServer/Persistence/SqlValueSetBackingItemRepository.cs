@@ -23,13 +23,13 @@
 
     internal class SqlValueSetBackingItemRepository : IValueSetBackingItemRepository
     {
-        private readonly SharedContext sharedContext;
+        private readonly IValueSetCachingManager<IValueSetBackingItem> cacheManager;
 
         private readonly ILogger logger;
 
-        private readonly IValueSetCachingManager<IValueSetBackingItem> cacheManager;
-
         private readonly IPagingStrategyFactory pagingStrategyFactory;
+
+        private readonly SharedContext sharedContext;
 
         public SqlValueSetBackingItemRepository(
             SharedContext sharedContext,
@@ -95,7 +95,8 @@
 
             backingItems.AddRange(
                 this.QueryValueSetBackingItems(remaining, codeSystemGuids.ToList())
-                    .Select(bi => this.cacheManager.GetOrSet(bi.ValueSetGuid, () => bi)).Values());
+                    .Select(bi => this.cacheManager.GetOrSet(bi.ValueSetGuid, () => bi))
+                    .Values());
 
             return backingItems;
         }
@@ -103,23 +104,30 @@
         public Task<PagedCollection<IValueSetBackingItem>> GetValueSetBackingItemsAsync(
             IPagerSettings pagerSettings,
             IEnumerable<Guid> codeSystemGuids,
+            ValueSetStatusCode statusCode = ValueSetStatusCode.Active,
             bool latestVersionsOnly = true)
         {
-            return this.GetValueSetBackingItemsAsync(string.Empty, pagerSettings, codeSystemGuids);
+            return this.GetValueSetBackingItemsAsync(
+                string.Empty,
+                pagerSettings,
+                codeSystemGuids,
+                statusCode,
+                latestVersionsOnly);
         }
 
         public Task<PagedCollection<IValueSetBackingItem>> GetValueSetBackingItemsAsync(
             string filterText,
             IPagerSettings pagerSettings,
             IEnumerable<Guid> codeSystemGuids,
+            ValueSetStatusCode statusCode = ValueSetStatusCode.Active,
             bool latestVersionsOnly = true)
         {
-            var dtos = latestVersionsOnly ? this.DbSet.Where(GetBaseExpression()) : this.DbSet.AsQueryable();
+            var dtos = latestVersionsOnly ? this.DbSet.Where(GetBaseExpression(statusCode)) : this.DbSet.AsQueryable();
 
             if (!filterText.IsNullOrWhiteSpace())
             {
-                // TODO need to match filtering mechanic
-                dtos = dtos.Where(dto => dto.ValueSetNM.Contains(filterText) || dto.ValueSetReferenceID.StartsWith(filterText));
+                dtos = dtos.Where(
+                    dto => dto.ValueSetNM.Contains(filterText) || dto.ValueSetReferenceID.StartsWith(filterText));
             }
 
             var systemCodes = codeSystemGuids as Guid[] ?? codeSystemGuids.ToArray();
@@ -135,9 +143,9 @@
             return this.CreatePagedCollectionAsync(dtos, pagerSettings);
         }
 
-        private static Expression<Func<ValueSetDescriptionDto, bool>> GetBaseExpression()
+        private static Expression<Func<ValueSetDescriptionDto, bool>> GetBaseExpression(ValueSetStatusCode statusCode)
         {
-            return baseSql => baseSql.LatestVersionFLG == "Y" && baseSql.StatusCD == "Active";
+            return baseSql => baseSql.LatestVersionFLG == "Y" && baseSql.StatusCD == statusCode.ToString();
         }
 
         private async Task<PagedCollection<IValueSetBackingItem>> CreatePagedCollectionAsync(
@@ -145,7 +153,8 @@
             IPagerSettings pagerSettings)
         {
             var defaultItemsPerPage = this.sharedContext.Settings.DefaultItemsPerPage;
-            var pagingStrategy = this.pagingStrategyFactory.GetPagingStrategy<IValueSetBackingItem>(defaultItemsPerPage);
+            var pagingStrategy =
+                this.pagingStrategyFactory.GetPagingStrategy<IValueSetBackingItem>(defaultItemsPerPage);
 
             pagingStrategy.EnsurePagerSettings(pagerSettings);
 
@@ -158,13 +167,14 @@
             var factory = new ValueSetBackingItemFactory();
 
             return pagingStrategy.CreatePagedCollection(
-                    items.Select(i => this.cacheManager.GetOrSet(i.ValueSetGUID, () => factory.Build(i))
-                ).Values(),
+                items.Select(i => this.cacheManager.GetOrSet(i.ValueSetGUID, () => factory.Build(i))).Values(),
                 count,
                 pagerSettings);
         }
 
-        private IEnumerable<IValueSetBackingItem> QueryValueSetBackingItems(IReadOnlyCollection<Guid> valueSetGuids, IReadOnlyCollection<Guid> codeSystemGuids)
+        private IEnumerable<IValueSetBackingItem> QueryValueSetBackingItems(
+            IReadOnlyCollection<Guid> valueSetGuids,
+            IReadOnlyCollection<Guid> codeSystemGuids)
         {
             var factory = new ValueSetBackingItemFactory();
 
@@ -179,7 +189,8 @@
 
                 if (codeSystemGuids.Any())
                 {
-                    var vsGuids = this.sharedContext.ValueSetCodes.Where(code => codeSystemGuids.Contains(code.CodeSystemGuid))
+                    var vsGuids = this.sharedContext.ValueSetCodes
+                        .Where(code => codeSystemGuids.Contains(code.CodeSystemGuid))
                         .Select(code => code.ValueSetGUID)
                         .Distinct();
 

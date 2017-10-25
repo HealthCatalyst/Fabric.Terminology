@@ -54,7 +54,7 @@
                 null,
                 "GetValueSetVersions");
 
-            this.Post("/multiple/", _ => this.GetValueSets(), null, "GetValueSets");
+            this.Post("/multiple/", _ => this.GetMultipleValueSets(), null, "GetMultipleValueSets");
 
             this.Post("/search/", _ => this.Search(), null, "Search");
 
@@ -122,7 +122,7 @@
             }
         }
 
-        private object GetValueSets()
+        private object GetMultipleValueSets()
         {
             try
             {
@@ -195,14 +195,16 @@
             try
             {
                 var summary = this.GetSummarySetting();
+                var status = this.GetValueSetStatusCode();
                 var pagerSettings = this.GetPagerSettings();
                 var codeSystemGuids = this.GetCodeSystems();
 
                 return summary
                            ? (await this.valueSetSummaryService.GetValueSetSummariesAsync(
                                   pagerSettings,
-                                  codeSystemGuids)).ToValueSetApiModelPage(codeSystemGuids, MapToValueSetItemApiModel)
-                           : (await this.valueSetService.GetValueSetsAsync(pagerSettings, codeSystemGuids))
+                                  codeSystemGuids, 
+                                  status)).ToValueSetApiModelPage(codeSystemGuids, MapToValueSetItemApiModel)
+                           : (await this.valueSetService.GetValueSetsAsync(pagerSettings, codeSystemGuids, status))
                            .ToValueSetApiModelPage(codeSystemGuids, MapToValueSetApiModel);
             }
             catch (Exception ex)
@@ -226,11 +228,13 @@
                            ? (await this.valueSetSummaryService.GetValueSetSummariesAsync(
                                   model.Term,
                                   model.PagerSettings,
-                                  codeSystemGuids)).ToValueSetApiModelPage(codeSystemGuids, MapToValueSetItemApiModel)
+                                  codeSystemGuids,
+                                  model.StatusCode)).ToValueSetApiModelPage(codeSystemGuids, MapToValueSetItemApiModel)
                            : (await this.valueSetService.GetValueSetsAsync(
                                   model.Term,
                                   model.PagerSettings,
-                                  codeSystemGuids)).ToValueSetApiModelPage(codeSystemGuids, MapToValueSetApiModel);
+                                  codeSystemGuids,
+                                  model.StatusCode)).ToValueSetApiModelPage(codeSystemGuids, MapToValueSetApiModel);
             }
             catch (Exception ex)
             {
@@ -281,6 +285,16 @@
             var val = (string)this.Request.Query["$summary"];
             bool.TryParse(val, out var ret);
             return val.IsNullOrWhiteSpace() || ret;
+        }
+
+        private ValueSetStatusCode GetValueSetStatusCode()
+        {
+            if (!Enum.TryParse((string)this.Request.Query["$status"], true, out ValueSetStatusCode statusCode))
+            {
+                statusCode = ValueSetStatusCode.Active;
+            }
+
+            return statusCode;
         }
 
         private ValueSetFindByTermQuery EnsureQueryModel(ValueSetFindByTermQuery model)

@@ -8,8 +8,8 @@
 
     public enum ValueSetStatusCode
     {
-        Draft,
-        Active,
-        Archived
+        Draft = 1,
+        Active = 0,
+        Archived = 2
     }
 }
