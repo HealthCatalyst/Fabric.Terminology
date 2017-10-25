@@ -3,6 +3,8 @@
     using System;
     using System.Collections.Generic;
 
+    using Fabric.Terminology.Domain;
+
     public class ValueSetItemApiModel : ValueSetMetaApiModel, IIdentifiable
     {
         public string Identifier { get; set; }
@@ -17,7 +19,7 @@
 
         public string ClientCode { get; set; }
 
-        public string StatusCode { get; set; }
+        public ValueSetStatusCode StatusCode { get; set; }
 
         public bool IsCustom { get; set; }
 
