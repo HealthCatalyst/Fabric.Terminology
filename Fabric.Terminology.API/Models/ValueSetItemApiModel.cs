@@ -17,6 +17,8 @@
 
         public string ClientCode { get; set; }
 
+        public string StatusCode { get; set; }
+
         public bool IsCustom { get; set; }
 
         public bool IsLatestVersion { get; set; }
