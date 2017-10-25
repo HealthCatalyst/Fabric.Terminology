@@ -6,6 +6,8 @@
     {
         public string Name { get; set; }
 
+        public string ClientCode { get; set; } = string.Empty;
+
         public IEnumerable<CodeSystemCodeApiModel> CodeSetCodes { get; set; }
     }
 }
