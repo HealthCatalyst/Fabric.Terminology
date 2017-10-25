@@ -257,7 +257,7 @@
                 if (validationResult.IsValid)
                 {
                     this.clientTermValueSetService.Save(valueSet);
-                    return Mapper.Map<IValueSet, ValueSetApiModel>(valueSet);
+                    return this.CreateSuccessfulPostResponse(Mapper.Map<IValueSet, ValueSetApiModel>(valueSet));
                 }
 
                 throw new InvalidOperationException(
