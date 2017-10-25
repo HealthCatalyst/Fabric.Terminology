@@ -72,15 +72,16 @@
                     var expectedChanges = codeDtos.Count + countDtos.Count + 1;
                     if (changes != expectedChanges)
                     {
+                        transaction.Rollback();
                         return Attempt<IValueSet>.Failed(
                             new ValueSetNotFoundException(
                                 $"When saving a ValueSet, we expected {expectedChanges} changes, but was told there were {changes} changes"));
                     }
 
+                    transaction.Commit();
+
                     // Get the updated ValueSet
                     var added = this.GetValueSet(valueSetDto.ValueSetGUID);
-
-                    transaction.Commit();
 
                     return added.Select(Attempt<IValueSet>.Successful)
                         .Else(
@@ -89,6 +90,7 @@
                 }
                 catch (Exception ex)
                 {
+                    transaction.Rollback();
                     this.logger.Error(ex, "Failed to save a custom ValueSet");
                     this.ClientTermContext.ChangeTracker.AutoDetectChangesEnabled = true;
                     return Attempt<IValueSet>.Failed(

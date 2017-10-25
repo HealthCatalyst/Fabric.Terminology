@@ -4,6 +4,7 @@
     using System.Linq;
 
     using Fabric.Terminology.API;
+    using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Services;
     using Fabric.Terminology.IntegrationTests.Fixtures;
     using Fabric.Terminology.TestsBase;
@@ -67,6 +68,7 @@
             vs.ValueSetGuid.Should().NotBe(Guid.Empty);
             vs.ValueSetCodes.Count.Should().Be(codeCount);
             vs.Name.Should().BeEquivalentTo(name);
+            vs.StatusCode.Should().Be(ValueSetStatusCode.Draft);
 
             // cleanup
             this.clientTermValueSetService.Delete(vs);
