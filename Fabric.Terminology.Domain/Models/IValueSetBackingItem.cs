@@ -12,6 +12,8 @@ namespace Fabric.Terminology.Domain.Models
 
         string ClientCode { get; }
 
+        ValueSetStatusCode StatusCode { get; }
+
         bool IsCustom { get; }
 
         bool IsLatestVersion { get; }

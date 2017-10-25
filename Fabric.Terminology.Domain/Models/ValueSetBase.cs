@@ -19,6 +19,7 @@ namespace Fabric.Terminology.Domain.Models
             this.ValueSetReferenceId = backingItem.ValueSetReferenceId;
             this.OriginGuid = backingItem.OriginGuid;
             this.ClientCode = backingItem.ClientCode;
+            this.StatusCode = backingItem.StatusCode;
             this.IsCustom = backingItem.IsCustom;
             this.IsLatestVersion = backingItem.IsLatestVersion;
         }
@@ -40,6 +41,8 @@ namespace Fabric.Terminology.Domain.Models
         public Guid OriginGuid { get; internal set; }
 
         public string ClientCode { get; internal set; }
+
+        public ValueSetStatusCode StatusCode { get; internal set; } = ValueSetStatusCode.Active;
 
         public bool IsCustom { get; internal set; }
 

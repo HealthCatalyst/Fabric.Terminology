@@ -1,5 +1,8 @@
 ﻿namespace Fabric.Terminology.SqlServer.Persistence.Factories
 {
+    using System;
+
+    using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence.Factories;
     using Fabric.Terminology.SqlServer.Models.Dto;
@@ -8,6 +11,11 @@
     {
         public IValueSetBackingItem Build(ValueSetDescriptionBaseDto dto)
         {
+            if(!Enum.TryParse(dto.StatusCD, true, out ValueSetStatusCode statusCode))
+            {
+                statusCode = ValueSetStatusCode.Active;
+            }
+
             return new ValueSetBackingItem
             {
                 AuthoringSourceDescription = dto.AuthorityDSC,
@@ -19,6 +27,7 @@
                 SourceDescription = dto.SourceDSC,
                 ValueSetGuid = dto.ValueSetGUID,
                 ValueSetReferenceId = dto.ValueSetReferenceID,
+                StatusCode = statusCode,
                 VersionDate = dto.VersionDTS
             };
         }

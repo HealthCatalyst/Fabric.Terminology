@@ -22,6 +22,8 @@
 
         public string ClientCode { get; internal set; }
 
+        public ValueSetStatusCode StatusCode { get; internal set; }
+
         public bool IsCustom { get; internal set; }
 
         public bool IsLatestVersion { get; internal set; }
