@@ -30,6 +30,16 @@
             return this.codeSystemCodeRepository.GetCodeSystemCodes(codeGuids);
         }
 
+        public Task<IBatchCodeSystemCodeResult> GetCodeSystemCodesBatchAsync(IEnumerable<string> codes)
+        {
+            return this.GetCodeSystemCodesBatchAsync(codes, new List<Guid>());
+        }
+
+        public Task<IBatchCodeSystemCodeResult> GetCodeSystemCodesBatchAsync(IEnumerable<string> codes, IEnumerable<Guid> codeSystemGuids)
+        {
+            return this.codeSystemCodeRepository.GetCodeSystemCodesBatchAsync(codes, codeSystemGuids);
+        }
+
         public Task<PagedCollection<ICodeSystemCode>> GetCodeSystemCodesAsync(IPagerSettings settings, bool includeRetired = false)
         {
             return this.GetCodeSystemCodesAsync(settings, Enumerable.Empty<Guid>(), includeRetired);

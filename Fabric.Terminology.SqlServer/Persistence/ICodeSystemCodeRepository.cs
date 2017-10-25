@@ -14,6 +14,10 @@
 
         IReadOnlyCollection<ICodeSystemCode> GetCodeSystemCodes(IEnumerable<Guid> codeGuids);
 
+        Task<IBatchCodeSystemCodeResult> GetCodeSystemCodesBatchAsync(
+            IEnumerable<string> codes,
+            IEnumerable<Guid> codeSystemGuids);
+
         Task<PagedCollection<ICodeSystemCode>> GetCodeSystemCodesAsync(
             string filterText,
             IPagerSettings pagerSettings,

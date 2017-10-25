@@ -10,6 +10,7 @@
         public CodeSystemCodeApiProfile()
         {
             this.CreateMap<ICodeSystemCode, CodeSystemCodeApiModel>();
+            this.CreateMap<IBatchCodeSystemCodeResult, BatchCodeResultApiModel>();
         }
     }
 }

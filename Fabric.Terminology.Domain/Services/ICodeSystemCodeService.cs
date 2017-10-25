@@ -14,7 +14,13 @@
 
         IReadOnlyCollection<ICodeSystemCode> GetCodeSystemCodes(IEnumerable<Guid> codeGuids);
 
-        Task<PagedCollection<ICodeSystemCode>> GetCodeSystemCodesAsync(IPagerSettings settings, bool includeRetired = false);
+        Task<IBatchCodeSystemCodeResult> GetCodeSystemCodesBatchAsync(IEnumerable<string> codes);
+
+        Task<IBatchCodeSystemCodeResult> GetCodeSystemCodesBatchAsync(IEnumerable<string> codes, IEnumerable<Guid> codeSystemGuids);
+
+        Task<PagedCollection<ICodeSystemCode>> GetCodeSystemCodesAsync(
+            IPagerSettings settings,
+            bool includeRetired = false);
 
         Task<PagedCollection<ICodeSystemCode>> GetCodeSystemCodesAsync(
             IPagerSettings settings,

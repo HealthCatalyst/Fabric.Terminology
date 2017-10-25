@@ -70,6 +70,29 @@
             }
         }
 
+        public async Task<IBatchCodeSystemCodeResult> GetCodeSystemCodesBatchAsync(
+            IEnumerable<string> codes,
+            IEnumerable<Guid> codeSystemGuids)
+        {
+            var codesHash = codes.ToHashSet();
+
+            var found = new List<ICodeSystemCode>();
+            var systemGuids = codeSystemGuids as Guid[] ?? codeSystemGuids.ToArray();
+
+            foreach (var batch in codesHash.Batch(500))
+            {
+                var results = await this.GetCodesByBatch(batch.ToList(), systemGuids);
+                var unique = results.Where(r => !found.Exists(f => f.CodeGuid == r.CodeGuid));
+                found.AddRange(unique);
+            }
+
+            return new BatchCodeSystemCodeResult
+            {
+                Matches = found,
+                NotFound = codesHash.Where(c => !found.Exists(f => f.Code == c)).ToList()
+            };
+        }
+
         public Task<PagedCollection<ICodeSystemCode>> GetCodeSystemCodesAsync(
             string filterText,
             IPagerSettings pagerSettings,
@@ -89,6 +112,22 @@
             }
 
             return this.CreatePagedCollectionAsync(dtos, pagerSettings);
+        }
+
+        private async Task<IReadOnlyCollection<ICodeSystemCode>> GetCodesByBatch(
+            IReadOnlyCollection<string> codes,
+            IReadOnlyCollection<Guid> codeSystemGuids)
+        {
+            var dtos = this.GetBaseQuery(true).Where(dto => codes.Contains(dto.CodeCD));
+            if (codeSystemGuids.Any())
+            {
+                dtos = dtos.Where(dto => codeSystemGuids.Contains(dto.CodeSystemGUID));
+            }
+
+            var factory = new CodeSystemCodeFactory();
+            var results = await dtos.ToListAsync();
+
+            return results.Select(factory.Build).ToList();
         }
 
         private IQueryable<CodeSystemCodeDto> GetBaseQuery(bool includeRetired)

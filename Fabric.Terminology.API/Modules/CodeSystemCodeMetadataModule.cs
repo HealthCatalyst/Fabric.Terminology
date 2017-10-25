@@ -25,6 +25,8 @@
             modelCatalog.AddModel<PagedCollection<CodeSystemCodeApiModel>>();
             modelCatalog.AddModel<MultipleCodeSystemCodeQuery>();
             modelCatalog.AddModel<FindByTermQuery>();
+            modelCatalog.AddModel<BatchCodeQuery>();
+            modelCatalog.AddModel<BatchCodeResultApiModel>();
             modelCatalog.AddModel<Guid>();
 
             this.RouteDescriber.DescribeRouteWithParams(
@@ -69,6 +71,22 @@
                 new[]
                 {
                     new BodyParameter<MultipleCodeSystemCodeQuery>(modelCatalog) { Required = true, Name = "Model" }
+                },
+                new[] { TagsFactory.GetCodeSystemCodeTag() });
+
+            this.RouteDescriber.DescribeRouteWithParams(
+                "GetBatchCodes",
+                "Gets a batch code system codes and non matching 'codes' given an array of 'codes', optionally constrained by code system",
+                "Gets an array of code system codes matching the 'codes' collection and an array non matching 'codes', optionally constrained by code system",
+                new[]
+                {
+                    new HttpResponseMetadata<BatchCodeResultApiModel> { Code = 200, Message = "OK" },
+                    new HttpResponseMetadata { Code = 400, Message = "Bad Request" },
+                    new HttpResponseMetadata { Code = 500, Message = "Internal Server Error" }
+                },
+                new[]
+                {
+                    new BodyParameter<BatchCodeQuery>(modelCatalog) { Required = true, Name = "Model" }
                 },
                 new[] { TagsFactory.GetCodeSystemCodeTag() });
 

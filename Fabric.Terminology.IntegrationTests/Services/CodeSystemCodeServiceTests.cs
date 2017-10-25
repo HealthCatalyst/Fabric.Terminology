@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
 
     using Fabric.Terminology.Domain.Models;
@@ -112,6 +113,97 @@
             var codeSystems = page.Values.Select(c => c.CodeSystemGuid).Distinct().ToArray();
             codeSystems.Length.Should().Be(1);
             codeSystems[0].Should().Be(codeSystemGuid);
+        }
+
+        [Fact(Skip = "Long running, run manually")]
+        public void GetCodeSystemCodesBatch()
+        {
+            // Arrange
+            var sample = GetSampleCodes().ToList();
+            sample.Should().NotBeEmpty();
+
+            // Act
+            var codes = this.Profiler.ExecuteTimed(async () => await this.codeSystemCodeService.GetCodeSystemCodesBatchAsync(sample));
+
+            // Assert
+            codes.Matches.Should().NotBeEmpty();
+            codes.NotFound.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void GetCodeSystemCodesBatchShortList()
+        {
+            // Arrange
+            var codeValues = new List<string>
+            {
+                "830801",
+                "201716",
+                "0LR64JZ",
+                "102.7",
+                "96450",
+                "852.05",
+                "DP065ZZ",
+                "S21.252D",
+                "Not good",
+                "Just made up"
+            };
+
+            // Act
+            var codes = this.Profiler.ExecuteTimed(async () => await this.codeSystemCodeService.GetCodeSystemCodesBatchAsync(codeValues));
+
+            // Assert
+            codes.Matches.Should().NotBeEmpty();
+            codes.NotFound.Should().NotBeEmpty();
+            codes.NotFound.Should().Contain(new[] { "Not good", "Just made up" });
+        }
+
+        [Fact]
+        public void GetCodeSystemCodesBatchShortListWithCodeSystemConstraint()
+        {
+            // Arrange
+            var codeValues = new List<string>
+            {
+                "830801",
+                "201716",
+                "0LR64JZ",
+                "102.7",
+                "96450",
+                "852.05",
+                "DP065ZZ",
+                "S21.252D",
+                "Not good",
+                "Just made up"
+            };
+
+            var codeSystems = new[]
+            {
+                Guid.Parse("87846e70-ca84-4d5d-b414-c301f7bfefaa"), // ICD9
+                Guid.Parse("9c78e8c1-71c4-43e4-b729-8809b4785431") // RxNorm
+            };
+
+            // Act
+            var codes = this.Profiler.ExecuteTimed(async () => await this.codeSystemCodeService.GetCodeSystemCodesBatchAsync(codeValues, codeSystems));
+
+            // Assert
+            codes.Matches.Should().NotBeEmpty();
+            codes.NotFound.Should().NotBeEmpty();
+            codes.NotFound.Should().Contain(new[] { "Not good", "Just made up" });
+            var matchedCodeSystems = codes.Matches.Select(m => m.CodeSystemGuid).Distinct();
+            matchedCodeSystems.All(cs => codeSystems.Contains(cs)).Should().BeTrue();
+        }
+
+        private static IEnumerable<string> GetSampleCodes()
+        {
+            var fileName = "sample-codes.txt";
+            var path = $"{Directory.GetCurrentDirectory()}\\..\\..\\..\\";
+            var filePath = $"{path}{fileName}";
+
+            if (!File.Exists(filePath))
+            {
+                throw new FileNotFoundException(filePath);
+            }
+
+            return File.ReadAllLines(filePath).Select(c => c.Trim());
         }
     }
 }
