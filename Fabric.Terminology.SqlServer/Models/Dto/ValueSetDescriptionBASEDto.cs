@@ -22,7 +22,7 @@ namespace Fabric.Terminology.SqlServer.Models.Dto
             this.VersionDTS = valueSet.VersionDate;
             this.DefinitionDSC = valueSet.DefinitionDescription;
             this.SourceDSC = valueSet.SourceDescription;
-            this.StatusCD = "Active";
+            this.StatusCD = valueSet.StatusCode.ToString();
             this.OriginGUID = valueSet.OriginGuid;
             this.ClientCD = valueSet.ClientCode;
             this.LastModifiedDTS = DateTime.UtcNow;

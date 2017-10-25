@@ -5,6 +5,9 @@
 
     using Fabric.Terminology.Domain;
 
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Converters;
+
     public class ValueSetItemApiModel : ValueSetMetaApiModel, IIdentifiable
     {
         public string Identifier { get; set; }
@@ -19,7 +22,7 @@
 
         public string ClientCode { get; set; }
 
-        public ValueSetStatusCode StatusCode { get; set; }
+        public string StatusCode { get; set; }
 
         public bool IsCustom { get; set; }
 
