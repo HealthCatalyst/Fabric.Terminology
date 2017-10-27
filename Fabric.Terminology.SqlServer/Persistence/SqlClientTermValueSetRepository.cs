@@ -8,6 +8,7 @@
     using Fabric.Terminology.Domain.Models;
 
     // TODO remove this class now that has been refactored.
+    [Obsolete("Use SqlClientTermUnitOfWorkRepository")]
     internal class SqlClientTermValueSetRepository : IClientTermValueSetRepository
     {
         private readonly IClientTermUnitOfWorkRepository repository;

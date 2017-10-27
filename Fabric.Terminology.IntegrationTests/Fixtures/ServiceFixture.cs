@@ -48,8 +48,7 @@
                 cacheManagerFactory,
                 pagingStrategyFactory);
 
-            var sqlClientTermValueSetRepository = new SqlClientTermValueSetRepository(
-                new SqlClientTermUnitOfWorkRepository(uow));
+            var sqlClientTermUowRepository = new SqlClientTermUnitOfWorkRepository(uow);
 
             var sqlCodeSystemRepository = new SqlCodeSystemRepository(
                 this.SharedContext,
@@ -71,7 +70,7 @@
             this.ClientTermValueSetService = new SqlClientTermValueSetService(
                 this.Logger,
                 valueSetBackingItemRepository,
-                sqlClientTermValueSetRepository);
+                sqlClientTermUowRepository);
 
             this.ValueSetSummaryService = new SqlValueSetSummaryService(
                 this.Logger,

@@ -13,18 +13,18 @@ namespace Fabric.Terminology.SqlServer.Services
 
     using Serilog;
 
-    public class SqlClientTermValueSetService : IClientTermValueSetService
+    internal class SqlClientTermValueSetService : IClientTermValueSetService
     {
         private readonly IValueSetBackingItemRepository valueSetBackingItemRepository;
 
         private readonly ILogger logger;
 
-        private readonly IClientTermValueSetRepository clientTermValueSetRepository;
+        private readonly IClientTermUnitOfWorkRepository clientTermValueSetRepository;
 
         public SqlClientTermValueSetService(
             ILogger logger,
             IValueSetBackingItemRepository valueSetBackingItemRepository,
-            IClientTermValueSetRepository clientTermValueSetRepository)
+            IClientTermUnitOfWorkRepository clientTermValueSetRepository)
         {
             this.valueSetBackingItemRepository = valueSetBackingItemRepository;
             this.clientTermValueSetRepository = clientTermValueSetRepository;
