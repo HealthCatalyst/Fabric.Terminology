@@ -8,35 +8,20 @@
 
     using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Models;
-    using Fabric.Terminology.Domain.Services;
+    using Fabric.Terminology.Domain.Persistence;
     using Fabric.Terminology.SqlServer.Models.Dto;
     using Fabric.Terminology.SqlServer.Persistence.DataContext;
 
-    internal class ClientTermValueSetCustomizationManager : IClientTermValueSetCustomizationManager
+    internal class ValueSetUpdateUnitOfWorkBuilder : IValueSetUpdateUnitOfWorkBuilder
     {
-        private readonly Lazy<ClientTermContext> clientTermContext;
+        private readonly ClientTermContext clientTermContext;
 
-        public ClientTermValueSetCustomizationManager(Lazy<ClientTermContext> clientTermContext)
+        public ValueSetUpdateUnitOfWorkBuilder(ClientTermContext clientTermContext)
         {
             this.clientTermContext = clientTermContext;
         }
 
-        public IReadOnlyCollection<PersistenceOperation> GetRemoveCodesOperations(
-            Guid valueSetGuid,
-            IEnumerable<ICodeSystemCode> codes)
-        {
-            var originalCodeDtos = this.GetCodeDtos(valueSetGuid);
-
-            var removeOps = this.BuildRemoveCodesOperationList(originalCodeDtos, codes);
-            var removedCodeGuids = removeOps.Select(ro => ro.Value<CodeSystemCodeDto>().CodeGUID);
-            var resultDtos = originalCodeDtos.Where(oc => removedCodeGuids.All(rc => rc != oc.CodeGUID));
-
-            var countOps = this.BuildCodeCountOperationList(valueSetGuid, resultDtos);
-
-            return removeOps.Union(countOps).ToList();
-        }
-
-        public IReadOnlyCollection<PersistenceOperation> GetAddCodesOperations(
+        public IUnitOfWork BuildAddCodesUnitOfWork(
             Guid valueSetGuid,
             IEnumerable<IValueSetCode> valueSetCodes)
         {
@@ -48,17 +33,32 @@
 
             var countOps = this.BuildCodeCountOperationList(valueSetGuid, allCodeDtos);
 
-            return addOps.Union(countOps).ToList();
+            return this.Create(addOps.Union(countOps));
         }
 
-        private IReadOnlyCollection<PersistenceOperation> BuildAddCodeOperationList(
+        public IUnitOfWork BuildRemoveCodesUnitOfWork(
+            Guid valueSetGuid,
+            IEnumerable<ICodeSystemCode> codes)
+        {
+            var originalCodeDtos = this.GetCodeDtos(valueSetGuid);
+
+            var removeOps = this.BuildRemoveCodesOperationList(originalCodeDtos, codes);
+            var removedCodeGuids = removeOps.Select(ro => ro.Value<CodeSystemCodeDto>().CodeGUID);
+            var resultDtos = originalCodeDtos.Where(oc => removedCodeGuids.All(rc => rc != oc.CodeGUID));
+
+            var countOps = this.BuildCodeCountOperationList(valueSetGuid, resultDtos);
+
+            return this.Create(removeOps.Union(countOps));
+        }
+
+        private IReadOnlyCollection<Operation> BuildAddCodeOperationList(
             IEnumerable<ValueSetCodeDto> originalCodeDtos,
             IEnumerable<IValueSetCode> valueSetCodes)
         {
             var existingGuids = originalCodeDtos.Select(eg => eg.CodeGUID);
             return valueSetCodes.Where(code => existingGuids.All(eg => eg != code.CodeGuid))
                 .Select(
-                    code => new PersistenceOperation
+                    code => new Operation
                     {
                         Value = new ValueSetCodeDto(code),
                         OperationType = OperationType.Create
@@ -66,20 +66,20 @@
                 .ToList();
         }
 
-        private IReadOnlyCollection<PersistenceOperation> BuildRemoveCodesOperationList(
+        private IReadOnlyCollection<Operation> BuildRemoveCodesOperationList(
             IEnumerable<ValueSetCodeDto> originalCodeDtos,
             IEnumerable<ICodeSystemCode> codeSystemCodes)
         {
             var destGuids = codeSystemCodes.Select(ds => ds.CodeGuid);
             return originalCodeDtos.Where(code => destGuids.All(dg => dg != code.CodeGUID))
-                .Select(dto => new PersistenceOperation
+                .Select(dto => new Operation
                 {
                     Value = dto,
                     OperationType = OperationType.Delete
                 }).ToList();
         }
 
-        private IReadOnlyCollection<PersistenceOperation> BuildCodeCountOperationList(
+        private IReadOnlyCollection<Operation> BuildCodeCountOperationList(
             Guid valueSetGuid,
             IEnumerable<ValueSetCodeDto> allCodeDtos)
         {
@@ -98,14 +98,15 @@
                             new ValueSetCodeCountDto(o.valueSetDto.ValueSetGUID,
                                 o.valueSetDto.CodeSystemGuid,
                                 o.valueSetDto.CodeSystemNM,
-                                newCodes.Count(c => c.CodeSystemGuid == o.codeSystemGuid)));
+                                newCodes.Count(c => c.CodeSystemGuid == o.codeSystemGuid)))
+                                .ToList();
 
-            return newCounts.Select(nc =>
+            var operations = newCounts.Select(nc =>
                 Maybe.From(originalCounts.FirstOrDefault(ec => ec.CodeSystemGUID == nc.CodeSystemGUID))
                 .Select(
                     dto =>
                         {
-                            var op = new PersistenceOperation();
+                            var op = new Operation();
                             if (dto.CodeSystemPerValueSetNBR != nc.CodeSystemPerValueSetNBR)
                             {
                                 dto.CodeSystemPerValueSetNBR = nc.CodeSystemPerValueSetNBR;
@@ -119,15 +120,35 @@
                             op.Value = dto;
                             return op;
                         })
-                .Else(() => new PersistenceOperation
+                .Else(() => new Operation
                 {
                     Value = nc
                 })).ToList();
+
+            // finally ensure that any existing counts that were not in the new counts are removed
+            // e.g. all codes from a particular code system were removed
+            var removers = originalCounts.Except(newCounts);
+
+            operations.AddRange(removers.Select(r => new Operation
+            {
+               Value = r,
+               OperationType = OperationType.Delete
+            }));
+
+            return operations;
         }
 
-        private IReadOnlyCollection<ValueSetCodeDto> GetCodeDtos(Guid valueSetGuid) => this.clientTermContext.Value.ValueSetCodes.Where(vsc => vsc.ValueSetGUID == valueSetGuid).ToList();
+        private IReadOnlyCollection<ValueSetCodeDto> GetCodeDtos(Guid valueSetGuid) => 
+            this.clientTermContext.ValueSetCodes.Where(vsc => vsc.ValueSetGUID == valueSetGuid).ToList();
 
         private IReadOnlyCollection<ValueSetCodeCountDto> GetCodeCountDtos(Guid valueSetGuid) =>
-            this.clientTermContext.Value.ValueSetCodeCounts.Where(vscc => vscc.ValueSetGUID == valueSetGuid).ToList();
+            this.clientTermContext.ValueSetCodeCounts.Where(vscc => vscc.ValueSetGUID == valueSetGuid).ToList();
+
+        private IUnitOfWork Create(IEnumerable<Operation> operations)
+        {
+            var uow = new ValueSetUpdateUnitOfWork(this.clientTermContext);
+            uow.Add(operations);
+            return uow;
+        }
     }
 }

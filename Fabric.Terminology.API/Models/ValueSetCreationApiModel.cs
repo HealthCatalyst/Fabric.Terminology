@@ -2,8 +2,6 @@
 {
     using System.Collections.Generic;
 
-    using Fabric.Terminology.Domain;
-
     public class ValueSetCreationApiModel : ValueSetMetaApiModel
     {
         public string Name { get; set; }

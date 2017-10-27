@@ -9,6 +9,7 @@
     using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Exceptions;
     using Fabric.Terminology.Domain.Models;
+    using Fabric.Terminology.Domain.Persistence;
     using Fabric.Terminology.Domain.Services;
     using Fabric.Terminology.SqlServer.Models.Dto;
     using Fabric.Terminology.SqlServer.Persistence.DataContext;
@@ -24,12 +25,16 @@
 
         private readonly ILogger logger;
 
+        private readonly SqlUnitOfWorkBuilderFactory uowFactory;
+
         public SqlClientTermValueSetRepository(
             Lazy<ClientTermContext> clientTermContext,
-            ILogger logger)
+            ILogger logger,
+            SqlUnitOfWorkBuilderFactory uowFactory)
         {
             this.clientTermContext = clientTermContext;
             this.logger = logger;
+            this.uowFactory = uowFactory;
         }
 
         protected ClientTermContext ClientTermContext => this.clientTermContext.Value;
@@ -172,27 +177,27 @@
             return codes.Select(factory.Build).ToList();
         }
 
-        private IReadOnlyCollection<PersistenceOperation> GetRemoveCodeOperations(
+        private IReadOnlyCollection<Operation> GetRemoveCodeOperations(
             IEnumerable<ValueSetCodeDto> originalSet,
             IEnumerable<IValueSetCode> destinationSet)
         {
             var destGuids = destinationSet.Select(ds => ds.CodeGuid);
             return originalSet.Where(code => destGuids.All(dg => dg != code.CodeGUID))
-                .Select(dto => new PersistenceOperation
+                .Select(dto => new Operation
                 {
                     Value = dto,
                     OperationType = OperationType.Delete
                 }).ToList();
         }
 
-        private IReadOnlyCollection<PersistenceOperation> GetAddCodeOperations(
+        private IReadOnlyCollection<Operation> GetAddCodeOperations(
             IEnumerable<ValueSetCodeDto> originalSet,
             IEnumerable<IValueSetCode> destinationSet)
         {
             var existingGuids = originalSet.Select(eg => eg.CodeGUID);
             return destinationSet.Where(code => existingGuids.All(eg => eg != code.CodeGuid))
                 .Select(
-                    code => new PersistenceOperation
+                    code => new Operation
                     {
                         Value = new ValueSetCodeDto(code),
                         OperationType = OperationType.Create
@@ -200,7 +205,7 @@
                 .ToList();
         }
 
-        private IReadOnlyCollection<PersistenceOperation> GetCodeCountOperations(
+        private IReadOnlyCollection<Operation> GetCodeCountOperations(
             IEnumerable<ValueSetCodeCountDto> existingCounts,
             IEnumerable<IValueSetCode> valueSetCodes)
         {
@@ -210,7 +215,7 @@
                     .Select(
                             dto =>
                             {
-                                var op = new PersistenceOperation();
+                                var op = new Operation();
                                 if (dto.CodeSystemPerValueSetNBR != nc.CodeCount)
                                 {
                                     dto.CodeSystemPerValueSetNBR = nc.CodeCount;
@@ -224,7 +229,7 @@
                                 op.Value = dto;
                                 return op;
                             })
-                    .Else(() => new PersistenceOperation
+                    .Else(() => new Operation
                         {
                             Value = new ValueSetCodeCountDto(nc)
                         })).ToList();

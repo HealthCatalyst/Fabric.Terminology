@@ -1,4 +1,4 @@
-namespace Fabric.Terminology.Domain.Services
+namespace Fabric.Terminology.Domain.Persistence
 {
     internal enum OperationType
     {

@@ -15,20 +15,21 @@
 
     using Xunit;
     using Fabric.Terminology.Domain;
+    using Fabric.Terminology.Domain.Persistence;
 
     public class SqlServerLibraryTests
     {
-        internal static IEnumerable<PersistenceOperation> TestOperations => new List<PersistenceOperation>
+        internal static IEnumerable<Operation> TestOperations => new List<Operation>
         {
-            new PersistenceOperation { Value = new TestObject(), OperationType = OperationType.Create },
-            new PersistenceOperation { Value = new TestObject(), OperationType = OperationType.Update },
-            new PersistenceOperation { Value = new TestObject(), OperationType = OperationType.Update },
-            new PersistenceOperation { Value = new TestObject(), OperationType = OperationType.Delete },
-            new PersistenceOperation { Value = new TestObject(), OperationType = OperationType.None },
-            new PersistenceOperation { Value = new NotTestObject(), OperationType = OperationType.None },
-            new PersistenceOperation { Value = new NotTestObject(), OperationType = OperationType.Create },
-            new PersistenceOperation { Value = new NotTestObject(), OperationType = OperationType.Update },
-            new PersistenceOperation { Value = new NotTestObject(), OperationType = OperationType.Delete },
+            new Operation { Value = new TestObject(), OperationType = OperationType.Create },
+            new Operation { Value = new TestObject(), OperationType = OperationType.Update },
+            new Operation { Value = new TestObject(), OperationType = OperationType.Update },
+            new Operation { Value = new TestObject(), OperationType = OperationType.Delete },
+            new Operation { Value = new TestObject(), OperationType = OperationType.None },
+            new Operation { Value = new NotTestObject(), OperationType = OperationType.None },
+            new Operation { Value = new NotTestObject(), OperationType = OperationType.Create },
+            new Operation { Value = new NotTestObject(), OperationType = OperationType.Update },
+            new Operation { Value = new NotTestObject(), OperationType = OperationType.Delete },
         };
 
         [Theory]

@@ -1,6 +1,8 @@
-﻿namespace Fabric.Terminology.Domain.Services
+﻿namespace Fabric.Terminology.Domain.Persistence
 {
-    internal class PersistenceOperation
+    using Fabric.Terminology.Domain.Services;
+
+    internal class Operation
     {
         public object Value { get; set; }
 

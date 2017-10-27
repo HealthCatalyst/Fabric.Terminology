@@ -46,8 +46,10 @@
                 cacheManagerFactory,
                 pagingStrategyFactory);
 
-            var sqlClientTermValueSetRepository =
-                new SqlClientTermValueSetRepository(this.ClientTermContext.AsLazy(), this.Logger);
+            var sqlClientTermValueSetRepository = new SqlClientTermValueSetRepository(
+                    this.ClientTermContext.AsLazy(),
+                    this.Logger,
+                    new SqlUnitOfWorkBuilderFactory());
 
             var sqlCodeSystemRepository = new SqlCodeSystemRepository(
                 this.SharedContext,
