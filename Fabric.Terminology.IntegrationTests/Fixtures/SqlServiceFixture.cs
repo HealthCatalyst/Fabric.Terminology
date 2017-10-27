@@ -4,6 +4,7 @@
     using Fabric.Terminology.Domain.Services;
     using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Persistence;
+    using Fabric.Terminology.SqlServer.Persistence.UnitOfWork;
     using Fabric.Terminology.SqlServer.Services;
     using Fabric.Terminology.TestsBase.Fixtures;
 
@@ -30,6 +31,7 @@
         {
             var cacheManagerFactory = new CachingManagerFactory(this.Cache);
             var pagingStrategyFactory = new PagingStrategyFactory();
+            var uow = new ClientTermUnitOfWork(this.ClientTermContext.AsLazy(), this.Logger);
 
             var valueSetCodeRepository = new SqlValueSetCodeRepository(
                 this.SharedContext,
@@ -49,9 +51,7 @@
                 pagingStrategyFactory);
 
             var sqlClientTermValueSetRepository = new SqlClientTermValueSetRepository(
-                this.ClientTermContext.AsLazy(),
-                this.Logger,
-                new SqlUnitOfWorkBuilderFactory());
+                new SqlClientTermUnitOfWorkRepository(uow));
 
             var sqlCodeSystemRepository = new SqlCodeSystemRepository(
                 this.SharedContext,

@@ -3,11 +3,6 @@
     using System;
     using System.Collections.Generic;
 
-    using Fabric.Terminology.Domain;
-
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Converters;
-
     public class ValueSetItemApiModel : ValueSetMetaApiModel, IIdentifiable
     {
         public string Identifier { get; set; }
@@ -19,8 +14,6 @@
         public string Name { get; set; }
 
         public Guid OriginGuid { get; set; }
-
-        public string ClientCode { get; set; }
 
         public string StatusCode { get; set; }
 
