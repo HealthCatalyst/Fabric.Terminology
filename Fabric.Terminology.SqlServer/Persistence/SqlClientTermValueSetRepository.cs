@@ -9,6 +9,7 @@
     using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Exceptions;
     using Fabric.Terminology.Domain.Models;
+    using Fabric.Terminology.Domain.Services;
     using Fabric.Terminology.SqlServer.Models.Dto;
     using Fabric.Terminology.SqlServer.Persistence.DataContext;
     using Fabric.Terminology.SqlServer.Persistence.Factories;
@@ -171,27 +172,27 @@
             return codes.Select(factory.Build).ToList();
         }
 
-        private IReadOnlyCollection<RepositoryOperation> GetRemoveCodeOperations(
+        private IReadOnlyCollection<PersistenceOperation> GetRemoveCodeOperations(
             IEnumerable<ValueSetCodeDto> originalSet,
             IEnumerable<IValueSetCode> destinationSet)
         {
             var destGuids = destinationSet.Select(ds => ds.CodeGuid);
             return originalSet.Where(code => destGuids.All(dg => dg != code.CodeGUID))
-                .Select(dto => new RepositoryOperation
+                .Select(dto => new PersistenceOperation
                 {
                     Value = dto,
                     OperationType = OperationType.Delete
                 }).ToList();
         }
 
-        private IReadOnlyCollection<RepositoryOperation> GetAddCodeOperations(
+        private IReadOnlyCollection<PersistenceOperation> GetAddCodeOperations(
             IEnumerable<ValueSetCodeDto> originalSet,
             IEnumerable<IValueSetCode> destinationSet)
         {
             var existingGuids = originalSet.Select(eg => eg.CodeGUID);
             return destinationSet.Where(code => existingGuids.All(eg => eg != code.CodeGuid))
                 .Select(
-                    code => new RepositoryOperation
+                    code => new PersistenceOperation
                     {
                         Value = new ValueSetCodeDto(code),
                         OperationType = OperationType.Create
@@ -199,7 +200,7 @@
                 .ToList();
         }
 
-        private IReadOnlyCollection<RepositoryOperation> GetCodeCountOperations(
+        private IReadOnlyCollection<PersistenceOperation> GetCodeCountOperations(
             IEnumerable<ValueSetCodeCountDto> existingCounts,
             IEnumerable<IValueSetCode> valueSetCodes)
         {
@@ -209,7 +210,7 @@
                     .Select(
                             dto =>
                             {
-                                var op = new RepositoryOperation();
+                                var op = new PersistenceOperation();
                                 if (dto.CodeSystemPerValueSetNBR != nc.CodeCount)
                                 {
                                     dto.CodeSystemPerValueSetNBR = nc.CodeCount;
@@ -223,7 +224,7 @@
                                 op.Value = dto;
                                 return op;
                             })
-                    .Else(() => new RepositoryOperation
+                    .Else(() => new PersistenceOperation
                         {
                             Value = new ValueSetCodeCountDto(nc)
                         })).ToList();

@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Linq;
 
+    using Fabric.Terminology.Domain.Services;
     using Fabric.Terminology.SqlServer;
     using Fabric.Terminology.SqlServer.Persistence;
     using Fabric.Terminology.TestsBase.Mocks;
@@ -13,20 +14,21 @@
     using Nancy.Diagnostics;
 
     using Xunit;
+    using Fabric.Terminology.Domain;
 
     public class SqlServerLibraryTests
     {
-        internal static IEnumerable<RepositoryOperation> TestOperations => new List<RepositoryOperation>
+        internal static IEnumerable<PersistenceOperation> TestOperations => new List<PersistenceOperation>
         {
-            new RepositoryOperation { Value = new TestObject(), OperationType = OperationType.Create },
-            new RepositoryOperation { Value = new TestObject(), OperationType = OperationType.Update },
-            new RepositoryOperation { Value = new TestObject(), OperationType = OperationType.Update },
-            new RepositoryOperation { Value = new TestObject(), OperationType = OperationType.Delete },
-            new RepositoryOperation { Value = new TestObject(), OperationType = OperationType.None },
-            new RepositoryOperation { Value = new NotTestObject(), OperationType = OperationType.None },
-            new RepositoryOperation { Value = new NotTestObject(), OperationType = OperationType.Create },
-            new RepositoryOperation { Value = new NotTestObject(), OperationType = OperationType.Update },
-            new RepositoryOperation { Value = new NotTestObject(), OperationType = OperationType.Delete },
+            new PersistenceOperation { Value = new TestObject(), OperationType = OperationType.Create },
+            new PersistenceOperation { Value = new TestObject(), OperationType = OperationType.Update },
+            new PersistenceOperation { Value = new TestObject(), OperationType = OperationType.Update },
+            new PersistenceOperation { Value = new TestObject(), OperationType = OperationType.Delete },
+            new PersistenceOperation { Value = new TestObject(), OperationType = OperationType.None },
+            new PersistenceOperation { Value = new NotTestObject(), OperationType = OperationType.None },
+            new PersistenceOperation { Value = new NotTestObject(), OperationType = OperationType.Create },
+            new PersistenceOperation { Value = new NotTestObject(), OperationType = OperationType.Update },
+            new PersistenceOperation { Value = new NotTestObject(), OperationType = OperationType.Delete },
         };
 
         [Theory]

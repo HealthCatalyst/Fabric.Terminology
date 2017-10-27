@@ -6,7 +6,9 @@
 
     using CallMeMaybe;
 
+    using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Models;
+    using Fabric.Terminology.Domain.Services;
     using Fabric.Terminology.SqlServer.Models.Dto;
     using Fabric.Terminology.SqlServer.Persistence.DataContext;
 
@@ -19,7 +21,7 @@
             this.clientTermContext = clientTermContext;
         }
 
-        public IReadOnlyCollection<RepositoryOperation> GetRemoveCodesOperations(
+        public IReadOnlyCollection<PersistenceOperation> GetRemoveCodesOperations(
             Guid valueSetGuid,
             IEnumerable<ICodeSystemCode> codes)
         {
@@ -34,7 +36,7 @@
             return removeOps.Union(countOps).ToList();
         }
 
-        public IReadOnlyCollection<RepositoryOperation> GetAddCodesOperations(
+        public IReadOnlyCollection<PersistenceOperation> GetAddCodesOperations(
             Guid valueSetGuid,
             IEnumerable<IValueSetCode> valueSetCodes)
         {
@@ -49,14 +51,14 @@
             return addOps.Union(countOps).ToList();
         }
 
-        private IReadOnlyCollection<RepositoryOperation> BuildAddCodeOperationList(
+        private IReadOnlyCollection<PersistenceOperation> BuildAddCodeOperationList(
             IEnumerable<ValueSetCodeDto> originalCodeDtos,
             IEnumerable<IValueSetCode> valueSetCodes)
         {
             var existingGuids = originalCodeDtos.Select(eg => eg.CodeGUID);
             return valueSetCodes.Where(code => existingGuids.All(eg => eg != code.CodeGuid))
                 .Select(
-                    code => new RepositoryOperation
+                    code => new PersistenceOperation
                     {
                         Value = new ValueSetCodeDto(code),
                         OperationType = OperationType.Create
@@ -64,20 +66,20 @@
                 .ToList();
         }
 
-        private IReadOnlyCollection<RepositoryOperation> BuildRemoveCodesOperationList(
+        private IReadOnlyCollection<PersistenceOperation> BuildRemoveCodesOperationList(
             IEnumerable<ValueSetCodeDto> originalCodeDtos,
             IEnumerable<ICodeSystemCode> codeSystemCodes)
         {
             var destGuids = codeSystemCodes.Select(ds => ds.CodeGuid);
             return originalCodeDtos.Where(code => destGuids.All(dg => dg != code.CodeGUID))
-                .Select(dto => new RepositoryOperation
+                .Select(dto => new PersistenceOperation
                 {
                     Value = dto,
                     OperationType = OperationType.Delete
                 }).ToList();
         }
 
-        private IReadOnlyCollection<RepositoryOperation> BuildCodeCountOperationList(
+        private IReadOnlyCollection<PersistenceOperation> BuildCodeCountOperationList(
             Guid valueSetGuid,
             IEnumerable<ValueSetCodeDto> allCodeDtos)
         {
@@ -103,7 +105,7 @@
                 .Select(
                     dto =>
                         {
-                            var op = new RepositoryOperation();
+                            var op = new PersistenceOperation();
                             if (dto.CodeSystemPerValueSetNBR != nc.CodeSystemPerValueSetNBR)
                             {
                                 dto.CodeSystemPerValueSetNBR = nc.CodeSystemPerValueSetNBR;
@@ -117,7 +119,7 @@
                             op.Value = dto;
                             return op;
                         })
-                .Else(() => new RepositoryOperation
+                .Else(() => new PersistenceOperation
                 {
                     Value = nc
                 })).ToList();

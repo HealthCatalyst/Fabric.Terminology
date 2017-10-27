@@ -11,7 +11,7 @@
     {
         public IValueSetBackingItem Build(ValueSetDescriptionBaseDto dto)
         {
-            if(!Enum.TryParse(dto.StatusCD, true, out ValueSetStatusCode statusCode))
+            if (!Enum.TryParse(dto.StatusCD, true, out ValueSetStatusCode statusCode))
             {
                 statusCode = ValueSetStatusCode.Active;
             }

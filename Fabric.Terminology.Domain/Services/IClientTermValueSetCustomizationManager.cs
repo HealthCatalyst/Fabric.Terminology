@@ -1,4 +1,4 @@
-﻿namespace Fabric.Terminology.SqlServer.Persistence
+﻿namespace Fabric.Terminology.Domain.Services
 {
     using System;
     using System.Collections.Generic;
@@ -7,11 +7,11 @@
 
     internal interface IClientTermValueSetCustomizationManager
     {
-        IReadOnlyCollection<RepositoryOperation> GetRemoveCodesOperations(
+        IReadOnlyCollection<PersistenceOperation> GetRemoveCodesOperations(
             Guid valueSetGuid,
             IEnumerable<ICodeSystemCode> codeSystemCodes);
 
-        IReadOnlyCollection<RepositoryOperation> GetAddCodesOperations(
+        IReadOnlyCollection<PersistenceOperation> GetAddCodesOperations(
             Guid valueSetGuid,
             IEnumerable<IValueSetCode> valueSetCodes);
     }
