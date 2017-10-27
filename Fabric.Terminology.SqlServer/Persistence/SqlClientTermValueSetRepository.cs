@@ -23,7 +23,9 @@
 
         private readonly ILogger logger;
 
-        public SqlClientTermValueSetRepository(Lazy<ClientTermContext> clientTermContext, ILogger logger)
+        public SqlClientTermValueSetRepository(
+            Lazy<ClientTermContext> clientTermContext,
+            ILogger logger)
         {
             this.clientTermContext = clientTermContext;
             this.logger = logger;
@@ -33,21 +35,18 @@
 
         public Maybe<IValueSet> GetValueSet(Guid valueSetGuid)
         {
-            var desc = this.ClientTermContext.ValueSetDescriptions.AsNoTracking()
-                .SingleOrDefault(x => x.ValueSetGUID == valueSetGuid);
+            return this.GetValueSetDescriptionDto(valueSetGuid)
+                .Select(
+                    dto =>
+                        {
+                            var factory = new ValueSetBackingItemFactory();
+                            var item = factory.Build(dto);
 
-            if (desc == null)
-            {
-                return Maybe.Not;
-            }
+                            var codes = this.GetCodes(item.ValueSetGuid);
+                            var counts = this.GetCodeCounts(item.ValueSetGuid);
 
-            var factory = new ValueSetBackingItemFactory();
-            var item = factory.Build(desc);
-
-            var codes = this.GetCodes(item.ValueSetGuid);
-            var counts = this.GetCodeCounts(item.ValueSetGuid);
-
-            return new Maybe<IValueSet>(new ValueSet(item, codes, counts));
+                            return new ValueSet(item, codes, counts) as IValueSet;
+                        });
         }
 
         public Attempt<IValueSet> Add(IValueSet valueSet)
@@ -104,6 +103,32 @@
             }
         }
 
+        public void AddCodes(Guid valueSetGuid, IEnumerable<ICodeSystemCode> codeSystemCodes)
+        {
+            var systemCodes = codeSystemCodes as ICodeSystemCode[] ?? codeSystemCodes.ToArray();
+            var existingCodes = this.GetCodes(valueSetGuid);
+
+            var existingCodeGuids = existingCodes.Select(c => c.CodeGuid);
+
+            var newCodes = systemCodes
+                            .Where(c => existingCodeGuids.All(eg => eg != c.CodeGuid))
+                            .Select(uc => new ValueSetCode(uc) { ValueSetGuid = valueSetGuid });
+
+            //var countDtoOps = this.GetCodeCountOperations(valueSetGuid, existingCodes.Union(newCodes).ToList());
+        }
+
+        public void RemoveCodes(Guid valueSetGuid, IEnumerable<Guid> codeGuids)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Attempt<IValueSet> Update(IValueSet valueSet)
+        {
+            return this.GetValueSetDescriptionDto(valueSet.ValueSetGuid)
+                .Select(dto => this.PerformUpdate(dto, valueSet))
+                .Else(AttemptNotFound(valueSet.ValueSetGuid));
+        }
+
         public void Delete(IValueSet valueSet)
         {
             using (var transaction = this.ClientTermContext.Database.BeginTransaction())
@@ -127,6 +152,17 @@
             }
         }
 
+        private static Attempt<IValueSet> AttemptNotFound(Guid valueSetGuid)
+        {
+            var notFound = new ValueSetNotFoundException($"Could not find ClientTerm value set with ValueSetGuid {valueSetGuid}");
+            return Attempt<IValueSet>.Failed(notFound);
+        }
+
+        private Attempt<IValueSet> PerformUpdate(ValueSetDescriptionBaseDto existing, IValueSet updated)
+        {
+            throw new NotImplementedException();
+        }
+
         private IReadOnlyCollection<IValueSetCode> GetCodes(Guid valueSetGuid)
         {
             var factory = new ValueSetCodeFactory();
@@ -135,12 +171,77 @@
             return codes.Select(factory.Build).ToList();
         }
 
+        private IReadOnlyCollection<RepositoryOperation> GetRemoveCodeOperations(
+            IEnumerable<ValueSetCodeDto> originalSet,
+            IEnumerable<IValueSetCode> destinationSet)
+        {
+            var destGuids = destinationSet.Select(ds => ds.CodeGuid);
+            return originalSet.Where(code => destGuids.All(dg => dg != code.CodeGUID))
+                .Select(dto => new RepositoryOperation
+                {
+                    Value = dto,
+                    OperationType = OperationType.Delete
+                }).ToList();
+        }
+
+        private IReadOnlyCollection<RepositoryOperation> GetAddCodeOperations(
+            IEnumerable<ValueSetCodeDto> originalSet,
+            IEnumerable<IValueSetCode> destinationSet)
+        {
+            var existingGuids = originalSet.Select(eg => eg.CodeGUID);
+            return destinationSet.Where(code => existingGuids.All(eg => eg != code.CodeGuid))
+                .Select(
+                    code => new RepositoryOperation
+                    {
+                        Value = new ValueSetCodeDto(code),
+                        OperationType = OperationType.Create
+                    })
+                .ToList();
+        }
+
+        private IReadOnlyCollection<RepositoryOperation> GetCodeCountOperations(
+            IEnumerable<ValueSetCodeCountDto> existingCounts,
+            IEnumerable<IValueSetCode> valueSetCodes)
+        {
+            var newCounts = valueSetCodes.GetCodeCountsFromCodes();
+            return newCounts.Select(nc =>
+                    Maybe.From(existingCounts.FirstOrDefault(ec => ec.CodeSystemGUID == nc.CodeSystemGuid))
+                    .Select(
+                            dto =>
+                            {
+                                var op = new RepositoryOperation();
+                                if (dto.CodeSystemPerValueSetNBR != nc.CodeCount)
+                                {
+                                    dto.CodeSystemPerValueSetNBR = nc.CodeCount;
+                                    op.OperationType = OperationType.Update;
+                                }
+                                else
+                                {
+                                    op.OperationType = OperationType.None;
+                                }
+
+                                op.Value = dto;
+                                return op;
+                            })
+                    .Else(() => new RepositoryOperation
+                        {
+                            Value = new ValueSetCodeCountDto(nc)
+                        })).ToList();
+        }
+
         private IReadOnlyCollection<IValueSetCodeCount> GetCodeCounts(Guid valueSetGuid)
         {
             var factory = new ValueSetCodeCountFactory();
-            var counts = this.ClientTermContext.ValueSetCodeCounts.Where(vscc => vscc.ValueSetGUID == valueSetGuid).ToList();
+            var counts = this.ClientTermContext.ValueSetCodeCounts.Where(vscc => vscc.ValueSetGUID == valueSetGuid)
+                .ToList();
 
             return counts.Select(factory.Build).ToList();
+        }
+
+        private Maybe<ValueSetDescriptionBaseDto> GetValueSetDescriptionDto(Guid valueSetGuid)
+        {
+            return Maybe.From(this.ClientTermContext.ValueSetDescriptions.AsNoTracking()
+                .SingleOrDefault(x => x.ValueSetGUID == valueSetGuid));
         }
     }
 }

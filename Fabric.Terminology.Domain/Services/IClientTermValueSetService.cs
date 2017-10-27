@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Fabric.Terminology.Domain.Services
+﻿namespace Fabric.Terminology.Domain.Services
 {
+    using System;
+    using System.Collections.Generic;
+
     using Fabric.Terminology.Domain.Models;
 
     public interface IClientTermValueSetService
@@ -12,13 +12,13 @@ namespace Fabric.Terminology.Domain.Services
         Attempt<IValueSet> Create(string name, IValueSetMeta meta, IReadOnlyCollection<ICodeSystemCode> codeSetCodes);
 
         /// <summary>
-        ///     Saves a <see cref="IValueSet" />
+        ///     Saves a <see cref="IValueSet" /> as a new value set
         /// </summary>
         /// <param name="valueSet">The <see cref="IValueSet" /> to be saved</param>
         /// <remarks>
         ///     At this point, we can only save "new" value sets.  Updates are out of scope at the moment - To be discussed.
         /// </remarks>
-        void Save(IValueSet valueSet);
+        void SaveAsNew(IValueSet valueSet);
 
         // Can only delete custom value sets
         void Delete(IValueSet valueSet);

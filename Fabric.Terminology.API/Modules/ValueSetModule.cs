@@ -260,7 +260,7 @@
                 var validationResult = this.valueSetValidator.Validate(valueSet);
                 if (validationResult.IsValid)
                 {
-                    this.clientTermValueSetService.Save(valueSet);
+                    this.clientTermValueSetService.SaveAsNew(valueSet);
                     return this.CreateSuccessfulPostResponse(Mapper.Map<IValueSet, ValueSetApiModel>(valueSet));
                 }
 

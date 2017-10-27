@@ -74,7 +74,7 @@ namespace Fabric.Terminology.SqlServer.Services
             return Attempt<IValueSet>.Successful(valueSet);
         }
 
-        public void Save(IValueSet valueSet)
+        public void SaveAsNew(IValueSet valueSet)
         {
             Saving?.Invoke(this, valueSet);
 

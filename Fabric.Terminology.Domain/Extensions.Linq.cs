@@ -2,8 +2,18 @@
 {
     using System.Collections.Generic;
 
+    using Fabric.Terminology.Domain.Visitors;
+
     public static partial class Extensions
     {
+        public static void Accept<T>(this IEnumerable<T> source, IVisitor<T> visitor)
+        {
+            foreach (var item in source)
+            {
+                visitor.Visit(item);
+            }
+        }
+
         public static IEnumerable<IEnumerable<T>> Batch<T>(
             this IEnumerable<T> source, int batchSize)
         {

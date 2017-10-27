@@ -1,5 +1,4 @@
 // ReSharper disable InconsistentNaming
-
 namespace Fabric.Terminology.SqlServer.Models.Dto
 {
     using System;

@@ -37,12 +37,27 @@
             }
         }
 
+        public static IEnumerable<IValueSetCode> ContainsCodesNotIn(this IValueSet source, IValueSet compare)
+        {
+            return source.ContainsCodesNotIn(compare.ValueSetCodes.Select(vss => vss.CodeGuid));
+        }
+
+        public static IEnumerable<IValueSetCode> ContainsCodesNotIn(this IValueSet source, IEnumerable<Guid> codeGuids)
+        {
+            return source.ValueSetCodes.Where(vsc => codeGuids.All(cg => cg != vsc.CodeGuid));
+        }
+
         internal static IReadOnlyCollection<IValueSetCodeCount> GetCodeCountsFromCodes(this IEnumerable<IValueSetCode> codes)
         {
             var valueSetCodes = codes as IValueSetCode[] ?? codes.ToArray();
             var codeSystems = valueSetCodes.Select(c => c.CodeSystemGuid).Distinct();
             return
-                codeSystems.Select(codeSystemGuid => new { codeSystemGuid = codeSystemGuid, valueSetCode = valueSetCodes.First(c => c.CodeSystemGuid == codeSystemGuid) })
+                codeSystems.Select(
+                    codeSystemGuid => new
+                    {
+                        codeSystemGuid,
+                        valueSetCode = valueSetCodes.First(c => c.CodeSystemGuid == codeSystemGuid)
+                    })
                 .Select(
                     o => new ValueSetCodeCount
                     {

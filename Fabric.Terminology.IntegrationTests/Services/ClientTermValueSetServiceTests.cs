@@ -62,7 +62,7 @@
             var vs = attempt.Result.Single();
 
             // Act
-            this.Profiler.ExecuteTimed(() => this.clientTermValueSetService.Save(vs));
+            this.Profiler.ExecuteTimed(() => this.clientTermValueSetService.SaveAsNew(vs));
 
             // Assert
             vs.ValueSetGuid.Should().NotBe(Guid.Empty);
