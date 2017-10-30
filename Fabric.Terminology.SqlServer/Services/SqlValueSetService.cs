@@ -93,7 +93,7 @@ namespace Fabric.Terminology.SqlServer.Services
 
         public Task<PagedCollection<IValueSet>> GetValueSetsAsync(
             IPagerSettings settings,
-            ValueSetStatusCode statusCode = ValueSetStatusCode.Active,
+            ValueSetStatus statusCode = ValueSetStatus.Active,
             bool latestVersionsOnly = true)
         {
             return this.GetValueSetsAsync(settings, new List<Guid>(), statusCode, latestVersionsOnly);
@@ -102,7 +102,7 @@ namespace Fabric.Terminology.SqlServer.Services
         public Task<PagedCollection<IValueSet>> GetValueSetsAsync(
             IPagerSettings settings,
             IEnumerable<Guid> codeSystemGuids,
-            ValueSetStatusCode statusCode = ValueSetStatusCode.Active,
+            ValueSetStatus statusCode = ValueSetStatus.Active,
             bool latestVersionsOnly = true)
         {
             return this.GetValueSetsAsync(string.Empty, settings, codeSystemGuids, statusCode, latestVersionsOnly);
@@ -111,7 +111,7 @@ namespace Fabric.Terminology.SqlServer.Services
         public Task<PagedCollection<IValueSet>> GetValueSetsAsync(
             string filterText,
             IPagerSettings pagerSettings,
-            ValueSetStatusCode statusCode = ValueSetStatusCode.Active,
+            ValueSetStatus statusCode = ValueSetStatus.Active,
             bool latestVersionsOnly = true)
         {
             return this.GetValueSetsAsync(filterText, pagerSettings, new List<Guid>(), statusCode, latestVersionsOnly);
@@ -121,7 +121,7 @@ namespace Fabric.Terminology.SqlServer.Services
             string filterText,
             IPagerSettings pagerSettings,
             IEnumerable<Guid> codeSystemGuids,
-            ValueSetStatusCode statusCode = ValueSetStatusCode.Active,
+            ValueSetStatus statusCode = ValueSetStatus.Active,
             bool latestVersionsOnly = true)
         {
             var backingItemPage = await this.valueSetBackingItemRepository.GetValueSetBackingItemsAsync(

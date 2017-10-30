@@ -48,7 +48,7 @@
                 cacheManagerFactory,
                 pagingStrategyFactory);
 
-            var sqlClientTermUowRepository = new SqlClientTermUnitOfWorkRepository(uow);
+            var sqlClientTermUowRepository = new SqlClientTermUnitOfWorkRepository(this.Logger, uow);
 
             var sqlCodeSystemRepository = new SqlCodeSystemRepository(
                 this.SharedContext,

@@ -33,7 +33,7 @@
                 typeof(ValueSetCodeApiModel),
                 typeof(ValueSetCodeCountApiModel),
                 typeof(ValueSetCreationApiModel),
-                typeof(ValueSetStatusCode),
+                typeof(ValueSetStatus),
                 typeof(Guid)
                 );
 

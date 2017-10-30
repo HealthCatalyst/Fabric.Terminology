@@ -68,7 +68,7 @@
             vs.ValueSetGuid.Should().NotBe(Guid.Empty);
             vs.ValueSetCodes.Count.Should().Be(codeCount);
             vs.Name.Should().BeEquivalentTo(name);
-            vs.StatusCode.Should().Be(ValueSetStatusCode.Draft);
+            vs.StatusCode.Should().Be(ValueSetStatus.Draft);
 
             // cleanup
             this.clientTermValueSetService.Delete(vs);

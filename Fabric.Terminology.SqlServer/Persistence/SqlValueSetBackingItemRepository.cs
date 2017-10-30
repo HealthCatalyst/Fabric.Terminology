@@ -104,7 +104,7 @@
         public Task<PagedCollection<IValueSetBackingItem>> GetValueSetBackingItemsAsync(
             IPagerSettings pagerSettings,
             IEnumerable<Guid> codeSystemGuids,
-            ValueSetStatusCode statusCode = ValueSetStatusCode.Active,
+            ValueSetStatus statusCode = ValueSetStatus.Active,
             bool latestVersionsOnly = true)
         {
             return this.GetValueSetBackingItemsAsync(
@@ -119,7 +119,7 @@
             string filterText,
             IPagerSettings pagerSettings,
             IEnumerable<Guid> codeSystemGuids,
-            ValueSetStatusCode statusCode = ValueSetStatusCode.Active,
+            ValueSetStatus statusCode = ValueSetStatus.Active,
             bool latestVersionsOnly = true)
         {
             var dtos = latestVersionsOnly ? this.DbSet.Where(GetBaseExpression(statusCode)) : this.DbSet.AsQueryable();
@@ -143,7 +143,7 @@
             return this.CreatePagedCollectionAsync(dtos, pagerSettings);
         }
 
-        private static Expression<Func<ValueSetDescriptionDto, bool>> GetBaseExpression(ValueSetStatusCode statusCode)
+        private static Expression<Func<ValueSetDescriptionDto, bool>> GetBaseExpression(ValueSetStatus statusCode)
         {
             return baseSql => baseSql.LatestVersionFLG == "Y" && baseSql.StatusCD == statusCode.ToString();
         }

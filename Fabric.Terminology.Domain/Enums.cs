@@ -6,7 +6,7 @@
         Descending
     }
 
-    public enum ValueSetStatusCode
+    public enum ValueSetStatus
     {
         Draft = 1,
         Active = 0,

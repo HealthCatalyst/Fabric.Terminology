@@ -287,11 +287,11 @@
             return val.IsNullOrWhiteSpace() || ret;
         }
 
-        private ValueSetStatusCode GetValueSetStatusCode()
+        private ValueSetStatus GetValueSetStatusCode()
         {
-            if (!Enum.TryParse((string)this.Request.Query["$status"], true, out ValueSetStatusCode statusCode))
+            if (!Enum.TryParse((string)this.Request.Query["$status"], true, out ValueSetStatus statusCode))
             {
-                statusCode = ValueSetStatusCode.Active;
+                statusCode = ValueSetStatus.Active;
             }
 
             return statusCode;

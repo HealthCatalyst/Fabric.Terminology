@@ -84,7 +84,7 @@
 
         public Task<PagedCollection<IValueSetSummary>> GetValueSetSummariesAsync(
             IPagerSettings settings,
-            ValueSetStatusCode statusCode = ValueSetStatusCode.Active,
+            ValueSetStatus statusCode = ValueSetStatus.Active,
             bool latestVersionsOnly = true)
         {
             return this.GetValueSetSummariesAsync(settings, new List<Guid>(), statusCode, latestVersionsOnly);
@@ -93,7 +93,7 @@
         public Task<PagedCollection<IValueSetSummary>> GetValueSetSummariesAsync(
             IPagerSettings settings,
             IEnumerable<Guid> codeSystemGuids,
-            ValueSetStatusCode statusCode = ValueSetStatusCode.Active,
+            ValueSetStatus statusCode = ValueSetStatus.Active,
             bool latestVersionsOnly = true)
         {
             return this.GetValueSetSummariesAsync(
@@ -107,7 +107,7 @@
         public Task<PagedCollection<IValueSetSummary>> GetValueSetSummariesAsync(
             string nameFilterText,
             IPagerSettings pagerSettings,
-            ValueSetStatusCode statusCode = ValueSetStatusCode.Active,
+            ValueSetStatus statusCode = ValueSetStatus.Active,
             bool latestVersionsOnly = true)
         {
             return this.GetValueSetSummariesAsync(nameFilterText, pagerSettings, new List<Guid>(), statusCode, latestVersionsOnly);
@@ -117,7 +117,7 @@
             string nameFilterText,
             IPagerSettings pagerSettings,
             IEnumerable<Guid> codeSystemGuids,
-            ValueSetStatusCode statusCode = ValueSetStatusCode.Active,
+            ValueSetStatus statusCode = ValueSetStatus.Active,
             bool latestVersionsOnly = true)
         {
             var backingItemPage = await this.valueSetBackingItemRepository.GetValueSetBackingItemsAsync(

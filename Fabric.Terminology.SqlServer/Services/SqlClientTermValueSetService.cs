@@ -69,7 +69,7 @@ namespace Fabric.Terminology.SqlServer.Services
                 return Attempt<IValueSet>.Failed(new ArgumentException("A value set must include at least one code."));
             }
 
-            var valueSet = new ValueSet(name, meta, codeSetCodes) { StatusCode = ValueSetStatusCode.Draft };
+            var valueSet = new ValueSet(name, meta, codeSetCodes) { StatusCode = ValueSetStatus.Draft };
             Created?.Invoke(this, valueSet);
             return Attempt<IValueSet>.Successful(valueSet);
         }

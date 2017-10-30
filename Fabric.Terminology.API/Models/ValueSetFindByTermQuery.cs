@@ -10,6 +10,6 @@
         public bool Summary { get; set; } = true;
 
         [JsonProperty("statusCode")]
-        public ValueSetStatusCode StatusCode { get; set; } = ValueSetStatusCode.Active;
+        public ValueSetStatus StatusCode { get; set; } = ValueSetStatus.Active;
     }
 }

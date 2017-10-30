@@ -10,7 +10,7 @@ namespace Fabric.Terminology.Domain.Models
 
         Guid OriginGuid { get; }
 
-        ValueSetStatusCode StatusCode { get; }
+        ValueSetStatus StatusCode { get; }
 
         bool IsCustom { get; }
 
