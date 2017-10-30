@@ -95,6 +95,11 @@
             return valueSetGuids.Select(key => this.cache.GetItem<TResult>(GetCacheKey(key))).Values().ToList();
         }
 
+        public void Clear(Guid valueSetGuid)
+        {
+            this.cache.ClearItem(GetCacheKey(valueSetGuid));
+        }
+
         private static string GetCacheKey(Guid valueSetGuid) => $"{typeof(TResult)}-{valueSetGuid}";
 
         private Maybe<Tuple<Guid, IReadOnlyCollection<TResult>>> GetCachedPartialValueSetAsTuple(Guid valueSetGuid)

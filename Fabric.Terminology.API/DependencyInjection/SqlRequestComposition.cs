@@ -11,7 +11,7 @@
         public void Compose(TinyIoCContainer container)
         {
             container.Register<IClientTermUnitOfWork, ClientTermUnitOfWork>();
-            container.Register<IClientTermUnitOfWorkRepository, SqlClientTermUnitOfWorkRepository>();
+            container.Register<SqlServer.Persistence.IClientTermUnitOfWorkRepository, SqlClientTermUnitOfWorkRepository>();
             container.Register<IValueSetCodeRepository, SqlValueSetCodeRepository>();
             container.Register<IValueSetCodeCountRepository, SqlValueSetCodeCountRepository>();
             container.Register<IValueSetBackingItemRepository, SqlValueSetBackingItemRepository>();

@@ -14,21 +14,23 @@ namespace Fabric.Terminology.SqlServer.Persistence
     using Fabric.Terminology.SqlServer.Persistence.Factories;
     using Fabric.Terminology.SqlServer.Persistence.UnitOfWork;
 
+    using Serilog;
+
     internal class SqlClientTermUnitOfWorkRepository : IClientTermUnitOfWorkRepository
     {
+        private readonly ILogger logger;
+
         private readonly IClientTermUnitOfWork uow;
 
-        public SqlClientTermUnitOfWorkRepository(IClientTermUnitOfWork uow)
+        public SqlClientTermUnitOfWorkRepository(ILogger logger, IClientTermUnitOfWork uow)
         {
+            this.logger = logger;
             this.uow = uow;
-            this.Operations = new Queue<Operation>();
         }
-
-        internal Queue<Operation> Operations { get; }
 
         public Maybe<IValueSet> GetValueSet(Guid valueSetGuid)
         {
-            return this.GetValueSetDescriptionDto(valueSetGuid)
+            return this.uow.GetValueSetDescriptionDto(valueSetGuid)
                 .Select(
                     dto =>
                         {
@@ -44,85 +46,17 @@ namespace Fabric.Terminology.SqlServer.Persistence
 
         public Attempt<IValueSet> Add(IValueSet valueSet)
         {
-            valueSet.SetIdsForCustomInsert();
+            var valueSetGuid = valueSet.SetIdsForCustomInsert();
 
-            var valueSetDto = new ValueSetDescriptionBaseDto(valueSet);
-            var codeDtos = valueSet.ValueSetCodes.Select(code => new ValueSetCodeDto(code)).ToList();
-            var countDtos = valueSet.CodeCounts.Select(count => new ValueSetCodeCountDto(count)).ToList();
+            this.uow.Commit(this.PerpareNewValueSetOperations(valueSet));
 
-            this.uow.Context.ChangeTracker.AutoDetectChangesEnabled = false;
-            using (var transaction = this.uow.Context.Database.BeginTransaction())
-            {
-                try
-                {
-                    this.uow.Context.ValueSetDescriptions.Add(valueSetDto);
-                    this.uow.Context.ValueSetCodes.AddRange(codeDtos);
-                    this.uow.Context.ValueSetCodeCounts.AddRange(countDtos);
+            // Get the updated ValueSet
+            var added = this.GetValueSet(valueSetGuid);
 
-                    var changes = this.uow.Context.SaveChanges();
-
-                    var expectedChanges = codeDtos.Count + countDtos.Count + 1;
-                    if (changes != expectedChanges)
-                    {
-                        transaction.Rollback();
-                        return Attempt<IValueSet>.Failed(
-                            new ValueSetNotFoundException(
-                                $"When saving a ValueSet, we expected {expectedChanges} changes, but was told there were {changes} changes"));
-                    }
-
-                    transaction.Commit();
-
-                    // Get the updated ValueSet
-                    var added = this.GetValueSet(valueSetDto.ValueSetGUID);
-
-                    return added.Select(Attempt<IValueSet>.Successful)
-                        .Else(
-                            () => Attempt<IValueSet>.Failed(
-                                new ValueSetNotFoundException("Could not retrieved newly saved ValueSet")));
-                }
-                catch (Exception ex)
-                {
-                    this.uow.Logger.Error(ex, "Failed to save a custom ValueSet");
-                    this.uow.Context.ChangeTracker.AutoDetectChangesEnabled = true;
-                    return Attempt<IValueSet>.Failed(
-                        new ValueSetOperationException("Failed to save a custom ValueSet", ex),
-                        valueSet);
-                }
-                finally
-                {
-                    this.uow.Context.ChangeTracker.AutoDetectChangesEnabled = true;
-                }
-            }
-        }
-
-        public void PrepareAddCodesOperations(
-            Guid valueSetGuid,
-            IEnumerable<IValueSetCode> valueSetCodes)
-        {
-            var originalDtos = this.GetCodeDtos(valueSetGuid);
-
-            var addOps = this.BuildAddCodeOperationList(originalDtos, valueSetCodes);
-
-            var allCodeDtos = originalDtos.Union(addOps.Where(ao => ao.OperationType == OperationType.Create).Select(ao => ao.Value<ValueSetCodeDto>()));
-
-            var countOps = this.BuildCodeCountOperationList(valueSetGuid, allCodeDtos);
-
-            this.Enqueue(addOps.Union(countOps));
-        }
-
-        public void PrepareRemoveCodesOperations(
-            Guid valueSetGuid,
-            IEnumerable<ICodeSystemCode> codes)
-        {
-            var originalCodeDtos = this.GetCodeDtos(valueSetGuid);
-
-            var removeOps = this.BuildRemoveCodesOperationList(originalCodeDtos, codes);
-            var removedCodeGuids = removeOps.Select(ro => ro.Value<CodeSystemCodeDto>().CodeGUID);
-            var resultDtos = originalCodeDtos.Where(oc => removedCodeGuids.All(rc => rc != oc.CodeGUID));
-
-            var countOps = this.BuildCodeCountOperationList(valueSetGuid, resultDtos);
-
-            this.Enqueue(removeOps.Union(countOps));
+            return added.Select(Attempt<IValueSet>.Successful)
+                .Else(
+                    () => Attempt<IValueSet>.Failed(
+                        new ValueSetNotFoundException("Could not retrieved newly saved ValueSet")));
         }
 
         public void Delete(IValueSet valueSet)
@@ -143,17 +77,87 @@ namespace Fabric.Terminology.SqlServer.Persistence
                     var operationException = new ValueSetOperationException(
                         $"Failed to delete custom ValueSet with ID {valueSet.ValueSetGuid}",
                         ex);
-                    this.uow.Logger.Error(operationException, "Failed to delete custom ValueSet");
+                    this.logger.Error(operationException, "Failed to delete custom ValueSet");
                     throw operationException;
                 }
         }
 
-        private void Enqueue(IEnumerable<Operation> operations)
+        private static Operation BuildOperation(object value, OperationType operationType) =>
+            new Operation { Value = value, OperationType = operationType };
+
+        private static IEnumerable<Operation> BuildOperationBatch(IEnumerable<object> values, OperationType operationType)
+            => values.Select(v => BuildOperation(v, operationType));
+
+        private Queue<Operation> PerpareNewValueSetOperations(IValueSet valueSet)
         {
+            var operations =
+                new List<Operation>
+                    {
+                        BuildOperation(new ValueSetDescriptionBaseDto(valueSet), OperationType.Create)
+                    }
+                    .Union(
+                        BuildOperationBatch(
+                            valueSet.ValueSetCodes.Select(code => new ValueSetCodeDto(code)),
+                            OperationType.Create))
+                    .Union(
+                        BuildOperationBatch(
+                            valueSet.CodeCounts.Select(count => new ValueSetCodeCountDto(count)),
+                            OperationType.Create));
+
+            return this.Enqueue(operations);
+        }
+
+        private void PrepareAddValueSet(
+            Guid valueSetGuid,
+            IEnumerable<Guid> valueSetGuids)
+        {
+            // TODO - add ability to grab all codes from an existing value set
+            // TODO - and and insert into the current value set.
+            throw new NotImplementedException();
+        }
+
+        // add ability to remove all codes that exist in current value set that also exist in 
+        // value set passed.
+
+        private void PrepareAddCodesOperations(
+            Guid valueSetGuid,
+            IEnumerable<IValueSetCode> valueSetCodes)
+        {
+            var originalDtos = this.uow.GetCodeDtos(valueSetGuid);
+
+            var addOps = this.BuildAddCodeOperationList(originalDtos, valueSetCodes);
+
+            var allCodeDtos = originalDtos.Union(addOps.Where(ao => ao.OperationType == OperationType.Create).Select(ao => ao.Value<ValueSetCodeDto>()));
+
+            var countOps = this.BuildCodeCountOperationList(valueSetGuid, allCodeDtos);
+
+            this.Enqueue(addOps.Union(countOps));
+        }
+
+        private void PrepareRemoveCodesOperations(
+            Guid valueSetGuid,
+            IEnumerable<ICodeSystemCode> codes)
+        {
+            var originalCodeDtos = this.uow.GetCodeDtos(valueSetGuid);
+
+            var removeOps = this.BuildRemoveCodesOperationList(originalCodeDtos, codes);
+            var removedCodeGuids = removeOps.Select(ro => ro.Value<CodeSystemCodeDto>().CodeGUID);
+            var resultDtos = originalCodeDtos.Where(oc => removedCodeGuids.All(rc => rc != oc.CodeGUID));
+
+            var countOps = this.BuildCodeCountOperationList(valueSetGuid, resultDtos);
+
+            this.Enqueue(removeOps.Union(countOps));
+        }
+
+        private Queue<Operation> Enqueue(IEnumerable<Operation> operations)
+        {
+            var queue = new Queue<Operation>();
             foreach (var o in operations)
             {
-                this.Operations.Enqueue(o);
+                queue.Enqueue(o);
             }
+
+            return queue;
         }
 
         private IReadOnlyCollection<Operation> BuildAddCodeOperationList(
@@ -188,7 +192,7 @@ namespace Fabric.Terminology.SqlServer.Persistence
             Guid valueSetGuid,
             IEnumerable<ValueSetCodeDto> allCodeDtos)
         {
-            var originalCounts = this.GetCodeCountDtos(valueSetGuid);
+            var originalCounts = this.uow.GetCodeCountDtos(valueSetGuid);
 
             var newCodes = allCodeDtos as ValueSetCodeDto[] ?? allCodeDtos.ToArray();
             var allCodeSystems = newCodes.Select(c => c.CodeSystemGuid).Distinct();
@@ -243,28 +247,17 @@ namespace Fabric.Terminology.SqlServer.Persistence
             return operations;
         }
 
-        private Maybe<ValueSetDescriptionBaseDto> GetValueSetDescriptionDto(Guid valueSetGuid) =>
-            Maybe.From(this.uow.ValueSetDescriptions.Single(vsd => vsd.ValueSetGUID == valueSetGuid));
-
-        private IReadOnlyCollection<ValueSetCodeDto> GetCodeDtos(Guid valueSetGuid) =>
-            this.uow.ValueSetCodes.Get(vsc => vsc.ValueSetGUID == valueSetGuid);
-
-        private IReadOnlyCollection<ValueSetCodeCountDto> GetCodeCountDtos(Guid valueSetGuid) =>
-            this.uow.ValueSetCodeCounts.Get(vscc => vscc.ValueSetGUID == valueSetGuid);
-
         private IReadOnlyCollection<IValueSetCode> GetCodes(Guid valueSetGuid)
         {
             var factory = new ValueSetCodeFactory();
-            var codes = this.GetCodeDtos(valueSetGuid);
-
+            var codes = this.uow.GetCodeDtos(valueSetGuid);
             return codes.Select(factory.Build).ToList();
         }
 
         private IReadOnlyCollection<IValueSetCodeCount> GetCodeCounts(Guid valueSetGuid)
         {
             var factory = new ValueSetCodeCountFactory();
-            var counts = this.GetCodeCountDtos(valueSetGuid);
-
+            var counts = this.uow.GetCodeCountDtos(valueSetGuid);
             return counts.Select(factory.Build).ToList();
         }
     }

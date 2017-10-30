@@ -8,7 +8,7 @@
     using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Models;
 
-    [Obsolete("Use IClientTermUnitOfWorkRepository")]
+    [Obsolete("Use IClientTermUnitOfWork")]
     public interface IClientTermValueSetRepository
     {
         Attempt<IValueSet> Add(IValueSet valueSet);

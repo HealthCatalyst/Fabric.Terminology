@@ -12,7 +12,7 @@
     /// </summary>
     public static partial class Extensions
     {
-        public static void SetIdsForCustomInsert(this IValueSet valueSet)
+        public static Guid SetIdsForCustomInsert(this IValueSet valueSet)
         {
             var sequentialGuid = GuidComb.GenerateComb();
 
@@ -35,6 +35,8 @@
             {
                 count.ValueSetGuid = sequentialGuid;
             }
+
+            return sequentialGuid;
         }
 
         public static IEnumerable<IValueSetCode> ContainsCodesNotIn(this IValueSet source, IValueSet compare)

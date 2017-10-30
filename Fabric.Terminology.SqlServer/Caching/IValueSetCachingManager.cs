@@ -27,5 +27,7 @@
             Func<IEnumerable<Guid>, ILookup<Guid, TResult>> getLookup);
 
         IReadOnlyCollection<TResult> GetMultipleExisting(IEnumerable<Guid> valueSetGuids);
+
+        void Clear(Guid valueSetGuid);
     }
 }

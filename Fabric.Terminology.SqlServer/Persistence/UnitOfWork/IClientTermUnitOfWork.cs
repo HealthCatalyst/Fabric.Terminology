@@ -1,7 +1,11 @@
-﻿using Fabric.Terminology.SqlServer.Models.Dto;
-
-namespace Fabric.Terminology.SqlServer.Persistence.UnitOfWork
+﻿namespace Fabric.Terminology.SqlServer.Persistence.UnitOfWork
 {
+    using System;
+    using System.Collections.Generic;
+
+    using CallMeMaybe;
+
+    using Fabric.Terminology.SqlServer.Models.Dto;
     using Fabric.Terminology.SqlServer.Persistence.DataContext;
 
     using Serilog;
@@ -10,12 +14,10 @@ namespace Fabric.Terminology.SqlServer.Persistence.UnitOfWork
     {
         ClientTermContext Context { get; }
 
-        ILogger Logger { get; }
+        Maybe<ValueSetDescriptionBaseDto> GetValueSetDescriptionDto(Guid valueSetGuid);
 
-        IUnitOfWorkRepository<ValueSetCodeDto> ValueSetCodes { get; }
+        IReadOnlyCollection<ValueSetCodeDto> GetCodeDtos(Guid valueSetGuid);
 
-        IUnitOfWorkRepository<ValueSetCodeCountDto> ValueSetCodeCounts { get; }
-
-        IUnitOfWorkRepository<ValueSetDescriptionBaseDto> ValueSetDescriptions { get; }
+        IReadOnlyCollection<ValueSetCodeCountDto> GetCodeCountDtos(Guid valueSetGuid);
     }
 }

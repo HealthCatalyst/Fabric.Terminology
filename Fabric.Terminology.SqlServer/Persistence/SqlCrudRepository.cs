@@ -1,17 +1,15 @@
-﻿namespace Fabric.Terminology.SqlServer.Persistence.UnitOfWork
+﻿namespace Fabric.Terminology.SqlServer.Persistence
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
 
-    using CallMeMaybe;
-
     using Microsoft.EntityFrameworkCore;
 
     using Serilog;
 
-    internal class UnitOfWorkRepository<TEntity> : IUnitOfWorkRepository<TEntity>
+    internal class SqlCrudRepository<TEntity> : ICrudRepository<TEntity>
         where TEntity : class
     {
         private readonly DbContext context;
@@ -20,7 +18,7 @@
 
         private readonly DbSet<TEntity> dbSet;
 
-        public UnitOfWorkRepository(DbContext context, ILogger logger)
+        public SqlCrudRepository(DbContext context, ILogger logger)
         {
             this.context = context;
             this.logger = logger;
@@ -60,7 +58,7 @@
             }
             catch (Exception ex)
             {
-                this.logger.Error(ex, "UnitOfWorkRepository Get failed.");
+                this.logger.Error(ex, "SqlCrudRepository Get failed.");
                 throw;
             }
         }

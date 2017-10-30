@@ -1,13 +1,11 @@
-﻿namespace Fabric.Terminology.SqlServer.Persistence.UnitOfWork
+﻿namespace Fabric.Terminology.SqlServer.Persistence
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
 
-    using CallMeMaybe;
-
-    public interface IUnitOfWorkRepository<TEntity>
+    public interface ICrudRepository<TEntity>
         where TEntity : class
     {
         TEntity Single(Expression<Func<TEntity, bool>> filter,
