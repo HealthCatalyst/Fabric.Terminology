@@ -8,8 +8,6 @@
     using Fabric.Terminology.SqlServer.Models.Dto;
     using Fabric.Terminology.SqlServer.Persistence.DataContext;
 
-    using Serilog;
-
     internal interface IClientTermUnitOfWork : IUnitOfWork
     {
         ClientTermContext Context { get; }

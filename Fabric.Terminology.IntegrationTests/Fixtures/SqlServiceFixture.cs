@@ -31,6 +31,7 @@
         {
             var cacheManagerFactory = new CachingManagerFactory(this.Cache);
             var pagingStrategyFactory = new PagingStrategyFactory();
+            var clientTermCacheManager = new ClientTermCacheManager(cacheManagerFactory);
             var uow = new ClientTermUnitOfWork(this.ClientTermContext.AsLazy(), this.Logger);
 
             var valueSetCodeRepository = new SqlValueSetCodeRepository(
@@ -50,7 +51,10 @@
                 cacheManagerFactory,
                 pagingStrategyFactory);
 
-            var sqlClientTermUowRepository = new SqlClientTermUnitOfWorkRepository(this.Logger, uow);
+            var sqlClientTermUowRepository = new SqlClientTermUnitOfWorkRepository(
+                this.Logger,
+                uow,
+                clientTermCacheManager);
 
             var sqlCodeSystemRepository = new SqlCodeSystemRepository(
                 this.SharedContext,

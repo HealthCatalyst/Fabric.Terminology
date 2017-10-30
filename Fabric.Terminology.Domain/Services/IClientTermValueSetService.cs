@@ -20,6 +20,13 @@
         /// </remarks>
         void SaveAsNew(IValueSet valueSet);
 
+        Attempt<IValueSet> Copy(IValueSet originalValueSet, string newName, IValueSetMeta meta);
+
+        Attempt<IValueSet> AddRemoveCodes(
+            Guid valueSetGuid,
+            IEnumerable<ICodeSystemCode> codesToAdd,
+            IEnumerable<ICodeSystemCode> codesToRemove);
+
         // Can only delete custom value sets
         void Delete(IValueSet valueSet);
 

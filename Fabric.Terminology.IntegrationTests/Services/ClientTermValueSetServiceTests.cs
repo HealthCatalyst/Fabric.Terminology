@@ -5,6 +5,7 @@
 
     using Fabric.Terminology.API;
     using Fabric.Terminology.Domain;
+    using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Services;
     using Fabric.Terminology.IntegrationTests.Fixtures;
     using Fabric.Terminology.TestsBase;
@@ -17,12 +18,15 @@
 
     public class ClientTermValueSetServiceTests : OutputTestBase, IClassFixture<SqlServiceFixture>
     {
+        private readonly IValueSetService valueSetService;
+
         private readonly IClientTermValueSetService clientTermValueSetService;
 
         public ClientTermValueSetServiceTests(SqlServiceFixture fixture, ITestOutputHelper output)
             : base(output)
         {
             this.clientTermValueSetService = fixture.ClientTermValueSetService;
+            this.valueSetService = fixture.ValueSetService;
         }
 
         [Theory]
@@ -74,6 +78,33 @@
 
             // cleanup
             this.clientTermValueSetService.Delete(vs);
+        }
+
+        [Theory]
+        [InlineData("35F6B1A6-A72B-48F5-B319-F6CCAF15734D", "Diabetes copy")]
+        [InlineData("A2216AAC-8513-43D8-85C2-00057F92394B", "Hypotension copy")]
+        // [InlineData("A10BE32F-A086-41E2-B14F-9724E5D9DC29", "Trauma copy")] // 40+ seconds
+        public void CanCopyValueSet(string valueSetReferenceId, string name)
+        {
+            // Arrange
+            var valueSetGuid = Guid.Parse(valueSetReferenceId);
+            var valueSet = this.valueSetService.GetValueSet(valueSetGuid).Single();
+            var meta = MockApiModelBuilder.ValueSetCreationApiModel(name, 1) as IValueSetMeta;
+
+            // Act
+            var attempt = this.Profiler.ExecuteTimed(() => this.clientTermValueSetService.Copy(valueSet, name, meta));
+
+            // Assert
+            attempt.Success.Should().BeTrue();
+            var copy = attempt.Result.Single();
+            copy.OriginGuid.Should().Be(valueSet.ValueSetGuid);
+            copy.ValueSetCodes.Count.Should().Be(valueSet.ValueSetCodes.Count);
+            copy.IsCustom.Should().BeTrue();
+            copy.IsLatestVersion.Should().BeTrue();
+            copy.StatusCode.Should().Be(ValueSetStatus.Draft);
+
+            // cleanup
+            this.clientTermValueSetService.Delete(copy);
         }
     }
 }

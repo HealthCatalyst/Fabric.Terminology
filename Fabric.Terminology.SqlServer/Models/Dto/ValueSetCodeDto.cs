@@ -14,8 +14,13 @@ namespace Fabric.Terminology.SqlServer.Models.Dto
         }
 
         public ValueSetCodeDto(IValueSetCode code)
+            : this(code as ICodeSystemCode)
         {
             this.ValueSetGUID = code.ValueSetGuid;
+        }
+
+        public ValueSetCodeDto(ICodeSystemCode code)
+        {
             this.CodeGUID = code.CodeGuid;
             this.CodeCD = code.Code;
             this.CodeDSC = code.Name;

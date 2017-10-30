@@ -6,6 +6,7 @@
 
     using CallMeMaybe;
 
+    using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Exceptions;
     using Fabric.Terminology.Domain.Persistence;
     using Fabric.Terminology.SqlServer.Models.Dto;
