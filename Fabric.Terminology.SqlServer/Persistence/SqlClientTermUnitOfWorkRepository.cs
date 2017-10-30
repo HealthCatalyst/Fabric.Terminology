@@ -36,7 +36,7 @@ namespace Fabric.Terminology.SqlServer.Persistence
                         {
                             var factory = new ValueSetBackingItemFactory();
                             var item = factory.Build(dto);
-
+                            ((ValueSetBackingItem)item).IsCustom = true;
                             var codes = this.GetCodes(item.ValueSetGuid);
                             var counts = this.GetCodeCounts(item.ValueSetGuid);
 

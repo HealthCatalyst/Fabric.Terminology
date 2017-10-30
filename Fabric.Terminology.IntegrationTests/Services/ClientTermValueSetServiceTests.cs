@@ -68,6 +68,8 @@
             vs.ValueSetGuid.Should().NotBe(Guid.Empty);
             vs.ValueSetCodes.Count.Should().Be(codeCount);
             vs.Name.Should().BeEquivalentTo(name);
+            vs.IsLatestVersion.Should().BeTrue();
+            vs.IsCustom.Should().BeTrue();
             vs.StatusCode.Should().Be(ValueSetStatus.Draft);
 
             // cleanup
