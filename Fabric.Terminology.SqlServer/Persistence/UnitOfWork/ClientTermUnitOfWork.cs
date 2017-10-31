@@ -82,6 +82,32 @@
             }
         }
 
+        public void Commit(Queue<BatchSql> batchSql)
+        {
+            //var batch = batchSql.Dequeue();
+            //this.Context.Database.ExecuteSqlCommand(batch.Sql, batch.Parameters);
+            using (var transaction = this.Context.Database.BeginTransaction())
+            {
+                try
+                {
+                    while (batchSql.Count > 0)
+                    {
+                        var batch = batchSql.Dequeue();
+                        this.Context.Database.ExecuteSqlCommand(batch.Sql, batch.Parameters);
+                    }
+                    //var batch = batchSql.Dequeue();
+                    //this.Context.Database.ExecuteSqlCommand(batch.Sql, batch.Parameters);
+                    transaction.Commit();
+                }
+                catch (Exception ex)
+                {
+                    this.logger.Error(ex, "Failed to commit unit of work transaction. Rolling back.");
+                    transaction.Rollback();
+                    throw;
+                }
+            }
+        }
+
         public Maybe<ValueSetDescriptionBaseDto> GetValueSetDescriptionDto(Guid valueSetGuid) =>
             Maybe.From(this.ValueSetDescriptions.Single(vsd => vsd.ValueSetGUID == valueSetGuid));
 

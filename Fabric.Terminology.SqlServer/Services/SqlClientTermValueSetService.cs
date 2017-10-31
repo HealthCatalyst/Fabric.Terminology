@@ -83,6 +83,7 @@
             Saving?.Invoke(this, valueSet);
 
             var attempt = this.clientTermValueSetRepository.Add(valueSet);
+            //var attempt = this.clientTermValueSetRepository.AddBulkInsert(valueSet);
             if (attempt.Success && attempt.Result.HasValue)
             {
                 Saved?.Invoke(this, attempt.Result.Single());

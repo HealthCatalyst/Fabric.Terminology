@@ -81,9 +81,9 @@
         }
 
         [Theory]
-        [InlineData("35F6B1A6-A72B-48F5-B319-F6CCAF15734D", "Diabetes copy")]
-        [InlineData("A2216AAC-8513-43D8-85C2-00057F92394B", "Hypotension copy")]
-        // [InlineData("A10BE32F-A086-41E2-B14F-9724E5D9DC29", "Trauma copy")] // 40+ seconds
+        [InlineData("35F6B1A6-A72B-48F5-B319-F6CCAF15734D", "Diabetes copy")]  // bsql -> 2.4694085
+        [InlineData("A2216AAC-8513-43D8-85C2-00057F92394B", "Hypotension copy")] // bsql ->  0.2887891
+        [InlineData("A10BE32F-A086-41E2-B14F-9724E5D9DC29", "Trauma copy")] // // bsql -> 48.5546188 seconds
         public void CanCopyValueSet(string valueSetReferenceId, string name)
         {
             // Arrange
@@ -104,7 +104,7 @@
             copy.StatusCode.Should().Be(ValueSetStatus.Draft);
 
             // cleanup
-            this.clientTermValueSetService.Delete(copy);
+           this.clientTermValueSetService.Delete(copy);
         }
     }
 }

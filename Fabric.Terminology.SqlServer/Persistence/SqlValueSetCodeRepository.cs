@@ -170,12 +170,6 @@
                 items.Select(factory.Build),
                 count,
                 pagerSettings);
-
-            //return pagingStrategy.CreatePagedCollection(
-            //    items.Select(i => this.cacheManager.GetOrSet(i.CodeGUID.GetValueOrDefault(), () => factory.Build(i))
-            //    ).Values(),
-            //    count,
-            //    pagerSettings);
         }
     }
 }

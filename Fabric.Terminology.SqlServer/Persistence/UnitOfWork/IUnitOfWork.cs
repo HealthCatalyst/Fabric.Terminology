@@ -7,5 +7,7 @@
     internal interface IUnitOfWork
     {
         void Commit(Queue<Operation> operations);
+
+        void Commit(Queue<BatchSql> batchSql);
     }
 }
