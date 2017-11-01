@@ -149,7 +149,6 @@
                     removers))
                 .Result.Single();
 
-
             // Assert
             result.ValueSetCodes.Count.Should().Be(expectedCount);
 
