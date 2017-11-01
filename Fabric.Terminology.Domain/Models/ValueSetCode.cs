@@ -12,6 +12,7 @@
         {
             this.Code = codeSystemCode.Code;
             this.Name = codeSystemCode.Name;
+            this.CodeGuid = codeSystemCode.CodeGuid;
             this.CodeSystemGuid = codeSystemCode.CodeSystemGuid;
             this.CodeSystemName = codeSystemCode.CodeSystemName;
         }

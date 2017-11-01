@@ -36,9 +36,10 @@
 
             public void Commit()
             {
-                var expectedOperations = this.operations.Count();
+                var executable = this.operations.Where(op => op.OperationType != OperationType.None).ToList();
+                var expectedOperations = executable.Count();
 
-                this.BatchLoad(new Queue<Operation>(this.operations));
+                this.BatchLoad(new Queue<Operation>(executable));
 
                 var ctx = this.manager.Context;
                 ctx.ChangeTracker.AutoDetectChangesEnabled = false;

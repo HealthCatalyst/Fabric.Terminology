@@ -43,6 +43,7 @@
             {
                 Code = code,
                 Name = name,
+                CodeGuid = Guid.NewGuid(),
                 CodeSystemGuid = codeSystem,
                 CodeSystemName = "Generated code system"
             };

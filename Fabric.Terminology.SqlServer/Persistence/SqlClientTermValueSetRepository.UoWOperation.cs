@@ -14,6 +14,9 @@
 
     internal partial class SqlClientTermValueSetRepository
     {
+        private static ValueSetCodeDto ConvertToValueSetCodeDto(Guid valueSetGuid, ICodeSystemCode code) =>
+            new ValueSetCodeDto(code) { ValueSetGUID = valueSetGuid };
+
         private AddRemoveCodeOperations PrepareAddRemoveCodes(
             Guid valueSetGuid,
             IReadOnlyCollection<ICodeSystemCode> codesToAdd,
@@ -30,10 +33,7 @@
             var dups = codesToAdd.Where(code => codesToRemove.Select(r => r.CodeGuid).Contains(code.CodeGuid)).ToList();
             var codeDeletes = codesToRemove.Except(dups).ToList();
 
-            var batchInsertDtos = codesToAdd.Except(dups).Select(code => new ValueSetCodeDto(code)
-                                    {
-                                        ValueSetGUID = valueSetGuid
-                                    }).ToList();
+            var batchInsertDtos = codesToAdd.Except(dups).Select(code => ConvertToValueSetCodeDto(valueSetGuid, code)).ToList();
 
             var removeResult = this.PrepareRemoveCodesOperations(currentCodeDtos, codeDeletes);
 
@@ -50,10 +50,10 @@
 
         private IReadOnlyCollection<Operation> BuildRemoveCodesOperationList(
             IEnumerable<ValueSetCodeDto> originalCodeDtos,
-            IEnumerable<ICodeSystemCode> codeSystemCodes)
+            IEnumerable<ICodeSystemCode> removeCodes)
         {
-            var destGuids = codeSystemCodes.Select(ds => ds.CodeGuid);
-            return originalCodeDtos.Where(code => destGuids.All(dg => dg != code.CodeGUID))
+            var removeGuids = removeCodes.Select(ds => ds.CodeGuid).ToList();
+            return originalCodeDtos.Where(code => removeGuids.Contains(code.CodeGUID.GetValueOrDefault()))
                 .Select(dto => new Operation
                 {
                     Value = dto,
@@ -66,24 +66,25 @@
             IEnumerable<ValueSetCodeDto> allCodeDtos)
         {
             var originalCounts = this.uowManager.GetCodeCountDtos(valueSetGuid);
+            var existingCodeSystems = originalCounts.Select(c => c.CodeSystemGUID);
 
-            var newCodes = allCodeDtos as ValueSetCodeDto[] ?? allCodeDtos.ToArray();
-            var allCodeSystems = newCodes.Select(c => c.CodeSystemGuid).Distinct();
+            var allCodes = allCodeDtos as ValueSetCodeDto[] ?? allCodeDtos.ToArray();
+            var allCodeSystems = allCodes.Select(c => c.CodeSystemGuid).Distinct();
 
-            var newCounts = allCodeSystems.Select(
+            var recounts = allCodeSystems.Select(
                             codeSystemGuid => new
                             {
                                 codeSystemGuid,
-                                valueSetDto = newCodes.First(dto => dto.CodeSystemGuid == codeSystemGuid)
+                                valueSetDto = allCodes.First(dto => dto.CodeSystemGuid == codeSystemGuid)
                             })
                             .Select(o =>
                             new ValueSetCodeCountDto(o.valueSetDto.ValueSetGUID,
                                 o.valueSetDto.CodeSystemGuid,
                                 o.valueSetDto.CodeSystemNM,
-                                newCodes.Count(c => c.CodeSystemGuid == o.codeSystemGuid)))
+                                allCodes.Count(c => c.CodeSystemGuid == o.codeSystemGuid)))
                                 .ToList();
 
-            var operations = newCounts.Select(nc =>
+            var operations = recounts.Select(nc =>
                 Maybe.From(originalCounts.FirstOrDefault(ec => ec.CodeSystemGUID == nc.CodeSystemGUID))
                 .Select(
                     dto =>
@@ -109,7 +110,7 @@
 
             // finally ensure that any existing counts that were not in the new counts are removed
             // e.g. all codes from a particular code system were removed
-            var removers = originalCounts.Except(newCounts);
+            var removers = originalCounts.Where(oc => !existingCodeSystems.Contains(oc.CodeSystemGUID));
 
             operations.AddRange(removers.Select(r => new Operation
             {
@@ -117,7 +118,7 @@
                 OperationType = OperationType.Delete
             }));
 
-            return operations;
+            return operations.Where(op => op.OperationType != OperationType.None).ToList();
         }
 
         // add ability to remove all codes that exist in current value set that also exist in 
@@ -125,10 +126,10 @@
 
         private AddRemoveCodeOperations PrepareRemoveCodesOperations(
             IReadOnlyCollection<ValueSetCodeDto> currentCodeDtos,
-            IEnumerable<ICodeSystemCode> codes)
+            IEnumerable<ICodeSystemCode> removeCodes)
         {
-            var removeOps = this.BuildRemoveCodesOperationList(currentCodeDtos, codes);
-            var removedCodeGuids = removeOps.Select(ro => ro.Value<CodeSystemCodeDto>().CodeGUID);
+            var removeOps = this.BuildRemoveCodesOperationList(currentCodeDtos, removeCodes);
+            var removedCodeGuids = removeOps.Select(ro => ro.Value<ValueSetCodeDto>().CodeGUID);
             var resultDtos = currentCodeDtos.Where(oc => removedCodeGuids.All(rc => rc != oc.CodeGUID));
 
             return new AddRemoveCodeOperations { CurrentCodeDtos = resultDtos.ToList(), Operations = removeOps };
