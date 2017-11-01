@@ -2,11 +2,11 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
+    using System.Data;
+    using System.Data.SqlClient;
 
     using CallMeMaybe;
 
-    using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Exceptions;
     using Fabric.Terminology.Domain.Persistence;
     using Fabric.Terminology.SqlServer.Models.Dto;
@@ -82,30 +82,29 @@
             }
         }
 
-        public void Commit(Queue<BatchSql> batchSql)
+        public void Commit(Queue<Operation> operations, IReadOnlyCollection<ValueSetCodeDto> codes)
         {
-            //var batch = batchSql.Dequeue();
-            //this.Context.Database.ExecuteSqlCommand(batch.Sql, batch.Parameters);
-            using (var transaction = this.Context.Database.BeginTransaction())
+            var codeParameters = new[]
             {
-                try
-                {
-                    while (batchSql.Count > 0)
-                    {
-                        var batch = batchSql.Dequeue();
-                        this.Context.Database.ExecuteSqlCommand(batch.Sql, batch.Parameters);
-                    }
-                    //var batch = batchSql.Dequeue();
-                    //this.Context.Database.ExecuteSqlCommand(batch.Sql, batch.Parameters);
-                    transaction.Commit();
-                }
-                catch (Exception ex)
-                {
-                    this.logger.Error(ex, "Failed to commit unit of work transaction. Rolling back.");
-                    transaction.Rollback();
-                    throw;
-                }
+                nameof(ValueSetCodeDto.BindingID),
+                nameof(ValueSetCodeDto.BindingNM),
+                nameof(ValueSetCodeDto.LastLoadDTS),
+                nameof(ValueSetCodeDto.ValueSetGUID),
+                nameof(ValueSetCodeDto.CodeGUID),
+                nameof(ValueSetCodeDto.CodeCD),
+                nameof(ValueSetCodeDto.CodeDSC),
+                nameof(ValueSetCodeDto.CodeSystemGuid),
+                nameof(ValueSetCodeDto.CodeSystemNM),
+                nameof(ValueSetCodeDto.LastModifiedDTS)
+            };
+
+            using (var bulkCopy = new SqlBulkCopy(this.Context.Database.GetDbConnection().ConnectionString, SqlBulkCopyOptions.Default))
+            {
+                bulkCopy.DestinationTableName = "[ClientTerm].[ValueSetCodeBASE]";
+
+               // bulkCopy.WriteToServerAsync();
             }
+            throw new NotImplementedException();
         }
 
         public Maybe<ValueSetDescriptionBaseDto> GetValueSetDescriptionDto(Guid valueSetGuid) =>

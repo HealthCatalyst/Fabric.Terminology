@@ -2,6 +2,7 @@ namespace Fabric.Terminology.SqlServer.Persistence
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
 
     using CallMeMaybe;
 
@@ -84,7 +85,18 @@ namespace Fabric.Terminology.SqlServer.Persistence
                         return NotFoundAttempt();
                     }
 
-                    throw new NotImplementedException();
+                    var operations = this.PrepareAddRemoveCodes(
+                        valueSetGuid,
+                        codesToAdd.ToList(),
+                        codesToRemove.ToList());
+
+                    this.uow.Commit(operations);
+
+                    return this.GetValueSet(valueSetGuid)
+                        .Select(Attempt<IValueSet>.Successful)
+                        .Else(() => Attempt<IValueSet>.Failed(
+                            new ValueSetNotFoundException("Could not retrieved updated ValueSet")));
+
                 })
                 .Else(NotFoundAttempt);
 
@@ -119,11 +131,38 @@ namespace Fabric.Terminology.SqlServer.Persistence
             }
         }
 
-        private struct BuildCodeOperataionResult
-        {
-            public IReadOnlyCollection<ValueSetCodeDto> CurrentCodeDtos { get; set; }
+        private static Operation BuildOperation(object value, OperationType operationType) =>
+            new Operation { Value = value, OperationType = operationType };
 
-            public IReadOnlyCollection<Operation> Operations { get; set; }
+        private static IEnumerable<Operation> BuildOperationBatch(IEnumerable<object> values, OperationType operationType)
+            => values.Select(v => BuildOperation(v, operationType));
+
+        private static bool EnsureIsNew(IValueSet valueSet) =>
+            valueSet.IsCustom && valueSet.IsLatestVersion && valueSet.ValueSetGuid.Equals(Guid.Empty);
+
+        private static Queue<Operation> Enqueue(IEnumerable<Operation> operations)
+        {
+            var queue = new Queue<Operation>();
+            foreach (var o in operations)
+            {
+                queue.Enqueue(o);
+            }
+
+            return queue;
+        }
+
+        private IReadOnlyCollection<IValueSetCode> GetCodes(Guid valueSetGuid)
+        {
+            var factory = new ValueSetCodeFactory();
+            var codes = this.uow.GetCodeDtos(valueSetGuid);
+            return codes.Select(factory.Build).ToList();
+        }
+
+        private IReadOnlyCollection<IValueSetCodeCount> GetCodeCounts(Guid valueSetGuid)
+        {
+            var factory = new ValueSetCodeCountFactory();
+            var counts = this.uow.GetCodeCountDtos(valueSetGuid);
+            return counts.Select(factory.Build).ToList();
         }
     }
 }

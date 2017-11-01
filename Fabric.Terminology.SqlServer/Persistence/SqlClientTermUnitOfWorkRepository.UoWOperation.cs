@@ -10,32 +10,10 @@
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence;
     using Fabric.Terminology.SqlServer.Models.Dto;
-    using Fabric.Terminology.SqlServer.Persistence.Factories;
+    using Fabric.Terminology.SqlServer.Persistence.UnitOfWork;
 
     internal partial class SqlClientTermUnitOfWorkRepository
     {
-        private static Operation BuildOperation(object value, OperationType operationType) =>
-            new Operation { Value = value, OperationType = operationType };
-
-        private static IEnumerable<Operation> BuildOperationBatch(IEnumerable<object> values, OperationType operationType)
-            => values.Select(v => BuildOperation(v, operationType));
-
-        private static bool EnsureIsNew(IValueSet valueSet) =>
-            valueSet.IsCustom && valueSet.IsLatestVersion && valueSet.ValueSetGuid.Equals(Guid.Empty);
-
-        private static bool EnsureIsDraft(IValueSet valueSet) => valueSet.StatusCode == ValueSetStatus.Draft;
-
-        private static Queue<Operation> Enqueue(IEnumerable<Operation> operations)
-        {
-            var queue = new Queue<Operation>();
-            foreach (var o in operations)
-            {
-                queue.Enqueue(o);
-            }
-
-            return queue;
-        }
-
         private Queue<Operation> PerpareNewValueSetOperations(IValueSet valueSet)
         {
             var operations =
@@ -53,6 +31,30 @@
                             OperationType.Create));
 
             return Enqueue(operations);
+        }
+
+        private Queue<Operation> PrepareAddRemoveCodes(
+            Guid valueSetGuid,
+            IReadOnlyCollection<ICodeSystemCode> codesToAdd,
+            IReadOnlyCollection<ICodeSystemCode> codesToRemove)
+        {
+            var currentCodeDtos = this.uow.GetCodeDtos(valueSetGuid);
+
+            //// There could be duplicates between the codesToAdd and codesToRemove collection.
+            //// This is handled by simply doing the add operations first and then the remove operations.
+            //// In cases where a code is found in both lists, it will simply be removed from each list.
+            //// e.g. This is up to the UI to understand how the lists will be handled.
+            //// TODO document this!
+
+            var addResult = this.PrepareAddCodesOperations(currentCodeDtos, codesToAdd);
+
+            var removeResult = this.PrepareRemoveCodesOperations(addResult.CurrentCodeDtos, codesToRemove);
+
+            var countOperations = this.BuildCodeCountOperationList(valueSetGuid, removeResult.CurrentCodeDtos);
+
+            var allOps = addResult.Operations.Union(removeResult.Operations).Union(countOperations);
+
+            return new Queue<Operation>(allOps);
         }
 
         private IReadOnlyCollection<Operation> BuildRemoveCodesOperationList(
@@ -127,50 +129,10 @@
             return operations;
         }
 
-        private IReadOnlyCollection<IValueSetCode> GetCodes(Guid valueSetGuid)
-        {
-            var factory = new ValueSetCodeFactory();
-            var codes = this.uow.GetCodeDtos(valueSetGuid);
-            return codes.Select(factory.Build).ToList();
-        }
-
-        private IReadOnlyCollection<IValueSetCodeCount> GetCodeCounts(Guid valueSetGuid)
-        {
-            var factory = new ValueSetCodeCountFactory();
-            var counts = this.uow.GetCodeCountDtos(valueSetGuid);
-            return counts.Select(factory.Build).ToList();
-        }
-
-        private void PrepareAddValueSet(
-            Guid valueSetGuid,
-            IEnumerable<Guid> valueSetGuids)
-        {
-            // TODO - add ability to grab all codes from an existing value set
-            // TODO - and and insert into the current value set.
-            throw new NotImplementedException();
-        }
-
         // add ability to remove all codes that exist in current value set that also exist in 
         // value set passed.
 
-        private Queue<Operation> PrepareAddRemoveCodes(
-            Guid valueSetGuid,
-            IReadOnlyCollection<ICodeSystemCode> codesToAdd,
-            IReadOnlyCollection<ICodeSystemCode> codesToRemove)
-        {
-            var currentCodeDtos = this.uow.GetCodeDtos(valueSetGuid);
-
-            // There could be duplicates between the codesToAdd and codesToRemove collection.
-            // This is handled by simply doing the add operations first and then the remove operations.
-            // In cases where a code is found in both lists, it will simply be removed from each list.
-            // e.g. This is up to the UI to understand how the lists will be handled.
-            // TODO document this!
-            var addResult = this.PrepareAddCodesOperations(currentCodeDtos, codesToAdd);
-
-            throw new NotImplementedException();
-        }
-
-        private BuildCodeOperataionResult PrepareAddCodesOperations(
+        private AddRemoveCodeOperations PrepareAddCodesOperations(
             IReadOnlyCollection<ValueSetCodeDto> currentCodeDtos,
             IReadOnlyCollection<ICodeSystemCode> codesToAdd)
         {
@@ -180,21 +142,19 @@
                                 addOps.Where(ao => ao.OperationType == OperationType.Create)
                                     .Select(ao => ao.Value<ValueSetCodeDto>()));
 
-            return new BuildCodeOperataionResult { CurrentCodeDtos = allCodeDtos.ToList(), Operations = addOps };
+            return new AddRemoveCodeOperations { CurrentCodeDtos = allCodeDtos.ToList(), Operations = addOps };
         }
 
-        private BuildCodeOperataionResult PrepareRemoveCodesOperations(
+        private AddRemoveCodeOperations PrepareRemoveCodesOperations(
             IReadOnlyCollection<ValueSetCodeDto> currentCodeDtos,
             IEnumerable<ICodeSystemCode> codes)
         {
-
             var removeOps = this.BuildRemoveCodesOperationList(currentCodeDtos, codes);
             var removedCodeGuids = removeOps.Select(ro => ro.Value<CodeSystemCodeDto>().CodeGUID);
             var resultDtos = currentCodeDtos.Where(oc => removedCodeGuids.All(rc => rc != oc.CodeGUID));
 
-            return new BuildCodeOperataionResult { CurrentCodeDtos = resultDtos.ToList(), Operations = removeOps };
+            return new AddRemoveCodeOperations { CurrentCodeDtos = resultDtos.ToList(), Operations = removeOps };
         }
-
 
         private IReadOnlyCollection<Operation> BuildAddCodeOperationList(
             IEnumerable<ValueSetCodeDto> originalCodeDtos,

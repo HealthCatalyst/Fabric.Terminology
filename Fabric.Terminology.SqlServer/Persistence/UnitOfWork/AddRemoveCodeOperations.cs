@@ -2,14 +2,13 @@
 {
     using System.Collections.Generic;
 
-
     using Fabric.Terminology.Domain.Persistence;
     using Fabric.Terminology.SqlServer.Models.Dto;
 
-    internal interface IUnitOfWork
+    internal class AddRemoveCodeOperations
     {
-        void Commit(Queue<Operation> operations);
+        public IReadOnlyCollection<ValueSetCodeDto> CurrentCodeDtos { get; set; }
 
-        void Commit(Queue<Operation> operations, IReadOnlyCollection<ValueSetCodeDto> codes);
+        public IReadOnlyCollection<Operation> Operations { get; set; }
     }
 }

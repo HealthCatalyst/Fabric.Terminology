@@ -14,7 +14,7 @@
 
         Attempt<IValueSet> Add(IValueSet valueSet);
 
-        Attempt<IValueSet> AddBulkInsert(IValueSet valueSet);
+        Attempt<IValueSet> AddSqlBulkCopy(IValueSet valueSet);
 
         Attempt<IValueSet> AddRemoveCodes(
             Guid valueSetGuid,
