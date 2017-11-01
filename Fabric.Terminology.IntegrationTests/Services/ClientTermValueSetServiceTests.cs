@@ -66,7 +66,7 @@
             this.clientTermValueSetService.SaveAsNew(valueSet);
 
             // Act
-            //// try to remove the first two codes.
+            //// try to remove the first codes.
             var removers = valueSet.ValueSetCodes.Batch(removeCodeCount).First();
 
             var result = this.Profiler.ExecuteTimed(() => this.clientTermValueSetService.AddRemoveCodes(
@@ -111,6 +111,44 @@
                         codesToAdd,
                         new List<ICodeSystemCode>()))
                 .Result.Single();
+
+            // Assert
+            result.ValueSetCodes.Count.Should().Be(expectedCount);
+
+            var codeCodeSystemGuids = result.ValueSetCodes.Select(vsc => vsc.CodeSystemGuid).Distinct().ToList();
+            var countCodeSystemsGuids = result.CodeCounts.Select(cc => cc.CodeSystemGuid).ToList();
+
+            countCodeSystemsGuids.All(countCs => codeCodeSystemGuids.Contains(countCs)).Should().BeTrue();
+            codeCodeSystemGuids.All(codeCs => countCodeSystemsGuids.Contains(codeCs)).Should().BeTrue();
+
+            // cleanup
+            this.clientTermValueSetService.Delete(result);
+        }
+
+        [Theory]
+        [InlineData("Add Test 1", 5, 3, 2)]
+        [InlineData("Add Test 1", 200, 100, 25)]
+        public void CanAddAndRemoveCodes(string name, int initialCodeCount, int addCodeCount, int removeCodeCount)
+        {
+            // Arrange
+            var expectedCount = initialCodeCount + addCodeCount - removeCodeCount; // no dups
+            var apiModel = MockApiModelBuilder.ValueSetCreationApiModel(name, initialCodeCount);
+            var setup = this.clientTermValueSetService.Create(apiModel);
+            setup.Success.Should().BeTrue();
+            setup.Result.HasValue.Should().BeTrue();
+            var valueSet = setup.Result.Single();
+            this.clientTermValueSetService.SaveAsNew(valueSet);
+
+            var removers = valueSet.ValueSetCodes.Batch(removeCodeCount).First();
+            var codesToAdd = MockApiModelBuilder.CodeSetCodeApiModelCollection(addCodeCount);
+
+            // Act
+            var result = this.Profiler.ExecuteTimed(() => this.clientTermValueSetService.AddRemoveCodes(
+                    valueSet.ValueSetGuid,
+                    codesToAdd,
+                    removers))
+                .Result.Single();
+
 
             // Assert
             result.ValueSetCodes.Count.Should().Be(expectedCount);
