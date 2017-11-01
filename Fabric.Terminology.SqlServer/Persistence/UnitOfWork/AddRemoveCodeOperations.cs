@@ -10,5 +10,7 @@
         public IReadOnlyCollection<ValueSetCodeDto> CurrentCodeDtos { get; set; }
 
         public IReadOnlyCollection<Operation> Operations { get; set; }
+
+        public IReadOnlyCollection<ValueSetCodeDto> NewCodeDtos { get; set; } = new List<ValueSetCodeDto>();
     }
 }

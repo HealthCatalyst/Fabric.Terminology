@@ -17,27 +17,29 @@ namespace Fabric.Terminology.SqlServer.Persistence
 
     using Serilog;
 
-    internal partial class SqlClientTermUnitOfWorkRepository : IClientTermUnitOfWorkRepository
+    using static Fabric.Terminology.Domain.Persistence.OperationHelper;
+
+    internal partial class SqlClientTermValueSetRepository : IClientTermValueSetRepository
     {
         private readonly ILogger logger;
 
-        private readonly IClientTermUnitOfWork uow;
+        private readonly IClientTermValueUnitOfWorkManager uowManager;
 
         private readonly IClientTermCacheManager cacheManager;
 
-        public SqlClientTermUnitOfWorkRepository(
+        public SqlClientTermValueSetRepository(
             ILogger logger,
-            IClientTermUnitOfWork uow,
+            IClientTermValueUnitOfWorkManager uowManager,
             IClientTermCacheManager cacheManager)
         {
             this.logger = logger;
-            this.uow = uow;
+            this.uowManager = uowManager;
             this.cacheManager = cacheManager;
         }
 
         public Maybe<IValueSet> GetValueSet(Guid valueSetGuid)
         {
-            return this.uow.GetValueSetDescriptionDto(valueSetGuid)
+            return this.uowManager.GetValueSetDescriptionDto(valueSetGuid)
                 .Select(
                     dto =>
                         {
@@ -61,7 +63,20 @@ namespace Fabric.Terminology.SqlServer.Persistence
 
             var valueSetGuid = valueSet.SetIdsForCustomInsert();
 
-            this.uow.Commit(this.PerpareNewValueSetOperations(valueSet));
+            var descCountOps =
+                CreateOperation(new ValueSetDescriptionBaseDto(valueSet), OperationType.Create)
+                .AppendOperationBatch(
+                    valueSet.CodeCounts.Select(count => new ValueSetCodeCountDto(count)),
+                        OperationType.Create);
+
+            // Insert ValueSetDescriptionBASE and ValueSetCodeCountBASE
+            var uowDescCount = this.uowManager.CreateUnitOfWork(descCountOps);
+            uowDescCount.Commit();
+
+            // Bulk Insert ValueSetCodeBASE
+            var codesDtos = valueSet.ValueSetCodes.Select(code => new ValueSetCodeDto(code)).ToList();
+            var uowCounts = this.uowManager.CreateBulkCopyUnitOfWork(codesDtos);
+            uowCounts.Commit();
 
             // Get the updated ValueSet
             var added = this.GetValueSet(valueSetGuid);
@@ -77,7 +92,7 @@ namespace Fabric.Terminology.SqlServer.Persistence
             IEnumerable<ICodeSystemCode> codesToAdd,
             IEnumerable<ICodeSystemCode> codesToRemove)
         {
-            return this.uow.GetValueSetDescriptionDto(valueSetGuid)
+            return this.uowManager.GetValueSetDescriptionDto(valueSetGuid)
                 .Select(vsd =>
                 {
                     if (vsd.StatusCD != ValueSetStatus.Draft.ToString())
@@ -85,12 +100,18 @@ namespace Fabric.Terminology.SqlServer.Persistence
                         return NotFoundAttempt();
                     }
 
-                    var operations = this.PrepareAddRemoveCodes(
+                    var work = this.PrepareAddRemoveCodes(
                         valueSetGuid,
                         codesToAdd.ToList(),
                         codesToRemove.ToList());
 
-                    this.uow.Commit(operations);
+                    var uow = this.uowManager.CreateUnitOfWork(work.Operations);
+                    uow.Commit();
+
+                    var bulkInsertUow = this.uowManager.CreateBulkCopyUnitOfWork(work.NewCodeDtos);
+                    bulkInsertUow.Commit();
+
+                    this.cacheManager.Clear(valueSetGuid);
 
                     return this.GetValueSet(valueSetGuid)
                         .Select(Attempt<IValueSet>.Successful)
@@ -106,11 +127,11 @@ namespace Fabric.Terminology.SqlServer.Persistence
 
         public void Delete(IValueSet valueSet)
         {
-            using (var transaction = this.uow.Context.Database.BeginTransaction())
+            using (var transaction = this.uowManager.Context.Database.BeginTransaction())
             {
                 try
                 {
-                    this.uow.Context.BulkDelete(
+                    this.uowManager.Context.BulkDelete(
                         new[] { typeof(ValueSetDescriptionBaseDto), typeof(ValueSetCodeDto), typeof(ValueSetCodeCountDto) },
                         new Dictionary<string, object>
                         {
@@ -131,37 +152,20 @@ namespace Fabric.Terminology.SqlServer.Persistence
             }
         }
 
-        private static Operation BuildOperation(object value, OperationType operationType) =>
-            new Operation { Value = value, OperationType = operationType };
-
-        private static IEnumerable<Operation> BuildOperationBatch(IEnumerable<object> values, OperationType operationType)
-            => values.Select(v => BuildOperation(v, operationType));
-
         private static bool EnsureIsNew(IValueSet valueSet) =>
             valueSet.IsCustom && valueSet.IsLatestVersion && valueSet.ValueSetGuid.Equals(Guid.Empty);
-
-        private static Queue<Operation> Enqueue(IEnumerable<Operation> operations)
-        {
-            var queue = new Queue<Operation>();
-            foreach (var o in operations)
-            {
-                queue.Enqueue(o);
-            }
-
-            return queue;
-        }
 
         private IReadOnlyCollection<IValueSetCode> GetCodes(Guid valueSetGuid)
         {
             var factory = new ValueSetCodeFactory();
-            var codes = this.uow.GetCodeDtos(valueSetGuid);
+            var codes = this.uowManager.GetCodeDtos(valueSetGuid);
             return codes.Select(factory.Build).ToList();
         }
 
         private IReadOnlyCollection<IValueSetCodeCount> GetCodeCounts(Guid valueSetGuid)
         {
             var factory = new ValueSetCodeCountFactory();
-            var counts = this.uow.GetCodeCountDtos(valueSetGuid);
+            var counts = this.uowManager.GetCodeCountDtos(valueSetGuid);
             return counts.Select(factory.Build).ToList();
         }
     }

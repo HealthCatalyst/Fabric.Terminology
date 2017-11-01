@@ -14,7 +14,7 @@
 
     internal class SqlClientTermValueSetService : IClientTermValueSetService
     {
-        private readonly IClientTermUnitOfWorkRepository clientTermValueSetRepository;
+        private readonly IClientTermValueSetRepository clientTermValueSetRepository;
 
         private readonly ILogger logger;
 
@@ -23,7 +23,7 @@
         public SqlClientTermValueSetService(
             ILogger logger,
             IValueSetBackingItemRepository valueSetBackingItemRepository,
-            IClientTermUnitOfWorkRepository clientTermValueSetRepository)
+            IClientTermValueSetRepository clientTermValueSetRepository)
         {
             this.valueSetBackingItemRepository = valueSetBackingItemRepository;
             this.clientTermValueSetRepository = clientTermValueSetRepository;
@@ -83,7 +83,6 @@
             Saving?.Invoke(this, valueSet);
 
             var attempt = this.clientTermValueSetRepository.Add(valueSet);
-            //var attempt = this.clientTermValueSetRepository.AddBulkInsert(valueSet);
             if (attempt.Success && attempt.Result.HasValue)
             {
                 Saved?.Invoke(this, attempt.Result.Single());
@@ -119,14 +118,12 @@
             return Attempt<IValueSet>.Successful(valueSet);
         }
 
-        public Attempt<IValueSet> AddRemoveCodes(Guid valueSetGuid, IEnumerable<ICodeSystemCode> codesToAdd, IEnumerable<ICodeSystemCode> codesToRemove)
+        public Attempt<IValueSet> AddRemoveCodes(
+            Guid valueSetGuid,
+            IEnumerable<ICodeSystemCode> codesToAdd,
+            IEnumerable<ICodeSystemCode> codesToRemove)
         {
-            throw new NotImplementedException();
-        }
-
-        public IValueSet Copy(IValueSet valueSetToCopy)
-        {
-            throw new NotImplementedException();
+            return this.clientTermValueSetRepository.AddRemoveCodes(valueSetGuid, codesToAdd, codesToRemove);
         }
 
         public void Delete(IValueSet valueSet)

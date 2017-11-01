@@ -8,7 +8,7 @@
     using Fabric.Terminology.SqlServer.Models.Dto;
     using Fabric.Terminology.SqlServer.Persistence.DataContext;
 
-    internal interface IClientTermUnitOfWork : IUnitOfWork
+    internal interface IClientTermValueUnitOfWorkManager : IBulkCopyUnitOfWorkManager
     {
         ClientTermContext Context { get; }
 

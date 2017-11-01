@@ -32,6 +32,15 @@ namespace Fabric.Terminology.SqlServer.Models.Dto
             this.LastLoadDTS = EmptyBinding.LastLoadDts;
         }
 
+        //// Order of the properties is important for SqlBulkCopy
+        //// This should be fixed by passing a schema to the  DtoDataReader
+
+        public int BindingID { get; set; }
+
+        public string BindingNM { get; set; }
+
+        public DateTime LastLoadDTS { get; set; }
+
         public Guid ValueSetGUID { get; set; }
 
         public Guid? CodeGUID { get; set; }
@@ -45,11 +54,5 @@ namespace Fabric.Terminology.SqlServer.Models.Dto
         public string CodeSystemNM { get; set; }
 
         public DateTime LastModifiedDTS { get; set; }
-
-        public int BindingID { get; set; }
-
-        public string BindingNM { get; set; }
-
-        public DateTime LastLoadDTS { get; set; }
     }
 }

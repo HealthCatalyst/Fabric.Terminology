@@ -4,8 +4,8 @@
 
     using Fabric.Terminology.Domain.Persistence;
 
-    internal interface IUnitOfWork
+    internal interface IUnitOfWorkManager
     {
-        void Commit();
+        IUnitOfWork CreateUnitOfWork(IEnumerable<Operation> operations);
     }
 }

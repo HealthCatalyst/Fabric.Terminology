@@ -47,8 +47,14 @@
     <Compile Update="Constants.*.cs">
       <DependentUpon>Constants.cs</DependentUpon>
     </Compile>
+    <Compile Update="Persistence\UnitOfWork\ClientTermValueUnitOfWorkManager.*.cs">
+      <DependentUpon>ClientTermValueUnitOfWorkManager.cs</DependentUpon>
+    </Compile>
     <Compile Update="Persistence\SqlClientTermUnitOfWorkRepository.*.cs">
       <DependentUpon>SqlClientTermUnitOfWorkRepository.cs</DependentUpon>
     </Compile>
-	</ItemGroup>
+    <Compile Update="Persistence\SqlClientTermValueSetRepository.UoWOperation.cs">
+      <DependentUpon>SqlClientTermValueSetRepository.cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
 </Project>
