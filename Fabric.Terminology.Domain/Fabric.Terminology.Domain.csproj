@@ -34,12 +34,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="System.Reflection.TypeExtensions">
-      <HintPath>..\..\..\..\Users\rusty.swayne\.nuget\packages\system.reflection.typeextensions\4.3.0\ref\netstandard1.3\System.Reflection.TypeExtensions.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
-  <ItemGroup>
 	<Compile Update="Extensions.*.cs">
 		<DependentUpon>Extensions.cs</DependentUpon>
 	</Compile>

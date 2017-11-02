@@ -3,10 +3,8 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Reflection;
 
     using Fabric.Terminology.Domain.Persistence;
-    using Fabric.Terminology.Domain.Services;
 
     public static partial class Extensions
     {
@@ -21,7 +19,7 @@
             this IEnumerable<Operation> ops,
             Type type)
         {
-            return ops.Where(op => type.IsInstanceOfType(op.Value)).ToList();
+            return ops.Where(op => op.Value.GetType() == type).ToList();
         }
     }
 }
