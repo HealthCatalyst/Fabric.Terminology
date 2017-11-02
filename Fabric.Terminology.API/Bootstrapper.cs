@@ -80,6 +80,7 @@
             container.Register<ICachingManagerFactory, CachingManagerFactory>().AsSingleton();
             container.Register<ICodeSystemCachingManager, CodeSystemCachingManager>().AsSingleton();
             container.Register<ICodeSystemCodeCachingManager, CodeSystemCodeCachingManager>().AsSingleton();
+            container.Register<IClientTermCacheManager, ClientTermCacheManager>().AsSingleton();
 
             // Persistence (Must precede service registration)
             container.ComposeFrom<SqlAppComposition>();
