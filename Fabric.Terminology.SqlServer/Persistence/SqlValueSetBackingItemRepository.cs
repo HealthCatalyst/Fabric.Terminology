@@ -95,8 +95,7 @@
 
             backingItems.AddRange(
                 this.QueryValueSetBackingItems(remaining, codeSystemGuids.ToList())
-                    .Select(bi => this.cacheManager.GetOrSet(bi.ValueSetGuid, () => bi))
-                    .Values());
+                    .SelectMany(bi => this.cacheManager.GetOrSet(bi.ValueSetGuid, () => bi)));
 
             return backingItems;
         }
