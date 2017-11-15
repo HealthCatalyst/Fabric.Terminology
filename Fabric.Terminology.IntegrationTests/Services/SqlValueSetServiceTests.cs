@@ -39,7 +39,7 @@
 
             // Act
             var valueSet = this.Profiler.ExecuteTimed(() => this.valueSetService.GetValueSet(valueSetGuid), $"Querying ValueSet {valueSetGuid}").Single();
-           //// var summary = this.Profiler.ExecuteTimed(() => this.valueSetSummaryService.GetValueSetSummary(valueSetGuid), $"Querying ValueSetSummary {valueSetGuid}").Single();
+           //// var summary = this.Profiler.ExecuteTimed(() => this.valueSetSummaryService.GetValueSetSummary(valueSetGuid), $"Querying ValueSetSummary {valueSetGuid}").SingleOrDefault();
 
             this.Output.WriteLine(valueSet.Name);
             this.Output.WriteLine($"Code count: {valueSet.ValueSetCodes.Count}");

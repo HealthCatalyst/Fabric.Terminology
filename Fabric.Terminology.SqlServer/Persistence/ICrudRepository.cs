@@ -8,7 +8,7 @@
     public interface ICrudRepository<TEntity>
         where TEntity : class
     {
-        TEntity Single(Expression<Func<TEntity, bool>> filter,
+        TEntity SingleOrDefault(Expression<Func<TEntity, bool>> filter,
             string includeProperties = "");
 
         IReadOnlyCollection<TEntity> Get(

@@ -25,7 +25,7 @@
             this.dbSet = context.Set<TEntity>();
         }
 
-        public TEntity Single(Expression<Func<TEntity, bool>> filter, string includeProperties = "")
+        public TEntity SingleOrDefault(Expression<Func<TEntity, bool>> filter, string includeProperties = "")
         {
             var query = this.dbSet.Where(filter);
 
@@ -41,7 +41,7 @@
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
             string includeProperties = "")
         {
-            var query = (IQueryable<TEntity>)this.dbSet;
+            var query = this.dbSet.AsQueryable();
 
             if (filter != null)
             {
@@ -58,7 +58,7 @@
             }
             catch (Exception ex)
             {
-                this.logger.Error(ex, "SqlCrudRepository Get failed.");
+                this.logger.Error(ex, $"SqlCrudRepository Get failed. {query.ToSql()}");
                 throw;
             }
         }
