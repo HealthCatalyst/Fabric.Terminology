@@ -5,8 +5,6 @@
     using System.Linq;
     using System.Threading.Tasks;
 
-    using CallMeMaybe;
-
     using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence;
@@ -172,12 +170,6 @@
                 items.Select(factory.Build),
                 count,
                 pagerSettings);
-
-            //return pagingStrategy.CreatePagedCollection(
-            //    items.Select(i => this.cacheManager.GetOrSet(i.CodeGUID.GetValueOrDefault(), () => factory.Build(i))
-            //    ).Values(),
-            //    count,
-            //    pagerSettings);
         }
     }
 }

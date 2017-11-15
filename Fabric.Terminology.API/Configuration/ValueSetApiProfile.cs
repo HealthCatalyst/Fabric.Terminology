@@ -19,7 +19,8 @@
                     opt => opt.MapFrom(
                         src => src.ValueSetGuid.Equals(Guid.Empty)
                                    ? Guid.NewGuid().ToString()
-                                   : src.ValueSetGuid.ToString()));
+                                   : src.ValueSetGuid.ToString()))
+                .ForMember(dest => dest.StatusCode, opt => opt.MapFrom(src => src.StatusCode.ToString()));
 
             this.CreateMap<IValueSet, ValueSetApiModel>()
                 .ForMember(
@@ -27,7 +28,8 @@
                     opt => opt.MapFrom(
                         src => src.ValueSetGuid.Equals(Guid.Empty)
                                    ? Guid.NewGuid().ToString()
-                                   : src.ValueSetGuid.ToString()));
+                                   : src.ValueSetGuid.ToString()))
+                .ForMember(dest => dest.StatusCode, opt => opt.MapFrom(src => src.StatusCode.ToString())); ;
         }
     }
 }

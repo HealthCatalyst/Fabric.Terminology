@@ -42,7 +42,7 @@ namespace Fabric.Terminology.Domain.Models
 
         public string ClientCode { get; internal set; }
 
-        public ValueSetStatusCode StatusCode { get; internal set; } = ValueSetStatusCode.Active;
+        public ValueSetStatus StatusCode { get; internal set; } = ValueSetStatus.Active;
 
         public bool IsCustom { get; internal set; }
 

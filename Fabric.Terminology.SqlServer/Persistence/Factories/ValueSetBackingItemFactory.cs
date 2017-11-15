@@ -11,9 +11,14 @@
     {
         public IValueSetBackingItem Build(ValueSetDescriptionBaseDto dto)
         {
-            if(!Enum.TryParse(dto.StatusCD, true, out ValueSetStatusCode statusCode))
+            return this.Build(dto, false);
+        }
+
+        public IValueSetBackingItem Build(ValueSetDescriptionBaseDto dto, bool isCustom)
+        {
+            if (!Enum.TryParse(dto.StatusCD, true, out ValueSetStatus statusCode))
             {
-                statusCode = ValueSetStatusCode.Active;
+                statusCode = ValueSetStatus.Active;
             }
 
             return new ValueSetBackingItem
@@ -24,6 +29,7 @@
                 IsLatestVersion = dto.LatestVersionFLG == "Y",
                 Name = dto.ValueSetNM,
                 OriginGuid = dto.OriginGUID.GetValueOrDefault(),
+                IsCustom = isCustom,
                 SourceDescription = dto.SourceDSC,
                 ValueSetGuid = dto.ValueSetGUID,
                 ValueSetReferenceId = dto.ValueSetReferenceID,
@@ -34,8 +40,7 @@
 
         public IValueSetBackingItem Build(ValueSetDescriptionDto dto)
         {
-            var item = this.Build((ValueSetDescriptionBaseDto)dto);
-            ((ValueSetBackingItem)item).IsCustom = dto.ClientTermFLG == "Y";
+            var item = this.Build(dto, dto.ClientTermFLG == "Y");
             return item;
         }
     }

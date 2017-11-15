@@ -1,18 +1,24 @@
 ﻿namespace Fabric.Terminology.SqlServer.Persistence
 {
     using System;
+    using System.Collections.Generic;
 
     using CallMeMaybe;
 
     using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Models;
 
-    public interface IClientTermValueSetRepository
+    internal interface IClientTermValueSetRepository
     {
+        Maybe<IValueSet> GetValueSet(Guid valueSetGuid);
+
         Attempt<IValueSet> Add(IValueSet valueSet);
 
-        void Delete(IValueSet valueSet);
+        Attempt<IValueSet> AddRemoveCodes(
+            Guid valueSetGuid,
+            IEnumerable<ICodeSystemCode> codesToAdd,
+            IEnumerable<ICodeSystemCode> codesToRemove);
 
-        Maybe<IValueSet> GetValueSet(Guid valueSetGuid);
+        void Delete(IValueSet valueSet);
     }
 }

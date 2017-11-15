@@ -40,7 +40,7 @@
             }
 
             modelBuilder.Entity<ValueSetCodeDto>().ToTable("ValueSetCode", "Terminology")
-                .HasKey(code => new { code.CodeCD, code.ValueSetGUID });
+                .HasKey(code => new { code.CodeCD, code.ValueSetGUID, code.CodeSystemGuid });
 
             modelBuilder.Entity<ValueSetCodeCountDto>().ToTable("ValueSetCodeCount", "Terminology")
                 .HasKey(record => new { record.ValueSetGUID, record.CodeSystemGUID });

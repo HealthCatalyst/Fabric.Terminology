@@ -1,5 +1,4 @@
 // ReSharper disable InconsistentNaming
-
 namespace Fabric.Terminology.SqlServer.Models.Dto
 {
     using System;
@@ -15,8 +14,13 @@ namespace Fabric.Terminology.SqlServer.Models.Dto
         }
 
         public ValueSetCodeDto(IValueSetCode code)
+            : this(code as ICodeSystemCode)
         {
             this.ValueSetGUID = code.ValueSetGuid;
+        }
+
+        public ValueSetCodeDto(ICodeSystemCode code)
+        {
             this.CodeGUID = code.CodeGuid;
             this.CodeCD = code.Code;
             this.CodeDSC = code.Name;
@@ -27,6 +31,15 @@ namespace Fabric.Terminology.SqlServer.Models.Dto
             this.BindingNM = EmptyBinding.BindingNM;
             this.LastLoadDTS = EmptyBinding.LastLoadDts;
         }
+
+        //// Order of the properties is important for SqlBulkCopy
+        //// This should be fixed by passing a schema to the  DtoDataReader
+
+        public int BindingID { get; set; }
+
+        public string BindingNM { get; set; }
+
+        public DateTime LastLoadDTS { get; set; }
 
         public Guid ValueSetGUID { get; set; }
 
@@ -41,11 +54,5 @@ namespace Fabric.Terminology.SqlServer.Models.Dto
         public string CodeSystemNM { get; set; }
 
         public DateTime LastModifiedDTS { get; set; }
-
-        public int BindingID { get; set; }
-
-        public string BindingNM { get; set; }
-
-        public DateTime LastLoadDTS { get; set; }
     }
 }

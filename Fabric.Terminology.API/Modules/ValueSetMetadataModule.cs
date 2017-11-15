@@ -4,6 +4,7 @@
 
     using Fabric.Terminology.API.MetaData;
     using Fabric.Terminology.API.Models;
+    using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.SqlServer.Configuration;
 
@@ -32,6 +33,7 @@
                 typeof(ValueSetCodeApiModel),
                 typeof(ValueSetCodeCountApiModel),
                 typeof(ValueSetCreationApiModel),
+                typeof(ValueSetStatus),
                 typeof(Guid)
                 );
 
@@ -55,7 +57,7 @@
                 new[] { TagsFactory.GetValueSetTag() });
 
             this.RouteDescriber.DescribeRouteWithParams(
-                "GetValueSets",
+                "GetMultipleValueSets",
                 "Gets multiple ValueSets",
                 "Gets a collection of ValueSet's given a collection of ValueSetGuid(s)",
                 new[]
@@ -83,7 +85,8 @@
                     ParameterFactory.GetSkip(),
                     ParameterFactory.GetTop(settings.DefaultItemsPerPage),
                     ParameterFactory.GetSummary(),
-                    ParameterFactory.GetCodeSystemGuidsArray()
+                    ParameterFactory.GetCodeSystemGuidsArray(),
+                    ParameterFactory.GetStatusCode()
                 },
                 new[] { TagsFactory.GetValueSetTag() });
 

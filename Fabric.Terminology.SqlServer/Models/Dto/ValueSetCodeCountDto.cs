@@ -1,4 +1,5 @@
 ﻿// ReSharper disable InconsistentNaming
+
 namespace Fabric.Terminology.SqlServer.Models.Dto
 {
     using System;
@@ -14,11 +15,16 @@ namespace Fabric.Terminology.SqlServer.Models.Dto
         }
 
         public ValueSetCodeCountDto(IValueSetCodeCount count)
+            : this(count.ValueSetGuid, count.CodeSystemGuid, count.CodeSystemName, count.CodeCount)
         {
-            this.ValueSetGUID = count.ValueSetGuid;
-            this.CodeSystemGUID = count.CodeSystemGuid;
-            this.CodeSystemNM = count.CodeSystemName;
-            this.CodeSystemPerValueSetNBR = count.CodeCount;
+        }
+
+        public ValueSetCodeCountDto(Guid valueSetGuid, Guid codeSystemGuid, string codeSystemName, int codeCount)
+        {
+            this.ValueSetGUID = valueSetGuid;
+            this.CodeSystemGUID = codeSystemGuid;
+            this.CodeSystemNM = codeSystemName;
+            this.CodeSystemPerValueSetNBR = codeCount;
             this.BindingID = EmptyBinding.BindingID;
             this.BindingNM = EmptyBinding.BindingNM;
             this.LastLoadDTS = EmptyBinding.LastLoadDts;
