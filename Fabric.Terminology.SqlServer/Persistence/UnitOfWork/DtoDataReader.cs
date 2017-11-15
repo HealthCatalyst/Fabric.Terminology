@@ -57,20 +57,24 @@
         public override int GetOrdinal(string name)
         {
           return this.nameLookup.ContainsKey(name) ? this.nameLookup[name] : -1;
-        } 
+        }
 
         public override object GetValue(int ordinal) => this.properties[ordinal].GetValue(this.enumerator.Current, null);
 
         public override int GetValues(object[] values)
         {
-            var getValues = Math.Max(this.FieldCount, values.Length);
+            if (values.Length != this.FieldCount)
+            {
+                throw new InvalidOperationException(
+                    $"The provided values had length of {values.Length} which does not match the length of this reader's fields {this.FieldCount}");
+            }
 
-            for (var i = 0; i < getValues; i++)
+            for (var i = 0; i < values.Length; i++)
             {
                 values[i] = this.GetValue(i);
             }
 
-            return getValues;
+            return values.Length;
         }
 
         public override string GetName(int ordinal) => this.properties[ordinal].Name;
