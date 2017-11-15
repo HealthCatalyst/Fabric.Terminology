@@ -60,7 +60,7 @@
                     catch (Exception ex)
                     {
                         ctx.ChangeTracker.AutoDetectChangesEnabled = true;
-                        this.manager.logger.Error(ex, "Failed to commit unit of work transaction. Rolling back.");
+                        this.manager.logger.Error(ex, $"Failed to commit unit of work transaction. Rolling back. Expected operations {expectedOperations}");
                         transaction.Rollback();
                         throw;
                     }
@@ -76,15 +76,15 @@
                 while (ops.Count > 0)
                 {
                     var op = ops.Dequeue();
-                    switch (op.Value.GetType())
+                    switch (op.Value)
                     {
-                        case Type vsd when vsd == typeof(ValueSetDescriptionBaseDto):
+                        case ValueSetDescriptionBaseDto vsd:
                             this.ProcessOperation(this.manager.ValueSetDescriptions, op);
                             break;
-                        case Type vsc when vsc == typeof(ValueSetCodeDto):
+                        case ValueSetCodeDto vsc:
                             this.ProcessOperation(this.manager.ValueSetCodes, op);
                             break;
-                        case Type vscc when vscc == typeof(ValueSetCodeCountDto):
+                        case ValueSetCodeCountDto vscc:
                             this.ProcessOperation(this.manager.ValueSetCodeCounts, op);
                             break;
                         default:
