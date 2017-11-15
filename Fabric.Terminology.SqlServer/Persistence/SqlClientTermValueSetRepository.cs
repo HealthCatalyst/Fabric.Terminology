@@ -44,8 +44,7 @@ namespace Fabric.Terminology.SqlServer.Persistence
                     dto =>
                         {
                             var factory = new ValueSetBackingItemFactory();
-                            var item = factory.Build(dto);
-                            ((ValueSetBackingItem)item).IsCustom = true;
+                            var item = factory.Build(dto, true);
                             var codes = this.GetCodes(item.ValueSetGuid);
                             var counts = this.GetCodeCounts(item.ValueSetGuid);
 
@@ -84,7 +83,7 @@ namespace Fabric.Terminology.SqlServer.Persistence
             return added.Select(Attempt<IValueSet>.Successful)
                 .Else(
                     () => Attempt<IValueSet>.Failed(
-                        new ValueSetNotFoundException("Could not retrieved newly saved ValueSet")));
+                        new ValueSetNotFoundException($"Could not retrieve newly saved ValueSet {valueSetGuid}")));
         }
 
         public Attempt<IValueSet> AddRemoveCodes(
