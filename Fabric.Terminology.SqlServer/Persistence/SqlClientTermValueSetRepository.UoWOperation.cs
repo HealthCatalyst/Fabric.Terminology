@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Net;
 
     using CallMeMaybe;
 
@@ -14,8 +15,27 @@
 
     internal partial class SqlClientTermValueSetRepository
     {
-        private static ValueSetCodeDto ConvertToValueSetCodeDto(Guid valueSetGuid, ICodeSystemCode code) =>
-            new ValueSetCodeDto(code) { ValueSetGUID = valueSetGuid };
+        private static ValueSetCodeDto ConvertToValueSetCodeDto(Guid valueSetGuid, ICodeSystemCode code)
+        {
+            return new ValueSetCodeDto(code) { ValueSetGUID = valueSetGuid };
+        }
+
+        private static Operation GetCodeSystemRecountOperation(ValueSetCodeCountDto original, ValueSetCodeCountDto recount)
+        {
+            var op = new Operation();
+            if (original.CodeSystemPerValueSetNBR != recount.CodeSystemPerValueSetNBR)
+            {
+                original.CodeSystemPerValueSetNBR = recount.CodeSystemPerValueSetNBR;
+                op.OperationType = OperationType.Update;
+            }
+            else
+            {
+                op.OperationType = OperationType.None;
+            }
+
+            op.Value = original;
+            return op;
+        }
 
         private AddRemoveCodeOperations PrepareAddRemoveCodes(
             Guid valueSetGuid,
@@ -30,10 +50,16 @@
             //// update/delete capability in that process and we want to ensure we do not insert duplicate codes)
 
             // dups are codes that would be removed and then immediately added again.
-            var dups = codesToAdd.Where(code => codesToRemove.Select(r => r.CodeGuid).Contains(code.CodeGuid)).ToList();
-            var codeDeletes = codesToRemove.Except(dups).ToList();
+            var removeCodeGuids = codesToRemove.Select(r => r.CodeGuid).ToHashSet();
 
-            var batchInsertDtos = codesToAdd.Except(dups).Select(code => ConvertToValueSetCodeDto(valueSetGuid, code)).ToList();
+            var dups = codesToAdd.Where(code => removeCodeGuids.Contains(code.CodeGuid))
+                .Select(code => code.CodeGuid)
+                .ToList();
+            var codeDeletes = codesToRemove.Where(code => !dups.Contains(code.CodeGuid)).ToList();
+
+            var batchInsertDtos = codesToAdd.Where(code => !dups.Contains(code.CodeGuid))
+                .Select(code => ConvertToValueSetCodeDto(valueSetGuid, code))
+                .ToList();
 
             var removeResult = this.PrepareRemoveCodesOperations(currentCodeDtos, codeDeletes);
 
@@ -52,13 +78,10 @@
             IEnumerable<ValueSetCodeDto> originalCodeDtos,
             IEnumerable<ICodeSystemCode> removeCodes)
         {
-            var removeGuids = removeCodes.Select(ds => ds.CodeGuid).ToList();
+            var removeGuids = removeCodes.Select(ds => ds.CodeGuid).ToHashSet();
             return originalCodeDtos.Where(code => removeGuids.Contains(code.CodeGUID.GetValueOrDefault()))
-                .Select(dto => new Operation
-                {
-                    Value = dto,
-                    OperationType = OperationType.Delete
-                }).ToList();
+                .Select(dto => new Operation { Value = dto, OperationType = OperationType.Delete })
+                .ToList();
         }
 
         private IReadOnlyCollection<Operation> BuildCodeCountOperationList(
@@ -68,61 +91,37 @@
             var originalCounts = this.uowManager.GetCodeCountDtos(valueSetGuid);
             var existingCodeSystems = originalCounts.Select(c => c.CodeSystemGUID);
 
-            var allCodes = allCodeDtos as ValueSetCodeDto[] ?? allCodeDtos.ToArray();
-            var allCodeSystems = allCodes.Select(c => c.CodeSystemGuid).Distinct();
+            var allCodesByCodeSystem = allCodeDtos.ToLookup(c => c.CodeSystemGuid);
+            var recounts = (from g in allCodesByCodeSystem
+                            let valueSetDto = g.First()
+                            select new ValueSetCodeCountDto(
+                                valueSetDto.ValueSetGUID,
+                                valueSetDto.CodeSystemGuid,
+                                valueSetDto.CodeSystemNM,
+                                g.Count())).ToList();
 
-            var recounts = allCodeSystems.Select(
-                            codeSystemGuid => new
-                            {
-                                codeSystemGuid,
-                                valueSetDto = allCodes.First(dto => dto.CodeSystemGuid == codeSystemGuid)
-                            })
-                            .Select(o =>
-                            new ValueSetCodeCountDto(o.valueSetDto.ValueSetGUID,
-                                o.valueSetDto.CodeSystemGuid,
-                                o.valueSetDto.CodeSystemNM,
-                                allCodes.Count(c => c.CodeSystemGuid == o.codeSystemGuid)))
-                                .ToList();
-
-            var operations = recounts.Select(nc =>
-                Maybe.From(originalCounts.FirstOrDefault(ec => ec.CodeSystemGUID == nc.CodeSystemGUID))
-                .Select(
-                    dto =>
-                    {
-                        var op = new Operation();
-                        if (dto.CodeSystemPerValueSetNBR != nc.CodeSystemPerValueSetNBR)
-                        {
-                            dto.CodeSystemPerValueSetNBR = nc.CodeSystemPerValueSetNBR;
-                            op.OperationType = OperationType.Update;
-                        }
-                        else
-                        {
-                            op.OperationType = OperationType.None;
-                        }
-
-                        op.Value = dto;
-                        return op;
-                    })
-                .Else(() => new Operation
-                {
-                    Value = nc
-                })).ToList();
+            var operations =
+                recounts.Select(
+                    recount =>
+                    originalCounts.Where(oc => oc.CodeSystemGUID == recount.CodeSystemGUID)
+                        .FirstMaybe()
+                        .Select(dto => GetCodeSystemRecountOperation(dto, recount))
+                        .Else(() => new Operation { Value = recount }))
+                        .Where(operation => operation.OperationType != OperationType.None)
+                        .ToList();
 
             // finally ensure that any existing counts that were not in the new counts are removed
             // e.g. all codes from a particular code system were removed
             var removers = originalCounts.Where(oc => !existingCodeSystems.Contains(oc.CodeSystemGUID));
 
-            operations.AddRange(removers.Select(r => new Operation
-            {
-                Value = r,
-                OperationType = OperationType.Delete
-            }));
+            operations.AddRange(
+                removers.Select(r => new Operation { Value = r, OperationType = OperationType.Delete }));
 
-            return operations.Where(op => op.OperationType != OperationType.None).ToList();
+            return operations.ToList();
         }
 
-        // add ability to remove all codes that exist in current value set that also exist in 
-        // value set passed.
+        //// add ability to remove all codes that exist in current value set that also exist in
+        //// value set passed.
 
         private AddRemoveCodeOperations PrepareRemoveCodesOperations(
             IReadOnlyCollection<ValueSetCodeDto> currentCodeDtos,
@@ -130,7 +129,7 @@
         {
             var removeOps = this.BuildRemoveCodesOperationList(currentCodeDtos, removeCodes);
             var removedCodeGuids = removeOps.Select(ro => ro.Value<ValueSetCodeDto>().CodeGUID);
-            var resultDtos = currentCodeDtos.Where(oc => removedCodeGuids.All(rc => rc != oc.CodeGUID));
+            var resultDtos = currentCodeDtos.Where(oc => !removedCodeGuids.Contains(oc.CodeGUID));
 
             return new AddRemoveCodeOperations { CurrentCodeDtos = resultDtos.ToList(), Operations = removeOps };
         }

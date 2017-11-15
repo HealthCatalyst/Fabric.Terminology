@@ -2,14 +2,11 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Data.SqlClient;
 
     using CallMeMaybe;
 
     using Fabric.Terminology.SqlServer.Models.Dto;
     using Fabric.Terminology.SqlServer.Persistence.DataContext;
-
-    using Microsoft.EntityFrameworkCore;
 
     using Serilog;
 
@@ -43,7 +40,7 @@
         internal ICrudRepository<ValueSetCodeCountDto> ValueSetCodeCounts => this.valueSetCodeCount.Value;
 
         public Maybe<ValueSetDescriptionBaseDto> GetValueSetDescriptionDto(Guid valueSetGuid) =>
-            Maybe.From(this.ValueSetDescriptions.Single(vsd => vsd.ValueSetGUID == valueSetGuid));
+            Maybe.From(this.ValueSetDescriptions.SingleOrDefault(vsd => vsd.ValueSetGUID == valueSetGuid));
 
         public IReadOnlyCollection<ValueSetCodeDto> GetCodeDtos(Guid valueSetGuid) =>
             this.ValueSetCodes.Get(vsc => vsc.ValueSetGUID == valueSetGuid);
