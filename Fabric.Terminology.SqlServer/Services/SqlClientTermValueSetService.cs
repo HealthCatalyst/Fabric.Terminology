@@ -123,7 +123,12 @@
             IEnumerable<ICodeSystemCode> codesToAdd,
             IEnumerable<ICodeSystemCode> codesToRemove)
         {
-            return this.clientTermValueSetRepository.AddRemoveCodes(valueSetGuid, codesToAdd, codesToRemove);
+            var listToAdd = codesToAdd.ToList();
+            var listToRemove = codesToRemove.ToList();
+            var duplicates = GetIntersectingCodeGuids(listToAdd, listToRemove);
+            return !duplicates.Any()
+                       ? this.clientTermValueSetRepository.AddRemoveCodes(valueSetGuid, listToAdd, listToRemove)
+                       : Attempt<IValueSet>.Failed(new InvalidOperationException($"One or more codes were being attempted to be both add and removed to the value set with ValueSetGuid {valueSetGuid}.  Offending CodeGuid(s) {string.Join(",", duplicates)}"));
         }
 
         public void Delete(IValueSet valueSet)
@@ -138,6 +143,13 @@
         private static string ValidateProperty(string propName, string value)
         {
             return value.IsNullOrWhiteSpace() ? $"The {propName} property must have a value. " : string.Empty;
+        }
+
+        private static IReadOnlyCollection<Guid> GetIntersectingCodeGuids(IReadOnlyCollection<ICodeSystemCode> list1, IReadOnlyCollection<ICodeSystemCode> list2)
+        {
+            var list1Guids = list1.Select(x => x.CodeGuid).ToHashSet();
+            var list2Guids = list2.Select(x => x.CodeGuid).ToHashSet();
+            return list1Guids.Intersect(list2Guids).ToList();
         }
 
         private bool ValidateValueSetMeta(IValueSetMeta meta, out string msg)
