@@ -6,6 +6,8 @@
 
     internal interface IUnitOfWorkManager
     {
+        IUnitOfWork CreateUnitOfWork(Operation operation);
+
         IUnitOfWork CreateUnitOfWork(IEnumerable<Operation> operations);
     }
 }

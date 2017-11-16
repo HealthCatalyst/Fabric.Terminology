@@ -13,6 +13,8 @@
 
     internal partial class ClientTermValueUnitOfWorkManager
     {
+        public IUnitOfWork CreateUnitOfWork(Operation operation) => this.CreateUnitOfWork(new[] { operation });
+
         public IUnitOfWork CreateUnitOfWork(IEnumerable<Operation> operations) =>
             new UnitOfWork(this, operations);
 
