@@ -22,6 +22,8 @@
 
         Attempt<IValueSet> Copy(IValueSet originalValueSet, string newName, IValueSetMeta meta);
 
+        Attempt<IValueSet> ChangeStatus(Guid valueSetGuid, ValueSetStatus newStatus);
+
         Attempt<IValueSet> AddRemoveCodes(
             Guid valueSetGuid,
             IEnumerable<ICodeSystemCode> codesToAdd,
