@@ -118,6 +118,11 @@
             return Attempt<IValueSet>.Successful(valueSet);
         }
 
+        public Attempt<IValueSet> ChangeStatus(Guid valueSetGuid, ValueSetStatus newStatus)
+        {
+            throw new NotImplementedException();
+        }
+
         public Attempt<IValueSet> AddRemoveCodes(
             Guid valueSetGuid,
             IEnumerable<ICodeSystemCode> codesToAdd,
