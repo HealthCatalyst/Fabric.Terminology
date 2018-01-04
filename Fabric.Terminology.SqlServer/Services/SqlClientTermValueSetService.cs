@@ -83,35 +83,35 @@
             Saving?.Invoke(this, valueSet);
 
             var attempt = this.clientTermValueSetRepository.Add(valueSet);
-            if (attempt.Success && attempt.Result.HasValue)
+            if (attempt.Success && attempt.Result != null)
             {
-                Saved?.Invoke(this, attempt.Result.Single());
+                Saved?.Invoke(this, attempt.Result);
                 return;
             }
 
-            if (!attempt.Exception.HasValue)
+            if (attempt.Exception == null)
             {
                 var vsex = new ValueSetOperationException(
                     "An exception was not returned by the attempt to save a ValueSet but the save failed.",
-                    attempt.Exception.Single());
+                    attempt.Exception);
                 this.logger.Error(
                     vsex,
                     "An exception was not returned by the attempt to save a ValueSet but the save failed.");
                 throw vsex;
             }
 
-            throw attempt.Exception.Single();
+            throw attempt.Exception;
         }
 
         public Attempt<IValueSet> Copy(IValueSet originalValueSet, string newName, IValueSetMeta meta)
         {
             var attempt = this.Create(newName, meta, originalValueSet.ValueSetCodes);
-            if (!attempt.Success || !attempt.Result.HasValue)
+            if (!attempt.Success || attempt.Result == null)
             {
                 return attempt;
             }
 
-            var valueSet = attempt.Result.Single();
+            var valueSet = attempt.Result;
             ((ValueSet)valueSet).OriginGuid = originalValueSet.ValueSetGuid;
             this.SaveAsNew(valueSet);
 

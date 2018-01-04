@@ -42,9 +42,9 @@
 
             // Assert
             attempt.Success.Should().BeTrue();
-            attempt.Result.HasValue.Should().BeTrue();
+            attempt.Result.Should().NotBeNull();
 
-            var vs = attempt.Result.Single();
+            var vs = attempt.Result;
 
             vs.ValueSetCodes.Should().NotBeEmpty();
             vs.CodeCounts.Should().NotBeEmpty();
@@ -61,8 +61,8 @@
             var apiModel = MockApiModelBuilder.ValueSetCreationApiModel(name, initialCodeCount);
             var setup = this.clientTermValueSetService.Create(apiModel);
             setup.Success.Should().BeTrue();
-            setup.Result.HasValue.Should().BeTrue();
-            var valueSet = setup.Result.Single();
+            setup.Result.Should().NotBeNull();
+            var valueSet = setup.Result;
             this.clientTermValueSetService.SaveAsNew(valueSet);
 
             // Act
@@ -73,7 +73,7 @@
                                 valueSet.ValueSetGuid,
                                 new List<ICodeSystemCode>(),
                                 removers))
-                        .Result.Single();
+                        .Result;
 
             // Assert
             result.ValueSetCodes.Count.Should().Be(expectedCount);
@@ -98,8 +98,8 @@
             var apiModel = MockApiModelBuilder.ValueSetCreationApiModel(name, initialCodeCount);
             var setup = this.clientTermValueSetService.Create(apiModel);
             setup.Success.Should().BeTrue();
-            setup.Result.HasValue.Should().BeTrue();
-            var valueSet = setup.Result.Single();
+            setup.Result.Should().NotBeNull();
+            var valueSet = setup.Result;
             this.clientTermValueSetService.SaveAsNew(valueSet);
 
             var codesToAdd = MockApiModelBuilder.CodeSetCodeApiModelCollection(addCodeCount);
@@ -110,7 +110,7 @@
                         valueSet.ValueSetGuid,
                         codesToAdd,
                         new List<ICodeSystemCode>()))
-                .Result.Single();
+                .Result;
 
             // Assert
             result.ValueSetCodes.Count.Should().Be(expectedCount);
@@ -135,8 +135,8 @@
             var apiModel = MockApiModelBuilder.ValueSetCreationApiModel(name, initialCodeCount);
             var setup = this.clientTermValueSetService.Create(apiModel);
             setup.Success.Should().BeTrue();
-            setup.Result.HasValue.Should().BeTrue();
-            var valueSet = setup.Result.Single();
+            setup.Result.Should().NotBeNull();
+            var valueSet = setup.Result;
             this.clientTermValueSetService.SaveAsNew(valueSet);
 
             var removers = valueSet.ValueSetCodes.Batch(removeCodeCount).First();
@@ -147,7 +147,7 @@
                     valueSet.ValueSetGuid,
                     codesToAdd,
                     removers))
-                .Result.Single();
+                .Result;
 
             // Assert
             result.ValueSetCodes.Count.Should().Be(expectedCount);
@@ -173,9 +173,9 @@
 
             var attempt = this.clientTermValueSetService.Create(apiModel);
             attempt.Success.Should().BeTrue();
-            attempt.Result.HasValue.Should().BeTrue();
+            attempt.Result.Should().NotBeNull();
 
-            var vs = attempt.Result.Single();
+            var vs = attempt.Result;
 
             // Act
             this.Profiler.ExecuteTimed(() => this.clientTermValueSetService.SaveAsNew(vs));
@@ -209,7 +209,8 @@
 
             // Assert
             attempt.Success.Should().BeTrue();
-            var copy = attempt.Result.Single();
+            attempt.Result.Should().NotBeNull();
+            var copy = attempt.Result;
             copy.OriginGuid.Should().Be(valueSet.ValueSetGuid);
             copy.ValueSetCodes.Count.Should().Be(valueSet.ValueSetCodes.Count);
             copy.IsCustom.Should().BeTrue();
