@@ -33,7 +33,7 @@
             var pagingStrategyFactory = new PagingStrategyFactory();
             var clientTermCacheManager = new ClientTermCacheManager(cacheManagerFactory);
             var uow = new ClientTermValueUnitOfWorkManager(this.ClientTermContext.AsLazy(), this.Logger);
-            var valueSetStatusChangePolicy = new DefaultValueSetStatusChangePolicy();
+            var valueSetStatusChangePolicy = new DefaultValueSetUpdateValidationPolicy();
 
             var valueSetCodeRepository = new SqlValueSetCodeRepository(
                 this.SharedContext,

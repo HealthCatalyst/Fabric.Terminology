@@ -126,7 +126,7 @@
                 new[]
                 {
                     new HttpResponseMetadata<ValueSetApiModel> { Code = 200, Message = "OK" },
-                    new HttpResponseMetadata { Code = 400, Message = "Bad Request"},
+                    new HttpResponseMetadata { Code = 400, Message = "Bad Request" },
                     new HttpResponseMetadata { Code = 500, Message = "Internal Server Error" }
                 },
                 new[]
@@ -152,6 +152,26 @@
                 {
                     ParameterFactory.GetValueSetGuid(),
                     ParameterFactory.GetPathStatusCode()
+                },
+                new[]
+                {
+                    TagsFactory.GetValueSetTag()
+                });
+
+            this.RouteDescriber.DescribeRouteWithParams(
+                "DeleteValueSet",
+                "Deletes a client term ValueSet",
+                "Deletes a client term ValueSet.  Request is only valid for client term value sets with a 'Draft' status.",
+                new[]
+                {
+                    new HttpResponseMetadata { Code = 200, Message = "OK" },
+                    new HttpResponseMetadata { Code = 404, Message = "Not Found" },
+                    new HttpResponseMetadata { Code = 400, Message = "Bad Request" },
+                    new HttpResponseMetadata { Code = 500, Message = "Internal Server Error" }
+                },
+                new[]
+                {
+                    ParameterFactory.GetValueSetGuid()
                 },
                 new[]
                 {

@@ -26,19 +26,19 @@ namespace Fabric.Terminology.SqlServer.Persistence
 
         private readonly IClientTermValueUnitOfWorkManager uowManager;
 
-        private readonly IValueSetStatusChangePolicy valueSetStatusChangePolicy;
+        private readonly IValueSetUpdateValidationPolicy valueSetUpdateValidationPolicy;
 
         private readonly IClientTermCacheManager cacheManager;
 
         public SqlClientTermValueSetRepository(
             ILogger logger,
             IClientTermValueUnitOfWorkManager uowManager,
-            IValueSetStatusChangePolicy valueSetStatusChangePolicy,
+            IValueSetUpdateValidationPolicy valueSetUpdateValidationPolicy,
             IClientTermCacheManager cacheManager)
         {
             this.logger = logger;
             this.uowManager = uowManager;
-            this.valueSetStatusChangePolicy = valueSetStatusChangePolicy;
+            this.valueSetUpdateValidationPolicy = valueSetUpdateValidationPolicy;
             this.cacheManager = cacheManager;
         }
 
@@ -126,7 +126,7 @@ namespace Fabric.Terminology.SqlServer.Persistence
             void ChangeStatusAlteration(ValueSetDescriptionBaseDto vsd)
             {
                 var currentStatus = GetValueSetStatus(vsd.StatusCD);
-                if (!this.valueSetStatusChangePolicy.Allowed(currentStatus, newStatus))
+                if (!this.valueSetUpdateValidationPolicy.CanChangeStatus(currentStatus, newStatus))
                 {
                     throw new ValueSetOperationException($"ValueSet status policy does not allow changing the status of a ValueSet from {currentStatus.ToString()} to {newStatus.ToString()}");
                 }
@@ -140,7 +140,7 @@ namespace Fabric.Terminology.SqlServer.Persistence
 
         public void Delete(IValueSet valueSet)
         {
-            if (valueSet.StatusCode != ValueSetStatus.Draft)
+            if (!this.valueSetUpdateValidationPolicy.CanBeDeleted(valueSet))
             {
                 var statusEx = new ValueSetOperationException($"Could not delete ValueSet with ID {valueSet.ValueSetGuid}.  ValueSet status must be `{ValueSetStatus.Draft.ToString()}`, found: {valueSet.StatusCode.ToString()}");
                 this.logger.Error(statusEx, "Failed to delete custom ValueSet.");

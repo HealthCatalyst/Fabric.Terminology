@@ -83,7 +83,7 @@
             container.Register<ICodeSystemCodeCachingManager, CodeSystemCodeCachingManager>().AsSingleton();
             container.Register<IClientTermCacheManager, ClientTermCacheManager>().AsSingleton();
 
-            container.Register<IValueSetStatusChangePolicy, DefaultValueSetStatusChangePolicy>().AsSingleton();
+            container.Register<IValueSetUpdateValidationPolicy, DefaultValueSetUpdateValidationPolicy>().AsSingleton();
 
             // Persistence (Must precede service registration)
             container.ComposeFrom<SqlAppComposition>();

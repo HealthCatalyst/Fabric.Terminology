@@ -4,7 +4,9 @@
     using System.Collections.Generic;
     using System.Linq;
 
-    public class DefaultValueSetStatusChangePolicy : IValueSetStatusChangePolicy
+    using Fabric.Terminology.Domain.Models;
+
+    public class DefaultValueSetUpdateValidationPolicy : IValueSetUpdateValidationPolicy
     {
         private static readonly IDictionary<ValueSetStatus, IEnumerable<ValueSetStatus>> PolicyMap =
             new Dictionary<ValueSetStatus, IEnumerable<ValueSetStatus>>
@@ -14,11 +16,16 @@
             { ValueSetStatus.Archived, new[] { ValueSetStatus.Active } }
         };
 
-        public bool Allowed(ValueSetStatus current, ValueSetStatus target)
+        public bool CanBeDeleted(IValueSet valueSet)
+        {
+            return valueSet.IsCustom && valueSet.StatusCode == ValueSetStatus.Draft;
+        }
+
+        public bool CanChangeStatus(ValueSetStatus current, ValueSetStatus target)
         {
             if (!PolicyMap.ContainsKey(current))
             {
-                throw new InvalidOperationException($"The status {current.ToString()} has not been mapped in {nameof(DefaultValueSetStatusChangePolicy)}");
+                throw new InvalidOperationException($"The status {current.ToString()} has not been mapped in {nameof(DefaultValueSetUpdateValidationPolicy)}");
             }
 
             return PolicyMap[current].Contains(target);

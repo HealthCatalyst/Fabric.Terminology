@@ -66,7 +66,7 @@
                 null,
                 "ChangeValueSetStatus");
 
-            // this.Delete("/{valueSetGuid}", parameters => this.DeleteValueSet(parameters), null, "DeleteValueSet");
+            this.Delete("/{valueSetGuid}", parameters => this.DeleteValueSet(parameters.valueSetGuid), null, "DeleteValueSet");
         }
 
         private static ValueSetApiModel MapToValueSetApiModel(IValueSet vs, IReadOnlyCollection<Guid> codeSystemGuids)
@@ -279,9 +279,35 @@
             }
         }
 
-        private object DeleteValueSet(dynamic parameters)
+        private object DeleteValueSet(Guid valueSetGuid)
         {
-            return this.CreateFailureResponse("Not Implemented", HttpStatusCode.NotImplemented);
+            return this.valueSetService.GetValueSet(valueSetGuid)
+                .Select(vs =>
+                {
+                    if (vs.StatusCode != ValueSetStatus.Draft)
+                    {
+                        return this.CreateFailureResponse(
+                            "Invalid ValueSet status.  Delete operation is only permitted for 'Draft' status ValueSets",
+                            HttpStatusCode.BadRequest);
+                    }
+
+                    try
+                    {
+                        this.clientTermValueSetService.Delete(vs);
+                        return this.Negotiate.WithStatusCode(HttpStatusCode.OK);
+                    }
+                    catch (Exception ex)
+                    {
+                        this.Logger.Error(ex, ex.Message, valueSetGuid);
+                        return this.CreateFailureResponse(
+                            $"Failed to delete ValueSet with id: {valueSetGuid}",
+                            HttpStatusCode.InternalServerError);
+                    }
+                })
+                .Else(() =>
+                    this.CreateFailureResponse(
+                        $"Could not find ValueSet with id: {valueSetGuid}",
+                        HttpStatusCode.NotFound));
         }
 
         private object ChangeStatus(Guid valueSetGuid, string statusCode)
