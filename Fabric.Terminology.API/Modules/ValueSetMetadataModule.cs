@@ -1,6 +1,7 @@
 ﻿namespace Fabric.Terminology.API.Modules
 {
     using System;
+    using System.Net.Http;
 
     using Fabric.Terminology.API.MetaData;
     using Fabric.Terminology.API.Models;
@@ -86,7 +87,7 @@
                     ParameterFactory.GetTop(settings.DefaultItemsPerPage),
                     ParameterFactory.GetSummary(),
                     ParameterFactory.GetCodeSystemGuidsArray(),
-                    ParameterFactory.GetStatusCode()
+                    ParameterFactory.GetQueryStringStatusCode()
                 },
                 new[] { TagsFactory.GetValueSetTag() });
 
@@ -125,12 +126,32 @@
                 new[]
                 {
                     new HttpResponseMetadata<ValueSetApiModel> { Code = 200, Message = "OK" },
+                    new HttpResponseMetadata { Code = 400, Message = "Bad Request"},
                     new HttpResponseMetadata { Code = 500, Message = "Internal Server Error" }
                 },
                 new[]
                 {
                     // ParameterFactory.GetContentType(),
                     new BodyParameter<ValueSetCreationApiModel>(modelCatalog) { Required = true, Name = "Model" }
+                },
+                new[]
+                {
+                    TagsFactory.GetValueSetTag()
+                });
+
+            this.RouteDescriber.DescribeRouteWithParams(
+                "ChangeValueSetStatus",
+                "Updates the status of an existing value set",
+                "Updates the status of an existing value set.  Draft may be changed to active.  Active may be changed to Archived.  Archived may be changed to Active.",
+                new[]
+                {
+                    new HttpResponseMetadata<ValueSetApiModel> { Code = 200, Message = "OK" },
+                    new HttpResponseMetadata { Code = 500, Message = "Internal Server Error" }
+                },
+                new[]
+                {
+                    ParameterFactory.GetValueSetGuid(),
+                    ParameterFactory.GetPathStatusCode()
                 },
                 new[]
                 {

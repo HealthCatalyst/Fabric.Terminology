@@ -120,7 +120,7 @@
 
         public Attempt<IValueSet> ChangeStatus(Guid valueSetGuid, ValueSetStatus newStatus)
         {
-            throw new NotImplementedException();
+            return this.clientTermValueSetRepository.ChangeStatus(valueSetGuid, newStatus);
         }
 
         public Attempt<IValueSet> AddRemoveCodes(

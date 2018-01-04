@@ -77,7 +77,7 @@
             };
         }
 
-        public static Parameter GetStatusCode()
+        public static Parameter GetQueryStringStatusCode()
         {
             return new Parameter
             {
@@ -85,6 +85,19 @@
                 Description = "The ValueSet status code.  Valid values are 'Active', 'Draft', 'Archived'",
                 Required = false,
                 In = ParameterIn.Query,
+                Type = "string",
+                Enum = new[] { "Active", "Draft", "Archived" }
+            };
+        }
+
+        public static Parameter GetPathStatusCode()
+        {
+            return new Parameter
+            {
+                Name = "statusCode",
+                Description = "The ValueSet status code.  Valid values are 'Active', 'Draft', 'Archived'",
+                Required = true,
+                In = ParameterIn.Path,
                 Type = "string",
                 Enum = new[] { "Active", "Draft", "Archived" }
             };

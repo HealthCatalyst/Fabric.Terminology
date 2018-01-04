@@ -60,6 +60,12 @@
 
             this.Post("/", _ => this.AddValueSet(), null, "AddValueSet");
 
+            this.Put(
+                "/{valueSetGuid}/statuscode/{statusCode}",
+                parameters => this.ChangeStatus(parameters.valueSetGuid, parameters.statusCode),
+                null,
+                "ChangeValueSetStatus");
+
             // this.Delete("/{valueSetGuid}", parameters => this.DeleteValueSet(parameters), null, "DeleteValueSet");
         }
 
@@ -249,14 +255,12 @@
             {
                 var model = this.Bind<ValueSetCreationApiModel>();
                 var attempt = this.clientTermValueSetService.Create(model);
-                if (!attempt.Success || !attempt.Result.HasValue)
+                if (!attempt.Success || attempt.Result == null)
                 {
-                    throw attempt.Exception.HasValue
-                              ? attempt.Exception.Single()
-                              : new ArgumentException("Failed to add value set.");
+                    throw attempt.Exception ?? new ArgumentException("Failed to add value set.");
                 }
 
-                var valueSet = attempt.Result.Single();
+                var valueSet = attempt.Result;
                 var validationResult = this.valueSetValidator.Validate(valueSet);
                 if (validationResult.IsValid)
                 {
@@ -278,6 +282,36 @@
         private object DeleteValueSet(dynamic parameters)
         {
             return this.CreateFailureResponse("Not Implemented", HttpStatusCode.NotImplemented);
+        }
+
+        private object ChangeStatus(Guid valueSetGuid, string statusCode)
+        {
+            if (Enum.TryParse(statusCode, true, out ValueSetStatus status))
+            {
+                var attempt = this.clientTermValueSetService.ChangeStatus(valueSetGuid, status);
+                try
+                {
+                    if (attempt.Success)
+                    {
+                        return attempt.Result.ToValueSetApiModel();
+                    }
+
+                    if (attempt.Exception != null)
+                    {
+                        var msg = attempt.Exception.Message;
+                        return this.CreateFailureResponse(msg, HttpStatusCode.BadRequest);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    this.Logger.Error(ex, ex.Message, valueSetGuid.ToString(), status.ToString());
+                    return this.CreateFailureResponse(
+                        $"Failed to change the status code for the value set with id: {valueSetGuid}",
+                        HttpStatusCode.InternalServerError);
+                }
+            }
+
+            return this.CreateFailureResponse($"Failed to cast '{statusCode}' to a valid ValueSetStatus", HttpStatusCode.InternalServerError);
         }
 
         private bool GetSummarySetting()

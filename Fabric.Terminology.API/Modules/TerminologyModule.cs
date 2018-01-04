@@ -62,7 +62,12 @@
             };
         }
 
-        protected string[] CreateParameterArray(string value)
+        protected Guid[] GetCodeSystems()
+        {
+            return this.CreateGuidParameterArray((string)this.Request.Query["$codesystems"]);
+        }
+
+        private string[] CreateParameterArray(string value)
         {
             if (value.IsNullOrWhiteSpace())
             {
@@ -73,19 +78,9 @@
             return cds.Select(cd => cd.Trim()).Where(cd => !cd.IsNullOrWhiteSpace()).ToArray();
         }
 
-        protected Guid[] CreateGuidParameterArray(string value)
+        private Guid[] CreateGuidParameterArray(string value)
         {
             return this.CreateParameterArray(value).Select(s => Maybe.From(Guid.Parse(s))).Values().ToArray();
-        }
-
-        protected Guid[] GetCodeSystems()
-        {
-            return this.CreateGuidParameterArray((string)this.Request.Query["$codesystems"]);
-        }
-
-        protected Guid[] GetValueSetGuids(string valueSetGuids)
-        {
-            return this.CreateGuidParameterArray(valueSetGuids);
         }
     }
 }
