@@ -319,7 +319,7 @@
                 {
                     if (attempt.Success)
                     {
-                        return attempt.Result.ToValueSetApiModel();
+                        return this.CreateSuccessfulPostResponse(attempt.Result.ToValueSetApiModel());
                     }
 
                     if (attempt.Exception != null)
