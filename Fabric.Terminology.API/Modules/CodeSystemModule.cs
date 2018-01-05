@@ -5,8 +5,6 @@
 
     using AutoMapper;
 
-    using CallMeMaybe;
-
     using Fabric.Terminology.API.Configuration;
     using Fabric.Terminology.API.Models;
     using Fabric.Terminology.Domain.Services;

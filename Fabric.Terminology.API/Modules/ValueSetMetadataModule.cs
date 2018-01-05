@@ -1,7 +1,6 @@
 ﻿namespace Fabric.Terminology.API.Modules
 {
     using System;
-    using System.Net.Http;
 
     using Fabric.Terminology.API.MetaData;
     using Fabric.Terminology.API.Models;
@@ -13,8 +12,6 @@
     using Nancy.Swagger.Modules;
     using Nancy.Swagger.Services;
     using Nancy.Swagger.Services.RouteUtils;
-
-    using Swagger.ObjectModel;
 
     public class ValueSetMetadataModule : SwaggerMetadataModule
     {
