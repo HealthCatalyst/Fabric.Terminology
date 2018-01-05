@@ -55,6 +55,16 @@
             var dups = codesToAdd.Where(code => removeCodeGuids.Contains(code.CodeGuid))
                 .Select(code => code.CodeGuid)
                 .ToList();
+
+            if (dups.Any())
+            {
+                var dupException = new InvalidOperationException($"Attempt to both Add and Remove duplicate {dups.Count} codes to value set with id: {valueSetGuid}");
+                this.logger.Error(dupException, "Cannot add and remove duplicate codes");
+
+                // throw early
+                throw dupException;
+            }
+
             var codeDeletes = codesToRemove.Where(code => !dups.Contains(code.CodeGuid)).ToList();
 
             var batchInsertDtos = codesToAdd.Where(code => !dups.Contains(code.CodeGuid))
