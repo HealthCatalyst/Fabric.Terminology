@@ -34,6 +34,7 @@
                 typeof(ValueSetCodeApiModel),
                 typeof(ValueSetCodeCountApiModel),
                 typeof(ValueSetCreationApiModel),
+                typeof(ValueSetCopyApiModel),
                 typeof(ValueSetStatus),
                 typeof(Guid)
                 );
@@ -131,7 +132,6 @@
                 },
                 new[]
                 {
-                    // ParameterFactory.GetContentType(),
                     new BodyParameter<ValueSetCreationApiModel>(modelCatalog) { Required = true, Name = "Model" }
                 },
                 new[]
@@ -152,6 +152,25 @@
                 {
                     ParameterFactory.GetValueSetGuid(),
                     ParameterFactory.GetPathStatusCode()
+                },
+                new[]
+                {
+                    TagsFactory.GetValueSetTag()
+                });
+
+            this.RouteDescriber.DescribeRouteWithParams(
+                "CopyValueSet",
+                "Creates a copy of a ValueSet",
+                "Creates a copy of a ValueSet",
+                new[]
+                {
+                    new HttpResponseMetadata<ValueSetApiModel> { Code = 200, Message = "OK" },
+                    new HttpResponseMetadata { Code = 404, Message = "Not Found" },
+                    new HttpResponseMetadata { Code = 500, Message = "Internal Server Error" }
+                },
+                new[]
+                {
+                    new BodyParameter<ValueSetCopyApiModel>(modelCatalog) { Required = true, Name = "Model" }
                 },
                 new[]
                 {

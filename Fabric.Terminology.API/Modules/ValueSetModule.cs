@@ -58,6 +58,8 @@
 
             this.Post("/search/", _ => this.Search(), null, "Search");
 
+            this.Post("/copy/", _ => this.CopyValueSet(), null, "CopyValueSet");
+
             this.Post("/", _ => this.AddValueSet(), null, "AddValueSet");
 
             this.Put(
@@ -308,6 +310,39 @@
                     this.CreateFailureResponse(
                         $"Could not find ValueSet with id: {valueSetGuid}",
                         HttpStatusCode.NotFound));
+        }
+
+        private object CopyValueSet()
+        {
+            try
+            {
+                var model = this.Bind<ValueSetCopyApiModel>();
+
+                var copy = this.valueSetService.GetValueSet(model.OriginGuid)
+                            .Select(vs =>
+                            {
+                                var attempt = this.clientTermValueSetService.Copy(vs, model.Name, model);
+
+                                return attempt.Success
+                                           ? this.CreateSuccessfulPostResponse(attempt.Result.ToValueSetApiModel())
+                                           : CreateAttemptFailureResponse(attempt);
+                            });
+
+                return copy.Else(
+                    () => this.CreateFailureResponse(
+                        $"ValueSet with matching ID: {model.OriginGuid} was not found",
+                        HttpStatusCode.NotFound));
+            }
+            catch (Exception ex)
+            {
+                this.Logger.Error(ex, ex.Message);
+                return this.CreateFailureResponse("Failed to copy a value set", HttpStatusCode.InternalServerError);
+            }
+
+            object CreateAttemptFailureResponse(Attempt<IValueSet> attempt) =>
+                attempt.Exception != null
+                    ? this.CreateFailureResponse(attempt.Exception.Message, HttpStatusCode.InternalServerError)
+                    : this.CreateFailureResponse("Failed to copy ValueSet", HttpStatusCode.InternalServerError);
         }
 
         private object ChangeStatus(Guid valueSetGuid, string statusCode)
