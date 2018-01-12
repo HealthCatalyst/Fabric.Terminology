@@ -19,7 +19,8 @@
                 DefinitionDescription = "Test Purpose Description",
                 SourceDescription = "Test Source Description",
                 CodeSetCodes = CodeSetCodeApiModelCollection(codeCount),
-                VersionDate = DateTime.UtcNow
+                VersionDate = DateTime.UtcNow,
+                ClientCode = "UnitTest"
             };
         }
 
