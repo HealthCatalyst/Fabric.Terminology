@@ -255,7 +255,10 @@
         {
             try
             {
-                var model = this.Bind<ValueSetCreationApiModel>();
+                var model = this.Bind<ClientTermValueSetApiModel>();
+
+                // Strategy
+
                 var attempt = this.clientTermValueSetService.Create(model);
                 if (!attempt.Success || attempt.Result == null)
                 {

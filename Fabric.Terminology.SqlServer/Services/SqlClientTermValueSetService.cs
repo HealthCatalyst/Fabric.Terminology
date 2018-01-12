@@ -161,6 +161,7 @@
         {
             var errors = new List<string>
             {
+                ValidateProperty(nameof(meta.ClientCode), meta.ClientCode),
                 ValidateProperty(nameof(meta.AuthoringSourceDescription), meta.AuthoringSourceDescription),
                 ValidateProperty(nameof(meta.DefinitionDescription), meta.DefinitionDescription),
                 ValidateProperty(nameof(meta.SourceDescription), meta.SourceDescription)

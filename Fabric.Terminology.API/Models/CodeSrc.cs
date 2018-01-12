@@ -1,6 +1,6 @@
 ﻿namespace Fabric.Terminology.API.Models
 {
-    public enum CodeInstructionSource
+    public enum CodeSrc
     {
         CodeSystemCode,
         ValueSet

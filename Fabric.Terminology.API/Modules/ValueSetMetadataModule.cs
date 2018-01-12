@@ -30,9 +30,12 @@
                 typeof(ValueSetItemApiModel),
                 typeof(ValueSetCodeApiModel),
                 typeof(ValueSetCodeCountApiModel),
-                typeof(ValueSetCreationApiModel),
+                typeof(ClientTermValueSetApiModel),
+                typeof(CodeInstruction),
                 typeof(ValueSetCopyApiModel),
                 typeof(ValueSetStatus),
+                typeof(CodeSrc),
+                typeof(CodeInstructionType),
                 typeof(Guid)
                 );
 
@@ -129,7 +132,7 @@
                 },
                 new[]
                 {
-                    new BodyParameter<ValueSetCreationApiModel>(modelCatalog) { Required = true, Name = "Model" }
+                    new BodyParameter<ClientTermValueSetApiModel>(modelCatalog) { Required = true, Name = "Model" }
                 },
                 new[]
                 {

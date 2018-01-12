@@ -6,7 +6,7 @@
     {
         public Guid IdGuid { get; set; }
 
-        public CodeInstructionSource Source { get; set; } = CodeInstructionSource.CodeSystemCode;
+        public CodeSrc Src { get; set; } = CodeSrc.CodeSystemCode;
 
         public CodeInstructionType InstructionType { get; set; } = CodeInstructionType.Add;
     }

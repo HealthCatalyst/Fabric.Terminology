@@ -8,11 +8,11 @@
 
     public class MockApiModelBuilder
     {
-        public static ValueSetCreationApiModel ValueSetCreationApiModel(
+        public static ClientTermValueSetApiModel ValueSetCreationApiModel(
             string name,
             int codeCount = 10)
         {
-            return new ValueSetCreationApiModel
+            return new ClientTermValueSetApiModel
             {
                 Name = name,
                 AuthoringSourceDescription = "Test Authoring Source Description",
