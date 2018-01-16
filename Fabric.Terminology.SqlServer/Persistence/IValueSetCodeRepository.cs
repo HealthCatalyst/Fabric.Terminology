@@ -10,6 +10,8 @@
     {
         IReadOnlyCollection<IValueSetCode> GetValueSetCodes(Guid valueSetGuid);
 
+        IReadOnlyCollection<IValueSetCode> GetValueSetCodes(IEnumerable<Guid> valueSetGuids);
+
         IReadOnlyCollection<IValueSetCode> GetValueSetCodesByCodeGuid(Guid codeGuid);
 
         Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(

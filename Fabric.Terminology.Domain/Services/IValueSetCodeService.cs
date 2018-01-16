@@ -10,6 +10,8 @@
     {
         IReadOnlyCollection<IValueSetCode> GetValueSetCodes(Guid valueSetGuid);
 
+        IReadOnlyCollection<IValueSetCode> GetValueSetCodes(IEnumerable<Guid> valueSetGuids);
+
         /// <summary>
         ///     Get a collection of value set codes by the codeGuid.
         /// </summary>

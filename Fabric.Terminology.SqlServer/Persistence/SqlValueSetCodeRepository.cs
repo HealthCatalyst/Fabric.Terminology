@@ -46,6 +46,11 @@
                 .ToList();
         }
 
+        public IReadOnlyCollection<IValueSetCode> GetValueSetCodes(IEnumerable<Guid> valueSetGuids)
+        {
+            return this.QueryValueSetCodes(valueSetGuids);
+        }
+
         public IReadOnlyCollection<IValueSetCode> GetValueSetCodesByCodeGuid(Guid codeGuid)
         {
             try
@@ -128,6 +133,30 @@
             catch (Exception ex)
             {
                 this.logger.Error(ex, "Failed to query ValueSetCodes by ValueSetGUID");
+                throw;
+            }
+        }
+
+        private IReadOnlyCollection<IValueSetCode> QueryValueSetCodes(IEnumerable<Guid> valueSetGuids)
+        {
+            try
+            {
+                var setGuids = valueSetGuids as Guid[] ?? valueSetGuids.ToArray();
+                if (!setGuids.Any())
+                {
+                    return new List<IValueSetCode>();
+                }
+
+                var factory = new ValueSetCodeFactory();
+                return this.sharedContext.ValueSetCodes.Where(dto => setGuids.Contains(dto.ValueSetGUID))
+                    .AsNoTracking()
+                    .ToList()
+                    .Select(factory.Build)
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                this.logger.Error(ex, "Failed to query ValueSetCodes given a collection ValueSetGUID");
                 throw;
             }
         }
