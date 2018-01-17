@@ -9,6 +9,7 @@
 
     using Fabric.Terminology.API.Configuration;
     using Fabric.Terminology.API.Models;
+    using Fabric.Terminology.API.Services;
     using Fabric.Terminology.API.Validators;
     using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Exceptions;
@@ -24,6 +25,8 @@
     {
         private readonly IClientTermValueSetService clientTermValueSetService;
 
+        private readonly IClientTermCustomizationService clientTermCustomizationService;
+
         private readonly IValueSetService valueSetService;
 
         private readonly IValueSetSummaryService valueSetSummaryService;
@@ -34,6 +37,7 @@
             IValueSetService valueSetService,
             IValueSetSummaryService valueSetSummaryService,
             IClientTermValueSetService clientTermValueSetService,
+            IClientTermCustomizationService clientTermCustomizationService,
             IAppConfiguration config,
             ILogger logger,
             ValueSetValidator valueSetValidator)
@@ -42,6 +46,7 @@
             this.valueSetService = valueSetService;
             this.valueSetSummaryService = valueSetSummaryService;
             this.clientTermValueSetService = clientTermValueSetService;
+            this.clientTermCustomizationService = clientTermCustomizationService;
             this.valueSetValidator = valueSetValidator;
 
             this.Get("/", _ => this.GetValueSetPage(), null, "GetPaged");
@@ -61,6 +66,8 @@
             this.Post("/copy/", _ => this.CopyValueSet(), null, "CopyValueSet");
 
             this.Post("/", _ => this.AddValueSet(), null, "AddValueSet");
+
+            this.Put("/{valueSetGuid}", parameters => this.UpdateValueSet(parameters.valueSetGuid), null, "UpdateValueSet");
 
             this.Put(
                 "/{valueSetGuid}/statuscode/{statusCode}",
@@ -257,9 +264,7 @@
             {
                 var model = this.Bind<ClientTermValueSetApiModel>();
 
-                // Strategy
-
-                var attempt = this.clientTermValueSetService.Create(model);
+                var attempt = this.clientTermCustomizationService.CreateValueSet(model);
                 if (!attempt.Success || attempt.Result == null)
                 {
                     throw attempt.Exception ?? new ArgumentException("Failed to add value set.");
@@ -281,6 +286,26 @@
             {
                 this.Logger.Error(ex, ex.Message);
                 return this.CreateFailureResponse("Failed to create a value set", HttpStatusCode.InternalServerError);
+            }
+        }
+
+        private object UpdateValueSet(Guid valueSetGuid)
+        {
+            try
+            {
+                var model = this.Bind<ClientTermValueSetApiModel>();
+                var attempt = this.clientTermCustomizationService.UpdateValueSet(valueSetGuid, model);
+                if (!attempt.Success || attempt.Result == null)
+                {
+                    throw attempt.Exception ?? new ArgumentException("Failed to update a value set.");
+                }
+
+                return this.CreateSuccessfulPostResponse(Mapper.Map<IValueSet, ValueSetApiModel>(attempt.Result));
+            }
+            catch (Exception ex)
+            {
+                this.Logger.Error(ex, ex.Message);
+                return this.CreateFailureResponse("Failed to update a value set", HttpStatusCode.InternalServerError);
             }
         }
 

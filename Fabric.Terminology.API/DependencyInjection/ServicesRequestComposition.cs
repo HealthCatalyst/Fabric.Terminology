@@ -2,6 +2,7 @@
 {
     using System;
 
+    using Fabric.Terminology.API.Services;
     using Fabric.Terminology.Domain.DependencyInjection;
     using Fabric.Terminology.Domain.Services;
     using Fabric.Terminology.SqlServer.Persistence.DataContext;
@@ -19,6 +20,7 @@
             container.Register<IValueSetSummaryService, SqlValueSetSummaryService>().AsSingleton();
             container.Register<IValueSetCodeService, SqlValueSetCodeService>().AsSingleton();
             container.Register<IClientTermValueSetService, SqlClientTermValueSetService>().AsSingleton();
+            container.Register<IClientTermCustomizationService, ClientTermCustomizationService>().AsSingleton();
             container.Register<ICodeSystemService, SqlCodeSystemService>().AsSingleton();
             container.Register<ICodeSystemCodeService, SqlCodeSystemCodeService>().AsSingleton();
         }

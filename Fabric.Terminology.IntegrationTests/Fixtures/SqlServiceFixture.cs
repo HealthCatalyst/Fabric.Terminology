@@ -1,5 +1,6 @@
 ﻿namespace Fabric.Terminology.IntegrationTests.Fixtures
 {
+    using Fabric.Terminology.API.Services;
     using Fabric.Terminology.Domain.Persistence;
     using Fabric.Terminology.Domain.Services;
     using Fabric.Terminology.SqlServer.Caching;
@@ -22,6 +23,8 @@
         public IValueSetSummaryService ValueSetSummaryService { get; private set; }
 
         public IClientTermValueSetService ClientTermValueSetService { get; private set; }
+
+        public IClientTermCustomizationService ClientTermCustomizationService { get; private set; }
 
         public ICodeSystemService CodeSystemService { get; private set; }
 
@@ -90,6 +93,12 @@
             this.CodeSystemService = new SqlCodeSystemService(sqlCodeSystemRepository);
 
             this.CodeSystemCodeService = new SqlCodeSystemCodeService(sqlCodeSystemCodeRepository);
+
+            this.ClientTermCustomizationService = new ClientTermCustomizationService(
+                this.CodeSystemCodeService,
+                this.ValueSetCodeService,
+                this.ClientTermValueSetService);
+
         }
     }
 }

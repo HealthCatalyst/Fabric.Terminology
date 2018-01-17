@@ -5,6 +5,7 @@
     using System.Linq;
 
     using Fabric.Terminology.API;
+    using Fabric.Terminology.API.Services;
     using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Services;
@@ -23,10 +24,13 @@
 
         private readonly IClientTermValueSetService clientTermValueSetService;
 
+        private readonly IClientTermCustomizationService clientTermCustomizationService;
+
         public ClientTermValueSetServiceTests(SqlServiceFixture fixture, ITestOutputHelper output)
             : base(output)
         {
             this.clientTermValueSetService = fixture.ClientTermValueSetService;
+            this.clientTermCustomizationService = fixture.ClientTermCustomizationService;
             this.valueSetService = fixture.ValueSetService;
         }
 
@@ -38,7 +42,8 @@
             var apiModel = MockApiModelBuilder.ValueSetCreationApiModel(name, codeCount);
 
             // Act
-            var attempt = this.clientTermValueSetService.Create(apiModel);
+            //var attempt = this.clientTermValueSetService.Create(apiModel);
+            var attempt = this.clientTermCustomizationService.CreateValueSet(apiModel);
 
             // Assert
             attempt.Success.Should().BeTrue();
@@ -59,7 +64,9 @@
             // Arrange
             var expectedCount = initialCodeCount - removeCodeCount;
             var apiModel = MockApiModelBuilder.ValueSetCreationApiModel(name, initialCodeCount);
-            var setup = this.clientTermValueSetService.Create(apiModel);
+           // var setup = this.clientTermValueSetService.Create(apiModel);
+
+            var setup = this.clientTermCustomizationService.CreateValueSet(apiModel);
             setup.Success.Should().BeTrue();
             setup.Result.Should().NotBeNull();
             var valueSet = setup.Result;
@@ -96,7 +103,10 @@
             // Arrange
             var expectedCount = initialCodeCount + addCodeCount;
             var apiModel = MockApiModelBuilder.ValueSetCreationApiModel(name, initialCodeCount);
-            var setup = this.clientTermValueSetService.Create(apiModel);
+
+            //var setup = this.clientTermValueSetService.Create(apiModel);
+            var setup = this.clientTermCustomizationService.CreateValueSet(apiModel);
+
             setup.Success.Should().BeTrue();
             setup.Result.Should().NotBeNull();
             var valueSet = setup.Result;
@@ -133,7 +143,10 @@
             // Arrange
             var expectedCount = initialCodeCount + addCodeCount - removeCodeCount; // no dups
             var apiModel = MockApiModelBuilder.ValueSetCreationApiModel(name, initialCodeCount);
-            var setup = this.clientTermValueSetService.Create(apiModel);
+
+            //var setup = this.clientTermValueSetService.Create(apiModel);
+            var setup = this.clientTermCustomizationService.CreateValueSet(apiModel);
+
             setup.Success.Should().BeTrue();
             setup.Result.Should().NotBeNull();
             var valueSet = setup.Result;
@@ -171,7 +184,9 @@
             // Arrange
             var apiModel = MockApiModelBuilder.ValueSetCreationApiModel(name, codeCount);
 
-            var attempt = this.clientTermValueSetService.Create(apiModel);
+            //var attempt = this.clientTermValueSetService.Create(apiModel);
+            var attempt = this.clientTermCustomizationService.CreateValueSet(apiModel);
+
             attempt.Success.Should().BeTrue();
             attempt.Result.Should().NotBeNull();
 

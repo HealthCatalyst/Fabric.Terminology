@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
 
     using Fabric.Terminology.API.Models;
     using Fabric.Terminology.Domain.Models;
@@ -12,13 +13,21 @@
             string name,
             int codeCount = 10)
         {
+            var instructions = CodeSetCodeApiModelCollection(codeCount)
+                .Select(x => new CodeInstruction
+                {
+                    IdGuid = x.CodeGuid,
+                    InstructionType = CodeInstructionType.Add,
+                    Src = CodeSrc.CodeSystemCode
+                });
+
             return new ClientTermValueSetApiModel
             {
                 Name = name,
                 AuthoringSourceDescription = "Test Authoring Source Description",
                 DefinitionDescription = "Test Purpose Description",
                 SourceDescription = "Test Source Description",
-                CodeSetCodes = CodeSetCodeApiModelCollection(codeCount),
+                CodeInstructions = instructions,
                 VersionDate = DateTime.UtcNow,
                 ClientCode = "UnitTest"
             };
