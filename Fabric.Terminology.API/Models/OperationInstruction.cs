@@ -1,6 +1,6 @@
 ﻿namespace Fabric.Terminology.API.Models
 {
-    public enum CodeInstructionType
+    public enum OperationInstruction
     {
         Add,
         Remove

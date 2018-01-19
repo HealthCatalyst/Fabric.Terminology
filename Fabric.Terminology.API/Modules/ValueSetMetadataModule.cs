@@ -31,11 +31,11 @@
                 typeof(ValueSetCodeApiModel),
                 typeof(ValueSetCodeCountApiModel),
                 typeof(ClientTermValueSetApiModel),
-                typeof(CodeInstruction),
+                typeof(CodeOperation),
                 typeof(ValueSetCopyApiModel),
                 typeof(ValueSetStatus),
-                typeof(CodeSrc),
-                typeof(CodeInstructionType),
+                typeof(CodeOperationSource),
+                typeof(OperationInstruction),
                 typeof(Guid)
                 );
 

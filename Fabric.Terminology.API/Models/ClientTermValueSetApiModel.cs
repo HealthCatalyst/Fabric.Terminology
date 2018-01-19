@@ -8,6 +8,6 @@
 
        // public IEnumerable<CodeSystemCodeApiModel> CodeSetCodes { get; set; }
 
-        public IEnumerable<CodeInstruction> CodeInstructions { get; set; }
+        public IEnumerable<CodeOperation> CodeOperations { get; set; }
     }
 }
