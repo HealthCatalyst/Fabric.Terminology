@@ -140,6 +140,26 @@
                 });
 
             this.RouteDescriber.DescribeRouteWithParams(
+                "PatchValueSet",
+                "Updates a value set",
+                "Updates a value set",
+                new[]
+                {
+                    new HttpResponseMetadata<ValueSetApiModel> { Code = 200, Message = "OK" },
+                    new HttpResponseMetadata { Code = 400, Message = "Bad Request" },
+                    new HttpResponseMetadata { Code = 500, Message = "Internal Server Error" }
+                },
+                new[]
+                {
+                    ParameterFactory.GetValueSetGuid(),
+                    new BodyParameter<ClientTermValueSetApiModel>(modelCatalog) { Required = true, Name = "Model" }
+                },
+                new[]
+                {
+                    TagsFactory.GetValueSetTag()
+                });
+
+            this.RouteDescriber.DescribeRouteWithParams(
                 "ChangeValueSetStatus",
                 "Updates the status of an existing value set",
                 "Updates the status of an existing value set.  Draft may be changed to active.  Active may be changed to Archived.  Archived may be changed to Active.",
