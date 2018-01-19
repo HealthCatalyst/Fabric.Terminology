@@ -67,7 +67,7 @@
 
             this.Post("/", _ => this.AddValueSet(), null, "AddValueSet");
 
-            this.Put("/{valueSetGuid}", parameters => this.UpdateValueSet(parameters.valueSetGuid), null, "UpdateValueSet");
+            this.Patch("/{valueSetGuid}", parameters => this.PatchValueSet(parameters.valueSetGuid), null, "PatchValueSet");
 
             this.Put(
                 "/{valueSetGuid}/statuscode/{statusCode}",
@@ -289,18 +289,34 @@
             }
         }
 
-        private object UpdateValueSet(Guid valueSetGuid)
+        private object PatchValueSet(Guid valueSetGuid)
         {
             try
             {
                 var model = this.Bind<ClientTermValueSetApiModel>();
-                var attempt = this.clientTermCustomizationService.UpdateValueSet(valueSetGuid, model);
-                if (!attempt.Success || attempt.Result == null)
+
+                // Ensure that there are not code operations that reference value set to be patched
+                if (model.CodeOperations.Any(
+                    co => co.Source == CodeOperationSource.ValueSet && co.Value == valueSetGuid))
                 {
-                    throw attempt.Exception ?? new ArgumentException("Failed to update a value set.");
+                    return this.CreateFailureResponse("Request for bulk code operation references the same value set the operation would be applied to.", HttpStatusCode.BadRequest);
                 }
 
-                return this.CreateSuccessfulPostResponse(Mapper.Map<IValueSet, ValueSetApiModel>(attempt.Result));
+                return this.valueSetService.GetValueSet(valueSetGuid)
+                    .Select(vs =>
+                        {
+                            var attempt = this.clientTermCustomizationService.UpdateValueSet(valueSetGuid, model);
+                            if (!attempt.Success || attempt.Result == null)
+                            {
+                                throw attempt.Exception ?? new InvalidOperationException("Failed to patch value set");
+                            }
+
+                            return this.CreateSuccessfulPostResponse(Mapper.Map<IValueSet, ValueSetApiModel>(attempt.Result));
+                        })
+                    .Else(() =>
+                        this.CreateFailureResponse(
+                            $"Could not find ValueSet with id: {valueSetGuid}",
+                            HttpStatusCode.NotFound));
             }
             catch (Exception ex)
             {

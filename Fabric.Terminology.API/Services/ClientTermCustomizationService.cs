@@ -35,22 +35,21 @@
                 return this.clientTermValueSetService.Create(
                     parameters.Name,
                     parameters.ValueSetMeta,
-                    parameters.CodeGuidsToAdd.ToList());
+                    parameters.CodesToAdd.ToList());
             }
 
-            var invalidModel = new InvalidOperationException("Failed to validate ClientTermValueSetApiModel.  Possible duplicate codes detected between add and remove instructions.");
+            var invalidModel = new InvalidOperationException("Failed to validate ClientTermValueSetApiModel. Possible duplicate codes detected between add and remove instructions.");
             return Attempt<IValueSet>.Failed(invalidModel);
         }
 
         public Attempt<IValueSet> UpdateValueSet(Guid valueSetGuid, ClientTermValueSetApiModel model)
         {
             var parameters = this.Build(model);
+            parameters.ValueSetGuid = valueSetGuid;
+
             if (parameters.IsValid())
             {
-                return this.clientTermValueSetService.AddRemoveCodes(
-                    Guid.NewGuid(),
-                    parameters.CodeGuidsToAdd.ToList(),
-                    parameters.CodeGuidsToRemove.ToList());
+                return this.clientTermValueSetService.Patch(parameters);
             }
 
             var invalidModel = new InvalidOperationException("Failed to validate ClientTermValueSetApiModel.  Possible duplicate codes detected between add and remove instructions.");
@@ -58,39 +57,39 @@
         }
 
         private static IEnumerable<Guid> GetIdGuids(
-            IEnumerable<CodeInstruction> codeInstructions,
-            CodeSrc codeSrc,
-            CodeInstructionType codeInstructionType)
+            IEnumerable<CodeOperation> codeInstructions,
+            CodeOperationSource codeOperationSource,
+            OperationInstruction operationInstruction)
         {
-            return codeInstructions.Where(ci => ci.InstructionType == codeInstructionType && ci.Src == codeSrc)
-                .Select(ci => ci.IdGuid);
+            return codeInstructions.Where(ci => ci.Instruction == operationInstruction && ci.Source == codeOperationSource)
+                .Select(ci => ci.Value);
         }
 
-        private ClientTermParameters Build(ClientTermValueSetApiModel model)
+        private ValueSetPatchParameters Build(ClientTermValueSetApiModel model)
         {
-            var codesToAdd = this.GetCodesForInstruction(model, CodeInstructionType.Add);
-            var codesToRemove = this.GetCodesForInstruction(model, CodeInstructionType.Remove);
+            var codesToAdd = this.GetCodesForInstruction(model, OperationInstruction.Add);
+            var codesToRemove = this.GetCodesForInstruction(model, OperationInstruction.Remove);
 
-            return new ClientTermParameters
+            return new ValueSetPatchParameters
             {
                 Name = model.Name,
                 ValueSetMeta = model,
-                CodeGuidsToAdd = codesToAdd,
-                CodeGuidsToRemove = codesToRemove
+                CodesToAdd = codesToAdd,
+                CodesToRemove = codesToRemove
             };
         }
 
         private IEnumerable<ICodeSystemCode> GetCodesForInstruction(
             ClientTermValueSetApiModel model,
-            CodeInstructionType codeInstructionType)
+            OperationInstruction operationInstruction)
         {
             var codes = new List<ICodeSystemCode>();
 
-            var valueSetGuids = GetIdGuids(model.CodeInstructions, CodeSrc.ValueSet, codeInstructionType);
-            var codeGuids = GetIdGuids(model.CodeInstructions, CodeSrc.CodeSystemCode, codeInstructionType);
+            var valueSetGuids = GetIdGuids(model.CodeOperations, CodeOperationSource.ValueSet, operationInstruction);
+            var codeGuids = GetIdGuids(model.CodeOperations, CodeOperationSource.CodeSystemCode, operationInstruction);
 
             codes.AddRange(this.GetCodeSystemCodesByValueSets(valueSetGuids));
-            codes.AddRange(this.GetCodeSystemCodes(codeGuids, codeInstructionType));
+            codes.AddRange(this.GetCodeSystemCodes(codeGuids));
 
             return codes.GroupBy(csc => csc.CodeGuid)
                 .Select(group => group.FirstOrDefault())
@@ -115,28 +114,10 @@
         }
 
         private IEnumerable<ICodeSystemCode> GetCodeSystemCodes(
-            IEnumerable<Guid> codeGuids,
-            CodeInstructionType codeInstructionType)
+            IEnumerable<Guid> codeGuids)
         {
             var guids = codeGuids as Guid[] ?? codeGuids.ToArray();
             return guids.Any() ? this.codeSystemCodeService.GetCodeSystemCodes(guids) : new List<ICodeSystemCode>();
-        }
-
-        private class ClientTermParameters
-        {
-            public string Name { get; set; }
-
-            public IValueSetMeta ValueSetMeta { get; set; }
-
-            public IEnumerable<ICodeSystemCode> CodeGuidsToAdd { get; set; } = new List<ICodeSystemCode>();
-
-            public IEnumerable<ICodeSystemCode> CodeGuidsToRemove { get; set; } = new List<ICodeSystemCode>();
-
-            public bool IsValid()
-            {
-                return !this.CodeGuidsToAdd.Select(cta => cta.CodeGuid)
-                           .Any(ctag => this.CodeGuidsToRemove.Select(ctr => ctr.CodeGuid).Contains(ctag));
-            }
         }
     }
 }

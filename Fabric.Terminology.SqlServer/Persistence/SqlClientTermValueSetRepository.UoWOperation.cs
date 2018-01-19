@@ -98,7 +98,6 @@
             IEnumerable<ValueSetCodeDto> allCodeDtos)
         {
             var originalCounts = this.uowManager.GetCodeCountDtos(valueSetGuid);
-            var existingCodeSystems = originalCounts.Select(c => c.CodeSystemGUID);
 
             var allCodesByCodeSystem = allCodeDtos.ToLookup(c => c.CodeSystemGuid);
             var recounts = (from g in allCodesByCodeSystem
@@ -121,7 +120,7 @@
 
             // finally ensure that any existing counts that were not in the new counts are removed
             // e.g. all codes from a particular code system were removed
-            var removers = originalCounts.Where(oc => !existingCodeSystems.Contains(oc.CodeSystemGUID));
+            var removers = originalCounts.Where(oc => !allCodesByCodeSystem.Contains(oc.CodeSystemGUID));
 
             operations.AddRange(
                 removers.Select(r => new Operation { Value = r, OperationType = OperationType.Delete }));

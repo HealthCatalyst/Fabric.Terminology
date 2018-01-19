@@ -32,11 +32,7 @@
 
         public static event EventHandler<IValueSet> Created;
 
-        public static event EventHandler<IValueSet> Saving;
-
         public static event EventHandler<IValueSet> Saved;
-
-        public static event EventHandler<IValueSet> Deleting;
 
         public static event EventHandler<IValueSet> Deleted;
 
@@ -78,10 +74,30 @@
             return Attempt<IValueSet>.Successful(valueSet);
         }
 
+        public Attempt<IValueSet> Patch(ValueSetPatchParameters parameters)
+        {
+            return this.clientTermValueSetRepository.GetValueSet(parameters.ValueSetGuid)
+                .Select(
+                    vs =>
+                        {
+                            if (!vs.Name.Equals(parameters.Name, StringComparison.OrdinalIgnoreCase) && !this.NameIsUnique(parameters.Name))
+                            {
+                                return Attempt<IValueSet>.Failed(new ArgumentException($"A value set named '{parameters.Name}' already exists."));
+                            }
+
+                            if (!this.ValidateValueSetMeta(parameters.ValueSetMeta, out var msg))
+                            {
+                                return Attempt<IValueSet>.Failed(new ArgumentException(msg));
+                            }
+
+                            return this.clientTermValueSetRepository.Patch(parameters);
+                        })
+                .Else(Attempt<IValueSet>
+                        .Failed(new InvalidOperationException(FormattableString.Invariant($"ValueSet with with ValueSetGUID {parameters.ValueSetGuid} was not found."))));
+        }
+
         public void SaveAsNew(IValueSet valueSet)
         {
-            Saving?.Invoke(this, valueSet);
-
             var attempt = this.clientTermValueSetRepository.Add(valueSet);
             if (attempt.Success && attempt.Result != null)
             {
@@ -120,7 +136,13 @@
 
         public Attempt<IValueSet> ChangeStatus(Guid valueSetGuid, ValueSetStatus newStatus)
         {
-            return this.clientTermValueSetRepository.ChangeStatus(valueSetGuid, newStatus);
+            var attempt = this.clientTermValueSetRepository.ChangeStatus(valueSetGuid, newStatus);
+            if (attempt.Success)
+            {
+                Saved?.Invoke(this, attempt.Result);
+            }
+
+            return attempt;
         }
 
         public Attempt<IValueSet> AddRemoveCodes(
@@ -131,15 +153,20 @@
             var listToAdd = codesToAdd.ToList();
             var listToRemove = codesToRemove.ToList();
             var duplicates = GetIntersectingCodeGuids(listToAdd, listToRemove);
-            return !duplicates.Any()
+            var attempt = !duplicates.Any()
                        ? this.clientTermValueSetRepository.AddRemoveCodes(valueSetGuid, listToAdd, listToRemove)
                        : Attempt<IValueSet>.Failed(new InvalidOperationException($"One or more codes were being attempted to be both add and removed to the value set with ValueSetGuid {valueSetGuid}.  Offending CodeGuid(s) {string.Join(",", duplicates)}"));
+
+            if (attempt.Success)
+            {
+                Saved?.Invoke(this, attempt.Result);
+            }
+
+            return attempt;
         }
 
         public void Delete(IValueSet valueSet)
         {
-            Deleting?.Invoke(this, valueSet);
-
             this.clientTermValueSetRepository.Delete(valueSet);
 
             Deleted?.Invoke(this, valueSet);

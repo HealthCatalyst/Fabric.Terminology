@@ -14,6 +14,8 @@
 
         Attempt<IValueSet> Add(IValueSet valueSet);
 
+        Attempt<IValueSet> Patch(ValueSetPatchParameters parameters);
+
         Attempt<IValueSet> AddRemoveCodes(
             Guid valueSetGuid,
             IReadOnlyCollection<ICodeSystemCode> codesToAdd,

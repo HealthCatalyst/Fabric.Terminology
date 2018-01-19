@@ -91,31 +91,68 @@ namespace Fabric.Terminology.SqlServer.Persistence
                         new ValueSetNotFoundException($"Could not retrieve newly saved ValueSet {valueSetGuid}")));
         }
 
+        public Attempt<IValueSet> Patch(ValueSetPatchParameters parameters)
+        {
+            return this.AttemptValueSetAlteration(parameters.ValueSetGuid, PatchAlteration);
+
+            void PatchAlteration(ValueSetDescriptionBaseDto vsd)
+            {
+                if (GetValueSetStatus(vsd.StatusCD) != ValueSetStatus.Draft)
+                {
+                    throw new ValueSetOperationException(
+                        $"Could not add or remove codes from ValueSet.  ValueSet must have a status of `{ValueSetStatus.Draft.ToString()}`.  ValueSet had a status of {vsd.StatusCD}");
+                }
+
+                vsd.SourceDSC = parameters.ValueSetMeta.SourceDescription;
+                vsd.ValueSetNM = parameters.Name;
+                vsd.AuthorityDSC = parameters.ValueSetMeta.AuthoringSourceDescription;
+                vsd.ClientCD = parameters.ValueSetMeta.ClientCode;
+                vsd.DefinitionDSC = parameters.ValueSetMeta.DefinitionDescription;
+
+                var updateOp = new Operation { OperationType = OperationType.Update, Value = vsd };
+
+                var operations = new List<Operation> { updateOp };
+
+                var work = this.PrepareAddRemoveCodes(
+                    parameters.ValueSetGuid,
+                    parameters.CodesToAdd.ToList(),
+                    parameters.CodesToRemove.ToList());
+
+                operations.AddRange(work.Operations);
+
+                var uow = this.uowManager.CreateUnitOfWork(operations);
+                uow.Commit();
+
+                var bulkInsertUow = this.uowManager.CreateBulkCopyUnitOfWork(work.NewCodeDtos);
+                bulkInsertUow.Commit();
+            }
+        }
+
         public Attempt<IValueSet> AddRemoveCodes(
             Guid valueSetGuid,
             IReadOnlyCollection<ICodeSystemCode> codesToAdd,
             IReadOnlyCollection<ICodeSystemCode> codesToRemove)
         {
-            return this.AttemptValueSetAlteration(valueSetGuid, AddRemoveCodesAlteration);
+            return this.AttemptValueSetAlteration(valueSetGuid, Alteration);
 
-            void AddRemoveCodesAlteration(ValueSetDescriptionBaseDto vsd)
+            void Alteration(ValueSetDescriptionBaseDto vsd)
             {
-                 if (GetValueSetStatus(vsd.StatusCD) != ValueSetStatus.Draft)
-                 {
-                     throw new ValueSetOperationException(
-                         $"Could not add or remove codes from ValueSet.  ValueSet must have a status of `{ValueSetStatus.Draft.ToString()}`.  ValueSet had a status of {vsd.StatusCD}");
-                 }
+                if (GetValueSetStatus(vsd.StatusCD) != ValueSetStatus.Draft)
+                {
+                    throw new ValueSetOperationException(
+                        $"Could not add or remove codes from ValueSet.  ValueSet must have a status of `{ValueSetStatus.Draft.ToString()}`.  ValueSet had a status of {vsd.StatusCD}");
+                }
 
-                    var work = this.PrepareAddRemoveCodes(
-                        valueSetGuid,
-                        codesToAdd.ToList(),
-                        codesToRemove.ToList());
+                var work = this.PrepareAddRemoveCodes(
+                    valueSetGuid,
+                    codesToAdd.ToList(),
+                    codesToRemove.ToList());
 
-                    var uow = this.uowManager.CreateUnitOfWork(work.Operations);
-                    uow.Commit();
+                var uow = this.uowManager.CreateUnitOfWork(work.Operations);
+                uow.Commit();
 
-                    var bulkInsertUow = this.uowManager.CreateBulkCopyUnitOfWork(work.NewCodeDtos);
-                    bulkInsertUow.Commit();
+                var bulkInsertUow = this.uowManager.CreateBulkCopyUnitOfWork(work.NewCodeDtos);
+                bulkInsertUow.Commit();
             }
         }
 

@@ -14,11 +14,11 @@
             int codeCount = 10)
         {
             var instructions = CodeSetCodeApiModelCollection(codeCount)
-                .Select(x => new CodeInstruction
+                .Select(x => new CodeOperation
                 {
-                    IdGuid = x.CodeGuid,
-                    InstructionType = CodeInstructionType.Add,
-                    Src = CodeSrc.CodeSystemCode
+                    Value = x.CodeGuid,
+                    Instruction = OperationInstruction.Add,
+                    Source = CodeOperationSource.CodeSystemCode
                 });
 
             return new ClientTermValueSetApiModel
@@ -27,7 +27,7 @@
                 AuthoringSourceDescription = "Test Authoring Source Description",
                 DefinitionDescription = "Test Purpose Description",
                 SourceDescription = "Test Source Description",
-                CodeInstructions = instructions,
+                CodeOperations = instructions,
                 VersionDate = DateTime.UtcNow,
                 ClientCode = "UnitTest"
             };
