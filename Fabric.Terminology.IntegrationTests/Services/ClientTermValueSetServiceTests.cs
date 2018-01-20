@@ -5,6 +5,7 @@
     using System.Linq;
 
     using Fabric.Terminology.API;
+    using Fabric.Terminology.API.Services;
     using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Services;
@@ -23,10 +24,13 @@
 
         private readonly IClientTermValueSetService clientTermValueSetService;
 
+        private readonly IClientTermCustomizationService clientTermCustomizationService;
+
         public ClientTermValueSetServiceTests(SqlServiceFixture fixture, ITestOutputHelper output)
             : base(output)
         {
             this.clientTermValueSetService = fixture.ClientTermValueSetService;
+            this.clientTermCustomizationService = fixture.ClientTermCustomizationService;
             this.valueSetService = fixture.ValueSetService;
         }
 
@@ -38,13 +42,14 @@
             var apiModel = MockApiModelBuilder.ValueSetCreationApiModel(name, codeCount);
 
             // Act
-            var attempt = this.clientTermValueSetService.Create(apiModel);
+            //var attempt = this.clientTermValueSetService.Create(apiModel);
+            var attempt = this.clientTermCustomizationService.CreateValueSet(apiModel);
 
             // Assert
             attempt.Success.Should().BeTrue();
-            attempt.Result.HasValue.Should().BeTrue();
+            attempt.Result.Should().NotBeNull();
 
-            var vs = attempt.Result.Single();
+            var vs = attempt.Result;
 
             vs.ValueSetCodes.Should().NotBeEmpty();
             vs.CodeCounts.Should().NotBeEmpty();
@@ -59,10 +64,12 @@
             // Arrange
             var expectedCount = initialCodeCount - removeCodeCount;
             var apiModel = MockApiModelBuilder.ValueSetCreationApiModel(name, initialCodeCount);
-            var setup = this.clientTermValueSetService.Create(apiModel);
+           // var setup = this.clientTermValueSetService.Create(apiModel);
+
+            var setup = this.clientTermCustomizationService.CreateValueSet(apiModel);
             setup.Success.Should().BeTrue();
-            setup.Result.HasValue.Should().BeTrue();
-            var valueSet = setup.Result.Single();
+            setup.Result.Should().NotBeNull();
+            var valueSet = setup.Result;
             this.clientTermValueSetService.SaveAsNew(valueSet);
 
             // Act
@@ -73,7 +80,7 @@
                                 valueSet.ValueSetGuid,
                                 new List<ICodeSystemCode>(),
                                 removers))
-                        .Result.Single();
+                        .Result;
 
             // Assert
             result.ValueSetCodes.Count.Should().Be(expectedCount);
@@ -96,10 +103,13 @@
             // Arrange
             var expectedCount = initialCodeCount + addCodeCount;
             var apiModel = MockApiModelBuilder.ValueSetCreationApiModel(name, initialCodeCount);
-            var setup = this.clientTermValueSetService.Create(apiModel);
+
+            //var setup = this.clientTermValueSetService.Create(apiModel);
+            var setup = this.clientTermCustomizationService.CreateValueSet(apiModel);
+
             setup.Success.Should().BeTrue();
-            setup.Result.HasValue.Should().BeTrue();
-            var valueSet = setup.Result.Single();
+            setup.Result.Should().NotBeNull();
+            var valueSet = setup.Result;
             this.clientTermValueSetService.SaveAsNew(valueSet);
 
             var codesToAdd = MockApiModelBuilder.CodeSetCodeApiModelCollection(addCodeCount);
@@ -110,7 +120,7 @@
                         valueSet.ValueSetGuid,
                         codesToAdd,
                         new List<ICodeSystemCode>()))
-                .Result.Single();
+                .Result;
 
             // Assert
             result.ValueSetCodes.Count.Should().Be(expectedCount);
@@ -133,10 +143,13 @@
             // Arrange
             var expectedCount = initialCodeCount + addCodeCount - removeCodeCount; // no dups
             var apiModel = MockApiModelBuilder.ValueSetCreationApiModel(name, initialCodeCount);
-            var setup = this.clientTermValueSetService.Create(apiModel);
+
+            //var setup = this.clientTermValueSetService.Create(apiModel);
+            var setup = this.clientTermCustomizationService.CreateValueSet(apiModel);
+
             setup.Success.Should().BeTrue();
-            setup.Result.HasValue.Should().BeTrue();
-            var valueSet = setup.Result.Single();
+            setup.Result.Should().NotBeNull();
+            var valueSet = setup.Result;
             this.clientTermValueSetService.SaveAsNew(valueSet);
 
             var removers = valueSet.ValueSetCodes.Batch(removeCodeCount).First();
@@ -147,7 +160,7 @@
                     valueSet.ValueSetGuid,
                     codesToAdd,
                     removers))
-                .Result.Single();
+                .Result;
 
             // Assert
             result.ValueSetCodes.Count.Should().Be(expectedCount);
@@ -171,11 +184,13 @@
             // Arrange
             var apiModel = MockApiModelBuilder.ValueSetCreationApiModel(name, codeCount);
 
-            var attempt = this.clientTermValueSetService.Create(apiModel);
-            attempt.Success.Should().BeTrue();
-            attempt.Result.HasValue.Should().BeTrue();
+            //var attempt = this.clientTermValueSetService.Create(apiModel);
+            var attempt = this.clientTermCustomizationService.CreateValueSet(apiModel);
 
-            var vs = attempt.Result.Single();
+            attempt.Success.Should().BeTrue();
+            attempt.Result.Should().NotBeNull();
+
+            var vs = attempt.Result;
 
             // Act
             this.Profiler.ExecuteTimed(() => this.clientTermValueSetService.SaveAsNew(vs));
@@ -209,7 +224,8 @@
 
             // Assert
             attempt.Success.Should().BeTrue();
-            var copy = attempt.Result.Single();
+            attempt.Result.Should().NotBeNull();
+            var copy = attempt.Result;
             copy.OriginGuid.Should().Be(valueSet.ValueSetGuid);
             copy.ValueSetCodes.Count.Should().Be(valueSet.ValueSetCodes.Count);
             copy.IsCustom.Should().BeTrue();

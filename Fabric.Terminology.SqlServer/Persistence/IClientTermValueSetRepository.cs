@@ -14,10 +14,14 @@
 
         Attempt<IValueSet> Add(IValueSet valueSet);
 
+        Attempt<IValueSet> Patch(ValueSetPatchParameters parameters);
+
         Attempt<IValueSet> AddRemoveCodes(
             Guid valueSetGuid,
-            IEnumerable<ICodeSystemCode> codesToAdd,
-            IEnumerable<ICodeSystemCode> codesToRemove);
+            IReadOnlyCollection<ICodeSystemCode> codesToAdd,
+            IReadOnlyCollection<ICodeSystemCode> codesToRemove);
+
+        Attempt<IValueSet> ChangeStatus(Guid valueSetGuid, ValueSetStatus newStatus);
 
         void Delete(IValueSet valueSet);
     }

@@ -10,6 +10,7 @@ namespace Fabric.Terminology.SqlServer.Persistence
     using Fabric.Terminology.Domain.Exceptions;
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence;
+    using Fabric.Terminology.Domain.Services;
     using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Models.Dto;
     using Fabric.Terminology.SqlServer.Persistence.Factories;
@@ -25,15 +26,19 @@ namespace Fabric.Terminology.SqlServer.Persistence
 
         private readonly IClientTermValueUnitOfWorkManager uowManager;
 
+        private readonly IValueSetUpdateValidationPolicy valueSetUpdateValidationPolicy;
+
         private readonly IClientTermCacheManager cacheManager;
 
         public SqlClientTermValueSetRepository(
             ILogger logger,
             IClientTermValueUnitOfWorkManager uowManager,
+            IValueSetUpdateValidationPolicy valueSetUpdateValidationPolicy,
             IClientTermCacheManager cacheManager)
         {
             this.logger = logger;
             this.uowManager = uowManager;
+            this.valueSetUpdateValidationPolicy = valueSetUpdateValidationPolicy;
             this.cacheManager = cacheManager;
         }
 
@@ -86,46 +91,99 @@ namespace Fabric.Terminology.SqlServer.Persistence
                         new ValueSetNotFoundException($"Could not retrieve newly saved ValueSet {valueSetGuid}")));
         }
 
+        public Attempt<IValueSet> Patch(ValueSetPatchParameters parameters)
+        {
+            return this.AttemptValueSetAlteration(parameters.ValueSetGuid, PatchAlteration);
+
+            void PatchAlteration(ValueSetDescriptionBaseDto vsd)
+            {
+                if (GetValueSetStatus(vsd.StatusCD) != ValueSetStatus.Draft)
+                {
+                    throw new ValueSetOperationException(
+                        $"Could not add or remove codes from ValueSet.  ValueSet must have a status of `{ValueSetStatus.Draft.ToString()}`.  ValueSet had a status of {vsd.StatusCD}");
+                }
+
+                vsd.SourceDSC = parameters.ValueSetMeta.SourceDescription;
+                vsd.ValueSetNM = parameters.Name;
+                vsd.AuthorityDSC = parameters.ValueSetMeta.AuthoringSourceDescription;
+                vsd.ClientCD = parameters.ValueSetMeta.ClientCode;
+                vsd.DefinitionDSC = parameters.ValueSetMeta.DefinitionDescription;
+
+                var updateOp = new Operation { OperationType = OperationType.Update, Value = vsd };
+
+                var operations = new List<Operation> { updateOp };
+
+                var work = this.PrepareAddRemoveCodes(
+                    parameters.ValueSetGuid,
+                    parameters.CodesToAdd.ToList(),
+                    parameters.CodesToRemove.ToList());
+
+                operations.AddRange(work.Operations);
+
+                var uow = this.uowManager.CreateUnitOfWork(operations);
+                uow.Commit();
+
+                var bulkInsertUow = this.uowManager.CreateBulkCopyUnitOfWork(work.NewCodeDtos);
+                bulkInsertUow.Commit();
+            }
+        }
+
         public Attempt<IValueSet> AddRemoveCodes(
             Guid valueSetGuid,
-            IEnumerable<ICodeSystemCode> codesToAdd,
-            IEnumerable<ICodeSystemCode> codesToRemove)
+            IReadOnlyCollection<ICodeSystemCode> codesToAdd,
+            IReadOnlyCollection<ICodeSystemCode> codesToRemove)
         {
-            return this.uowManager.GetValueSetDescriptionDto(valueSetGuid)
-                .Select(vsd =>
+            return this.AttemptValueSetAlteration(valueSetGuid, Alteration);
+
+            void Alteration(ValueSetDescriptionBaseDto vsd)
+            {
+                if (GetValueSetStatus(vsd.StatusCD) != ValueSetStatus.Draft)
                 {
-                    if (vsd.StatusCD != ValueSetStatus.Draft.ToString())
-                    {
-                        return NotFoundAttempt();
-                    }
+                    throw new ValueSetOperationException(
+                        $"Could not add or remove codes from ValueSet.  ValueSet must have a status of `{ValueSetStatus.Draft.ToString()}`.  ValueSet had a status of {vsd.StatusCD}");
+                }
 
-                    var work = this.PrepareAddRemoveCodes(
-                        valueSetGuid,
-                        codesToAdd.ToList(),
-                        codesToRemove.ToList());
+                var work = this.PrepareAddRemoveCodes(
+                    valueSetGuid,
+                    codesToAdd.ToList(),
+                    codesToRemove.ToList());
 
-                    var uow = this.uowManager.CreateUnitOfWork(work.Operations);
-                    uow.Commit();
+                var uow = this.uowManager.CreateUnitOfWork(work.Operations);
+                uow.Commit();
 
-                    var bulkInsertUow = this.uowManager.CreateBulkCopyUnitOfWork(work.NewCodeDtos);
-                    bulkInsertUow.Commit();
+                var bulkInsertUow = this.uowManager.CreateBulkCopyUnitOfWork(work.NewCodeDtos);
+                bulkInsertUow.Commit();
+            }
+        }
 
-                    this.cacheManager.Clear(valueSetGuid);
+        public Attempt<IValueSet> ChangeStatus(Guid valueSetGuid, ValueSetStatus newStatus)
+        {
+            return this.AttemptValueSetAlteration(valueSetGuid, ChangeStatusAlteration);
 
-                    return this.GetValueSet(valueSetGuid)
-                        .Select(Attempt<IValueSet>.Successful)
-                        .Else(() => Attempt<IValueSet>.Failed(
-                            new ValueSetNotFoundException("Could not retrieved updated ValueSet")));
+            void ChangeStatusAlteration(ValueSetDescriptionBaseDto vsd)
+            {
+                var currentStatus = GetValueSetStatus(vsd.StatusCD);
+                if (!this.valueSetUpdateValidationPolicy.CanChangeStatus(currentStatus, newStatus))
+                {
+                    throw new ValueSetOperationException($"ValueSet status policy does not allow changing the status of a ValueSet from {currentStatus.ToString()} to {newStatus.ToString()}");
+                }
 
-                })
-                .Else(NotFoundAttempt);
-
-            Attempt<IValueSet> NotFoundAttempt() =>
-                Attempt<IValueSet>.Failed(new ValueSetNotFoundException($"A value set in 'Draft' status with ValueSetGuid {valueSetGuid} could not be found."));
+                vsd.StatusCD = newStatus.ToString();
+                var operation = new Operation { OperationType = OperationType.Update, Value = vsd };
+                var uow = this.uowManager.CreateUnitOfWork(operation);
+                uow.Commit();
+            }
         }
 
         public void Delete(IValueSet valueSet)
         {
+            if (!this.valueSetUpdateValidationPolicy.CanBeDeleted(valueSet))
+            {
+                var statusEx = new ValueSetOperationException($"Could not delete ValueSet with ID {valueSet.ValueSetGuid}.  ValueSet status must be `{ValueSetStatus.Draft.ToString()}`, found: {valueSet.StatusCode.ToString()}");
+                this.logger.Error(statusEx, "Failed to delete custom ValueSet.");
+                throw statusEx;
+            }
+
             using (var transaction = this.uowManager.Context.Database.BeginTransaction())
             {
                 try
@@ -153,6 +211,38 @@ namespace Fabric.Terminology.SqlServer.Persistence
 
         private static bool EnsureIsNew(IValueSet valueSet) =>
             valueSet.IsCustom && valueSet.IsLatestVersion && valueSet.ValueSetGuid.Equals(Guid.Empty);
+
+        private static ValueSetStatus GetValueSetStatus(string statusString) =>
+            (ValueSetStatus)Enum.Parse(typeof(ValueSetStatus), statusString, true);
+
+        private Attempt<IValueSet> AttemptValueSetAlteration(
+            Guid valueSetGuid,
+            Action<ValueSetDescriptionBaseDto> doAlteration)
+        {
+            return this.uowManager.GetValueSetDescriptionDto(valueSetGuid)
+                .Select(vsd =>
+                    {
+                        try
+                        {
+                            doAlteration(vsd);
+
+                            this.cacheManager.Clear(valueSetGuid);
+
+                            return this.GetValueSet(valueSetGuid)
+                                .Select(Attempt<IValueSet>.Successful)
+                                .Else(() => Attempt<IValueSet>.Failed(
+                                    new ValueSetNotFoundException($"Could not retrieve updated ValueSet with ID {valueSetGuid}")));
+                        }
+                        catch (Exception ex)
+                        {
+                            return Attempt<IValueSet>.Failed(ex);
+                        }
+                    })
+                .Else(NotFoundAttempt);
+
+            Attempt<IValueSet> NotFoundAttempt() =>
+                Attempt<IValueSet>.Failed(new ValueSetNotFoundException($"A value set in 'Draft' status with ValueSetGuid {valueSetGuid} could not be found."));
+        }
 
         private IReadOnlyCollection<IValueSetCode> GetCodes(Guid valueSetGuid)
         {

@@ -22,6 +22,11 @@
             return this.valueSetCodeRepository.GetValueSetCodes(valueSetGuid);
         }
 
+        public IReadOnlyCollection<IValueSetCode> GetValueSetCodes(IEnumerable<Guid> valueSetGuids)
+        {
+            return this.valueSetCodeRepository.GetValueSetCodes(valueSetGuids);
+        }
+
         public IReadOnlyCollection<IValueSetCode> GetValueSetCodesByCodeGuid(Guid codeGuid)
         {
             return this.valueSetCodeRepository.GetValueSetCodesByCodeGuid(codeGuid);

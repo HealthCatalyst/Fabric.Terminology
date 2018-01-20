@@ -3,7 +3,6 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Net;
 
     using CallMeMaybe;
 
@@ -55,6 +54,16 @@
             var dups = codesToAdd.Where(code => removeCodeGuids.Contains(code.CodeGuid))
                 .Select(code => code.CodeGuid)
                 .ToList();
+
+            if (dups.Any())
+            {
+                var dupException = new InvalidOperationException($"Attempt to both Add and Remove duplicate {dups.Count} codes to value set with id: {valueSetGuid}");
+                this.logger.Error(dupException, "Cannot add and remove duplicate codes");
+
+                // throw early
+                throw dupException;
+            }
+
             var codeDeletes = codesToRemove.Where(code => !dups.Contains(code.CodeGuid)).ToList();
 
             var batchInsertDtos = codesToAdd.Where(code => !dups.Contains(code.CodeGuid))
@@ -89,7 +98,6 @@
             IEnumerable<ValueSetCodeDto> allCodeDtos)
         {
             var originalCounts = this.uowManager.GetCodeCountDtos(valueSetGuid);
-            var existingCodeSystems = originalCounts.Select(c => c.CodeSystemGUID);
 
             var allCodesByCodeSystem = allCodeDtos.ToLookup(c => c.CodeSystemGuid);
             var recounts = (from g in allCodesByCodeSystem
@@ -112,7 +120,7 @@
 
             // finally ensure that any existing counts that were not in the new counts are removed
             // e.g. all codes from a particular code system were removed
-            var removers = originalCounts.Where(oc => !existingCodeSystems.Contains(oc.CodeSystemGUID));
+            var removers = originalCounts.Where(oc => !allCodesByCodeSystem.Contains(oc.CodeSystemGUID));
 
             operations.AddRange(
                 removers.Select(r => new Operation { Value = r, OperationType = OperationType.Delete }));

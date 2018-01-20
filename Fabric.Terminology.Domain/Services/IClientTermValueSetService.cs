@@ -11,16 +11,17 @@
 
         Attempt<IValueSet> Create(string name, IValueSetMeta meta, IReadOnlyCollection<ICodeSystemCode> codeSetCodes);
 
+        Attempt<IValueSet> Patch(ValueSetPatchParameters parameters);
+
         /// <summary>
         ///     Saves a <see cref="IValueSet" /> as a new value set
         /// </summary>
         /// <param name="valueSet">The <see cref="IValueSet" /> to be saved</param>
-        /// <remarks>
-        ///     At this point, we can only save "new" value sets.  Updates are out of scope at the moment - To be discussed.
-        /// </remarks>
         void SaveAsNew(IValueSet valueSet);
 
         Attempt<IValueSet> Copy(IValueSet originalValueSet, string newName, IValueSetMeta meta);
+
+        Attempt<IValueSet> ChangeStatus(Guid valueSetGuid, ValueSetStatus newStatus);
 
         Attempt<IValueSet> AddRemoveCodes(
             Guid valueSetGuid,

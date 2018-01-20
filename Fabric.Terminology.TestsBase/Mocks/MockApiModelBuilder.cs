@@ -2,24 +2,34 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
 
     using Fabric.Terminology.API.Models;
     using Fabric.Terminology.Domain.Models;
 
     public class MockApiModelBuilder
     {
-        public static ValueSetCreationApiModel ValueSetCreationApiModel(
+        public static ClientTermValueSetApiModel ValueSetCreationApiModel(
             string name,
             int codeCount = 10)
         {
-            return new ValueSetCreationApiModel
+            var instructions = CodeSetCodeApiModelCollection(codeCount)
+                .Select(x => new CodeOperation
+                {
+                    Value = x.CodeGuid,
+                    Instruction = OperationInstruction.Add,
+                    Source = CodeOperationSource.CodeSystemCode
+                });
+
+            return new ClientTermValueSetApiModel
             {
                 Name = name,
                 AuthoringSourceDescription = "Test Authoring Source Description",
                 DefinitionDescription = "Test Purpose Description",
                 SourceDescription = "Test Source Description",
-                CodeSetCodes = CodeSetCodeApiModelCollection(codeCount),
-                VersionDate = DateTime.UtcNow
+                CodeOperations = instructions,
+                VersionDate = DateTime.UtcNow,
+                ClientCode = "UnitTest"
             };
         }
 

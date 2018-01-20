@@ -9,6 +9,7 @@
 
     using Fabric.Terminology.API.Configuration;
     using Fabric.Terminology.API.Models;
+    using Fabric.Terminology.API.Services;
     using Fabric.Terminology.API.Validators;
     using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Exceptions;
@@ -24,6 +25,8 @@
     {
         private readonly IClientTermValueSetService clientTermValueSetService;
 
+        private readonly IClientTermCustomizationService clientTermCustomizationService;
+
         private readonly IValueSetService valueSetService;
 
         private readonly IValueSetSummaryService valueSetSummaryService;
@@ -34,6 +37,7 @@
             IValueSetService valueSetService,
             IValueSetSummaryService valueSetSummaryService,
             IClientTermValueSetService clientTermValueSetService,
+            IClientTermCustomizationService clientTermCustomizationService,
             IAppConfiguration config,
             ILogger logger,
             ValueSetValidator valueSetValidator)
@@ -42,6 +46,7 @@
             this.valueSetService = valueSetService;
             this.valueSetSummaryService = valueSetSummaryService;
             this.clientTermValueSetService = clientTermValueSetService;
+            this.clientTermCustomizationService = clientTermCustomizationService;
             this.valueSetValidator = valueSetValidator;
 
             this.Get("/", _ => this.GetValueSetPage(), null, "GetPaged");
@@ -58,9 +63,19 @@
 
             this.Post("/search/", _ => this.Search(), null, "Search");
 
+            this.Post("/copy/", _ => this.CopyValueSet(), null, "CopyValueSet");
+
             this.Post("/", _ => this.AddValueSet(), null, "AddValueSet");
 
-            // this.Delete("/{valueSetGuid}", parameters => this.DeleteValueSet(parameters), null, "DeleteValueSet");
+            this.Patch("/{valueSetGuid}", parameters => this.PatchValueSet(parameters.valueSetGuid), null, "PatchValueSet");
+
+            this.Put(
+                "/{valueSetGuid}/statuscode/{statusCode}",
+                parameters => this.ChangeStatus(parameters.valueSetGuid, parameters.statusCode),
+                null,
+                "ChangeValueSetStatus");
+
+            this.Delete("/{valueSetGuid}", parameters => this.DeleteValueSet(parameters.valueSetGuid), null, "DeleteValueSet");
         }
 
         private static ValueSetApiModel MapToValueSetApiModel(IValueSet vs, IReadOnlyCollection<Guid> codeSystemGuids)
@@ -247,16 +262,15 @@
         {
             try
             {
-                var model = this.Bind<ValueSetCreationApiModel>();
-                var attempt = this.clientTermValueSetService.Create(model);
-                if (!attempt.Success || !attempt.Result.HasValue)
+                var model = this.Bind<ClientTermValueSetApiModel>();
+
+                var attempt = this.clientTermCustomizationService.CreateValueSet(model);
+                if (!attempt.Success || attempt.Result == null)
                 {
-                    throw attempt.Exception.HasValue
-                              ? attempt.Exception.Single()
-                              : new ArgumentException("Failed to add value set.");
+                    throw attempt.Exception ?? new ArgumentException("Failed to add value set.");
                 }
 
-                var valueSet = attempt.Result.Single();
+                var valueSet = attempt.Result;
                 var validationResult = this.valueSetValidator.Validate(valueSet);
                 if (validationResult.IsValid)
                 {
@@ -275,9 +289,134 @@
             }
         }
 
-        private object DeleteValueSet(dynamic parameters)
+        private object PatchValueSet(Guid valueSetGuid)
         {
-            return this.CreateFailureResponse("Not Implemented", HttpStatusCode.NotImplemented);
+            try
+            {
+                var model = this.Bind<ClientTermValueSetApiModel>();
+
+                // Ensure that there are not code operations that reference value set to be patched
+                if (model.CodeOperations.Any(
+                    co => co.Source == CodeOperationSource.ValueSet && co.Value == valueSetGuid))
+                {
+                    return this.CreateFailureResponse("Request for bulk code operation references the same value set the operation would be applied to.", HttpStatusCode.BadRequest);
+                }
+
+                return this.valueSetService.GetValueSet(valueSetGuid)
+                    .Select(vs =>
+                        {
+                            var attempt = this.clientTermCustomizationService.UpdateValueSet(valueSetGuid, model);
+                            if (!attempt.Success || attempt.Result == null)
+                            {
+                                throw attempt.Exception ?? new InvalidOperationException("Failed to patch value set");
+                            }
+
+                            return this.CreateSuccessfulPostResponse(Mapper.Map<IValueSet, ValueSetApiModel>(attempt.Result));
+                        })
+                    .Else(() =>
+                        this.CreateFailureResponse(
+                            $"Could not find ValueSet with id: {valueSetGuid}",
+                            HttpStatusCode.NotFound));
+            }
+            catch (Exception ex)
+            {
+                this.Logger.Error(ex, ex.Message);
+                return this.CreateFailureResponse("Failed to update a value set", HttpStatusCode.InternalServerError);
+            }
+        }
+
+        private object DeleteValueSet(Guid valueSetGuid)
+        {
+            return this.valueSetService.GetValueSet(valueSetGuid)
+                .Select(vs =>
+                {
+                    if (vs.StatusCode != ValueSetStatus.Draft)
+                    {
+                        return this.CreateFailureResponse(
+                            "Invalid ValueSet status.  Delete operation is only permitted for 'Draft' status ValueSets",
+                            HttpStatusCode.BadRequest);
+                    }
+
+                    try
+                    {
+                        this.clientTermValueSetService.Delete(vs);
+                        return this.Negotiate.WithStatusCode(HttpStatusCode.OK);
+                    }
+                    catch (Exception ex)
+                    {
+                        this.Logger.Error(ex, ex.Message, valueSetGuid);
+                        return this.CreateFailureResponse(
+                            $"Failed to delete ValueSet with id: {valueSetGuid}",
+                            HttpStatusCode.InternalServerError);
+                    }
+                })
+                .Else(() =>
+                    this.CreateFailureResponse(
+                        $"Could not find ValueSet with id: {valueSetGuid}",
+                        HttpStatusCode.NotFound));
+        }
+
+        private object CopyValueSet()
+        {
+            try
+            {
+                var model = this.Bind<ValueSetCopyApiModel>();
+
+                var copy = this.valueSetService.GetValueSet(model.OriginGuid)
+                            .Select(vs =>
+                            {
+                                var attempt = this.clientTermValueSetService.Copy(vs, model.Name, model);
+
+                                return attempt.Success
+                                           ? this.CreateSuccessfulPostResponse(attempt.Result.ToValueSetApiModel())
+                                           : CreateAttemptFailureResponse(attempt);
+                            });
+
+                return copy.Else(
+                    () => this.CreateFailureResponse(
+                        $"ValueSet with matching ID: {model.OriginGuid} was not found",
+                        HttpStatusCode.NotFound));
+            }
+            catch (Exception ex)
+            {
+                this.Logger.Error(ex, ex.Message);
+                return this.CreateFailureResponse("Failed to copy a value set", HttpStatusCode.InternalServerError);
+            }
+
+            object CreateAttemptFailureResponse(Attempt<IValueSet> attempt) =>
+                attempt.Exception != null
+                    ? this.CreateFailureResponse(attempt.Exception.Message, HttpStatusCode.InternalServerError)
+                    : this.CreateFailureResponse("Failed to copy ValueSet", HttpStatusCode.InternalServerError);
+        }
+
+        private object ChangeStatus(Guid valueSetGuid, string statusCode)
+        {
+            if (Enum.TryParse(statusCode, true, out ValueSetStatus status))
+            {
+                var attempt = this.clientTermValueSetService.ChangeStatus(valueSetGuid, status);
+                try
+                {
+                    if (attempt.Success)
+                    {
+                        return this.CreateSuccessfulPostResponse(attempt.Result.ToValueSetApiModel());
+                    }
+
+                    if (attempt.Exception != null)
+                    {
+                        var msg = attempt.Exception.Message;
+                        return this.CreateFailureResponse(msg, HttpStatusCode.BadRequest);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    this.Logger.Error(ex, ex.Message, valueSetGuid.ToString(), status.ToString());
+                    return this.CreateFailureResponse(
+                        $"Failed to change the status code for the value set with id: {valueSetGuid}",
+                        HttpStatusCode.InternalServerError);
+                }
+            }
+
+            return this.CreateFailureResponse($"Failed to cast '{statusCode}' to a valid ValueSetStatus", HttpStatusCode.InternalServerError);
         }
 
         private bool GetSummarySetting()

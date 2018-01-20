@@ -1,5 +1,6 @@
 ﻿namespace Fabric.Terminology.IntegrationTests.Fixtures
 {
+    using Fabric.Terminology.API.Services;
     using Fabric.Terminology.Domain.Persistence;
     using Fabric.Terminology.Domain.Services;
     using Fabric.Terminology.SqlServer.Caching;
@@ -23,6 +24,8 @@
 
         public IClientTermValueSetService ClientTermValueSetService { get; private set; }
 
+        public IClientTermCustomizationService ClientTermCustomizationService { get; private set; }
+
         public ICodeSystemService CodeSystemService { get; private set; }
 
         public ICodeSystemCodeService CodeSystemCodeService { get; private set; }
@@ -33,6 +36,7 @@
             var pagingStrategyFactory = new PagingStrategyFactory();
             var clientTermCacheManager = new ClientTermCacheManager(cacheManagerFactory);
             var uow = new ClientTermValueUnitOfWorkManager(this.ClientTermContext.AsLazy(), this.Logger);
+            var valueSetStatusChangePolicy = new DefaultValueSetUpdateValidationPolicy();
 
             var valueSetCodeRepository = new SqlValueSetCodeRepository(
                 this.SharedContext,
@@ -54,6 +58,7 @@
             var sqlClientTermUowRepository = new SqlClientTermValueSetRepository(
                 this.Logger,
                 uow,
+                valueSetStatusChangePolicy,
                 clientTermCacheManager);
 
             var sqlCodeSystemRepository = new SqlCodeSystemRepository(
@@ -88,6 +93,12 @@
             this.CodeSystemService = new SqlCodeSystemService(sqlCodeSystemRepository);
 
             this.CodeSystemCodeService = new SqlCodeSystemCodeService(sqlCodeSystemCodeRepository);
+
+            this.ClientTermCustomizationService = new ClientTermCustomizationService(
+                this.CodeSystemCodeService,
+                this.ValueSetCodeService,
+                this.ClientTermValueSetService);
+
         }
     }
 }

@@ -13,8 +13,6 @@
     using Nancy.Swagger.Services;
     using Nancy.Swagger.Services.RouteUtils;
 
-    using Swagger.ObjectModel;
-
     public class ValueSetMetadataModule : SwaggerMetadataModule
     {
         public ValueSetMetadataModule(
@@ -32,8 +30,12 @@
                 typeof(ValueSetItemApiModel),
                 typeof(ValueSetCodeApiModel),
                 typeof(ValueSetCodeCountApiModel),
-                typeof(ValueSetCreationApiModel),
+                typeof(ClientTermValueSetApiModel),
+                typeof(CodeOperation),
+                typeof(ValueSetCopyApiModel),
                 typeof(ValueSetStatus),
+                typeof(CodeOperationSource),
+                typeof(OperationInstruction),
                 typeof(Guid)
                 );
 
@@ -86,7 +88,7 @@
                     ParameterFactory.GetTop(settings.DefaultItemsPerPage),
                     ParameterFactory.GetSummary(),
                     ParameterFactory.GetCodeSystemGuidsArray(),
-                    ParameterFactory.GetStatusCode()
+                    ParameterFactory.GetQueryStringStatusCode()
                 },
                 new[] { TagsFactory.GetValueSetTag() });
 
@@ -125,12 +127,90 @@
                 new[]
                 {
                     new HttpResponseMetadata<ValueSetApiModel> { Code = 200, Message = "OK" },
+                    new HttpResponseMetadata { Code = 400, Message = "Bad Request" },
                     new HttpResponseMetadata { Code = 500, Message = "Internal Server Error" }
                 },
                 new[]
                 {
-                    // ParameterFactory.GetContentType(),
-                    new BodyParameter<ValueSetCreationApiModel>(modelCatalog) { Required = true, Name = "Model" }
+                    new BodyParameter<ClientTermValueSetApiModel>(modelCatalog) { Required = true, Name = "Model" }
+                },
+                new[]
+                {
+                    TagsFactory.GetValueSetTag()
+                });
+
+            this.RouteDescriber.DescribeRouteWithParams(
+                "PatchValueSet",
+                "Updates a value set",
+                "Updates a value set",
+                new[]
+                {
+                    new HttpResponseMetadata<ValueSetApiModel> { Code = 200, Message = "OK" },
+                    new HttpResponseMetadata { Code = 400, Message = "Bad Request" },
+                    new HttpResponseMetadata { Code = 500, Message = "Internal Server Error" }
+                },
+                new[]
+                {
+                    ParameterFactory.GetValueSetGuid(),
+                    new BodyParameter<ClientTermValueSetApiModel>(modelCatalog) { Required = true, Name = "Model" }
+                },
+                new[]
+                {
+                    TagsFactory.GetValueSetTag()
+                });
+
+            this.RouteDescriber.DescribeRouteWithParams(
+                "ChangeValueSetStatus",
+                "Updates the status of an existing value set",
+                "Updates the status of an existing value set.  Draft may be changed to active.  Active may be changed to Archived.  Archived may be changed to Active.",
+                new[]
+                {
+                    new HttpResponseMetadata<ValueSetApiModel> { Code = 200, Message = "OK" },
+                    new HttpResponseMetadata { Code = 500, Message = "Internal Server Error" }
+                },
+                new[]
+                {
+                    ParameterFactory.GetValueSetGuid(),
+                    ParameterFactory.GetPathStatusCode()
+                },
+                new[]
+                {
+                    TagsFactory.GetValueSetTag()
+                });
+
+            this.RouteDescriber.DescribeRouteWithParams(
+                "CopyValueSet",
+                "Creates a copy of a ValueSet",
+                "Creates a copy of a ValueSet",
+                new[]
+                {
+                    new HttpResponseMetadata<ValueSetApiModel> { Code = 200, Message = "OK" },
+                    new HttpResponseMetadata { Code = 404, Message = "Not Found" },
+                    new HttpResponseMetadata { Code = 500, Message = "Internal Server Error" }
+                },
+                new[]
+                {
+                    new BodyParameter<ValueSetCopyApiModel>(modelCatalog) { Required = true, Name = "Model" }
+                },
+                new[]
+                {
+                    TagsFactory.GetValueSetTag()
+                });
+
+            this.RouteDescriber.DescribeRouteWithParams(
+                "DeleteValueSet",
+                "Deletes a client term ValueSet",
+                "Deletes a client term ValueSet.  Request is only valid for client term value sets with a 'Draft' status.",
+                new[]
+                {
+                    new HttpResponseMetadata { Code = 200, Message = "OK" },
+                    new HttpResponseMetadata { Code = 404, Message = "Not Found" },
+                    new HttpResponseMetadata { Code = 400, Message = "Bad Request" },
+                    new HttpResponseMetadata { Code = 500, Message = "Internal Server Error" }
+                },
+                new[]
+                {
+                    ParameterFactory.GetValueSetGuid()
                 },
                 new[]
                 {
