@@ -45,7 +45,7 @@
             taskException.Result.Should().NotBeNull();
 
             var ex = taskException.Result;
-            ex.GetType().Should().Be<ArgumentException>();
+            ex.Should().BeOfType<ArgumentException>();
         }
 
         [Theory]
@@ -67,7 +67,7 @@
             taskException.Result.Should().NotBeNull();
 
             var ex = taskException.Result;
-            ex.GetType().Should().Be<InvalidOperationException>();
+            ex.Should().BeOfType<InvalidOperationException>();
         }
 
         [Theory]
