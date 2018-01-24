@@ -110,8 +110,15 @@
             return model;
         }
 
-        private object GetValueSet(Guid valueSetGuid)
+        private object GetValueSet(string valueSetGuidString)
         {
+            if (!Guid.TryParse(valueSetGuidString, out Guid valueSetGuid))
+            {
+                return this.CreateFailureResponse(
+                    $"The valueSetGuid parameter '{valueSetGuidString}' could not be parsed as a valid GUID",
+                    HttpStatusCode.BadGateway);
+            }
+
             try
             {
                 var codeSystemGuids = this.GetCodeSystems();
@@ -289,8 +296,15 @@
             }
         }
 
-        private object PatchValueSet(Guid valueSetGuid)
+        private object PatchValueSet(string valueSetGuidString)
         {
+            if (!Guid.TryParse(valueSetGuidString, out Guid valueSetGuid))
+            {
+                return this.CreateFailureResponse(
+                    $"The valueSetGuid parameter '{valueSetGuidString}' could not be parsed as a valid GUID",
+                    HttpStatusCode.BadGateway);
+            }
+
             try
             {
                 var model = this.Bind<ClientTermValueSetApiModel>();
