@@ -58,7 +58,7 @@
 
             return allCodes.Select(group => new ValueSetCodeComparison
                 {
-                    Code = group.FirstOrDefault() as ICodeSystemCode,
+                    Code = (ICodeSystemCode)group.FirstOrDefault(),
                     ValueSetGuids = group.Select(vsc => vsc.ValueSetGuid)
                 }).ToList();
         }

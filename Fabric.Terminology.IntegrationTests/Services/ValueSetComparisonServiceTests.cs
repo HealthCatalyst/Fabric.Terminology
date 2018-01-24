@@ -63,5 +63,21 @@
             var ex = taskException.Result;
             ex.GetType().Should().Be<InvalidOperationException>();
         }
+
+        [Theory]
+        [InlineData("Abdominal Aortic Aneurysm", "bebbf8d1-b4ca-495e-96dd-ed4e2dc32d69", "Abdominal Hysterectomy", "95af1a63-6787-443d-a73a-28b8ba15c8db")]
+        public void CanCompareTwoValueSets(string vsName1, string key1, string vsName2, string key2)
+        {
+            // Arrange
+            Console.WriteLine($"Comparing '{vsName1}' to '{vsName2}'");
+            var valueSetGuids = new List<Guid> { Guid.Parse(key1), Guid.Parse(key2) };
+
+            // Act
+            var comparison = this.Profiler.ExecuteTimed(
+                async () => await this.valueSetComparisonService.CompareValueSetCodes(valueSetGuids));
+
+            // Assert
+            comparison.Should().NotBeNull();
+        }
     }
 }
