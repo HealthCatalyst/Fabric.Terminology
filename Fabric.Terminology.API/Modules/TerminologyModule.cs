@@ -62,6 +62,18 @@
             };
         }
 
+        protected object ParseValueSetGuidAndExecute(string valueSetGuidString, Func<Guid, object> getResponse)
+        {
+            if (!Guid.TryParse(valueSetGuidString, out Guid valueSetGuid))
+            {
+                return this.CreateFailureResponse(
+                    $"The valueSetGuid parameter '{valueSetGuidString}' could not be parsed as a valid GUID",
+                    HttpStatusCode.BadRequest);
+            }
+
+            return getResponse(valueSetGuid);
+        }
+
         protected Guid[] GetCodeSystems()
         {
             return this.CreateGuidParameterArray((string)this.Request.Query["$codesystems"]);
