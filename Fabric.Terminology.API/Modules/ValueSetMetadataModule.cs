@@ -47,7 +47,7 @@
                 new[]
                 {
                     new HttpResponseMetadata<ValueSetApiModel> { Code = 200, Message = "OK" },
-                    new HttpResponseMetadata { Code = 502, Message = "Bad Request" },
+                    new HttpResponseMetadata { Code = 400, Message = "Bad Request" },
                     new HttpResponseMetadata { Code = 404, Message = "Not Found" },
                     new HttpResponseMetadata { Code = 500, Message = "Internal Server Error" }
                 },
@@ -147,7 +147,7 @@
                 new[]
                 {
                     new HttpResponseMetadata<ValueSetApiModel> { Code = 200, Message = "OK" },
-                    new HttpResponseMetadata { Code = 502, Message = "Bad Request" },
+                    new HttpResponseMetadata { Code = 400, Message = "Bad Request" },
                     new HttpResponseMetadata { Code = 404, Message = "Not Found" },
                     new HttpResponseMetadata { Code = 500, Message = "Internal Server Error" }
                 },
