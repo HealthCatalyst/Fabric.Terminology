@@ -2,12 +2,18 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
 
+    using CallMeMaybe;
+
+    using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Services;
     using Fabric.Terminology.IntegrationTests.Fixtures;
     using Fabric.Terminology.TestsBase;
 
     using FluentAssertions;
+
+    using Microsoft.AspNetCore.Http.Internal;
 
     using Xunit;
     using Xunit.Abstractions;
@@ -65,8 +71,9 @@
         }
 
         [Theory]
-        [InlineData("Abdominal Aortic Aneurysm", "bebbf8d1-b4ca-495e-96dd-ed4e2dc32d69", "Abdominal Hysterectomy", "95af1a63-6787-443d-a73a-28b8ba15c8db")]
-        public void CanCompareTwoValueSets(string vsName1, string key1, string vsName2, string key2)
+        [InlineData("Obstetrics", "CE787E4B-2588-41CF-9377-1DB9CBDBD223", "Pregnancy", "E27C0B63-6335-44BA-9629-24C64733AA15", 5252, 3642)]
+        [InlineData("Substance Abuse", "FDA1B3D5-28C7-4148-9F6B-08D4DF68709D", "Alcohol and Drug Dependence", "989DA48C-0794-41E7-AAE7-61F1C490655D", 997, 700)]
+        public void CanCompareTwoValueSets(string vsName1, string key1, string vsName2, string key2, int totalCodes, int expectedAggregate)
         {
             // Arrange
             Console.WriteLine($"Comparing '{vsName1}' to '{vsName2}'");
@@ -78,6 +85,14 @@
 
             // Assert
             comparison.Should().NotBeNull();
+            comparison.Compared.Should().NotBeEmpty();
+
+            var actualTotalCodeCount =
+                comparison.Compared.SelectMany(vss => vss.CodeCounts.Select(cc => cc.CodeCount)).Sum();
+
+            actualTotalCodeCount.Should().Be(totalCodes);
+
+            comparison.AggregateCodeCount.Should().Be(expectedAggregate);
         }
     }
 }
