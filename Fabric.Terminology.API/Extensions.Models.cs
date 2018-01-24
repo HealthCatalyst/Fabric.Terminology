@@ -85,6 +85,30 @@
             };
         }
 
+        public static ValueSetComparisonResultApiModel ToValueSetComparisonResultApiModel(
+            this ValueSetDiffComparisonResult model,
+            IReadOnlyCollection<Guid> codeSystemGuids)
+        {
+            if (!codeSystemGuids.Any())
+            {
+                return Mapper.Map<ValueSetComparisonResultApiModel>(model);
+            }
+
+            // Cleanup for code system focused comparisons
+            var compared = model.Compared.Select(vss => vss.ToValueSetItemApiModel(codeSystemGuids)).ToList();
+            var counts = compared.SelectMany(vss => vss.CodeCounts.Select(cc => cc.CodeCount)).Sum();
+
+            return new ValueSetComparisonResultApiModel
+            {
+                Compared = compared,
+                AggregateCodeCount = counts,
+                CodeComparisons =
+                    model.CodeComparisons.Where(cc => codeSystemGuids.Contains(cc.Code.CodeSystemGuid))
+                        .Select(Mapper.Map<CodeComparisonApiModel>)
+            };
+
+        }
+
         // acquired from Fabric.Authorization.Domain (renamed from ToError)
         public static Error ToError(this ValidationResult validationResult)
         {

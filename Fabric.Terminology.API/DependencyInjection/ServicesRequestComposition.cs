@@ -23,6 +23,7 @@
             container.Register<IClientTermCustomizationService, ClientTermCustomizationService>().AsSingleton();
             container.Register<ICodeSystemService, SqlCodeSystemService>().AsSingleton();
             container.Register<ICodeSystemCodeService, SqlCodeSystemCodeService>().AsSingleton();
+            container.Register<IValueSetComparisonService, ValueSetComparisonService>().AsSingleton();
         }
     }
 }
