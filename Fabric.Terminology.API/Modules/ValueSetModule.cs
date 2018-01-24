@@ -27,6 +27,8 @@
 
         private readonly IClientTermCustomizationService clientTermCustomizationService;
 
+        private readonly IValueSetComparisonService valueSetComparisonService;
+
         private readonly IValueSetService valueSetService;
 
         private readonly IValueSetSummaryService valueSetSummaryService;
@@ -38,6 +40,7 @@
             IValueSetSummaryService valueSetSummaryService,
             IClientTermValueSetService clientTermValueSetService,
             IClientTermCustomizationService clientTermCustomizationService,
+            IValueSetComparisonService valueSetComparisonService,
             IAppConfiguration config,
             ILogger logger,
             ValueSetValidator valueSetValidator)
@@ -47,6 +50,7 @@
             this.valueSetSummaryService = valueSetSummaryService;
             this.clientTermValueSetService = clientTermValueSetService;
             this.clientTermCustomizationService = clientTermCustomizationService;
+            this.valueSetComparisonService = valueSetComparisonService;
             this.valueSetValidator = valueSetValidator;
 
             this.Get("/", _ => this.GetValueSetPage(), null, "GetPaged");
@@ -64,6 +68,8 @@
             this.Post("/search/", _ => this.Search(), null, "Search");
 
             this.Post("/copy/", _ => this.CopyValueSet(), null, "CopyValueSet");
+
+            this.Post("/compare/", _ => this.CompareValueSets(), null, "CompareValueSets");
 
             this.Post("/", _ => this.AddValueSet(), null, "AddValueSet");
 
@@ -387,6 +393,25 @@
                 attempt.Exception != null
                     ? this.CreateFailureResponse(attempt.Exception.Message, HttpStatusCode.InternalServerError)
                     : this.CreateFailureResponse("Failed to copy ValueSet", HttpStatusCode.InternalServerError);
+        }
+
+        private async Task<object> CompareValueSets()
+        {
+            try
+            {
+                var model = this.Bind<CompareValueSetsQuery>();
+
+                var comparison = await this.valueSetComparisonService.CompareValueSetCodes(
+                                     model.ValueSetGuids,
+                                     model.CodeSystemGuids);
+
+                return comparison.ToValueSetComparisonResultApiModel(model.CodeSystemGuids);
+            }
+            catch (Exception ex)
+            {
+                this.Logger.Error(ex, ex.Message);
+                return this.CreateFailureResponse("Failed to compare value sets", HttpStatusCode.InternalServerError);
+            }
         }
 
         private object ChangeStatus(Guid valueSetGuid, string statusCode)

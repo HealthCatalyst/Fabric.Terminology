@@ -198,6 +198,24 @@
                 });
 
             this.RouteDescriber.DescribeRouteWithParams(
+                "CompareValueSets",
+                "Compares two or more ValueSets",
+                "Compares two or more ValueSets",
+                new[]
+                {
+                    new HttpResponseMetadata<ValueSetApiModel> { Code = 200, Message = "OK" },
+                    new HttpResponseMetadata { Code = 500, Message = "Internal Server Error" }
+                },
+                new[]
+                {
+                    new BodyParameter<CompareValueSetsQuery>(modelCatalog) { Required = true, Name = "Model" }
+                },
+                new[]
+                {
+                    TagsFactory.GetValueSetTag()
+                });
+
+            this.RouteDescriber.DescribeRouteWithParams(
                 "DeleteValueSet",
                 "Deletes a client term ValueSet",
                 "Deletes a client term ValueSet.  Request is only valid for client term value sets with a 'Draft' status.",
