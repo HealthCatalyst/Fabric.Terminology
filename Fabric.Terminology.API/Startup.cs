@@ -51,9 +51,9 @@
 
             Mapper.Initialize(cfg =>
                 {
-                    cfg.AddProfile<ValueSetApiProfile>();
                     cfg.AddProfile<CodeSystemApiProfile>();
                     cfg.AddProfile<CodeSystemCodeApiProfile>();
+                    cfg.AddProfile<ValueSetApiProfile>();
                 });
 
             app.UseStaticFiles()

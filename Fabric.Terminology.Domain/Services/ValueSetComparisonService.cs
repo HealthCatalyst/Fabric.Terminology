@@ -42,7 +42,7 @@
                 throw new InvalidOperationException($"Could not find value sets with ValueSetGUID(s) {notFound}.  Comparison cannot be performed.");
             }
 
-            var comparisons = this.GetValueSetCodeComparisons(valueSets);
+            var comparisons = this.GetValueSetCodeComparisons(valueSets, codeSysetmGuidHash);
 
             return new ValueSetDiffComparisonResult
                 {
@@ -52,11 +52,17 @@
                 };
         }
 
-        private IReadOnlyCollection<ValueSetCodeComparison> GetValueSetCodeComparisons(IEnumerable<IValueSet> valueSets)
+        private IReadOnlyCollection<ValueSetCodeComparison> GetValueSetCodeComparisons(IEnumerable<IValueSet> valueSets, IReadOnlyCollection<Guid> codeSystemGuids)
         {
-            var allCodes = valueSets.SelectMany(vs => vs.ValueSetCodes).ToLookup(vsc => vsc.CodeGuid);
+            var allCodes = valueSets.SelectMany(vs => vs.ValueSetCodes);
+            if (codeSystemGuids.Any())
+            {
+                allCodes = allCodes.Where(vsc => codeSystemGuids.Contains(vsc.CodeSystemGuid));
+            }
 
-            return allCodes.Select(group => new ValueSetCodeComparison
+            var lookup = allCodes.ToLookup(vsc => vsc.CodeGuid);
+
+            return lookup.Select(group => new ValueSetCodeComparison
                 {
                     Code = (ICodeSystemCode)group.FirstOrDefault(),
                     ValueSetGuids = group.Select(vsc => vsc.ValueSetGuid)
