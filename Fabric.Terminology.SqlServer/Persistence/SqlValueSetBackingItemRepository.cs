@@ -67,8 +67,8 @@
 
         public IReadOnlyCollection<IValueSetBackingItem> GetValueSetBackingItemVersions(string valueSetReferenceId)
         {
-            // We have to query here since we use the Guid for the cache key but the results
-            // are cached for use in subesequent requests.
+            // We have to query here since we use the GUID for the cache key but the results
+            // are cached for use in subsequent requests.
             return this.QueryValueSetBackingItems(valueSetReferenceId)
                 .Select(bi => this.cacheManager.GetOrSet(bi.ValueSetGuid, () => bi))
                 .Values()
@@ -139,7 +139,7 @@
                 dtos = dtos.Join(vsGuids, dto => dto.ValueSetGUID, key => key, (dto, key) => dto);
             }
 
-            return this.CreatePagedCollectionAsync(dtos, pagerSettings);
+            return this.CreatePagedCollectionAsync(dtos, pagerSettings, systemCodes);
         }
 
         private static Expression<Func<ValueSetDescriptionDto, bool>> GetBaseExpression(ValueSetStatus statusCode)
@@ -149,7 +149,8 @@
 
         private async Task<PagedCollection<IValueSetBackingItem>> CreatePagedCollectionAsync(
             IQueryable<ValueSetDescriptionDto> source,
-            IPagerSettings pagerSettings)
+            IPagerSettings pagerSettings,
+            IReadOnlyCollection<Guid> codeSystemGuids)
         {
             var defaultItemsPerPage = this.sharedContext.Settings.DefaultItemsPerPage;
             var pagingStrategy =
@@ -157,9 +158,35 @@
 
             pagingStrategy.EnsurePagerSettings(pagerSettings);
 
+            /*
+            var countQuery = this.sharedContext.ValueSetCounts.AsQueryable();
+            // countQuery = countQuery.Where(cc => systemCodes.Contains(cc.CodeSystemGUID));
+            var countsDtos = countQuery.GroupBy(cc => cc.ValueSetGUID)
+                .Select(group => new CodeCountResultDto
+                    {
+                        ValueSetGuid = group.Key,
+                        CodeCount = group.Sum(s => s.CodeSystemPerValueSetNBR)
+                    });
+
+            var combined = dtos.Join(
+                countsDtos,
+                vsDto => vsDto.ValueSetGUID,
+                countDto => countDto.ValueSetGuid,
+                (vsDto, countDto) => new
+                {
+                    ValueSetDescriptionDto = vsDto,
+                    CodeCountResultDto = countDto
+                });
+             */
+
             var count = await source.CountAsync();
-            var items = await source.OrderBy(dto => dto.ValueSetNM)
-                            .Skip((pagerSettings.CurrentPage - 1) * pagerSettings.ItemsPerPage)
+
+            var orderByExpr = this.GetOrderExpression(pagerSettings);
+            source = pagerSettings.Direction == SortDirection.Asc
+                         ? source.OrderBy(orderByExpr)
+                         : source.OrderByDescending(orderByExpr);
+
+            var items = await source.Skip((pagerSettings.CurrentPage - 1) * pagerSettings.ItemsPerPage)
                             .Take(pagerSettings.ItemsPerPage)
                             .ToListAsync();
 
@@ -221,6 +248,29 @@
                 this.logger.Error(ex, "Failed to query ValueSetDescriptions by collection of ValueSetReferenceId");
                 throw;
             }
+        }
+
+        private Expression<Func<ValueSetDescriptionDto, object>> GetOrderExpression(IPagerSettings settings)
+        {
+            switch (settings.OrderBy.ToLowerInvariant())
+            {
+                case "valuesetreferenceid":
+                    return dto => dto.ValueSetReferenceID;
+                case "sourcedescription":
+                    return dto => dto.SourceDSC;
+                case "versiondate":
+                    return dto => dto.VersionDTS;
+                case "name":
+                default:
+                    return dto => dto.ValueSetNM;
+            }
+        }
+
+        private class CodeCountResultDto
+        {
+            public Guid ValueSetGuid { get; set; }
+
+            public int CodeCount { get; set; }
         }
     }
 }

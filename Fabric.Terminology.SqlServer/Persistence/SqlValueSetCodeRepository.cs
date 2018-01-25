@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Linq.Expressions;
     using System.Threading.Tasks;
 
     using Fabric.Terminology.Domain;
@@ -187,18 +188,33 @@
             pagingStrategy.EnsurePagerSettings(pagerSettings);
 
             var count = await source.CountAsync();
-            var items = await source.OrderBy(dto => dto.CodeDSC)
-                            .Skip((pagerSettings.CurrentPage - 1) * pagerSettings.ItemsPerPage)
+
+            var orderExpression = this.GetOrderByExpression(pagerSettings);
+            source = pagerSettings.Direction == SortDirection.Asc
+                         ? source.OrderBy(orderExpression)
+                         : source.OrderByDescending(orderExpression);
+
+            var items = await source.Skip((pagerSettings.CurrentPage - 1) * pagerSettings.ItemsPerPage)
                             .Take(pagerSettings.ItemsPerPage)
                             .ToListAsync();
 
             var factory = new ValueSetCodeFactory();
 
-            // TODO can't cache at this point since codeGuid is null in db.  Fixme
+            // TODO can't cache at this point since codeGuid is null in db.  Fix me
             return pagingStrategy.CreatePagedCollection(
                 items.Select(factory.Build),
                 count,
                 pagerSettings);
+        }
+
+        private Expression<Func<ValueSetCodeDto, string>> GetOrderByExpression(IPagerSettings settings)
+        {
+            if (settings.OrderBy != "Name")
+            {
+                throw new ArgumentException("ValueSetCodes may only be ordered by Name");
+            }
+
+            return dto => dto.CodeDSC;
         }
     }
 }

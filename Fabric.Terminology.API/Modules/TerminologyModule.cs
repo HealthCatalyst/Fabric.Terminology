@@ -9,6 +9,7 @@
     using Fabric.Terminology.API.Models;
     using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Models;
+    using Fabric.Terminology.Domain.Persistence;
 
     using Nancy;
     using Nancy.Responses.Negotiation;
@@ -19,6 +20,15 @@
 
     public abstract class TerminologyModule<T> : NancyModule
     {
+        private static string[] validValueSetSortFields = new[]
+        {
+            "name",
+            "valuesetreferenceid",
+            "sourcedescription",
+            "versiondate",
+            "codecount"
+        };
+
         protected TerminologyModule(string path, IAppConfiguration config, ILogger logger)
             : base(path)
         {
@@ -55,10 +65,14 @@
         {
             var skip = (int)this.Request.Query["$skip"];
             var count = (int)this.Request.Query["$top"];
+            var ordering = this.GetValueSetOrdering();
+
             return new PagerSettings
             {
                 CurrentPage = skip == 0 ? 1 : skip + 1,
-                ItemsPerPage = count == 0 ? this.Config.TerminologySqlSettings.DefaultItemsPerPage : count
+                ItemsPerPage = count == 0 ? this.Config.TerminologySqlSettings.DefaultItemsPerPage : count,
+                OrderBy = ordering.FieldName,
+                Direction = ordering.Direction
             };
         }
 
@@ -79,14 +93,29 @@
             return this.CreateGuidParameterArray((string)this.Request.Query["$codesystems"]);
         }
 
-        private string[] CreateParameterArray(string value)
+        protected ValueSetOrderingParameters GetValueSetOrdering()
+        {
+            var directive = this.CreateParameterArray((string)this.Request.Query["$orderBy"], ' ');
+            switch (directive.Length)
+            {
+                case 2:
+                    return ValueSetFilteringHelper.GetValidValueSetOrdering(directive[0], directive[1]);
+                case 1:
+                    return ValueSetFilteringHelper.GetValidValueSetOrdering(directive[0], SortDirection.Asc.ToString());
+                case 0:
+                default:
+                    return new ValueSetOrderingParameters();
+            }
+        }
+
+        private string[] CreateParameterArray(string value, char splitChar = ',')
         {
             if (value.IsNullOrWhiteSpace())
             {
                 return new string[] { };
             }
 
-            var cds = value.Split(',');
+            var cds = value.Split(splitChar);
             return cds.Select(cd => cd.Trim()).Where(cd => !cd.IsNullOrWhiteSpace()).ToArray();
         }
 

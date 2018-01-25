@@ -70,7 +70,8 @@
             return new Parameter
             {
                 Name = "$summary",
-                Description = "Indicates ValueSets returned should be partial summaries - e.g. codes listing is not complete and intended to be used for presentation.",
+                Description =
+                    "Indicates ValueSets returned should be partial summaries - e.g. codes listing is not complete and intended to be used for presentation.",
                 Required = false,
                 In = ParameterIn.Query,
                 Type = "boolean"
@@ -137,6 +138,31 @@
                 In = ParameterIn.Query,
                 Required = false,
                 Type = "integer"
+            };
+        }
+
+        public static Parameter GetOrderBy(string orderBy)
+        {
+            return new Parameter
+            {
+                Name = "$orderBy",
+                Description = "Optional parameter to set the ordering expression.  Default field is 'Name'.  Default direction is 'asc'.  If direction is omitted 'asc' is assumed.",
+                Required = false,
+                In = ParameterIn.Query,
+                Type = "string",
+                Enum = new[]
+                {
+                    "Name asc",
+                    "Name desc",
+                    "ValueSetReferenceId asc",
+                    "ValueSetReferenceId desc",
+                    "SourceDescription asc",
+                    "SourceDescription desc",
+                    "VersionDate asc",
+                    "VersionDate desc",
+                    "CodeCount asc",
+                    "CodeCount desc"
+                }
             };
         }
     }
