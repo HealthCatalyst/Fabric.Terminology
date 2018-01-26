@@ -4,7 +4,6 @@
     using System.Collections.Generic;
     using System.Linq;
 
-    using Fabric.Terminology.API;
     using Fabric.Terminology.API.Services;
     using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Models;

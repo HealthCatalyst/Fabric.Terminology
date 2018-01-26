@@ -1,7 +1,7 @@
 ﻿namespace Fabric.Terminology.IntegrationTests.Fixtures
 {
     using Fabric.Terminology.API.Services;
-    using Fabric.Terminology.Domain.Persistence;
+    using Fabric.Terminology.Domain.Persistence.Querying;
     using Fabric.Terminology.Domain.Services;
     using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Persistence;

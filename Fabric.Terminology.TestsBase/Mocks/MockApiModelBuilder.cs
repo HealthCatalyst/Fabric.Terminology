@@ -5,7 +5,6 @@
     using System.Linq;
 
     using Fabric.Terminology.API.Models;
-    using Fabric.Terminology.Domain.Models;
 
     public class MockApiModelBuilder
     {
