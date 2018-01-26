@@ -1,9 +1,12 @@
-﻿namespace Fabric.Terminology.Domain.Models
+﻿namespace Fabric.Terminology.SqlServer.Persistence.Ordering
 {
     using System.Collections.Generic;
     using System.Linq;
 
-    public class ValueSetOrderingParameters
+    using Fabric.Terminology.Domain;
+    using Fabric.Terminology.Domain.Persistence.Querying;
+
+    public class ValueSetOrderingParameters : IOrderingParameters
     {
         private static readonly IEnumerable<string> ValidValueSetSortFields =
             new[]

@@ -1,11 +1,12 @@
-﻿namespace Fabric.Terminology.Domain.Persistence
+﻿namespace Fabric.Terminology.SqlServer.Persistence.Ordering
 {
     using System;
-    using System.Collections.Generic;
 
+    using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Models;
+    using Fabric.Terminology.Domain.Persistence.Querying;
 
-    public static class ValueSetFilteringHelper
+    public static class ValueSetOrderingHelper
     {
         public static IPagerSettings ValidateValueSetOrdering(IPagerSettings settings)
         {
@@ -15,7 +16,7 @@
             return settings;
         }
 
-        public static ValueSetOrderingParameters GetValidValueSetOrdering(string field, string direction)
+        public static IOrderingParameters GetValidValueSetOrdering(string field, string direction)
         {
             if (!Enum.TryParse(direction, true, out SortDirection sortDirection))
             {
