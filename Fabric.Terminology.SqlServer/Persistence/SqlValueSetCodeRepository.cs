@@ -79,9 +79,7 @@
             IPagerSettings settings,
             IEnumerable<Guid> codeSystemGuids)
         {
-            var dtos = this.GetValueSetCodeQueryable(filterText, settings, codeSystemGuids);
-
-            return this.CreatePagedCollectionAsync(dtos, settings);
+            return this.GetValueSetCodesAsync(filterText, Guid.Empty, settings, codeSystemGuids);
         }
 
         public Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(
@@ -90,9 +88,12 @@
             IPagerSettings settings,
             IEnumerable<Guid> codeSystemGuids)
         {
-            var dtos = this.GetValueSetCodeQueryable(filterText, settings, codeSystemGuids);
+            var dtos = this.GetValueSetCodeQueryable(filterText, codeSystemGuids);
 
-            dtos = dtos.Where(dto => dto.ValueSetGUID == valueSetGuid);
+            if (valueSetGuid != Guid.Empty)
+            {
+                dtos = dtos.Where(dto => dto.ValueSetGUID == valueSetGuid);
+            }
 
             return this.CreatePagedCollectionAsync(dtos, settings);
         }
@@ -105,7 +106,6 @@
 
         private IQueryable<ValueSetCodeDto> GetValueSetCodeQueryable(
             string filterText,
-            IPagerSettings settings,
             IEnumerable<Guid> codeSystemGuids)
         {
             var dtos = this.sharedContext.ValueSetCodes.AsQueryable();

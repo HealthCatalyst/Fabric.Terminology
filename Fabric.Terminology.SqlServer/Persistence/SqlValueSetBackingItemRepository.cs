@@ -11,7 +11,6 @@
 
     using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Models;
-    using Fabric.Terminology.Domain.Persistence;
     using Fabric.Terminology.Domain.Persistence.Querying;
     using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Models.Dto;
@@ -132,7 +131,8 @@
             if (!filterText.IsNullOrWhiteSpace())
             {
                 dtos = dtos.Where(
-                    dto => dto.ValueSetNM.Contains(filterText) || dto.ValueSetReferenceID.StartsWith(filterText));
+                    dto => dto.ValueSetNM.Contains(filterText) ||
+                           dto.ValueSetReferenceID.StartsWith(filterText));
             }
 
             var systemCodes = codeSystemGuids as Guid[] ?? codeSystemGuids.ToArray();
@@ -145,7 +145,12 @@
                 dtos = dtos.Join(vsGuids, dto => dto.ValueSetGUID, key => key, (dto, key) => dto);
             }
 
-            return this.CreatePagedCollectionAsync(dtos, pagerSettings, systemCodes);
+            var orderingStrategy = this.orderingStrategyFactory.GetValueSetStrategy(
+                this.sharedContext,
+                systemCodes);
+            dtos = orderingStrategy.SetOrdering(dtos, pagerSettings.AsOrderingParameters());
+
+            return this.CreatePagedCollectionAsync(dtos, pagerSettings);
         }
 
         private static Expression<Func<ValueSetDescriptionDto, bool>> GetBaseExpression(ValueSetStatus statusCode)
@@ -155,60 +160,15 @@
 
         private async Task<PagedCollection<IValueSetBackingItem>> CreatePagedCollectionAsync(
             IQueryable<ValueSetDescriptionDto> source,
-            IPagerSettings pagerSettings,
-            IReadOnlyCollection<Guid> codeSystemGuids)
+            IPagerSettings pagerSettings)
         {
             var defaultItemsPerPage = this.sharedContext.Settings.DefaultItemsPerPage;
             var pagingStrategy =
                 this.pagingStrategyFactory.GetPagingStrategy<IValueSetBackingItem>(defaultItemsPerPage);
-            var orderingStrategy = this.orderingStrategyFactory.GetValueSetStrategy();
 
             pagingStrategy.EnsurePagerSettings(pagerSettings);
 
-            // The record count does not need to include the Code Count join since it is only ever used
-            // for sorting/ordering
             var count = await source.CountAsync();
-
-            source = orderingStrategy.SetOrdering(source, pagerSettings.AsOrderingParameters());
-
-            if (pagerSettings.OrderBy.ToLowerInvariant() == "codecount")
-            {
-                var countQuery = this.sharedContext.ValueSetCounts.AsQueryable();
-                if (codeSystemGuids.Any())
-                {
-                    countQuery = countQuery.Where(cc => codeSystemGuids.Contains(cc.CodeSystemGUID));
-                }
-
-                var countsDtos = countQuery.GroupBy(cc => cc.ValueSetGUID)
-                    .Select(group => new CodeCountResultDto
-                    {
-                        ValueSetGuid = group.Key,
-                        CodeCount = group.Sum(s => s.CodeSystemPerValueSetNBR)
-                    });
-
-                var combined = source.Join(
-                    countsDtos,
-                    vsDto => vsDto.ValueSetGUID,
-                    countDto => countDto.ValueSetGuid,
-                    (vsDto, countDto) => new
-                    {
-                        ValueSetDescriptionDto = vsDto,
-                        countDto.CodeCount
-                    });
-
-                source = (pagerSettings.Direction == SortDirection.Asc
-                              ? combined.OrderBy(c => c.CodeCount)
-                              : combined.OrderByDescending(c => c.CodeCount))
-                            .Select(c => c.ValueSetDescriptionDto);
-            }
-            else
-            {
-                var orderByExpr = this.GetOrderExpression(pagerSettings);
-                source = pagerSettings.Direction == SortDirection.Asc
-                             ? source.OrderBy(orderByExpr)
-                             : source.OrderByDescending(orderByExpr);
-            }
-
             var items = await source.Skip((pagerSettings.CurrentPage - 1) * pagerSettings.ItemsPerPage)
                             .Take(pagerSettings.ItemsPerPage)
                             .ToListAsync();
@@ -271,29 +231,6 @@
                 this.logger.Error(ex, "Failed to query ValueSetDescriptions by collection of ValueSetReferenceId");
                 throw;
             }
-        }
-
-        private Expression<Func<ValueSetDescriptionDto, object>> GetOrderExpression(IPagerSettings settings)
-        {
-            switch (settings.OrderBy.ToLowerInvariant())
-            {
-                case "valuesetreferenceid":
-                    return dto => dto.ValueSetReferenceID;
-                case "sourcedescription":
-                    return dto => dto.SourceDSC;
-                case "versiondate":
-                    return dto => dto.VersionDTS;
-                case "name":
-                default:
-                    return dto => dto.ValueSetNM;
-            }
-        }
-
-        private class CodeCountResultDto
-        {
-            public Guid ValueSetGuid { get; set; }
-
-            public int CodeCount { get; set; }
         }
     }
 }
