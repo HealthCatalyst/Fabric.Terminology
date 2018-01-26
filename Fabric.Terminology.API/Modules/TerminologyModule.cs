@@ -9,7 +9,8 @@
     using Fabric.Terminology.API.Models;
     using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Models;
-    using Fabric.Terminology.Domain.Persistence;
+    using Fabric.Terminology.Domain.Persistence.Querying;
+    using Fabric.Terminology.SqlServer.Persistence.Ordering;
 
     using Nancy;
     using Nancy.Responses.Negotiation;
@@ -93,15 +94,15 @@
             return this.CreateGuidParameterArray((string)this.Request.Query["$codesystems"]);
         }
 
-        protected ValueSetOrderingParameters GetValueSetOrdering()
+        protected IOrderingParameters GetValueSetOrdering()
         {
             var directive = this.CreateParameterArray((string)this.Request.Query["$orderBy"], ' ');
             switch (directive.Length)
             {
                 case 2:
-                    return ValueSetFilteringHelper.GetValidValueSetOrdering(directive[0], directive[1]);
+                    return ValueSetOrderingHelper.GetValidValueSetOrdering(directive[0], directive[1]);
                 case 1:
-                    return ValueSetFilteringHelper.GetValidValueSetOrdering(directive[0], SortDirection.Asc.ToString());
+                    return ValueSetOrderingHelper.GetValidValueSetOrdering(directive[0], SortDirection.Asc.ToString());
                 case 0:
                 default:
                     return new ValueSetOrderingParameters();

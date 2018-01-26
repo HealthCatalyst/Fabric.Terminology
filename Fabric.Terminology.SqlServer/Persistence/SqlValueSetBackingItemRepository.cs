@@ -12,10 +12,12 @@
     using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence;
+    using Fabric.Terminology.Domain.Persistence.Querying;
     using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Models.Dto;
     using Fabric.Terminology.SqlServer.Persistence.DataContext;
     using Fabric.Terminology.SqlServer.Persistence.Factories;
+    using Fabric.Terminology.SqlServer.Persistence.Ordering;
 
     using Microsoft.EntityFrameworkCore;
 
@@ -29,18 +31,22 @@
 
         private readonly IPagingStrategyFactory pagingStrategyFactory;
 
+        private readonly IOrderingStrategyFactory orderingStrategyFactory;
+
         private readonly SharedContext sharedContext;
 
         public SqlValueSetBackingItemRepository(
             SharedContext sharedContext,
             ILogger logger,
             ICachingManagerFactory cachingManagerFactory,
-            IPagingStrategyFactory pagingStrategyFactory)
+            IPagingStrategyFactory pagingStrategyFactory,
+            IOrderingStrategyFactory orderingStrategyFactory)
         {
             this.sharedContext = sharedContext;
             this.logger = logger;
             this.cacheManager = cachingManagerFactory.ResolveFor<IValueSetBackingItem>();
             this.pagingStrategyFactory = pagingStrategyFactory;
+            this.orderingStrategyFactory = orderingStrategyFactory;
         }
 
         private DbSet<ValueSetDescriptionDto> DbSet => this.sharedContext.ValueSetDescriptions;
@@ -155,36 +161,53 @@
             var defaultItemsPerPage = this.sharedContext.Settings.DefaultItemsPerPage;
             var pagingStrategy =
                 this.pagingStrategyFactory.GetPagingStrategy<IValueSetBackingItem>(defaultItemsPerPage);
+            var orderingStrategy = this.orderingStrategyFactory.GetValueSetStrategy();
 
             pagingStrategy.EnsurePagerSettings(pagerSettings);
 
-            /*
-            var countQuery = this.sharedContext.ValueSetCounts.AsQueryable();
-            // countQuery = countQuery.Where(cc => systemCodes.Contains(cc.CodeSystemGUID));
-            var countsDtos = countQuery.GroupBy(cc => cc.ValueSetGUID)
-                .Select(group => new CodeCountResultDto
+            // The record count does not need to include the Code Count join since it is only ever used
+            // for sorting/ordering
+            var count = await source.CountAsync();
+
+            source = orderingStrategy.SetOrdering(source, pagerSettings.AsOrderingParameters());
+
+            if (pagerSettings.OrderBy.ToLowerInvariant() == "codecount")
+            {
+                var countQuery = this.sharedContext.ValueSetCounts.AsQueryable();
+                if (codeSystemGuids.Any())
+                {
+                    countQuery = countQuery.Where(cc => codeSystemGuids.Contains(cc.CodeSystemGUID));
+                }
+
+                var countsDtos = countQuery.GroupBy(cc => cc.ValueSetGUID)
+                    .Select(group => new CodeCountResultDto
                     {
                         ValueSetGuid = group.Key,
                         CodeCount = group.Sum(s => s.CodeSystemPerValueSetNBR)
                     });
 
-            var combined = dtos.Join(
-                countsDtos,
-                vsDto => vsDto.ValueSetGUID,
-                countDto => countDto.ValueSetGuid,
-                (vsDto, countDto) => new
-                {
-                    ValueSetDescriptionDto = vsDto,
-                    CodeCountResultDto = countDto
-                });
-             */
+                var combined = source.Join(
+                    countsDtos,
+                    vsDto => vsDto.ValueSetGUID,
+                    countDto => countDto.ValueSetGuid,
+                    (vsDto, countDto) => new
+                    {
+                        ValueSetDescriptionDto = vsDto,
+                        countDto.CodeCount
+                    });
 
-            var count = await source.CountAsync();
-
-            var orderByExpr = this.GetOrderExpression(pagerSettings);
-            source = pagerSettings.Direction == SortDirection.Asc
-                         ? source.OrderBy(orderByExpr)
-                         : source.OrderByDescending(orderByExpr);
+                source = (pagerSettings.Direction == SortDirection.Asc
+                              ? combined.OrderBy(c => c.CodeCount)
+                              : combined.OrderByDescending(c => c.CodeCount))
+                            .Select(c => c.ValueSetDescriptionDto);
+            }
+            else
+            {
+                var orderByExpr = this.GetOrderExpression(pagerSettings);
+                source = pagerSettings.Direction == SortDirection.Asc
+                             ? source.OrderBy(orderByExpr)
+                             : source.OrderByDescending(orderByExpr);
+            }
 
             var items = await source.Skip((pagerSettings.CurrentPage - 1) * pagerSettings.ItemsPerPage)
                             .Take(pagerSettings.ItemsPerPage)

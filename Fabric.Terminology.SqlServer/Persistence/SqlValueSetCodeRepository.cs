@@ -3,17 +3,16 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Linq.Expressions;
     using System.Threading.Tasks;
 
     using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Models;
-    using Fabric.Terminology.Domain.Persistence;
     using Fabric.Terminology.Domain.Persistence.Querying;
     using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Models.Dto;
     using Fabric.Terminology.SqlServer.Persistence.DataContext;
     using Fabric.Terminology.SqlServer.Persistence.Factories;
+    using Fabric.Terminology.SqlServer.Persistence.Ordering;
 
     using Microsoft.EntityFrameworkCore;
 
@@ -27,17 +26,21 @@
 
         private readonly IPagingStrategyFactory pagingStrategyFactory;
 
+        private readonly IOrderingStrategyFactory orderingStragetyFactory;
+
         private readonly SharedContext sharedContext;
 
         public SqlValueSetCodeRepository(
             SharedContext sharedContext,
             ILogger logger,
             ICachingManagerFactory cachingManagerFactory,
-            IPagingStrategyFactory pagingStrategyFactory)
+            IPagingStrategyFactory pagingStrategyFactory,
+            IOrderingStrategyFactory orderingStragetyFactory)
         {
             this.sharedContext = sharedContext;
             this.logger = logger;
             this.pagingStrategyFactory = pagingStrategyFactory;
+            this.orderingStragetyFactory = orderingStragetyFactory;
             this.cacheManager = cachingManagerFactory.ResolveFor<IValueSetCode>();
         }
 
@@ -185,15 +188,13 @@
         {
             var defaultItemsPerPage = this.sharedContext.Settings.DefaultItemsPerPage;
             var pagingStrategy = this.pagingStrategyFactory.GetPagingStrategy<IValueSetCode>(defaultItemsPerPage);
+            var orderingStrategy = this.orderingStragetyFactory.GetValueSetCodeStrategy();
 
             pagingStrategy.EnsurePagerSettings(pagerSettings);
 
             var count = await source.CountAsync();
 
-            var orderExpression = this.GetOrderByExpression(pagerSettings);
-            source = pagerSettings.Direction == SortDirection.Asc
-                         ? source.OrderBy(orderExpression)
-                         : source.OrderByDescending(orderExpression);
+            source = orderingStrategy.SetOrdering(source, pagerSettings.AsOrderingParameters());
 
             var items = await source.Skip((pagerSettings.CurrentPage - 1) * pagerSettings.ItemsPerPage)
                             .Take(pagerSettings.ItemsPerPage)
@@ -206,16 +207,6 @@
                 items.Select(factory.Build),
                 count,
                 pagerSettings);
-        }
-
-        private Expression<Func<ValueSetCodeDto, string>> GetOrderByExpression(IPagerSettings settings)
-        {
-            if (settings.OrderBy != "Name")
-            {
-                throw new ArgumentException("ValueSetCodes may only be ordered by Name");
-            }
-
-            return dto => dto.CodeDSC;
         }
     }
 }

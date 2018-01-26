@@ -4,6 +4,7 @@
     using Fabric.Terminology.Domain.Services;
     using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Persistence;
+    using Fabric.Terminology.SqlServer.Persistence.Ordering;
     using Fabric.Terminology.SqlServer.Persistence.UnitOfWork;
     using Fabric.Terminology.SqlServer.Services;
     using Fabric.Terminology.TestsBase.Fixtures;
@@ -32,12 +33,14 @@
             var clientTermCacheManager = new ClientTermCacheManager(cacheManagerFactory);
             var uow = new ClientTermValueUnitOfWorkManager(this.ClientTermContext.AsLazy(), this.Logger);
             var valueSetStatusChangePolicy = new DefaultValueSetUpdateValidationPolicy();
+            var orderingStrategyFactory = new OrderingStrategyFactory();
 
             var valueSetCodeRepository = new SqlValueSetCodeRepository(
                 this.SharedContext,
                 this.Logger,
                 cacheManagerFactory,
-                pagingStrategyFactory);
+                pagingStrategyFactory,
+                orderingStrategyFactory);
 
             var valueSetCodeCountRepository = new SqlValueSetCodeCountRepository(
                 this.SharedContext,
@@ -48,7 +51,8 @@
                 this.SharedContext,
                 this.Logger,
                 cacheManagerFactory,
-                pagingStrategyFactory);
+                pagingStrategyFactory,
+                orderingStrategyFactory);
 
             var sqlClientTermUowRepository = new SqlClientTermValueSetRepository(
                 this.Logger,
