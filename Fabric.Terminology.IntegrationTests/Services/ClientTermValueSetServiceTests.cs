@@ -38,7 +38,7 @@
         public void CanCreateValueSet(string name, int codeCount)
         {
             // Arrange
-            var apiModel = MockApiModelBuilder.ValueSetCreationApiModel(name, codeCount);
+            var apiModel = MockApiModelBuilder.ClientTermValueSetApiModel(name, codeCount);
 
             // Act
             //var attempt = this.clientTermValueSetService.Create(apiModel);
@@ -63,7 +63,7 @@
         {
             // Arrange
             var expectedCount = initialCodeCount - removeCodeCount;
-            var apiModel = MockApiModelBuilder.ValueSetCreationApiModel(name, initialCodeCount);
+            var apiModel = MockApiModelBuilder.ClientTermValueSetApiModel(name, initialCodeCount);
            // var setup = this.clientTermValueSetService.Create(apiModel);
 
             var setup = this.clientTermCustomizationService.CreateValueSet(apiModel);
@@ -96,16 +96,15 @@
         }
 
         // TODO fix
-        [Theory(Skip = "Codes can no longer be generated and must have a valid codeGuid")]
+        [Theory]
         [InlineData("Add Test 1", 5, 3)]
         [InlineData("Add Test 2", 4000, 24)]
         public void CanAddCodes(string name, int initialCodeCount, int addCodeCount)
         {
             // Arrange
             var expectedCount = initialCodeCount + addCodeCount;
-            var apiModel = MockApiModelBuilder.ValueSetCreationApiModel(name, initialCodeCount);
+            var apiModel = MockApiModelBuilder.ClientTermValueSetApiModel(name, initialCodeCount);
 
-            //var setup = this.clientTermValueSetService.Create(apiModel);
             var setup = this.clientTermCustomizationService.CreateValueSet(apiModel);
 
             setup.Success.Should().BeTrue();
@@ -113,14 +112,13 @@
             var valueSet = setup.Result;
             this.clientTermValueSetService.SaveAsNew(valueSet);
 
-            var codesToAdd = MockApiModelBuilder.CodeSetCodeApiModelCollection(addCodeCount);
+            var updateModel = MockApiModelBuilder.ClientTermValueSetApiModel(name, addCodeCount, true);
 
             // Act
             var result = this.Profiler.ExecuteTimed(
-                    () => this.clientTermValueSetService.AddRemoveCodes(
+                    () => this.clientTermCustomizationService.UpdateValueSet(
                         valueSet.ValueSetGuid,
-                        codesToAdd,
-                        new List<ICodeSystemCode>()))
+                        updateModel))
                 .Result;
 
             // Assert
@@ -143,7 +141,7 @@
         {
             // Arrange
             var expectedCount = initialCodeCount + addCodeCount - removeCodeCount; // no dups
-            var apiModel = MockApiModelBuilder.ValueSetCreationApiModel(name, initialCodeCount);
+            var apiModel = MockApiModelBuilder.ClientTermValueSetApiModel(name, initialCodeCount);
 
             //var setup = this.clientTermValueSetService.Create(apiModel);
             var setup = this.clientTermCustomizationService.CreateValueSet(apiModel);
@@ -183,7 +181,7 @@
         public void CanAddValueSet(string name, int codeCount)
         {
             // Arrange
-            var apiModel = MockApiModelBuilder.ValueSetCreationApiModel(name, codeCount);
+            var apiModel = MockApiModelBuilder.ClientTermValueSetApiModel(name, codeCount);
 
             //var attempt = this.clientTermValueSetService.Create(apiModel);
             var attempt = this.clientTermCustomizationService.CreateValueSet(apiModel);
@@ -218,7 +216,7 @@
             // Arrange
             var valueSetGuid = Guid.Parse(valueSetReferenceId);
             var valueSet = this.valueSetService.GetValueSet(valueSetGuid).Single();
-            var meta = MockApiModelBuilder.ValueSetCreationApiModel(name, 1) as IValueSetMeta;
+            var meta = MockApiModelBuilder.ClientTermValueSetApiModel(name, 1) as IValueSetMeta;
 
             // Act
             var attempt = this.Profiler.ExecuteTimed(() => this.clientTermValueSetService.Copy(valueSet, name, meta));

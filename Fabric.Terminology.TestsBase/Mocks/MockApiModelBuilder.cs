@@ -8,14 +8,19 @@
 
     public class MockApiModelBuilder
     {
-        public static ClientTermValueSetApiModel ValueSetCreationApiModel(
+        public static ClientTermValueSetApiModel ClientTermValueSetApiModel(
             string name,
-            int codeCount = 10)
+            int codeCount = 10,
+            bool secondaryCodeGuids = false)
         {
-            var instructions = CodeSetCodeApiModelCollection(codeCount)
+            var codeGuids = secondaryCodeGuids
+                                ? SharedTerminologyCodeHelper.ValidCodeGuidsSafeToAdd
+                                : SharedTerminologyCodeHelper.ValidCodeGuids;
+
+            var instructions = codeGuids.OrderBy(x => Guid.NewGuid()).Take(codeCount)
                 .Select(x => new CodeOperation
                 {
-                    Value = x.CodeGuid,
+                    Value = x,
                     Instruction = OperationInstruction.Add,
                     Source = CodeOperationSource.CodeSystemCode
                 });
