@@ -1,11 +1,10 @@
-﻿namespace Fabric.Terminology.Domain.Persistence
+﻿namespace Fabric.Terminology.Domain.Persistence.Querying
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
 
     using Fabric.Terminology.Domain.Models;
-    using Fabric.Terminology.Domain.Persistence.Factories;
 
     public class DefaultPagingStrategy<TResult> : IPagingStrategy<TResult>
     {

@@ -1,6 +1,5 @@
 ﻿namespace Fabric.Terminology.TestsBase.Mocks
 {
-    using System;
     using System.Collections.Generic;
 
     using Fabric.Terminology.Domain.Models;

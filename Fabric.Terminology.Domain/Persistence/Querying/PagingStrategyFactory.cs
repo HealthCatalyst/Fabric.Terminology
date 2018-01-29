@@ -1,4 +1,4 @@
-﻿namespace Fabric.Terminology.Domain.Persistence
+﻿namespace Fabric.Terminology.Domain.Persistence.Querying
 {
     public class PagingStrategyFactory : IPagingStrategyFactory
     {

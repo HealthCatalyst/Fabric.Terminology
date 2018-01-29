@@ -6,6 +6,7 @@
     using Fabric.Terminology.Domain.DependencyInjection;
     using Fabric.Terminology.Domain.Services;
     using Fabric.Terminology.SqlServer.Persistence.DataContext;
+    using Fabric.Terminology.SqlServer.Persistence.Ordering;
     using Fabric.Terminology.SqlServer.Services;
 
     using Nancy.TinyIoc;
@@ -24,6 +25,8 @@
             container.Register<ICodeSystemService, SqlCodeSystemService>().AsSingleton();
             container.Register<ICodeSystemCodeService, SqlCodeSystemCodeService>().AsSingleton();
             container.Register<IValueSetComparisonService, ValueSetComparisonService>().AsSingleton();
+
+            container.Register<IOrderingStrategyFactory, OrderingStrategyFactory>().AsSingleton();
         }
     }
 }

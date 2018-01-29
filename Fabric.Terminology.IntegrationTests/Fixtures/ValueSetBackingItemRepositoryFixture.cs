@@ -1,8 +1,9 @@
 ﻿namespace Fabric.Terminology.IntegrationTests.Fixtures
 {
-    using Fabric.Terminology.Domain.Persistence;
+    using Fabric.Terminology.Domain.Persistence.Querying;
     using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Persistence;
+    using Fabric.Terminology.SqlServer.Persistence.Ordering;
     using Fabric.Terminology.TestsBase.Fixtures;
 
     public class ValueSetBackingItemRepositoryFixture : RepositoryFixtureBase
@@ -22,7 +23,8 @@
                 this.SharedContext,
                 this.Logger,
                 cachingManagerFactory,
-                new PagingStrategyFactory());
+                new PagingStrategyFactory(),
+                new OrderingStrategyFactory());
         }
     }
 }

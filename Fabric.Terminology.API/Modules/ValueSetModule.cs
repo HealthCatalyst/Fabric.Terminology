@@ -237,7 +237,7 @@
             {
                 this.Logger.Error(ex, ex.Message);
                 return this.CreateFailureResponse(
-                    "Failed to retrieve the page of value sets",
+                    ex.Message,
                     HttpStatusCode.InternalServerError);
             }
         }
@@ -255,12 +255,15 @@
                                   model.Term,
                                   model.PagerSettings,
                                   codeSystemGuids,
-                                  model.StatusCode)).ToValueSetApiModelPage(codeSystemGuids, MapToValueSetItemApiModel)
+                                  model.StatusCode))
+                            .ToValueSetApiModelPage(codeSystemGuids, MapToValueSetItemApiModel)
+
                            : (await this.valueSetService.GetValueSetsAsync(
                                   model.Term,
                                   model.PagerSettings,
                                   codeSystemGuids,
-                                  model.StatusCode)).ToValueSetApiModelPage(codeSystemGuids, MapToValueSetApiModel);
+                                  model.StatusCode))
+                            .ToValueSetApiModelPage(codeSystemGuids, MapToValueSetApiModel);
             }
             catch (Exception ex)
             {

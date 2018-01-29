@@ -1,9 +1,10 @@
 ﻿namespace Fabric.Terminology.IntegrationTests.Fixtures
 {
-    using Fabric.Terminology.Domain.Persistence;
+    using Fabric.Terminology.Domain.Persistence.Querying;
     using Fabric.Terminology.Domain.Services;
     using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Persistence;
+    using Fabric.Terminology.SqlServer.Persistence.Ordering;
     using Fabric.Terminology.SqlServer.Services;
     using Fabric.Terminology.TestsBase.Fixtures;
 
@@ -20,18 +21,21 @@
         {
             var cacheManagerFactory = new CachingManagerFactory(this.Cache);
             var pagingStrategyFactory = new PagingStrategyFactory();
+            var orderingStrategyFacotry = new OrderingStrategyFactory();
 
             var valueSetBackingItemRepository = new SqlValueSetBackingItemRepository(
                 this.SharedContext,
                 this.Logger,
                 cacheManagerFactory,
-                pagingStrategyFactory);
+                pagingStrategyFactory,
+                orderingStrategyFacotry);
 
             var valueSetCodeRepository = new SqlValueSetCodeRepository(
                 this.SharedContext,
                 this.Logger,
                 cacheManagerFactory,
-                pagingStrategyFactory);
+                pagingStrategyFactory,
+                orderingStrategyFacotry);
 
             var valueSetCodeCountRepository = new SqlValueSetCodeCountRepository(
                 this.SharedContext,

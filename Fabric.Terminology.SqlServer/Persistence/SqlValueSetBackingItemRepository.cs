@@ -11,11 +11,12 @@
 
     using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Models;
-    using Fabric.Terminology.Domain.Persistence;
+    using Fabric.Terminology.Domain.Persistence.Querying;
     using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Models.Dto;
     using Fabric.Terminology.SqlServer.Persistence.DataContext;
     using Fabric.Terminology.SqlServer.Persistence.Factories;
+    using Fabric.Terminology.SqlServer.Persistence.Ordering;
 
     using Microsoft.EntityFrameworkCore;
 
@@ -29,18 +30,22 @@
 
         private readonly IPagingStrategyFactory pagingStrategyFactory;
 
+        private readonly IOrderingStrategyFactory orderingStrategyFactory;
+
         private readonly SharedContext sharedContext;
 
         public SqlValueSetBackingItemRepository(
             SharedContext sharedContext,
             ILogger logger,
             ICachingManagerFactory cachingManagerFactory,
-            IPagingStrategyFactory pagingStrategyFactory)
+            IPagingStrategyFactory pagingStrategyFactory,
+            IOrderingStrategyFactory orderingStrategyFactory)
         {
             this.sharedContext = sharedContext;
             this.logger = logger;
             this.cacheManager = cachingManagerFactory.ResolveFor<IValueSetBackingItem>();
             this.pagingStrategyFactory = pagingStrategyFactory;
+            this.orderingStrategyFactory = orderingStrategyFactory;
         }
 
         private DbSet<ValueSetDescriptionDto> DbSet => this.sharedContext.ValueSetDescriptions;
@@ -67,8 +72,8 @@
 
         public IReadOnlyCollection<IValueSetBackingItem> GetValueSetBackingItemVersions(string valueSetReferenceId)
         {
-            // We have to query here since we use the Guid for the cache key but the results
-            // are cached for use in subesequent requests.
+            // We have to query here since we use the GUID for the cache key but the results
+            // are cached for use in subsequent requests.
             return this.QueryValueSetBackingItems(valueSetReferenceId)
                 .Select(bi => this.cacheManager.GetOrSet(bi.ValueSetGuid, () => bi))
                 .Values()
@@ -126,7 +131,8 @@
             if (!filterText.IsNullOrWhiteSpace())
             {
                 dtos = dtos.Where(
-                    dto => dto.ValueSetNM.Contains(filterText) || dto.ValueSetReferenceID.StartsWith(filterText));
+                    dto => dto.ValueSetNM.Contains(filterText) ||
+                           dto.ValueSetReferenceID.StartsWith(filterText));
             }
 
             var systemCodes = codeSystemGuids as Guid[] ?? codeSystemGuids.ToArray();
@@ -138,6 +144,11 @@
 
                 dtos = dtos.Join(vsGuids, dto => dto.ValueSetGUID, key => key, (dto, key) => dto);
             }
+
+            var orderingStrategy = this.orderingStrategyFactory.GetValueSetStrategy(
+                this.sharedContext,
+                systemCodes);
+            dtos = orderingStrategy.SetOrdering(dtos, pagerSettings.AsOrderingParameters());
 
             return this.CreatePagedCollectionAsync(dtos, pagerSettings);
         }
@@ -158,8 +169,7 @@
             pagingStrategy.EnsurePagerSettings(pagerSettings);
 
             var count = await source.CountAsync();
-            var items = await source.OrderBy(dto => dto.ValueSetNM)
-                            .Skip((pagerSettings.CurrentPage - 1) * pagerSettings.ItemsPerPage)
+            var items = await source.Skip((pagerSettings.CurrentPage - 1) * pagerSettings.ItemsPerPage)
                             .Take(pagerSettings.ItemsPerPage)
                             .ToListAsync();
 

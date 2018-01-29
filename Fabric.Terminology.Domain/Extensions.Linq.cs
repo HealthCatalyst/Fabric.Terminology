@@ -1,7 +1,6 @@
 ﻿namespace Fabric.Terminology.Domain
 {
     using System.Collections.Generic;
-    using System.Linq;
 
     public static partial class Extensions
     {
@@ -25,7 +24,6 @@
                 }
             }
         }
-
 
         public static HashSet<T> ToHashSet<T>(this IEnumerable<T> source)
         {
