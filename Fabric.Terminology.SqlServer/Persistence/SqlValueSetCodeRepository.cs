@@ -26,7 +26,7 @@
 
         private readonly IPagingStrategyFactory pagingStrategyFactory;
 
-        private readonly IOrderingStrategyFactory orderingStragetyFactory;
+        private readonly IOrderingStrategyFactory orderingStrategyFactory;
 
         private readonly SharedContext sharedContext;
 
@@ -35,12 +35,12 @@
             ILogger logger,
             ICachingManagerFactory cachingManagerFactory,
             IPagingStrategyFactory pagingStrategyFactory,
-            IOrderingStrategyFactory orderingStragetyFactory)
+            IOrderingStrategyFactory orderingStrategyFactory)
         {
             this.sharedContext = sharedContext;
             this.logger = logger;
             this.pagingStrategyFactory = pagingStrategyFactory;
-            this.orderingStragetyFactory = orderingStragetyFactory;
+            this.orderingStrategyFactory = orderingStrategyFactory;
             this.cacheManager = cachingManagerFactory.ResolveFor<IValueSetCode>();
         }
 
@@ -188,7 +188,7 @@
         {
             var defaultItemsPerPage = this.sharedContext.Settings.DefaultItemsPerPage;
             var pagingStrategy = this.pagingStrategyFactory.GetPagingStrategy<IValueSetCode>(defaultItemsPerPage);
-            var orderingStrategy = this.orderingStragetyFactory.GetValueSetCodeStrategy();
+            var orderingStrategy = this.orderingStrategyFactory.GetValueSetCodeStrategy();
 
             pagingStrategy.EnsurePagerSettings(pagerSettings);
 
@@ -202,7 +202,8 @@
 
             var factory = new ValueSetCodeFactory();
 
-            // TODO can't cache at this point since codeGuid is null in db.  Fix me
+            // Can't cache at this point since codeGuid can be null in db.
+            // If this changes in the future, caching should/could be implemented.
             return pagingStrategy.CreatePagedCollection(
                 items.Select(factory.Build),
                 count,
