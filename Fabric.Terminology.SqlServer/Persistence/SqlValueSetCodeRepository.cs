@@ -7,11 +7,12 @@
 
     using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Models;
-    using Fabric.Terminology.Domain.Persistence;
+    using Fabric.Terminology.Domain.Persistence.Querying;
     using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Models.Dto;
     using Fabric.Terminology.SqlServer.Persistence.DataContext;
     using Fabric.Terminology.SqlServer.Persistence.Factories;
+    using Fabric.Terminology.SqlServer.Persistence.Ordering;
 
     using Microsoft.EntityFrameworkCore;
 
@@ -25,17 +26,21 @@
 
         private readonly IPagingStrategyFactory pagingStrategyFactory;
 
+        private readonly IOrderingStrategyFactory orderingStrategyFactory;
+
         private readonly SharedContext sharedContext;
 
         public SqlValueSetCodeRepository(
             SharedContext sharedContext,
             ILogger logger,
             ICachingManagerFactory cachingManagerFactory,
-            IPagingStrategyFactory pagingStrategyFactory)
+            IPagingStrategyFactory pagingStrategyFactory,
+            IOrderingStrategyFactory orderingStrategyFactory)
         {
             this.sharedContext = sharedContext;
             this.logger = logger;
             this.pagingStrategyFactory = pagingStrategyFactory;
+            this.orderingStrategyFactory = orderingStrategyFactory;
             this.cacheManager = cachingManagerFactory.ResolveFor<IValueSetCode>();
         }
 
@@ -74,9 +79,7 @@
             IPagerSettings settings,
             IEnumerable<Guid> codeSystemGuids)
         {
-            var dtos = this.GetValueSetCodeQueryable(filterText, settings, codeSystemGuids);
-
-            return this.CreatePagedCollectionAsync(dtos, settings);
+            return this.GetValueSetCodesAsync(filterText, Guid.Empty, settings, codeSystemGuids);
         }
 
         public Task<PagedCollection<IValueSetCode>> GetValueSetCodesAsync(
@@ -85,9 +88,12 @@
             IPagerSettings settings,
             IEnumerable<Guid> codeSystemGuids)
         {
-            var dtos = this.GetValueSetCodeQueryable(filterText, settings, codeSystemGuids);
+            var dtos = this.GetValueSetCodeQueryable(filterText, codeSystemGuids);
 
-            dtos = dtos.Where(dto => dto.ValueSetGUID == valueSetGuid);
+            if (valueSetGuid != Guid.Empty)
+            {
+                dtos = dtos.Where(dto => dto.ValueSetGUID == valueSetGuid);
+            }
 
             return this.CreatePagedCollectionAsync(dtos, settings);
         }
@@ -100,7 +106,6 @@
 
         private IQueryable<ValueSetCodeDto> GetValueSetCodeQueryable(
             string filterText,
-            IPagerSettings settings,
             IEnumerable<Guid> codeSystemGuids)
         {
             var dtos = this.sharedContext.ValueSetCodes.AsQueryable();
@@ -183,18 +188,22 @@
         {
             var defaultItemsPerPage = this.sharedContext.Settings.DefaultItemsPerPage;
             var pagingStrategy = this.pagingStrategyFactory.GetPagingStrategy<IValueSetCode>(defaultItemsPerPage);
+            var orderingStrategy = this.orderingStrategyFactory.GetValueSetCodeStrategy();
 
             pagingStrategy.EnsurePagerSettings(pagerSettings);
 
             var count = await source.CountAsync();
-            var items = await source.OrderBy(dto => dto.CodeDSC)
-                            .Skip((pagerSettings.CurrentPage - 1) * pagerSettings.ItemsPerPage)
+
+            source = orderingStrategy.SetOrdering(source, pagerSettings.AsOrderingParameters());
+
+            var items = await source.Skip((pagerSettings.CurrentPage - 1) * pagerSettings.ItemsPerPage)
                             .Take(pagerSettings.ItemsPerPage)
                             .ToListAsync();
 
             var factory = new ValueSetCodeFactory();
 
-            // TODO can't cache at this point since codeGuid is null in db.  Fixme
+            // Can't cache at this point since codeGuid can be null in db.
+            // If this changes in the future, caching should/could be implemented.
             return pagingStrategy.CreatePagedCollection(
                 items.Select(factory.Build),
                 count,

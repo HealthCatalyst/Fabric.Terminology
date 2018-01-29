@@ -2,8 +2,8 @@
 {
     public enum SortDirection
     {
-        Ascending,
-        Descending
+        Asc,
+        Desc
     }
 
     public enum ValueSetStatus

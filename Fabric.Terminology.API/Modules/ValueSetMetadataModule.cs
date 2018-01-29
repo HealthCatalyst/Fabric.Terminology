@@ -36,6 +36,7 @@
                 typeof(ValueSetStatus),
                 typeof(CodeOperationSource),
                 typeof(OperationInstruction),
+                typeof(SortDirection),
                 typeof(Guid)
                 );
 
@@ -89,7 +90,8 @@
                     ParameterFactory.GetTop(settings.DefaultItemsPerPage),
                     ParameterFactory.GetSummary(),
                     ParameterFactory.GetCodeSystemGuidsArray(),
-                    ParameterFactory.GetQueryStringStatusCode()
+                    ParameterFactory.GetQueryStringStatusCode(),
+                    ParameterFactory.GetOrderBy("Name")
                 },
                 new[] { TagsFactory.GetValueSetTag() });
 

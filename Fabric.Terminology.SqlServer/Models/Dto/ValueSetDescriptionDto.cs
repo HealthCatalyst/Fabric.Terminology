@@ -2,7 +2,9 @@
 
 namespace Fabric.Terminology.SqlServer.Models.Dto
 {
-    internal sealed class ValueSetDescriptionDto : ValueSetDescriptionBaseDto
+    using JetBrains.Annotations;
+
+    internal class ValueSetDescriptionDto : ValueSetDescriptionBaseDto
     {
         public string ClientTermFLG { get; set; }
     }

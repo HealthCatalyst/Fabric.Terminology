@@ -4,16 +4,11 @@
     using System.Collections.Generic;
     using System.Linq;
 
-    using CallMeMaybe;
-
-    using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Services;
     using Fabric.Terminology.IntegrationTests.Fixtures;
     using Fabric.Terminology.TestsBase;
 
     using FluentAssertions;
-
-    using Microsoft.AspNetCore.Http.Internal;
 
     using Xunit;
     using Xunit.Abstractions;

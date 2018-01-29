@@ -1,8 +1,6 @@
 ﻿namespace Fabric.Terminology.TestsBase
 {
-    using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
 
     using Fabric.Terminology.API.Configuration;
 
@@ -10,7 +8,6 @@
 
     public static class TestHelper
     {
-
         public static FileInfo GetAppConfigFile()
         {
             var fileName = $"appsettings.json";

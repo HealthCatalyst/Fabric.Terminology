@@ -5,5 +5,9 @@
         int CurrentPage { get; set; }
 
         int ItemsPerPage { get; set; }
+
+        string OrderBy { get; set; }
+
+        SortDirection Direction { get; set; }
     }
 }
