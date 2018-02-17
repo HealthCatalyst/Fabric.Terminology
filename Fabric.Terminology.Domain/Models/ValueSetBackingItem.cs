@@ -12,7 +12,7 @@
 
         public string DefinitionDescription { get; internal set; }
 
-        public string AuthoringSourceDescription { get; internal set; }
+        public string AuthorityDescription { get; internal set; }
 
         public string SourceDescription { get; internal set; }
 

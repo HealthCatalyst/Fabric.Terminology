@@ -23,7 +23,7 @@
             this.VersionDate = meta.VersionDate;
             this.ClientCode = meta.ClientCode;
             this.DefinitionDescription = meta.DefinitionDescription;
-            this.AuthoringSourceDescription = meta.AuthoringSourceDescription;
+            this.AuthorityDescription = meta.AuthorityDescription;
             this.SourceDescription = meta.SourceDescription;
             var codes = codeSetCodes.Select(c => new ValueSetCode(c)).ToList();
             this.ValueSetCodes = codes;

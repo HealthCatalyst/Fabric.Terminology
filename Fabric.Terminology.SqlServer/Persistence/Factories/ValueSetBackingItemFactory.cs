@@ -23,7 +23,7 @@
 
             return new ValueSetBackingItem
             {
-                AuthoringSourceDescription = dto.AuthorityDSC,
+                AuthorityDescription = dto.AuthorityDSC,
                 ClientCode = dto.ClientCD,
                 DefinitionDescription = dto.DefinitionDSC,
                 IsLatestVersion = dto.LatestVersionFLG == "Y",

@@ -10,7 +10,7 @@
 
         string DefinitionDescription { get; }
 
-        string AuthoringSourceDescription { get; }
+        string AuthorityDescription { get; }
 
         string SourceDescription { get; }
     }
