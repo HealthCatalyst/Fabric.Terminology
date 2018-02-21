@@ -105,7 +105,7 @@ namespace Fabric.Terminology.SqlServer.Persistence
 
                 vsd.SourceDSC = parameters.ValueSetMeta.SourceDescription;
                 vsd.ValueSetNM = parameters.Name;
-                vsd.AuthorityDSC = parameters.ValueSetMeta.AuthoringSourceDescription;
+                vsd.AuthorityDSC = parameters.ValueSetMeta.AuthorityDescription;
                 vsd.ClientCD = parameters.ValueSetMeta.ClientCode;
                 vsd.DefinitionDSC = parameters.ValueSetMeta.DefinitionDescription;
 

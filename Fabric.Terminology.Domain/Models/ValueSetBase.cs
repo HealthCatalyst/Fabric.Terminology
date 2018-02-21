@@ -13,7 +13,7 @@ namespace Fabric.Terminology.Domain.Models
             this.ValueSetGuid = backingItem.ValueSetGuid;
             this.Name = backingItem.Name;
             this.VersionDate = backingItem.VersionDate;
-            this.AuthoringSourceDescription = backingItem.AuthoringSourceDescription;
+            this.AuthorityDescription = backingItem.AuthorityDescription;
             this.DefinitionDescription = backingItem.DefinitionDescription;
             this.SourceDescription = backingItem.SourceDescription;
             this.ValueSetReferenceId = backingItem.ValueSetReferenceId;
@@ -28,7 +28,7 @@ namespace Fabric.Terminology.Domain.Models
 
         public string DefinitionDescription { get; internal set; }
 
-        public string AuthoringSourceDescription { get; internal set; }
+        public string AuthorityDescription { get; internal set; }
 
         public string SourceDescription { get; internal set; }
 

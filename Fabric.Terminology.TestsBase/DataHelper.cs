@@ -36,7 +36,7 @@
             return new ValueSet
             {
                 ValueSetGuid = valueSetGuid,
-                AuthoringSourceDescription = "author",
+                AuthorityDescription = "author",
                 IsCustom = true,
                 Name = $"test{settings.IdSuffix}",
                 DefinitionDescription = "purpose",

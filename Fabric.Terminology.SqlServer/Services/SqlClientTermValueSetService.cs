@@ -93,7 +93,7 @@
                             return this.clientTermValueSetRepository.Patch(parameters);
                         })
                 .Else(Attempt<IValueSet>
-                        .Failed(new InvalidOperationException(FormattableString.Invariant($"ValueSet with with ValueSetGUID {parameters.ValueSetGuid} was not found."))));
+                        .Failed(new InvalidOperationException(FormattableString.Invariant($"ValueSet with ValueSetGUID {parameters.ValueSetGuid} was not found."))));
         }
 
         public void SaveAsNew(IValueSet valueSet)
@@ -189,7 +189,7 @@
             var errors = new List<string>
             {
                 ValidateProperty(nameof(meta.ClientCode), meta.ClientCode),
-                ValidateProperty(nameof(meta.AuthoringSourceDescription), meta.AuthoringSourceDescription),
+                ValidateProperty(nameof(meta.AuthorityDescription), meta.AuthorityDescription),
                 ValidateProperty(nameof(meta.DefinitionDescription), meta.DefinitionDescription),
                 ValidateProperty(nameof(meta.SourceDescription), meta.SourceDescription)
             };

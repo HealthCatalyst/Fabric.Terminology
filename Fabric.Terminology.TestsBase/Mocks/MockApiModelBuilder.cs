@@ -28,7 +28,7 @@
             return new ClientTermValueSetApiModel
             {
                 Name = name,
-                AuthoringSourceDescription = "Test Authoring Source Description",
+                AuthorityDescription = "Test Authoring Source Description",
                 DefinitionDescription = "Test Purpose Description",
                 SourceDescription = "Test Source Description",
                 CodeOperations = instructions,
