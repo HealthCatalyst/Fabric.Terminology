@@ -53,7 +53,7 @@
             this.valueSetComparisonService = valueSetComparisonService;
             this.valueSetValidator = valueSetValidator;
 
-            this.Get("/", _ => this.GetValueSetPage(), null, "GetPaged");
+            this.Get("/", async _ => await this.GetValueSetPage(), null, "GetPaged");
 
             this.Get("/{valueSetGuid}", parameters => this.GetValueSet(parameters.valueSetGuid), null, "GetValueSet");
 
@@ -65,11 +65,11 @@
 
             this.Post("/multiple/", _ => this.GetMultipleValueSets(), null, "GetMultipleValueSets");
 
-            this.Post("/search/", _ => this.Search(), null, "Search");
+            this.Post("/search/", async _ => await this.Search(), null, "Search");
 
             this.Post("/copy/", _ => this.CopyValueSet(), null, "CopyValueSet");
 
-            this.Post("/compare/", _ => this.CompareValueSets(), null, "CompareValueSets");
+            this.Post("/compare/", async _ => await this.CompareValueSets(), null, "CompareValueSets");
 
             this.Post("/", _ => this.AddValueSet(), null, "AddValueSet");
 
