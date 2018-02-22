@@ -28,15 +28,15 @@
         {
             this.codeSystemCodeService = codeSystemCodeService;
 
-            this.Get("/", _ => this.GetCodeSystemCodePage(), null, "GetPagedCodeSystemCodes");
+            this.Get("/", async _ => await this.GetCodeSystemCodePage(), null, "GetPagedCodeSystemCodes");
 
             this.Get("/{codeGuid}", parameters => this.GetCodeSystemCode(parameters.codeGuid), null, "GetCodeSystemCode");
 
-            this.Post("/batch/", _ => this.GetBatch(), null, "GetBatchCodes");
+            this.Post("/batch/", async _ => await this.GetBatch(), null, "GetBatchCodes");
 
             this.Post("/multiple/", _ => this.GetMultiple(), null, "GetCodeSystemCodes");
 
-            this.Post("/search/", _ => this.Search(), null, "SearchCodeSystemCodes");
+            this.Post("/search/", async _ => await this.Search(), null, "SearchCodeSystemCodes");
         }
 
         private static MultipleCodeSystemCodeQuery EnsureQueryModel(MultipleCodeSystemCodeQuery model)
