@@ -27,6 +27,10 @@
 
         Task<PagedCollection<IValueSet>> GetValueSetsAsync(
             IPagerSettings settings,
+            bool latestVersionsOnly = true);
+
+        Task<PagedCollection<IValueSet>> GetValueSetsAsync(
+            IPagerSettings settings,
             IEnumerable<ValueSetStatus> statusCodes,
             bool latestVersionsOnly = true);
 

@@ -91,6 +91,15 @@ namespace Fabric.Terminology.SqlServer.Services
             return this.BuildValueSets(backingItems, codes, counts);
         }
 
+        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings settings, bool latestVersionsOnly = true)
+        {
+            return this.GetValueSetsAsync(
+                settings,
+                new List<Guid>(),
+                new List<ValueSetStatus> { ValueSetStatus.Active },
+                latestVersionsOnly);
+        }
+
         public Task<PagedCollection<IValueSet>> GetValueSetsAsync(
             IPagerSettings settings,
             IEnumerable<ValueSetStatus> statusCodes,

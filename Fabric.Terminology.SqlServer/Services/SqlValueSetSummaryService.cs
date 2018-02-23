@@ -82,6 +82,11 @@
             return this.BuildValueSetSummaries(backingItems, counts);
         }
 
+        public Task<PagedCollection<IValueSetSummary>> GetValueSetSummariesAsync(IPagerSettings settings, bool latestVersionsOnly = true)
+        {
+            return this.GetValueSetSummariesAsync(settings, new List<Guid>(), new List<ValueSetStatus> { ValueSetStatus.Active }, latestVersionsOnly);
+        }
+
         public Task<PagedCollection<IValueSetSummary>> GetValueSetSummariesAsync(
             IPagerSettings settings,
             IEnumerable<ValueSetStatus> statusCodes,
