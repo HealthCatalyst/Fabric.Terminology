@@ -241,7 +241,7 @@ namespace Fabric.Terminology.SqlServer.Persistence
                 .Else(NotFoundAttempt);
 
             Attempt<IValueSet> NotFoundAttempt() =>
-                Attempt<IValueSet>.Failed(new ValueSetNotFoundException($"A value set in 'Draft' status with ValueSetGuid {valueSetGuid} could not be found."));
+                Attempt<IValueSet>.Failed(new ValueSetNotFoundException($"A customizable (ClientTerm) value set in with ValueSetGuid {valueSetGuid} could not be found. Published Shared Terminology value sets are may not be altered via this API."));
         }
 
         private IReadOnlyCollection<IValueSetCode> GetCodes(Guid valueSetGuid)
