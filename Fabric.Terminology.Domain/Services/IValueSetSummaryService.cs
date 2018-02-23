@@ -24,26 +24,30 @@
 
         Task<PagedCollection<IValueSetSummary>> GetValueSetSummariesAsync(
             IPagerSettings settings,
-            ValueSetStatus statusCode = ValueSetStatus.Active,
+            bool latestVersionsOnly = true);
+
+        Task<PagedCollection<IValueSetSummary>> GetValueSetSummariesAsync(
+            IPagerSettings settings,
+            IEnumerable<ValueSetStatus> statusCodes,
             bool latestVersionsOnly = true);
 
         Task<PagedCollection<IValueSetSummary>> GetValueSetSummariesAsync(
             IPagerSettings settings,
             IEnumerable<Guid> codeSystemGuids,
-            ValueSetStatus statusCode = ValueSetStatus.Active,
+            IEnumerable<ValueSetStatus> statusCodes,
             bool latestVersionsOnly = true);
 
         Task<PagedCollection<IValueSetSummary>> GetValueSetSummariesAsync(
             string nameFilterText,
             IPagerSettings pagerSettings,
-            ValueSetStatus statusCode = ValueSetStatus.Active,
+            IEnumerable<ValueSetStatus> statusCodes,
             bool latestVersionsOnly = true);
 
         Task<PagedCollection<IValueSetSummary>> GetValueSetSummariesAsync(
             string nameFilterText,
             IPagerSettings pagerSettings,
             IEnumerable<Guid> codeSystemGuids,
-            ValueSetStatus statusCode = ValueSetStatus.Active,
+            IEnumerable<ValueSetStatus> statusCodes,
             bool latestVersionsOnly = true);
     }
 }

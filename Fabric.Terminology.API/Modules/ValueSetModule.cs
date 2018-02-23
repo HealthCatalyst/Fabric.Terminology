@@ -255,14 +255,14 @@
                                   model.Term,
                                   model.PagerSettings,
                                   codeSystemGuids,
-                                  model.StatusCode))
+                                  model.StatusCodes))
                             .ToValueSetApiModelPage(codeSystemGuids, MapToValueSetItemApiModel)
 
                            : (await this.valueSetService.GetValueSetsAsync(
                                   model.Term,
                                   model.PagerSettings,
                                   codeSystemGuids,
-                                  model.StatusCode))
+                                  model.StatusCodes))
                             .ToValueSetApiModelPage(codeSystemGuids, MapToValueSetApiModel);
             }
             catch (Exception ex)
@@ -469,14 +469,18 @@
             return val.IsNullOrWhiteSpace() || ret;
         }
 
-        private ValueSetStatus GetValueSetStatusCode()
+        private IEnumerable<ValueSetStatus> GetValueSetStatusCode()
         {
-            if (!Enum.TryParse((string)this.Request.Query["$status"], true, out ValueSetStatus statusCode))
+            var statuses = this.CreateParameterArray((string)this.Request.Query["$status"]);
+            foreach (var status in statuses)
             {
-                statusCode = ValueSetStatus.Active;
-            }
+                if (!Enum.TryParse(status, true, out ValueSetStatus statusCode))
+                {
+                    statusCode = ValueSetStatus.Active;
+                }
 
-            return statusCode;
+                yield return statusCode;
+            }
         }
 
         private ValueSetFindByTermQuery EnsureQueryModel(ValueSetFindByTermQuery model)
