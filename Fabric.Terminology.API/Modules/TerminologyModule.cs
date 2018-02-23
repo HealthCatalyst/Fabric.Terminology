@@ -109,7 +109,7 @@
             }
         }
 
-        private string[] CreateParameterArray(string value, char splitChar = ',')
+        protected string[] CreateParameterArray(string value, char splitChar = ',')
         {
             if (value.IsNullOrWhiteSpace())
             {
