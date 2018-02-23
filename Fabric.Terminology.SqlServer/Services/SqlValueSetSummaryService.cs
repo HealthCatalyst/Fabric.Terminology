@@ -84,47 +84,47 @@
 
         public Task<PagedCollection<IValueSetSummary>> GetValueSetSummariesAsync(
             IPagerSettings settings,
-            ValueSetStatus statusCode = ValueSetStatus.Active,
+            IEnumerable<ValueSetStatus> statusCodes,
             bool latestVersionsOnly = true)
         {
-            return this.GetValueSetSummariesAsync(settings, new List<Guid>(), statusCode, latestVersionsOnly);
+            return this.GetValueSetSummariesAsync(settings, new List<Guid>(), statusCodes, latestVersionsOnly);
         }
 
         public Task<PagedCollection<IValueSetSummary>> GetValueSetSummariesAsync(
             IPagerSettings settings,
             IEnumerable<Guid> codeSystemGuids,
-            ValueSetStatus statusCode = ValueSetStatus.Active,
+            IEnumerable<ValueSetStatus> statusCodes,
             bool latestVersionsOnly = true)
         {
             return this.GetValueSetSummariesAsync(
                 string.Empty,
                 settings,
                 codeSystemGuids,
-                statusCode,
+                statusCodes,
                 latestVersionsOnly);
         }
 
         public Task<PagedCollection<IValueSetSummary>> GetValueSetSummariesAsync(
             string nameFilterText,
             IPagerSettings pagerSettings,
-            ValueSetStatus statusCode = ValueSetStatus.Active,
+            IEnumerable<ValueSetStatus> statusCodes,
             bool latestVersionsOnly = true)
         {
-            return this.GetValueSetSummariesAsync(nameFilterText, pagerSettings, new List<Guid>(), statusCode, latestVersionsOnly);
+            return this.GetValueSetSummariesAsync(nameFilterText, pagerSettings, new List<Guid>(), statusCodes, latestVersionsOnly);
         }
 
         public async Task<PagedCollection<IValueSetSummary>> GetValueSetSummariesAsync(
             string nameFilterText,
             IPagerSettings pagerSettings,
             IEnumerable<Guid> codeSystemGuids,
-            ValueSetStatus statusCode = ValueSetStatus.Active,
+            IEnumerable<ValueSetStatus> statusCodes,
             bool latestVersionsOnly = true)
         {
             var backingItemPage = await this.valueSetBackingItemRepository.GetValueSetBackingItemsAsync(
                                       nameFilterText,
                                       pagerSettings,
                                       codeSystemGuids,
-                                      statusCode,
+                                      statusCodes,
                                       latestVersionsOnly);
 
             var countsDictionary =

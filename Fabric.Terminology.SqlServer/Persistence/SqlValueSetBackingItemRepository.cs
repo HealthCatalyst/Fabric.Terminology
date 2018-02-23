@@ -108,14 +108,14 @@
         public Task<PagedCollection<IValueSetBackingItem>> GetValueSetBackingItemsAsync(
             IPagerSettings pagerSettings,
             IEnumerable<Guid> codeSystemGuids,
-            ValueSetStatus statusCode = ValueSetStatus.Active,
+            IEnumerable<ValueSetStatus> statusCodes,
             bool latestVersionsOnly = true)
         {
             return this.GetValueSetBackingItemsAsync(
                 string.Empty,
                 pagerSettings,
                 codeSystemGuids,
-                statusCode,
+                statusCodes,
                 latestVersionsOnly);
         }
 
@@ -123,10 +123,10 @@
             string filterText,
             IPagerSettings pagerSettings,
             IEnumerable<Guid> codeSystemGuids,
-            ValueSetStatus statusCode = ValueSetStatus.Active,
+            IEnumerable<ValueSetStatus> statusCodes,
             bool latestVersionsOnly = true)
         {
-            var dtos = latestVersionsOnly ? this.DbSet.Where(GetBaseExpression(statusCode)) : this.DbSet.AsQueryable();
+            var dtos = latestVersionsOnly ? this.DbSet.Where(GetBaseExpression(statusCodes)) : this.DbSet.AsQueryable();
 
             if (!filterText.IsNullOrWhiteSpace())
             {
@@ -153,9 +153,21 @@
             return this.CreatePagedCollectionAsync(dtos, pagerSettings);
         }
 
-        private static Expression<Func<ValueSetDescriptionDto, bool>> GetBaseExpression(ValueSetStatus statusCode)
+        private static Expression<Func<ValueSetDescriptionDto, bool>> GetBaseExpression(IEnumerable<ValueSetStatus> statusCode)
         {
-            return baseSql => baseSql.LatestVersionFLG == "Y" && baseSql.StatusCD == statusCode.ToString();
+            var statuses = EnsureValueSetStatuses();
+            return baseSql => baseSql.LatestVersionFLG == "Y" && statuses.Contains(baseSql.StatusCD);
+
+            IReadOnlyCollection<string> EnsureValueSetStatuses()
+            {
+                var valueSetStatuses = statusCode as ValueSetStatus[] ?? statusCode.ToArray();
+                if (!valueSetStatuses.Any())
+                {
+                    return new[] { ValueSetStatus.Active.ToString() };
+                }
+
+                return valueSetStatuses.Select(sc => sc.ToString()).ToList();
+            }
         }
 
         private async Task<PagedCollection<IValueSetBackingItem>> CreatePagedCollectionAsync(

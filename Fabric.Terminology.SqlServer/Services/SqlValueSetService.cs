@@ -93,42 +93,42 @@ namespace Fabric.Terminology.SqlServer.Services
 
         public Task<PagedCollection<IValueSet>> GetValueSetsAsync(
             IPagerSettings settings,
-            ValueSetStatus statusCode = ValueSetStatus.Active,
+            IEnumerable<ValueSetStatus> statusCodes,
             bool latestVersionsOnly = true)
         {
-            return this.GetValueSetsAsync(settings, new List<Guid>(), statusCode, latestVersionsOnly);
+            return this.GetValueSetsAsync(settings, new List<Guid>(), statusCodes, latestVersionsOnly);
         }
 
         public Task<PagedCollection<IValueSet>> GetValueSetsAsync(
             IPagerSettings settings,
             IEnumerable<Guid> codeSystemGuids,
-            ValueSetStatus statusCode = ValueSetStatus.Active,
+            IEnumerable<ValueSetStatus> statusCodes,
             bool latestVersionsOnly = true)
         {
-            return this.GetValueSetsAsync(string.Empty, settings, codeSystemGuids, statusCode, latestVersionsOnly);
+            return this.GetValueSetsAsync(string.Empty, settings, codeSystemGuids, statusCodes, latestVersionsOnly);
         }
 
         public Task<PagedCollection<IValueSet>> GetValueSetsAsync(
             string filterText,
             IPagerSettings pagerSettings,
-            ValueSetStatus statusCode = ValueSetStatus.Active,
+            IEnumerable<ValueSetStatus> statusCodes,
             bool latestVersionsOnly = true)
         {
-            return this.GetValueSetsAsync(filterText, pagerSettings, new List<Guid>(), statusCode, latestVersionsOnly);
+            return this.GetValueSetsAsync(filterText, pagerSettings, new List<Guid>(), statusCodes, latestVersionsOnly);
         }
 
         public async Task<PagedCollection<IValueSet>> GetValueSetsAsync(
             string filterText,
             IPagerSettings pagerSettings,
             IEnumerable<Guid> codeSystemGuids,
-            ValueSetStatus statusCode = ValueSetStatus.Active,
+            IEnumerable<ValueSetStatus> statusCodes,
             bool latestVersionsOnly = true)
         {
             var backingItemPage = await this.valueSetBackingItemRepository.GetValueSetBackingItemsAsync(
                                       filterText,
                                       pagerSettings,
                                       codeSystemGuids,
-                                      statusCode,
+                                      statusCodes,
                                       latestVersionsOnly);
 
             var valueSetGuids = backingItemPage.Values.Select(bi => bi.ValueSetGuid).ToList();

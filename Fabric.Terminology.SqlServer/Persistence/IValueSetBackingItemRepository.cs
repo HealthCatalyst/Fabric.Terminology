@@ -28,14 +28,14 @@
         Task<PagedCollection<IValueSetBackingItem>> GetValueSetBackingItemsAsync(
             IPagerSettings pagerSettings,
             IEnumerable<Guid> codeSystemGuids,
-            ValueSetStatus statusCode = ValueSetStatus.Active,
+            IEnumerable<ValueSetStatus> statusCodes,
             bool latestVersionsOnly = true);
 
         Task<PagedCollection<IValueSetBackingItem>> GetValueSetBackingItemsAsync(
             string filterText,
             IPagerSettings pagerSettings,
             IEnumerable<Guid> codeSystemGuids,
-            ValueSetStatus statusCode = ValueSetStatus.Active,
+            IEnumerable<ValueSetStatus> statusCodes,
             bool latestVersionsOnly = true);
 
         bool ValueSetGuidExists(Guid valueSetGuid);
