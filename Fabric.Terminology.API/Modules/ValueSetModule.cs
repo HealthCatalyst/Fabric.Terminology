@@ -313,11 +313,12 @@
                 {
                     var model = this.Bind<ClientTermValueSetApiModel>();
 
-                    // Ensure that there are not code operations that reference value set to be patched
-                    if (model.CodeOperations.Any(
-                        co => co.Source == CodeOperationSource.ValueSet && co.Value == valueSetGuid))
+                    var validated = ValueSetPatchHelper.ValidatePatchModel(valueSetGuid, model);
+                    if (!validated.Success)
                     {
-                        return this.CreateFailureResponse("Request for bulk code operation references the same value set the operation would be applied to.", HttpStatusCode.BadRequest);
+                        return this.CreateFailureResponse(
+                            validated.Exception == null ? "Validation failed" : validated.Exception.Message,
+                            HttpStatusCode.BadRequest);
                     }
 
                     return this.valueSetService.GetValueSet(valueSetGuid)
