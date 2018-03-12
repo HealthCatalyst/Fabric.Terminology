@@ -132,7 +132,7 @@
             {
                 dtos = dtos.Where(
                     dto => dto.ValueSetNM.Contains(filterText) ||
-                           dto.ValueSetReferenceID.StartsWith(filterText));
+                           dto.ValueSetReferenceID.StartsWith(filterText)).AsQueryable();
             }
 
             var systemCodes = codeSystemGuids as Guid[] ?? codeSystemGuids.ToArray();
@@ -142,7 +142,7 @@
                     .Select(code => code.ValueSetGUID)
                     .Distinct();
 
-                dtos = dtos.Join(vsGuids, dto => dto.ValueSetGUID, key => key, (dto, key) => dto);
+                dtos = dtos.Join(vsGuids, dto => dto.ValueSetGUID, key => key, (dto, key) => dto).AsQueryable();
             }
 
             var orderingStrategy = this.orderingStrategyFactory.GetValueSetStrategy(
