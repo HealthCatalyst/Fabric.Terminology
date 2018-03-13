@@ -34,14 +34,5 @@
         {
             return new ValueSetCodeDto();
         }
-
-        internal static ValueSetCodeDto ValueSetCodeDto(
-            ValueSetDescriptionDto valueSetDto,
-            string codeCd,
-            string codeDsc,
-            ICodeSystem codeSystem)
-        {
-            return new ValueSetCodeDto();
-        }
     }
 }
