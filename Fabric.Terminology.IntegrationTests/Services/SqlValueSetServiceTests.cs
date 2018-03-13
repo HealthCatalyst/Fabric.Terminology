@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
 
+    using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Services;
     using Fabric.Terminology.IntegrationTests.Fixtures;
@@ -69,14 +70,14 @@
 
         [Theory]
         [InlineData(10, 1)]
-        [InlineData(20, 2)]
+        [InlineData(20, 2, "codeCount", SortDirection.Desc)]
         [InlineData(20, 3)]
         [InlineData(100, 1)]
         [InlineData(100, 2)]
-        public void CanGetValueSetPages(int itemsPerPage, int pageNumber)
+        public void CanGetValueSetPages(int itemsPerPage, int pageNumber, string orderBy = "Name", SortDirection direction = SortDirection.Asc)
         {
             // Arrange
-            var pagerSettings = new PagerSettings { CurrentPage = pageNumber, ItemsPerPage = itemsPerPage };
+            var pagerSettings = new PagerSettings { CurrentPage = pageNumber, ItemsPerPage = itemsPerPage, OrderBy = orderBy, Direction = direction };
 
             // Act
             var page = this.Profiler.ExecuteTimed(async () => await this.valueSetService.GetValueSetsAsync(pagerSettings));
@@ -93,6 +94,49 @@
             summaryPage.TotalItems.Should().BeGreaterThan(0);
             summaryPage.TotalPages.Should().BeGreaterThan(0);
             summaryPage.Values.Count.Should().BeLessOrEqualTo(itemsPerPage);
+        }
+
+        [Theory]
+        [InlineData("cancer", "codeCount", SortDirection.Asc)]
+        [InlineData("cancer", "codeCount", SortDirection.Asc, false)]
+        [InlineData("cancer", "codeCount", SortDirection.Desc)]
+        [InlineData("cancer", "codeCount", SortDirection.Desc, false)]
+        [InlineData("cancer", "name", SortDirection.Desc)]
+        [InlineData("cancer", "name", SortDirection.Asc)]
+        [InlineData("diabetes", "valuesetreferenceid", SortDirection.Asc)]
+        [InlineData("diabetes", "valuesetreferenceid", SortDirection.Desc, false)]
+        [InlineData("diabetes", "sourcedescription", SortDirection.Asc, false)]
+        [InlineData("diabetes", "sourcedescription", SortDirection.Desc)]
+        [InlineData("diabetes", "versiondate", SortDirection.Asc)]
+        [InlineData("diabetes", "versiondate", SortDirection.Desc, false)]
+        // See issue #87 - value set query by ensuring the queryable is not prematurely executed
+        public void CanSearchValueSetsWithCodeSystemFiltersAndOrderingChanges(string term, string orderBy = "Name", SortDirection direction = SortDirection.Asc, bool useCodeFilter = true)
+        {
+            // Arrange
+            const int ItemsPerPage = 10;
+            var pagerSettings = new PagerSettings { CurrentPage = 1, ItemsPerPage = ItemsPerPage, OrderBy = orderBy, Direction = direction };
+
+            var codeSystemGuids = new List<Guid>
+            {
+                Guid.Parse("87846E70-CA84-4D5D-B414-C301F7BFEFAA"),
+                Guid.Parse("87F53B39-2EDF-4045-82CF-93010055A5B8")
+            };
+
+            // Act
+            var page = this.Profiler.ExecuteTimed(
+                async () => await this.valueSetService.GetValueSetsAsync(
+                                term,
+                                pagerSettings,
+                                useCodeFilter ? codeSystemGuids : new List<Guid>(),
+                                new List<ValueSetStatus>()));
+
+            this.Output.WriteLine($"Total Values {page.TotalItems}");
+            this.Output.WriteLine($"Total Pages {page.TotalPages}");
+
+            // Assert
+            page.TotalItems.Should().BeGreaterThan(0);
+            page.TotalPages.Should().BeGreaterThan(0);
+            page.Values.Count.Should().BeLessOrEqualTo(ItemsPerPage);
         }
 
         [Theory]
