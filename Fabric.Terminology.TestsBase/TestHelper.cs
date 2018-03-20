@@ -1,6 +1,7 @@
 ﻿namespace Fabric.Terminology.TestsBase
 {
     using System.IO;
+
     using Fabric.Terminology.API.Configuration;
 
     using Newtonsoft.Json;

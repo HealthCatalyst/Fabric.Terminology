@@ -70,10 +70,37 @@
             return new Parameter
             {
                 Name = "$summary",
-                Description = "Indicates ValueSets returned should be partial summaries - e.g. codes listing is not complete and intended to be used for presentation.",
+                Description =
+                    "Indicates ValueSets returned should be partial summaries - e.g. codes listing is not complete and intended to be used for presentation.",
                 Required = false,
                 In = ParameterIn.Query,
                 Type = "boolean"
+            };
+        }
+
+        public static Parameter GetQueryStringStatusCode()
+        {
+            return new Parameter
+            {
+                Name = "$status",
+                Description = "The ValueSet status code.  Valid values are 'Active', 'Draft', 'Archived'",
+                Required = false,
+                In = ParameterIn.Query,
+                CollectionFormat = CollectionFormats.Csv,
+                Type = "string"
+            };
+        }
+
+        public static Parameter GetPathStatusCode()
+        {
+            return new Parameter
+            {
+                Name = "statusCode",
+                Description = "The ValueSet status code.  Valid values are 'Active', 'Draft', 'Archived'",
+                Required = true,
+                In = ParameterIn.Path,
+                Type = "string",
+                Enum = new[] { "Active", "Draft", "Archived" }
             };
         }
 
@@ -111,6 +138,31 @@
                 In = ParameterIn.Query,
                 Required = false,
                 Type = "integer"
+            };
+        }
+
+        public static Parameter GetOrderBy(string orderBy)
+        {
+            return new Parameter
+            {
+                Name = "$orderBy",
+                Description = "Optional parameter to set the ordering expression.  Default field is 'Name'.  Default direction is 'asc'.  If direction is omitted 'asc' is assumed.",
+                Required = false,
+                In = ParameterIn.Query,
+                Type = "string",
+                Enum = new[]
+                {
+                    "Name asc",
+                    "Name desc",
+                    "ValueSetReferenceId asc",
+                    "ValueSetReferenceId desc",
+                    "SourceDescription asc",
+                    "SourceDescription desc",
+                    "VersionDate asc",
+                    "VersionDate desc",
+                    "CodeCount asc",
+                    "CodeCount desc"
+                }
             };
         }
     }

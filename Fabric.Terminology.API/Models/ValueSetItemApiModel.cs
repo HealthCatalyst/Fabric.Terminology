@@ -15,7 +15,7 @@
 
         public Guid OriginGuid { get; set; }
 
-        public string ClientCode { get; set; }
+        public string StatusCode { get; set; }
 
         public bool IsCustom { get; set; }
 

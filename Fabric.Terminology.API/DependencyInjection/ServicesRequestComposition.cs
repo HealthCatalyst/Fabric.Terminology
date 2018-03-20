@@ -2,9 +2,11 @@
 {
     using System;
 
+    using Fabric.Terminology.API.Services;
     using Fabric.Terminology.Domain.DependencyInjection;
     using Fabric.Terminology.Domain.Services;
     using Fabric.Terminology.SqlServer.Persistence.DataContext;
+    using Fabric.Terminology.SqlServer.Persistence.Ordering;
     using Fabric.Terminology.SqlServer.Services;
 
     using Nancy.TinyIoc;
@@ -17,9 +19,14 @@
             container.Register<Lazy<ClientTermContext>>((c, p) => c.Resolve<ClientTermContextFactory>().CreateLazy());
             container.Register<IValueSetService, SqlValueSetService>().AsSingleton();
             container.Register<IValueSetSummaryService, SqlValueSetSummaryService>().AsSingleton();
+            container.Register<IValueSetCodeService, SqlValueSetCodeService>().AsSingleton();
             container.Register<IClientTermValueSetService, SqlClientTermValueSetService>().AsSingleton();
+            container.Register<IClientTermCustomizationService, ClientTermCustomizationService>().AsSingleton();
             container.Register<ICodeSystemService, SqlCodeSystemService>().AsSingleton();
             container.Register<ICodeSystemCodeService, SqlCodeSystemCodeService>().AsSingleton();
+            container.Register<IValueSetComparisonService, ValueSetComparisonService>().AsSingleton();
+
+            container.Register<IOrderingStrategyFactory, OrderingStrategyFactory>().AsSingleton();
         }
     }
 }

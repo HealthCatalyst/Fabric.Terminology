@@ -12,7 +12,7 @@
 
         public string DefinitionDescription { get; internal set; }
 
-        public string AuthoringSourceDescription { get; internal set; }
+        public string AuthorityDescription { get; internal set; }
 
         public string SourceDescription { get; internal set; }
 
@@ -21,6 +21,8 @@
         public Guid OriginGuid { get; internal set; }
 
         public string ClientCode { get; internal set; }
+
+        public ValueSetStatus StatusCode { get; internal set; }
 
         public bool IsCustom { get; internal set; }
 

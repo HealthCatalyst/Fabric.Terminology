@@ -23,7 +23,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CallMeMaybe" Version="0.6.6" />
+    <PackageReference Include="AutoMapper" Version="6.1.1" />
+    <PackageReference Include="CallMeMaybe" Version="0.6.8" />
     <PackageReference Include="FluentValidation" Version="7.1.1" />
   </ItemGroup>
 

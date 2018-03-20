@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
 
+    using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.IntegrationTests.Fixtures;
     using Fabric.Terminology.SqlServer.Persistence;
@@ -49,7 +50,7 @@
             var pagerSettings = new PagerSettings { CurrentPage = pageNumber, ItemsPerPage = itemsPerPage };
 
             // Act
-            var page = this.Profiler.ExecuteTimed(async () => await this.repository.GetValueSetBackingItemsAsync(pagerSettings, new List<Guid>()));
+            var page = this.Profiler.ExecuteTimed(async () => await this.repository.GetValueSetBackingItemsAsync(pagerSettings, new List<Guid>(), new List<ValueSetStatus> { ValueSetStatus.Active }));
             this.Output.WriteLine($"Total Values {page.TotalItems}");
             this.Output.WriteLine($"Total Pages {page.TotalPages}");
 

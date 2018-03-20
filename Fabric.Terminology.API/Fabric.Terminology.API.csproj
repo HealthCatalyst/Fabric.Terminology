@@ -17,30 +17,27 @@
   <ItemGroup>
     <Compile Remove="Logs\**" />
     <Compile Remove="Properties\PublishProfiles\**" />
-    <Compile Remove="Services\**" />
     <Compile Remove="wwwroot\swagger\dist\**" />
     <Content Remove="Logs\**" />
     <Content Remove="Properties\PublishProfiles\**" />
-    <Content Remove="Services\**" />
     <Content Remove="wwwroot\swagger\dist\**" />
     <EmbeddedResource Remove="Logs\**" />
     <EmbeddedResource Remove="Properties\PublishProfiles\**" />
-    <EmbeddedResource Remove="Services\**" />
     <EmbeddedResource Remove="wwwroot\swagger\dist\**" />
     <None Remove="Logs\**" />
     <None Remove="Properties\PublishProfiles\**" />
-    <None Remove="Services\**" />
     <None Remove="wwwroot\swagger\dist\**" />
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Models\ClientTermRequestInterpreter.cs" />
     <Compile Remove="Modules\ClientTermValueSetModule.cs" />
     <Compile Remove="Modules\ValueSetBackingItemModule.cs" />
     <Compile Remove="Modules\ValueSetSummaryModule.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="automapper" Version="6.1.1" />
+    <PackageReference Include="AutoMapper" Version="6.1.1" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore" Version="1.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Owin" Version="1.1.2" />

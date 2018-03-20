@@ -3,6 +3,7 @@
     using Fabric.Terminology.API.Configuration;
     using Fabric.Terminology.API.DependencyInjection;
     using Fabric.Terminology.API.Validators;
+    using Fabric.Terminology.Domain.Services;
     using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Configuration;
 
@@ -80,6 +81,9 @@
             container.Register<ICachingManagerFactory, CachingManagerFactory>().AsSingleton();
             container.Register<ICodeSystemCachingManager, CodeSystemCachingManager>().AsSingleton();
             container.Register<ICodeSystemCodeCachingManager, CodeSystemCodeCachingManager>().AsSingleton();
+            container.Register<IClientTermCacheManager, ClientTermCacheManager>().AsSingleton();
+
+            container.Register<IValueSetUpdateValidationPolicy, DefaultValueSetUpdateValidationPolicy>().AsSingleton();
 
             // Persistence (Must precede service registration)
             container.ComposeFrom<SqlAppComposition>();

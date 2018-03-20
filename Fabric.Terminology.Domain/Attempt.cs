@@ -10,9 +10,11 @@
     {
         public bool Success { get; private set; }
 
-        public Maybe<T> Result { get; private set; }
+        [CanBeNull]
+        public T Result { get; private set; }
 
-        public Maybe<Exception> Exception { get; private set; }
+        [CanBeNull]
+        public Exception Exception { get; private set; }
 
         public static Attempt<T> Successful(T result)
         {

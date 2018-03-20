@@ -7,6 +7,7 @@ namespace Fabric.Terminology.SqlServer.Services
 
     using CallMeMaybe;
 
+    using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Exceptions;
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Services;
@@ -58,7 +59,9 @@ namespace Fabric.Terminology.SqlServer.Services
             return this.GetValueSetsListAsync(valueSetGuids, new List<Guid>());
         }
 
-        public async Task<IReadOnlyCollection<IValueSet>> GetValueSetsListAsync(IEnumerable<Guid> valueSetGuids, IEnumerable<Guid> codeSystemGuids)
+        public async Task<IReadOnlyCollection<IValueSet>> GetValueSetsListAsync(
+            IEnumerable<Guid> valueSetGuids,
+            IEnumerable<Guid> codeSystemGuids)
         {
             var setGuids = valueSetGuids as Guid[] ?? valueSetGuids.ToArray();
             var backingItems = this.valueSetBackingItemRepository.GetValueSetBackingItems(setGuids, codeSystemGuids);
@@ -90,25 +93,51 @@ namespace Fabric.Terminology.SqlServer.Services
 
         public Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings settings, bool latestVersionsOnly = true)
         {
-            return this.GetValueSetsAsync(settings, new List<Guid>(), latestVersionsOnly);
+            return this.GetValueSetsAsync(
+                settings,
+                new List<Guid>(),
+                new List<ValueSetStatus> { ValueSetStatus.Active },
+                latestVersionsOnly);
         }
 
-        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(IPagerSettings settings, IEnumerable<Guid> codeSystemGuids, bool latestVersionsOnly = true)
+        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(
+            IPagerSettings settings,
+            IEnumerable<ValueSetStatus> statusCodes,
+            bool latestVersionsOnly = true)
         {
-            return this.GetValueSetsAsync(string.Empty, settings, codeSystemGuids, latestVersionsOnly);
+            return this.GetValueSetsAsync(settings, new List<Guid>(), statusCodes, latestVersionsOnly);
         }
 
-        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(string filterText, IPagerSettings pagerSettings, bool latestVersionsOnly = true)
+        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(
+            IPagerSettings settings,
+            IEnumerable<Guid> codeSystemGuids,
+            IEnumerable<ValueSetStatus> statusCodes,
+            bool latestVersionsOnly = true)
         {
-            return this.GetValueSetsAsync(filterText, pagerSettings, new List<Guid>(), latestVersionsOnly);
+            return this.GetValueSetsAsync(string.Empty, settings, codeSystemGuids, statusCodes, latestVersionsOnly);
         }
 
-        public async Task<PagedCollection<IValueSet>> GetValueSetsAsync(string filterText, IPagerSettings pagerSettings, IEnumerable<Guid> codeSystemGuids, bool latestVersionsOnly = true)
+        public Task<PagedCollection<IValueSet>> GetValueSetsAsync(
+            string filterText,
+            IPagerSettings pagerSettings,
+            IEnumerable<ValueSetStatus> statusCodes,
+            bool latestVersionsOnly = true)
+        {
+            return this.GetValueSetsAsync(filterText, pagerSettings, new List<Guid>(), statusCodes, latestVersionsOnly);
+        }
+
+        public async Task<PagedCollection<IValueSet>> GetValueSetsAsync(
+            string filterText,
+            IPagerSettings pagerSettings,
+            IEnumerable<Guid> codeSystemGuids,
+            IEnumerable<ValueSetStatus> statusCodes,
+            bool latestVersionsOnly = true)
         {
             var backingItemPage = await this.valueSetBackingItemRepository.GetValueSetBackingItemsAsync(
                                       filterText,
                                       pagerSettings,
                                       codeSystemGuids,
+                                      statusCodes,
                                       latestVersionsOnly);
 
             var valueSetGuids = backingItemPage.Values.Select(bi => bi.ValueSetGuid).ToList();

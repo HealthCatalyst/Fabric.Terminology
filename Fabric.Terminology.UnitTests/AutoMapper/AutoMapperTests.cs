@@ -33,7 +33,6 @@
 
             // Assert
             mapped.Should().NotBeNull();
-            mapped.Should().BeEquivalentTo(valueSet, o => o.Excluding(p => p.ValueSetCodes));
 
             var codes = valueSet.ValueSetCodes.ToArray();
             var mappedCodes = mapped.ValueSetCodes.ToArray();

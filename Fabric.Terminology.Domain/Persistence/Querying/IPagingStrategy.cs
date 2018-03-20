@@ -1,4 +1,4 @@
-﻿namespace Fabric.Terminology.Domain.Persistence
+﻿namespace Fabric.Terminology.Domain.Persistence.Querying
 {
     using System.Collections.Generic;
 

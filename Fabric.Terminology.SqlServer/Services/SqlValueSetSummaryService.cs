@@ -7,6 +7,7 @@
 
     using CallMeMaybe;
 
+    using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Exceptions;
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Services;
@@ -81,39 +82,54 @@
             return this.BuildValueSetSummaries(backingItems, counts);
         }
 
+        public Task<PagedCollection<IValueSetSummary>> GetValueSetSummariesAsync(IPagerSettings settings, bool latestVersionsOnly = true)
+        {
+            return this.GetValueSetSummariesAsync(settings, new List<Guid>(), new List<ValueSetStatus> { ValueSetStatus.Active }, latestVersionsOnly);
+        }
+
         public Task<PagedCollection<IValueSetSummary>> GetValueSetSummariesAsync(
             IPagerSettings settings,
+            IEnumerable<ValueSetStatus> statusCodes,
             bool latestVersionsOnly = true)
         {
-            return this.GetValueSetSummariesAsync(settings, new List<Guid>());
+            return this.GetValueSetSummariesAsync(settings, new List<Guid>(), statusCodes, latestVersionsOnly);
         }
 
         public Task<PagedCollection<IValueSetSummary>> GetValueSetSummariesAsync(
             IPagerSettings settings,
             IEnumerable<Guid> codeSystemGuids,
+            IEnumerable<ValueSetStatus> statusCodes,
             bool latestVersionsOnly = true)
         {
-            return this.GetValueSetSummariesAsync(string.Empty, settings, codeSystemGuids);
+            return this.GetValueSetSummariesAsync(
+                string.Empty,
+                settings,
+                codeSystemGuids,
+                statusCodes,
+                latestVersionsOnly);
         }
 
         public Task<PagedCollection<IValueSetSummary>> GetValueSetSummariesAsync(
             string nameFilterText,
             IPagerSettings pagerSettings,
+            IEnumerable<ValueSetStatus> statusCodes,
             bool latestVersionsOnly = true)
         {
-            return this.GetValueSetSummariesAsync(nameFilterText, pagerSettings, new List<Guid>());
+            return this.GetValueSetSummariesAsync(nameFilterText, pagerSettings, new List<Guid>(), statusCodes, latestVersionsOnly);
         }
 
         public async Task<PagedCollection<IValueSetSummary>> GetValueSetSummariesAsync(
             string nameFilterText,
             IPagerSettings pagerSettings,
             IEnumerable<Guid> codeSystemGuids,
+            IEnumerable<ValueSetStatus> statusCodes,
             bool latestVersionsOnly = true)
         {
             var backingItemPage = await this.valueSetBackingItemRepository.GetValueSetBackingItemsAsync(
                                       nameFilterText,
                                       pagerSettings,
                                       codeSystemGuids,
+                                      statusCodes,
                                       latestVersionsOnly);
 
             var countsDictionary =

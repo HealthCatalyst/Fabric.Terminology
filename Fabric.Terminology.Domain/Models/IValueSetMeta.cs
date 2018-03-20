@@ -4,11 +4,13 @@
 
     public interface IValueSetMeta
     {
+        string ClientCode { get; }
+
         DateTime VersionDate { get; }
 
         string DefinitionDescription { get; }
 
-        string AuthoringSourceDescription { get; }
+        string AuthorityDescription { get; }
 
         string SourceDescription { get; }
     }

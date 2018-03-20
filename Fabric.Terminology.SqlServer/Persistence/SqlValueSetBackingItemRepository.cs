@@ -11,11 +11,12 @@
 
     using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Models;
-    using Fabric.Terminology.Domain.Persistence;
+    using Fabric.Terminology.Domain.Persistence.Querying;
     using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Models.Dto;
     using Fabric.Terminology.SqlServer.Persistence.DataContext;
     using Fabric.Terminology.SqlServer.Persistence.Factories;
+    using Fabric.Terminology.SqlServer.Persistence.Ordering;
 
     using Microsoft.EntityFrameworkCore;
 
@@ -23,24 +24,28 @@
 
     internal class SqlValueSetBackingItemRepository : IValueSetBackingItemRepository
     {
-        private readonly SharedContext sharedContext;
+        private readonly IValueSetCachingManager<IValueSetBackingItem> cacheManager;
 
         private readonly ILogger logger;
 
-        private readonly IValueSetCachingManager<IValueSetBackingItem> cacheManager;
-
         private readonly IPagingStrategyFactory pagingStrategyFactory;
+
+        private readonly IOrderingStrategyFactory orderingStrategyFactory;
+
+        private readonly SharedContext sharedContext;
 
         public SqlValueSetBackingItemRepository(
             SharedContext sharedContext,
             ILogger logger,
             ICachingManagerFactory cachingManagerFactory,
-            IPagingStrategyFactory pagingStrategyFactory)
+            IPagingStrategyFactory pagingStrategyFactory,
+            IOrderingStrategyFactory orderingStrategyFactory)
         {
             this.sharedContext = sharedContext;
             this.logger = logger;
             this.cacheManager = cachingManagerFactory.ResolveFor<IValueSetBackingItem>();
             this.pagingStrategyFactory = pagingStrategyFactory;
+            this.orderingStrategyFactory = orderingStrategyFactory;
         }
 
         private DbSet<ValueSetDescriptionDto> DbSet => this.sharedContext.ValueSetDescriptions;
@@ -67,8 +72,8 @@
 
         public IReadOnlyCollection<IValueSetBackingItem> GetValueSetBackingItemVersions(string valueSetReferenceId)
         {
-            // We have to query here since we use the Guid for the cache key but the results
-            // are cached for use in subesequent requests.
+            // We have to query here since we use the GUID for the cache key but the results
+            // are cached for use in subsequent requests.
             return this.QueryValueSetBackingItems(valueSetReferenceId)
                 .Select(bi => this.cacheManager.GetOrSet(bi.ValueSetGuid, () => bi))
                 .Values()
@@ -95,7 +100,7 @@
 
             backingItems.AddRange(
                 this.QueryValueSetBackingItems(remaining, codeSystemGuids.ToList())
-                    .Select(bi => this.cacheManager.GetOrSet(bi.ValueSetGuid, () => bi)).Values());
+                    .SelectMany(bi => this.cacheManager.GetOrSet(bi.ValueSetGuid, () => bi)));
 
             return backingItems;
         }
@@ -103,23 +108,31 @@
         public Task<PagedCollection<IValueSetBackingItem>> GetValueSetBackingItemsAsync(
             IPagerSettings pagerSettings,
             IEnumerable<Guid> codeSystemGuids,
+            IEnumerable<ValueSetStatus> statusCodes,
             bool latestVersionsOnly = true)
         {
-            return this.GetValueSetBackingItemsAsync(string.Empty, pagerSettings, codeSystemGuids);
+            return this.GetValueSetBackingItemsAsync(
+                string.Empty,
+                pagerSettings,
+                codeSystemGuids,
+                statusCodes,
+                latestVersionsOnly);
         }
 
         public Task<PagedCollection<IValueSetBackingItem>> GetValueSetBackingItemsAsync(
             string filterText,
             IPagerSettings pagerSettings,
             IEnumerable<Guid> codeSystemGuids,
+            IEnumerable<ValueSetStatus> statusCodes,
             bool latestVersionsOnly = true)
         {
-            var dtos = latestVersionsOnly ? this.DbSet.Where(GetBaseExpression()) : this.DbSet.AsQueryable();
+            var dtos = latestVersionsOnly ? this.DbSet.Where(GetBaseExpression(statusCodes)) : this.DbSet.AsQueryable();
 
             if (!filterText.IsNullOrWhiteSpace())
             {
-                // TODO need to match filtering mechanic
-                dtos = dtos.Where(dto => dto.ValueSetNM.Contains(filterText) || dto.ValueSetReferenceID.StartsWith(filterText));
+                dtos = dtos.Where(
+                    dto => dto.ValueSetNM.Contains(filterText) ||
+                           dto.ValueSetReferenceID.StartsWith(filterText));
             }
 
             var systemCodes = codeSystemGuids as Guid[] ?? codeSystemGuids.ToArray();
@@ -132,12 +145,29 @@
                 dtos = dtos.Join(vsGuids, dto => dto.ValueSetGUID, key => key, (dto, key) => dto);
             }
 
+            var orderingStrategy = this.orderingStrategyFactory.GetValueSetStrategy(
+                this.sharedContext,
+                systemCodes);
+            dtos = orderingStrategy.SetOrdering(dtos, pagerSettings.AsOrderingParameters());
+
             return this.CreatePagedCollectionAsync(dtos, pagerSettings);
         }
 
-        private static Expression<Func<ValueSetDescriptionDto, bool>> GetBaseExpression()
+        private static Expression<Func<ValueSetDescriptionDto, bool>> GetBaseExpression(IEnumerable<ValueSetStatus> statusCode)
         {
-            return baseSql => baseSql.LatestVersionFLG == "Y" && baseSql.StatusCD == "Active";
+            var statuses = EnsureValueSetStatuses();
+            return baseSql => baseSql.LatestVersionFLG == "Y" && statuses.Contains(baseSql.StatusCD);
+
+            IReadOnlyCollection<string> EnsureValueSetStatuses()
+            {
+                var valueSetStatuses = statusCode as ValueSetStatus[] ?? statusCode.ToArray();
+                if (!valueSetStatuses.Any())
+                {
+                    return new[] { ValueSetStatus.Active.ToString() };
+                }
+
+                return valueSetStatuses.Select(sc => sc.ToString()).ToList();
+            }
         }
 
         private async Task<PagedCollection<IValueSetBackingItem>> CreatePagedCollectionAsync(
@@ -145,26 +175,27 @@
             IPagerSettings pagerSettings)
         {
             var defaultItemsPerPage = this.sharedContext.Settings.DefaultItemsPerPage;
-            var pagingStrategy = this.pagingStrategyFactory.GetPagingStrategy<IValueSetBackingItem>(defaultItemsPerPage);
+            var pagingStrategy =
+                this.pagingStrategyFactory.GetPagingStrategy<IValueSetBackingItem>(defaultItemsPerPage);
 
             pagingStrategy.EnsurePagerSettings(pagerSettings);
 
             var count = await source.CountAsync();
-            var items = await source.OrderBy(dto => dto.ValueSetNM)
-                            .Skip((pagerSettings.CurrentPage - 1) * pagerSettings.ItemsPerPage)
+            var items = await source.Skip((pagerSettings.CurrentPage - 1) * pagerSettings.ItemsPerPage)
                             .Take(pagerSettings.ItemsPerPage)
                             .ToListAsync();
 
             var factory = new ValueSetBackingItemFactory();
 
             return pagingStrategy.CreatePagedCollection(
-                    items.Select(i => this.cacheManager.GetOrSet(i.ValueSetGUID, () => factory.Build(i))
-                ).Values(),
+                items.Select(i => this.cacheManager.GetOrSet(i.ValueSetGUID, () => factory.Build(i))).Values(),
                 count,
                 pagerSettings);
         }
 
-        private IEnumerable<IValueSetBackingItem> QueryValueSetBackingItems(IReadOnlyCollection<Guid> valueSetGuids, IReadOnlyCollection<Guid> codeSystemGuids)
+        private IEnumerable<IValueSetBackingItem> QueryValueSetBackingItems(
+            IReadOnlyCollection<Guid> valueSetGuids,
+            IReadOnlyCollection<Guid> codeSystemGuids)
         {
             var factory = new ValueSetBackingItemFactory();
 
@@ -179,7 +210,8 @@
 
                 if (codeSystemGuids.Any())
                 {
-                    var vsGuids = this.sharedContext.ValueSetCodes.Where(code => codeSystemGuids.Contains(code.CodeSystemGuid))
+                    var vsGuids = this.sharedContext.ValueSetCodes
+                        .Where(code => codeSystemGuids.Contains(code.CodeSystemGuid))
                         .Select(code => code.ValueSetGUID)
                         .Distinct();
 

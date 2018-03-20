@@ -1,6 +1,5 @@
 ﻿namespace Fabric.Terminology.TestsBase.Mocks
 {
-    using System;
     using System.Collections.Generic;
 
     using Fabric.Terminology.Domain.Models;
@@ -32,15 +31,6 @@
             ValueSetDescriptionDto valueSetDto,
             string codeCd,
             string codeDsc)
-        {
-            return new ValueSetCodeDto();
-        }
-
-        internal static ValueSetCodeDto ValueSetCodeDto(
-            ValueSetDescriptionDto valueSetDto,
-            string codeCd,
-            string codeDsc,
-            ICodeSystem codeSystem)
         {
             return new ValueSetCodeDto();
         }

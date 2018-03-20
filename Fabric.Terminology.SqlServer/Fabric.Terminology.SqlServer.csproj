@@ -25,7 +25,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CallMeMaybe" Version="0.6.6" />
+    <PackageReference Include="AutoMapper" Version="6.1.1" />
+    <PackageReference Include="CallMeMaybe" Version="0.6.8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="1.1.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="1.1.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="1.1.1" />
@@ -47,5 +48,14 @@
     <Compile Update="Constants.*.cs">
       <DependentUpon>Constants.cs</DependentUpon>
     </Compile>
-	</ItemGroup>
+    <Compile Update="Persistence\UnitOfWork\ClientTermValueUnitOfWorkManager.*.cs">
+      <DependentUpon>ClientTermValueUnitOfWorkManager.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Persistence\SqlClientTermUnitOfWorkRepository.*.cs">
+      <DependentUpon>SqlClientTermUnitOfWorkRepository.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Persistence\SqlClientTermValueSetRepository.UoWOperation.cs">
+      <DependentUpon>SqlClientTermValueSetRepository.cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
 </Project>

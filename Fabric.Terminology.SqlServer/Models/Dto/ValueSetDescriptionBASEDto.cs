@@ -21,8 +21,9 @@ namespace Fabric.Terminology.SqlServer.Models.Dto
             this.ValueSetNM = valueSet.Name;
             this.VersionDTS = valueSet.VersionDate;
             this.DefinitionDSC = valueSet.DefinitionDescription;
+            this.AuthorityDSC = valueSet.AuthorityDescription;
             this.SourceDSC = valueSet.SourceDescription;
-            this.StatusCD = "Active";
+            this.StatusCD = valueSet.StatusCode.ToString();
             this.OriginGUID = valueSet.OriginGuid;
             this.ClientCD = valueSet.ClientCode;
             this.LastModifiedDTS = DateTime.UtcNow;

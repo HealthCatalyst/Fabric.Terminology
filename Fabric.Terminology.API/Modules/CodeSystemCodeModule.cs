@@ -6,8 +6,6 @@
 
     using AutoMapper;
 
-    using CallMeMaybe;
-
     using Fabric.Terminology.API.Configuration;
     using Fabric.Terminology.API.Models;
     using Fabric.Terminology.Domain.Models;
@@ -30,13 +28,15 @@
         {
             this.codeSystemCodeService = codeSystemCodeService;
 
-            this.Get("/", _ => this.GetCodeSystemCodePage(), null, "GetPagedCodeSystemCodes");
+            this.Get("/", async _ => await this.GetCodeSystemCodePage(), null, "GetPagedCodeSystemCodes");
 
             this.Get("/{codeGuid}", parameters => this.GetCodeSystemCode(parameters.codeGuid), null, "GetCodeSystemCode");
 
+            this.Post("/batch/", async _ => await this.GetBatch(), null, "GetBatchCodes");
+
             this.Post("/multiple/", _ => this.GetMultiple(), null, "GetCodeSystemCodes");
 
-            this.Post("/search/", _ => this.Search(), null, "SearchCodeSystemCodes");
+            this.Post("/search/", async _ => await this.Search(), null, "SearchCodeSystemCodes");
         }
 
         private static MultipleCodeSystemCodeQuery EnsureQueryModel(MultipleCodeSystemCodeQuery model)
@@ -44,6 +44,21 @@
             if (model.CodeGuids == null)
             {
                 model.CodeGuids = new Guid[] { };
+            }
+
+            return model;
+        }
+
+        private static BatchCodeQuery EnsureQueryModel(BatchCodeQuery model)
+        {
+            if (model.Codes == null)
+            {
+                model.Codes = new string[] { };
+            }
+
+            if (model.CodeSystemGuids == null)
+            {
+                model.CodeSystemGuids = new Guid[] { };
             }
 
             return model;
@@ -96,6 +111,31 @@
 
                 return this.codeSystemCodeService.GetCodeSystemCodes(model.CodeGuids)
                     .Select(Mapper.Map<CodeSystemCodeApiModel>);
+            }
+            catch (Exception ex)
+            {
+                this.Logger.Error(ex, ex.Message);
+                return this.CreateFailureResponse(
+                    ex.Message,
+                    HttpStatusCode.InternalServerError);
+            }
+        }
+
+        private async Task<object> GetBatch()
+        {
+            try
+            {
+                var model = EnsureQueryModel(this.Bind<BatchCodeQuery>(new BindingConfig { BodyOnly = true }));
+
+                if (!model.Codes.Any())
+                {
+                    return this.CreateFailureResponse("Codes array cannot be empty.", HttpStatusCode.BadRequest);
+                }
+
+                var results =
+                    await this.codeSystemCodeService.GetCodeSystemCodesBatchAsync(model.Codes, model.CodeSystemGuids);
+
+                return Mapper.Map<BatchCodeResultApiModel>(results);
             }
             catch (Exception ex)
             {

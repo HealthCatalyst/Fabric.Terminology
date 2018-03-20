@@ -13,12 +13,13 @@ namespace Fabric.Terminology.Domain.Models
             this.ValueSetGuid = backingItem.ValueSetGuid;
             this.Name = backingItem.Name;
             this.VersionDate = backingItem.VersionDate;
-            this.AuthoringSourceDescription = backingItem.AuthoringSourceDescription;
+            this.AuthorityDescription = backingItem.AuthorityDescription;
             this.DefinitionDescription = backingItem.DefinitionDescription;
             this.SourceDescription = backingItem.SourceDescription;
             this.ValueSetReferenceId = backingItem.ValueSetReferenceId;
             this.OriginGuid = backingItem.OriginGuid;
             this.ClientCode = backingItem.ClientCode;
+            this.StatusCode = backingItem.StatusCode;
             this.IsCustom = backingItem.IsCustom;
             this.IsLatestVersion = backingItem.IsLatestVersion;
         }
@@ -27,7 +28,7 @@ namespace Fabric.Terminology.Domain.Models
 
         public string DefinitionDescription { get; internal set; }
 
-        public string AuthoringSourceDescription { get; internal set; }
+        public string AuthorityDescription { get; internal set; }
 
         public string SourceDescription { get; internal set; }
 
@@ -40,6 +41,8 @@ namespace Fabric.Terminology.Domain.Models
         public Guid OriginGuid { get; internal set; }
 
         public string ClientCode { get; internal set; }
+
+        public ValueSetStatus StatusCode { get; internal set; } = ValueSetStatus.Active;
 
         public bool IsCustom { get; internal set; }
 
