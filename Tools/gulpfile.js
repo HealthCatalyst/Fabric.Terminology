@@ -6,7 +6,7 @@ var argv = require('yargs').argv;
 
 var version = new function () {
     // Change these to set the assembly version
-    this.releaseComment = "alpha";
+    this.releaseComment = "";
     this.major = 0;
     this.minor = 7;
     this.patch = 0; // changing this will reset the build number in local
