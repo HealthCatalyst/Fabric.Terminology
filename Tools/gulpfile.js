@@ -8,7 +8,7 @@ var version = new function () {
     // Change these to set the assembly version
     this.releaseComment = "alpha";
     this.major = 0;
-    this.minor = 6;
+    this.minor = 7;
     this.patch = 0; // changing this will reset the build number in local
 
     // do not assign. 
@@ -50,7 +50,7 @@ gulp.task("version", ["version:comment"], () => {
         }
         var info = {
             title: "Fabric.Terminology",
-            description: "Service to provide shared healthcare terminology data",
+            description: "Service to provide shared health care terminology data",
             configuration: "",
             company: "Health Catalyst",
             product: "Fabric.Terminology",
