@@ -25,12 +25,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{D92C1446
 		Tools\package.json = Tools\package.json
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Analyzers", "Analyzers", "{84B1F8E3-E87D-4E57-B48D-9A0640BCABA4}"
-	ProjectSection(SolutionItems) = preProject
-		Catalyst.MinimumRecommendedRules.ruleset = Catalyst.MinimumRecommendedRules.ruleset
-		Catalyst.MostRules.Error.ruleset = Catalyst.MostRules.Error.ruleset
-		Catalyst.TestRules.ruleset = Catalyst.TestRules.ruleset
-	EndProjectSection
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{BA6B3403-3331-4D2C-86C0-364C1F1E2488}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
