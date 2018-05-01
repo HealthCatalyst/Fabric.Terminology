@@ -1,13 +1,9 @@
 ﻿namespace Fabric.Terminology.API
 {
-    using System;
-
     using AutoMapper;
 
     using Fabric.Terminology.API.Configuration;
     using Fabric.Terminology.API.Logging;
-    using Fabric.Terminology.API.Models;
-    using Fabric.Terminology.Domain.Models;
 
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
