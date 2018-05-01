@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Fabric.Terminology.SqlServer.Persistence.Factories
+﻿namespace Fabric.Terminology.SqlServer.Persistence.Factories
 {
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence.Factories;

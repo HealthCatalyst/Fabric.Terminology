@@ -28,22 +28,22 @@
         {
             this.codeSystemCodeService = codeSystemCodeService;
 
-            this.Get("/", async _ => await this.GetCodeSystemCodePage(), null, "GetPagedCodeSystemCodes");
+            this.Get("/", async _ => await this.GetCodeSystemCodePage().ConfigureAwait(false), null, "GetPagedCodeSystemCodes");
 
             this.Get("/{codeGuid}", parameters => this.GetCodeSystemCode(parameters.codeGuid), null, "GetCodeSystemCode");
 
-            this.Post("/batch/", async _ => await this.GetBatch(), null, "GetBatchCodes");
+            this.Post("/batch/", async _ => await this.GetBatch().ConfigureAwait(false), null, "GetBatchCodes");
 
             this.Post("/multiple/", _ => this.GetMultiple(), null, "GetCodeSystemCodes");
 
-            this.Post("/search/", async _ => await this.Search(), null, "SearchCodeSystemCodes");
+            this.Post("/search/", async _ => await this.Search().ConfigureAwait(false), null, "SearchCodeSystemCodes");
         }
 
         private static MultipleCodeSystemCodeQuery EnsureQueryModel(MultipleCodeSystemCodeQuery model)
         {
             if (model.CodeGuids == null)
             {
-                model.CodeGuids = new Guid[] { };
+                model.CodeGuids = Array.Empty<Guid>();
             }
 
             return model;
@@ -53,12 +53,12 @@
         {
             if (model.Codes == null)
             {
-                model.Codes = new string[] { };
+                model.Codes = Array.Empty<string>();
             }
 
             if (model.CodeSystemGuids == null)
             {
-                model.CodeSystemGuids = new Guid[] { };
+                model.CodeSystemGuids = Array.Empty<Guid>();
             }
 
             return model;
@@ -72,7 +72,7 @@
                     .GetCodeSystemCode(codeGuid)
                     .Select(m => (object)Mapper.Map<CodeSystemCodeApiModel>(m))
                     .Else(() => this.CreateFailureResponse(
-                            "Code sytem with codeSystemGuid was not found",
+                            "Code system with codeSystemGuid was not found",
                             HttpStatusCode.NotFound));
             }
             catch (Exception ex)
@@ -91,7 +91,7 @@
                 var pagerSettings = this.GetPagerSettings();
                 var codeSystemGuids = this.GetCodeSystems();
 
-                return (await this.codeSystemCodeService.GetCodeSystemCodesAsync(pagerSettings, codeSystemGuids))
+                return (await this.codeSystemCodeService.GetCodeSystemCodesAsync(pagerSettings, codeSystemGuids).ConfigureAwait(false))
                     .ToCodeSystemCodeApiModelPage();
             }
             catch (Exception ex)
@@ -133,7 +133,7 @@
                 }
 
                 var results =
-                    await this.codeSystemCodeService.GetCodeSystemCodesBatchAsync(model.Codes, model.CodeSystemGuids);
+                    await this.codeSystemCodeService.GetCodeSystemCodesBatchAsync(model.Codes, model.CodeSystemGuids).ConfigureAwait(false);
 
                 return Mapper.Map<BatchCodeResultApiModel>(results);
             }
@@ -155,7 +155,8 @@
                 return (await this.codeSystemCodeService.GetCodeSystemCodesAsync(
                             model.Term,
                             model.PagerSettings,
-                            model.CodeSystemGuids)).ToCodeSystemCodeApiModelPage();
+                            model.CodeSystemGuids)
+                            .ConfigureAwait(false)).ToCodeSystemCodeApiModelPage();
             }
             catch (Exception ex)
             {
@@ -177,7 +178,7 @@
 
             if (model.CodeSystemGuids == null)
             {
-                model.CodeSystemGuids = new Guid[] { };
+                model.CodeSystemGuids = Array.Empty<Guid>();
             }
 
             if (model.Term == null)

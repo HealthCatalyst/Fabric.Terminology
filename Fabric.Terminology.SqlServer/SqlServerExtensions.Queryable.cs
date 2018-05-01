@@ -11,7 +11,7 @@
 
     using Remotion.Linq.Parsing.Structure;
 
-    public static partial class Extensions
+    public static partial class SqlServerExtensions
     {
         //// http://rion.io/2016/10/19/accessing-entity-framework-core-queries-behind-the-scenes-in-asp-net-core/
 

@@ -1,7 +1,7 @@
-﻿using System;
-
-namespace Fabric.Terminology.Domain.Models
+﻿namespace Fabric.Terminology.Domain.Models
 {
+    using System;
+
     public abstract class ValueSetBase : IValueSetBackingItem
     {
         protected ValueSetBase()

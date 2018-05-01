@@ -33,7 +33,7 @@
                     new HttpResponseMetadata<IEnumerable<CodeSystemApiModel>> { Code = 200, Message = "OK" },
                     new HttpResponseMetadata { Code = 500, Message = "Internal Server Error" }
                 },
-                new Parameter[] { },
+                Array.Empty<Parameter>(),
                 new[] { TagsFactory.GetCodeSystemTag() });
 
             this.RouteDescriber.DescribeRouteWithParams(

@@ -1,7 +1,10 @@
 ﻿namespace Fabric.Terminology.SqlServer.Configuration
 {
+    using NullGuard;
+
     public class TerminologySqlSettings : IMemoryCacheSettings
     {
+        [AllowNull]
         public string ConnectionString { get; set; }
 
         public bool LogGeneratedSql { get; set; } = false;

@@ -82,7 +82,7 @@ namespace Fabric.Terminology.SqlServer.Persistence
             var uowCounts = this.uowManager.CreateBulkCopyUnitOfWork(codesDtos);
             uowCounts.Commit();
 
-            // Get the updated ValueSet
+            // GetEntity the updated ValueSet
             var added = this.GetValueSet(valueSetGuid);
 
             return added.Select(Attempt<IValueSet>.Successful)

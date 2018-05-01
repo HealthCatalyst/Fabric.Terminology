@@ -7,11 +7,11 @@
 
     using FluentValidation;
 
-    public class ValueSetValidator : AbstractValidator<IValueSet>
+    public class ValueSetValidatorCollection : AbstractValidator<IValueSet>
     {
         private readonly IClientTermValueSetService service;
 
-        public ValueSetValidator(IClientTermValueSetService clientTermValueSetService)
+        public ValueSetValidatorCollection(IClientTermValueSetService clientTermValueSetService)
         {
             this.service = clientTermValueSetService;
             this.ConfigureRules();

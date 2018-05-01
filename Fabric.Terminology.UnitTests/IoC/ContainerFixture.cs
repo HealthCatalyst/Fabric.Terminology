@@ -8,6 +8,8 @@
 
     using Nancy.TinyIoc;
 
+#pragma warning disable CA1063 // Implement IDisposable Correctly
+#pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
     public class ContainerFixture : IDisposable
     {
         public ContainerFixture()
@@ -48,4 +50,6 @@
             container.Register<ICachingManagerFactory, CachingManagerFactory>();
         }
     }
+#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
+#pragma warning restore CA1063 // Implement IDisposable Correctly
 }

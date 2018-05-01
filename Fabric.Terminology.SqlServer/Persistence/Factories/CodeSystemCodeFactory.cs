@@ -12,7 +12,7 @@
         {
             if (dto.CodeSystem == null)
             {
-                throw new NullReferenceException("CodeSystem property was null on CodeSystemCodeDto.  Did you forget to force the join?");
+                throw new InvalidOperationException("CodeSystem property was null on CodeSystemCodeDto.  Did you forget to force the join?");
             }
 
             return new CodeSystemCode

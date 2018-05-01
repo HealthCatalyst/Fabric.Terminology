@@ -16,8 +16,7 @@
     {
         public ValueSetCodeMetadataModule(
             ISwaggerModelCatalog modelCatalog,
-            ISwaggerTagCatalog tagCatalog,
-            TerminologySqlSettings settings)
+            ISwaggerTagCatalog tagCatalog)
             : base(modelCatalog, tagCatalog)
         {
             modelCatalog.AddModel<PagedCollection<ValueSetCodeApiModel>>();
@@ -34,7 +33,7 @@
                 new[]
                 {
                     ParameterFactory.GetSkip(),
-                    ParameterFactory.GetTop(settings.DefaultItemsPerPage),
+                    ParameterFactory.GetTop(),
                     ParameterFactory.GetCodeSystemGuidsArray()
                 },
                 new[] { TagsFactory.GetValueSetCodeTag() });
@@ -70,7 +69,7 @@
                 {
                     ParameterFactory.GetValueSetGuid(),
                     ParameterFactory.GetSkip(),
-                    ParameterFactory.GetTop(settings.DefaultItemsPerPage),
+                    ParameterFactory.GetTop(),
                     ParameterFactory.GetCodeSystemGuidsArray()
                 },
                 new[] { TagsFactory.GetValueSetCodeTag() });

@@ -25,7 +25,7 @@
             {
                 AuthorityDescription = dto.AuthorityDSC,
                 ClientCode = dto.ClientCD,
-                DefinitionDescription = dto.DefinitionDSC,
+                DefinitionDescription = dto.DefinitionDSC.IsNullOrWhiteSpace() ? string.Empty : dto.DefinitionDSC,
                 IsLatestVersion = dto.LatestVersionFLG == "Y",
                 Name = dto.ValueSetNM,
                 OriginGuid = dto.OriginGUID.GetValueOrDefault(),

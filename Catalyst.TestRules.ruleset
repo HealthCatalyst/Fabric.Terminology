@@ -133,7 +133,7 @@
     <Rule Id="CA1814" Action="Error" />
     <Rule Id="CA1815" Action="Error" />
     <Rule Id="CA1816" Action="Error" />
-    <Rule Id="CA1819" Action="Error" />
+    <Rule Id="CA1819" Action="None" />
     <Rule Id="CA1820" Action="Error" />
     <Rule Id="CA1821" Action="Error" />
     <Rule Id="CA1822" Action="None" />
@@ -193,7 +193,7 @@
     <Rule Id="CA2149" Action="Error" />
     <Rule Id="CA2151" Action="Error" />
     <Rule Id="CA2200" Action="Error" />
-    <Rule Id="CA2201" Action="Error" />
+    <Rule Id="CA2201" Action="None" />
     <Rule Id="CA2202" Action="Error" />
     <Rule Id="CA2204" Action="None" />
     <Rule Id="CA2205" Action="Error" />
@@ -626,5 +626,14 @@
     <Rule Id="SA1611" Action="None" />
     <Rule Id="SA1633" Action="None" />
     <Rule Id="SA1652" Action="None" />
+  </Rules>
+  <Rules AnalyzerId="Microsoft.CodeQuality.Analyzers" RuleNamespace="Microsoft.CodeQuality.Analyzers">
+    <Rule Id="CA1819" Action="None" />
+  </Rules>
+  <Rules AnalyzerId="Microsoft.NetCore.CSharp.Analyzers" RuleNamespace="Microsoft.NetCore.CSharp.Analyzers">
+    <Rule Id="CA2201" Action="None" />
+  </Rules>
+  <Rules AnalyzerId="AsyncUsageAnalyzers" RuleNamespace="AsyncUsageAnalyzers">
+    <Rule Id="UseConfigureAwait" Action="None" />
   </Rules>
 </RuleSet>

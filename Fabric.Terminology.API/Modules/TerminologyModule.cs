@@ -21,15 +21,6 @@
 
     public abstract class TerminologyModule<T> : NancyModule
     {
-        private static string[] validValueSetSortFields = new[]
-        {
-            "name",
-            "valuesetreferenceid",
-            "sourcedescription",
-            "versiondate",
-            "codecount"
-        };
-
         protected TerminologyModule(string path, IAppConfiguration config, ILogger logger)
             : base(path)
         {
@@ -53,7 +44,7 @@
 
             return this.Negotiate.WithModel(model)
                 .WithStatusCode(HttpStatusCode.Created)
-                .WithHeader(Constants.HttpResponseHeaders.Location, selfLink);
+                .WithHeader(Constants.HttpResponseHeaderLocation, selfLink);
         }
 
         protected Negotiator CreateFailureResponse(string message, HttpStatusCode statusCode)
@@ -113,7 +104,7 @@
         {
             if (value.IsNullOrWhiteSpace())
             {
-                return new string[] { };
+                return Array.Empty<string>();
             }
 
             var cds = value.Split(splitChar);
