@@ -7,6 +7,7 @@
     using JetBrains.Annotations;
 
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.EntityFrameworkCore.Diagnostics;
     using Microsoft.EntityFrameworkCore.Infrastructure;
     using Microsoft.Extensions.Logging;
 
@@ -17,6 +18,8 @@
     internal abstract class DbContextFactoryBase<TDbContext>
         where TDbContext : DbContext
     {
+        private const string InMemoryDatabaseName = "InMemoryTerminologyTest";
+
         protected DbContextFactoryBase(
             TerminologySqlSettings settings,
             ILogger logger,
@@ -66,7 +69,7 @@
         protected virtual TDbContext CreateInMemory()
         {
             var builder = new DbContextOptionsBuilder<TDbContext>();
-            builder.UseInMemoryDatabase();
+            builder.UseInMemoryDatabase(InMemoryDatabaseName);
             builder.ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning));
 
             var context = this.GetInstance(builder, true);
