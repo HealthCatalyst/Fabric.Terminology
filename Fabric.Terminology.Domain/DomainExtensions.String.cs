@@ -11,7 +11,7 @@
     /// </summary>
     public static partial class DomainExtensions
     {
-        internal static bool IsNullOrWhiteSpace([AllowNull, CanBeNull] this string value)
+        public static bool IsNullOrWhiteSpace([AllowNull, CanBeNull] this string value)
             => string.IsNullOrWhiteSpace(value);
 
         internal static string OrEmptyIfNull([AllowNull, CanBeNull] this string value) =>
