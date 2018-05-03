@@ -11,9 +11,10 @@
     /// </summary>
     public static partial class DomainExtensions
     {
-        public static bool IsNullOrWhiteSpace([AllowNull, CanBeNull] this string value)
-        {
-            return (value == null) || (value.Trim().Length == 0);
-        }
+        internal static bool IsNullOrWhiteSpace([AllowNull, CanBeNull] this string value)
+            => string.IsNullOrWhiteSpace(value);
+
+        internal static string OrEmptyIfNull([AllowNull, CanBeNull] this string value) =>
+            string.IsNullOrWhiteSpace(value) ? string.Empty : value;
     }
 }

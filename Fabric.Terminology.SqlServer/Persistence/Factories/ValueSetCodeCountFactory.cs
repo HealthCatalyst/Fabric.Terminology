@@ -1,5 +1,6 @@
 ﻿namespace Fabric.Terminology.SqlServer.Persistence.Factories
 {
+    using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence.Factories;
     using Fabric.Terminology.SqlServer.Models.Dto;
@@ -12,7 +13,7 @@
             {
                 CodeCount = dto.CodeSystemPerValueSetNBR,
                 CodeSystemGuid = dto.CodeSystemGUID,
-                CodeSystemName = dto.CodeSystemNM,
+                CodeSystemName = dto.CodeSystemNM.OrEmptyIfNull(),
                 ValueSetGuid = dto.ValueSetGUID
             };
         }
