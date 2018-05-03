@@ -1,5 +1,7 @@
 ﻿namespace Fabric.Terminology.Domain
 {
+    using JetBrains.Annotations;
+
     using NullGuard;
 
     /// <summary>
@@ -9,7 +11,7 @@
     /// </summary>
     public static partial class DomainExtensions
     {
-        public static bool IsNullOrWhiteSpace([AllowNull] this string value)
+        public static bool IsNullOrWhiteSpace([AllowNull, CanBeNull] this string value)
         {
             return (value == null) || (value.Trim().Length == 0);
         }
