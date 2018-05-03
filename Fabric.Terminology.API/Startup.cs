@@ -7,7 +7,7 @@
 
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
-    using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Logging;
     using Nancy.Owin;
     using Serilog;
@@ -17,9 +17,9 @@
     {
         private readonly IAppConfiguration appConfig;
 
-        public Startup(IHostingEnvironment env)
+        public Startup(IConfiguration configuration)
         {
-            this.appConfig = new TerminologyConfigurationProvider().GetAppConfiguration(env.ContentRootPath);
+            this.appConfig = new TerminologyConfigurationProvider().GetAppConfiguration(configuration);
 
             var logger = LogFactory.CreateLogger(new LoggingLevelSwitch());
             Log.Logger = logger;

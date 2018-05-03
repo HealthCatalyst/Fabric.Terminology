@@ -21,10 +21,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="Extensions.DbContext.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Anotar.Serilog.Fody" Version="4.3.2" />
     <PackageReference Include="AutoMapper" Version="6.1.1" />
     <PackageReference Include="CallMeMaybe" Version="0.6.8" />
@@ -46,9 +42,6 @@
   </ItemGroup>
 
   <ItemGroup>
-	<Compile Update="Extensions.*.cs">
-		<DependentUpon>Extensions.cs</DependentUpon>
-	</Compile>
     <Compile Update="Constants.*.cs">
       <DependentUpon>Constants.cs</DependentUpon>
     </Compile>

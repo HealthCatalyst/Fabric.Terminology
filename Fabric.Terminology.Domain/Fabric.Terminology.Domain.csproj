@@ -39,30 +39,9 @@
   </ItemGroup>
 
   <ItemGroup>
-	<Compile Update="Extensions.*.cs">
-		<DependentUpon>Extensions.cs</DependentUpon>
-	</Compile>
-	</ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="DomainExtensions.Linq.cs">
+    <Compile Update="DomainExtensions.*.cs">
       <DependentUpon>DomainExtensions.cs</DependentUpon>
-    </Compile>
-    <Compile Update="DomainExtensions.Operation.cs">
-      <DependentUpon>DomainExtensions.cs</DependentUpon>
-    </Compile>
-    <Compile Update="DomainExtensions.PagedCollection.cs">
-      <DependentUpon>DomainExtensions.cs</DependentUpon>
-    </Compile>
-    <Compile Update="DomainExtensions.PagerSettings.cs">
-      <DependentUpon>DomainExtensions.cs</DependentUpon>
-    </Compile>
-    <Compile Update="DomainExtensions.String.cs">
-      <DependentUpon>DomainExtensions.cs</DependentUpon>
-    </Compile>
-    <Compile Update="DomainExtensions.ValueSet.cs">
-      <DependentUpon>DomainExtensions.cs</DependentUpon>
-    </Compile>
+    </Compile>   
   </ItemGroup>
   
 </Project>

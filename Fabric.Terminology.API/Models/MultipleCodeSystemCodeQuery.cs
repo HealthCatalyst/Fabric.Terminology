@@ -4,6 +4,6 @@
 
     internal class MultipleCodeSystemCodeQuery
     {
-        public Guid[] CodeGuids { get; set; }
+        public Guid[] CodeGuids { get; set; } = Array.Empty<Guid>();
     }
 }

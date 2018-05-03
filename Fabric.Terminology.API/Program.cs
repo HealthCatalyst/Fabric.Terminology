@@ -1,23 +1,26 @@
 ﻿namespace Fabric.Terminology.API
 {
-    using System.IO;
+    using System;
+
+    using Microsoft.AspNetCore;
     using Microsoft.AspNetCore.Hosting;
+    using Microsoft.Extensions.Configuration;
 
     public static class Program
     {
         public static void Main()
         {
-            var appConfig = new Configuration.TerminologyConfigurationProvider().GetAppConfiguration(Directory.GetCurrentDirectory());
-
-            var host = new WebHostBuilder()
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIisIntegrationIfConfigured(appConfig) // this is required for the IIS Express button
-                .UseStartup<Startup>()
-                .UseApplicationInsights()
-                .Build();
-
-            host.Run();
+            BuildWebHost(Array.Empty<string>()).Run();
         }
+
+        public static IWebHost BuildWebHost(string[] args) =>
+            WebHost.CreateDefaultBuilder(args)
+                .UseStartup<Startup>()
+                .ConfigureAppConfiguration((context, config) =>
+                    {
+                        config.Sources.Clear();
+                        config.AddJsonFile("appsettings.json", optional: false);
+                    })
+                .Build();
     }
 }

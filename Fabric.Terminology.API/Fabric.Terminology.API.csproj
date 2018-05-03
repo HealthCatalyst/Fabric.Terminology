@@ -8,6 +8,8 @@
     <PackageProjectUrl>https://github.com/HealthCatalyst/Fabric.Terminology</PackageProjectUrl>
     <RepositoryUrl>https://github.com/HealthCatalyst/Fabric.Terminology</RepositoryUrl>
     <PackageLicenseUrl>https://github.com/HealthCatalyst/Fabric.Terminology/blob/develop/LICENSE</PackageLicenseUrl>
+    <AssemblyName>Fabric.Terminology.API</AssemblyName>
+    <StartupObject></StartupObject>
  </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -37,10 +39,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Remove="web.config" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="web.config" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Anotar.Serilog.Fody" Version="4.3.2" />
     <PackageReference Include="AutoMapper" Version="6.1.1" />
     <PackageReference Include="Fody" Version="3.0.3" />
-    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.2.1" />
     <PackageReference Include="Microsoft.AspNetCore" Version="2.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.Owin" Version="2.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.0.2" />
@@ -59,18 +68,7 @@
     <ProjectReference Include="..\Fabric.Terminology.SqlServer\Fabric.Terminology.SqlServer.csproj" />
   </ItemGroup>
   <ItemGroup>
-	<Compile Update="Extensions.*.cs">
-		<DependentUpon>Extensions.cs</DependentUpon>
-	</Compile>
-	</ItemGroup>
-  <ItemGroup>
-    <Compile Update="ApiExtensions.Models.cs">
-      <DependentUpon>ApiExtensions.cs</DependentUpon>
-    </Compile>
-    <Compile Update="ApiExtensions.TinyIoCContainer.cs">
-      <DependentUpon>ApiExtensions.cs</DependentUpon>
-    </Compile>
-    <Compile Update="ApiExtensions.WebHostBuilder.cs">
+    <Compile Update="ApiExtensions.*.cs">
       <DependentUpon>ApiExtensions.cs</DependentUpon>
     </Compile>
   </ItemGroup>
