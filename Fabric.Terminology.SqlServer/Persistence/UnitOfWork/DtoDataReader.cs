@@ -126,7 +126,6 @@
         }
 
         public override long GetBytes(int ordinal, long dataOffset, byte[] buffer, int bufferOffset, int length)
-
         {
             throw new NotImplementedException();
         }

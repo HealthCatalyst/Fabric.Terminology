@@ -4,9 +4,9 @@ namespace Fabric.Terminology.TestsBase.Fake
     using System.Linq;
     using System.Linq.Expressions;
 
-    public class AsyncEnumerable<T> : EnumerableQuery<T>, IAsyncEnumerable<T>, IQueryable<T>
+    public class AsyncEnumerableCollection<T> : EnumerableQuery<T>, IAsyncEnumerable<T>, IQueryable<T>
     {
-        public AsyncEnumerable(Expression expression)
+        public AsyncEnumerableCollection(Expression expression)
             : base(expression)
         {
         }

@@ -36,7 +36,7 @@
             return query.SingleOrDefault();
         }
 
-        public virtual IReadOnlyCollection<TEntity> Get(
+        public virtual IReadOnlyCollection<TEntity> GetEntity(
             Expression<Func<TEntity, bool>> filter = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
             string includeProperties = "")
@@ -58,7 +58,7 @@
             }
             catch (Exception ex)
             {
-                this.logger.Error(ex, $"SqlCrudRepository Get failed. {query.ToSql()}");
+                this.logger.Error(ex, $"SqlCrudRepository GetEntity failed. {query.ToSql()}");
                 throw;
             }
         }

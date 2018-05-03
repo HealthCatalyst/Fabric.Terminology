@@ -2,6 +2,7 @@
 {
     using System;
 
+    using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence.Factories;
     using Fabric.Terminology.SqlServer.Models.Dto;
@@ -12,7 +13,7 @@
         {
             if (dto.CodeSystem == null)
             {
-                throw new NullReferenceException("CodeSystem property was null on CodeSystemCodeDto.  Did you forget to force the join?");
+                throw new InvalidOperationException("CodeSystem property was null on CodeSystemCodeDto.  Did you forget to force the join?");
             }
 
             return new CodeSystemCode
@@ -20,9 +21,9 @@
                 CodeSystemGuid = dto.CodeSystemGUID,
                 Code = dto.CodeCD,
                 CodeGuid = dto.CodeGUID,
-                CodeSystemName = dto.CodeSystem.CodeSystemNM,
+                CodeSystemName = dto.CodeSystem.CodeSystemNM.OrEmptyIfNull(),
                 Retired = dto.RetiredFLG == "Y",
-                Name = dto.CodeDSC
+                Name = dto.CodeDSC.OrEmptyIfNull()
             };
         }
     }

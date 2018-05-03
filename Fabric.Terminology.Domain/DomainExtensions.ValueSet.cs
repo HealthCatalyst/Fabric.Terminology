@@ -10,7 +10,7 @@
     /// <summary>
     /// Extension methods for <see cref="IValueSet"/>
     /// </summary>
-    public static partial class Extensions
+    public static partial class DomainExtensions
     {
         public static Guid SetIdsForCustomInsert(this IValueSet valueSet)
         {

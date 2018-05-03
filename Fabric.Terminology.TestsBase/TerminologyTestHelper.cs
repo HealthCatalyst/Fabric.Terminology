@@ -6,7 +6,7 @@
 
     using Newtonsoft.Json;
 
-    public static class TestHelper
+    public static class TerminologyTestHelper
     {
         public static FileInfo GetAppConfigFile()
         {

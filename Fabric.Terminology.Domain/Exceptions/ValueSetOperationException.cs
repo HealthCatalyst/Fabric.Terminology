@@ -4,6 +4,10 @@
 
     public class ValueSetOperationException : Exception
     {
+        public ValueSetOperationException()
+        {
+        }
+
         public ValueSetOperationException(string message)
             : base(message)
         {

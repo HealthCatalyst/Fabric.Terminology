@@ -6,7 +6,7 @@
 
     public sealed class HomeModule : NancyModule
     {
-        public HomeModule(IRootPathProvider pathProvider)
+        public HomeModule()
         {
             this.Get("/", _ => this.GetSwaggerUrl());
 

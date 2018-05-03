@@ -2,7 +2,7 @@
 {
     using System.Collections.Generic;
 
-    public static partial class Extensions
+    public static partial class DomainExtensions
     {
         public static IEnumerable<IEnumerable<T>> Batch<T>(
             this IEnumerable<T> source, int batchSize)

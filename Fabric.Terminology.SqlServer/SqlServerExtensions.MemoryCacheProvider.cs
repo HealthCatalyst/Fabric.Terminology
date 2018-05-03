@@ -9,7 +9,7 @@
     /// <summary>
     /// Extension methods for <see cref="IMemoryCacheProvider"/>
     /// </summary>
-    public static partial class Extensions
+    public static partial class SqlServerExtensions
     {
         public static Maybe<T> GetItem<T>(this IMemoryCacheProvider cache, string key)
         {

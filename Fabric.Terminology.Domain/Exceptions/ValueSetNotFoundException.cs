@@ -4,6 +4,10 @@
 
     public class ValueSetNotFoundException : Exception
     {
+        public ValueSetNotFoundException()
+        {
+        }
+
         public ValueSetNotFoundException(string message)
             : base(message)
         {

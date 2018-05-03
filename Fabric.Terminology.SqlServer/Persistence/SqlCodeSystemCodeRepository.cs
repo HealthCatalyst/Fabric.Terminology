@@ -82,7 +82,7 @@
 
             foreach (var batch in codesHash.Batch(500))
             {
-                var results = await this.GetCodesByBatch(batch.ToList(), systemGuids);
+                var results = await this.GetCodesByBatch(batch.ToList(), systemGuids).ConfigureAwait(false);
                 var unique = results.Where(r => !found.Exists(f => f.CodeGuid == r.CodeGuid));
                 found.AddRange(unique);
             }
@@ -109,7 +109,7 @@
 
             if (!filterText.IsNullOrWhiteSpace())
             {
-                dtos = dtos.Where(dto => dto.CodeDSC.Contains(filterText) || dto.CodeCD.StartsWith(filterText));
+                dtos = dtos.Where(dto => dto.CodeDSC.Contains(filterText) || dto.CodeCD.StartsWith(filterText, StringComparison.OrdinalIgnoreCase));
             }
 
             return this.CreatePagedCollectionAsync(dtos, pagerSettings);
@@ -126,7 +126,7 @@
             }
 
             var factory = new CodeSystemCodeFactory();
-            var results = await dtos.ToListAsync();
+            var results = await dtos.ToListAsync().ConfigureAwait(false);
 
             return results.Select(factory.Build).ToList();
         }
@@ -172,11 +172,11 @@
 
             pagingStrategy.EnsurePagerSettings(pagerSettings);
 
-            var count = await source.CountAsync();
+            var count = await source.CountAsync().ConfigureAwait(false);
             var items = await source.OrderBy(dto => dto.CodeDSC)
                             .Skip((pagerSettings.CurrentPage - 1) * pagerSettings.ItemsPerPage)
                             .Take(pagerSettings.ItemsPerPage)
-                            .ToListAsync();
+                            .ToListAsync().ConfigureAwait(false);
 
             var factory = new CodeSystemCodeFactory();
 

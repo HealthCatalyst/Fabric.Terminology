@@ -10,8 +10,7 @@
     using Fabric.Terminology.SqlServer.Models.Dto;
     using Fabric.Terminology.SqlServer.Persistence.DataContext;
 
-    using Microsoft.EntityFrameworkCore;
-
+#pragma warning disable CA1308 // Normalize strings to uppercase
     internal class ValueSetBackingItemOrderingStrategy : OrderingStrategyBase<ValueSetDescriptionDto>
     {
         private const string CodeCountFieldName = "codecount";
@@ -106,4 +105,5 @@
             public int CodeCount { get; set; }
         }
     }
+#pragma warning restore CA1308 // Normalize strings to uppercase
 }
