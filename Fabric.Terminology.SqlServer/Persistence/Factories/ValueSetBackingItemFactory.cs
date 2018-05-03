@@ -23,14 +23,14 @@
 
             return new ValueSetBackingItem
             {
-                AuthorityDescription = dto.AuthorityDSC,
+                AuthorityDescription = dto.AuthorityDSC.OrEmptyIfNull(),
                 ClientCode = dto.ClientCD,
-                DefinitionDescription = dto.DefinitionDSC,
+                DefinitionDescription = dto.DefinitionDSC.OrEmptyIfNull(),
                 IsLatestVersion = dto.LatestVersionFLG == "Y",
                 Name = dto.ValueSetNM,
                 OriginGuid = dto.OriginGUID.GetValueOrDefault(),
                 IsCustom = isCustom,
-                SourceDescription = dto.SourceDSC,
+                SourceDescription = dto.SourceDSC.OrEmptyIfNull(),
                 ValueSetGuid = dto.ValueSetGUID,
                 ValueSetReferenceId = dto.ValueSetReferenceID,
                 StatusCode = statusCode,

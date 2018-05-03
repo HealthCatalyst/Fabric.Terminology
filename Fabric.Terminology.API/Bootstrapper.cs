@@ -97,7 +97,7 @@
 
             container.ComposeFrom<SqlRequestComposition>();
             container.ComposeFrom<ServicesRequestComposition>();
-            container.Register<ValueSetValidator>();
+            container.Register<ValueSetValidatorCollection>();
         }
 
         protected override void RequestStartup(

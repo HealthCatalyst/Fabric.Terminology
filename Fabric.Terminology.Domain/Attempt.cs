@@ -2,18 +2,19 @@
 {
     using System;
 
-    using CallMeMaybe;
-
     using JetBrains.Annotations;
 
+    using NullGuard;
+
+#pragma warning disable CA1000 // Do not declare static members on generic types
     public class Attempt<T>
     {
         public bool Success { get; private set; }
 
-        [CanBeNull]
+        [AllowNull, CanBeNull]
         public T Result { get; private set; }
 
-        [CanBeNull]
+        [AllowNull, CanBeNull]
         public Exception Exception { get; private set; }
 
         public static Attempt<T> Successful(T result)
@@ -26,7 +27,7 @@
             return Attempt<T>.Failed(ex, default(T));
         }
 
-        public static Attempt<T> Failed(Exception ex, [CanBeNull] T result)
+        public static Attempt<T> Failed(Exception ex, [AllowNull, CanBeNull] T result)
         {
             return new Attempt<T>
             {
@@ -36,4 +37,5 @@
             };
         }
     }
+#pragma warning restore CA1000 // Do not declare static members on generic types
 }

@@ -2,6 +2,8 @@ namespace Fabric.Terminology.Domain.Models
 {
     using System;
 
+    using NullGuard;
+
     internal class CodeSystemCode : ICodeSystemCode
     {
         public Guid CodeGuid { get; internal set; }
@@ -12,6 +14,7 @@ namespace Fabric.Terminology.Domain.Models
 
         public string Code { get; internal set; }
 
+        [AllowNull]
         public string Name { get; internal set; }
 
         public bool Retired { get; set; }

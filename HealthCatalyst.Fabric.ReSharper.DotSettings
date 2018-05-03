@@ -1,8 +1,4 @@
 ﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
-	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/GeneratedFilesAndFolders/=160E5F71_002DE9B9_002D40E8_002D9B87_002D31415B120A9B_002Fd_003Aclient_002Fd_003Aapp_002Ff_003Adtos_002Ets/@EntryIndexedValue">160E5F71-E9B9-40E8-9B87-31415B120A9B/d:client/d:app/f:dtos.ts</s:String>
-	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/GeneratedFilesAndFolders/=160E5F71_002DE9B9_002D40E8_002D9B87_002D31415B120A9B_002Fd_003Aclient_002Fd_003Aapp_002Ff_003AEnums_002Ets/@EntryIndexedValue">160E5F71-E9B9-40E8-9B87-31415B120A9B/d:client/d:app/f:Enums.ts</s:String>
-	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/GeneratedFilesAndFolders/=160E5F71_002DE9B9_002D40E8_002D9B87_002D31415B120A9B_002Fd_003Aclient_002Fd_003Aapp_002Ff_003ATypeLite_002ENet4_002Ed_002Ets/@EntryIndexedValue">160E5F71-E9B9-40E8-9B87-31415B120A9B/d:client/d:app/f:TypeLite.Net4.d.ts</s:String>
-	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/GeneratedFilesAndFolders/=160E5F71_002DE9B9_002D40E8_002D9B87_002D31415B120A9B_002Fd_003AContent_002Fd_003Adist/@EntryIndexedValue">160E5F71-E9B9-40E8-9B87-31415B120A9B/d:Content/d:dist</s:String>
 	<s:String x:Key="/Default/CodeInspection/Highlighting/InspectionSeverities/=LocalNameCapturedOnly/@EntryIndexedValue">DO_NOT_SHOW</s:String>
 	<s:String x:Key="/Default/CodeInspection/Highlighting/InspectionSeverities/=RedundantArgumentName/@EntryIndexedValue">DO_NOT_SHOW</s:String>
 	<s:String x:Key="/Default/CodeInspection/Highlighting/InspectionSeverities/=RedundantArgumentNameForLiteralExpression/@EntryIndexedValue">DO_NOT_SHOW</s:String>
@@ -27,7 +23,7 @@
 	<s:Boolean x:Key="/Default/CodeInspection/ImplicitNullability/EnableTypeHighlighting/@EntryValue">False</s:Boolean>
 	<s:String x:Key="/Default/CodeInspection/TypeScriptInspections/Level/@EntryValue">Auto</s:String>
 	<s:Boolean x:Key="/Default/CodeStyle/CodeFormatting/CSharpCodeStyle/APPLY_ON_COMPLETION/@EntryValue">True</s:Boolean>
-	<s:String x:Key="/Default/CodeStyle/CodeFormatting/CSharpCodeStyle/ThisQualifier/INSTANCE_MEMBERS_QUALIFY_MEMBERS/@EntryValue">11</s:String>
+	<s:String x:Key="/Default/CodeStyle/CodeFormatting/CSharpCodeStyle/ThisQualifier/INSTANCE_MEMBERS_QUALIFY_MEMBERS/@EntryValue">Field, Property, Event, Method</s:String>
 	<s:Boolean x:Key="/Default/CodeStyle/CodeFormatting/CSharpFormat/ALIGN_LINQ_QUERY/@EntryValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/CodeStyle/CodeFormatting/CSharpFormat/ALIGN_MULTILINE_ARRAY_AND_OBJECT_INITIALIZER/@EntryValue">False</s:Boolean>
 	<s:Boolean x:Key="/Default/CodeStyle/CodeFormatting/CSharpFormat/ALIGN_MULTILINE_EXPRESSION/@EntryValue">True</s:Boolean>
@@ -87,6 +83,9 @@
 	<s:String x:Key="/Default/CodeStyle/CodeFormatting/CSharpFormat/WRAP_PARAMETERS_STYLE/@EntryValue">CHOP_IF_LONG</s:String>
 	<s:Boolean x:Key="/Default/CodeStyle/CodeFormatting/JavaScriptCodeFormatting/ALIGN_MULTILINE_PARAMETER/@EntryValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/CodeStyle/CodeFormatting/JavaScriptCodeFormatting/INDENT_CASE_FROM_SWITCH/@EntryValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/CodeStyle/CodeFormatting/JavaScriptCodeFormatting/PLACE_FIELD_DECORATOR_ON_THE_SAME_LINE/@EntryValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/CodeStyle/CodeFormatting/JavaScriptCodeFormatting/PLACE_METHOD_DECORATOR_ON_THE_SAME_LINE/@EntryValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/CodeStyle/CodeFormatting/JavaScriptCodeFormatting/PLACE_PROPERTY_DECORATOR_ON_THE_SAME_LINE/@EntryValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/CodeStyle/CodeFormatting/JavaScriptCodeFormatting/STICK_COMMENT/@EntryValue">False</s:Boolean>
 	
 	<s:String x:Key="/Default/CodeStyle/CSharpMemberOrderPattern/CustomPattern/@EntryValue">&lt;?xml version="1.0" encoding="utf-16"?&gt;&#xD;
@@ -409,7 +408,7 @@
 &#xD;
   &lt;/TypePattern&gt;&#xD;
 &lt;/Patterns&gt;</s:String>
-	<s:Boolean x:Key="/Default/CodeStyle/CSharpUsing/AddImportsToDeepestScope/@EntryValue">True</s:Boolean>	<s:Boolean x:Key="/Default/CodeStyle/CSharpUsing/QualifiedUsingAtNestedScope/@EntryValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/CodeStyle/CSharpUsing/AddImportsToDeepestScope/@EntryValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/CodeStyle/CSharpUsing/QualifiedUsingAtNestedScope/@EntryValue">True</s:Boolean>
 	<s:String x:Key="/Default/CodeStyle/Naming/CSharpNaming/Abbreviations/=MRN/@EntryIndexedValue">MRN</s:String>
 	<s:String x:Key="/Default/CodeStyle/Naming/CSharpNaming/Abbreviations/=PHI/@EntryIndexedValue">PHI</s:String>
@@ -472,17 +471,6 @@
 	<s:String x:Key="/Default/CodeStyle/Naming/XamlNaming/UserRules/=XAML_005FFIELD/@EntryIndexedValue">&lt;Policy Inspect="True" Prefix="" Suffix="" Style="AaBb" /&gt;</s:String>
 	<s:String x:Key="/Default/CodeStyle/Naming/XamlNaming/UserRules/=XAML_005FRESOURCE/@EntryIndexedValue">&lt;Policy Inspect="True" Prefix="" Suffix="" Style="AaBb" /&gt;</s:String>
 	<s:Boolean x:Key="/Default/CodeStyle/TypeScriptCodeStyle/ExplicitPublicModifier/@EntryValue">True</s:Boolean>
-	<s:Boolean x:Key="/Default/Environment/InjectedLayers/FileInjectedLayer/=291CDA5AFC0E7F4688C35C7359D2195F/@KeyIndexDefined">True</s:Boolean>
-	<s:String x:Key="/Default/Environment/InjectedLayers/FileInjectedLayer/=291CDA5AFC0E7F4688C35C7359D2195F/AbsolutePath/@EntryValue">C:\Working\GitHub\Fabric.Terminology\HealthCatalyst.Fabric.ReSharper.DotSettings</s:String>
-	<s:String x:Key="/Default/Environment/InjectedLayers/FileInjectedLayer/=291CDA5AFC0E7F4688C35C7359D2195F/RelativePath/@EntryValue">..\HealthCatalyst.Fabric.ReSharper.DotSettings</s:String>
-	<s:Boolean x:Key="/Default/Environment/InjectedLayers/InjectedLayerCustomization/=File291CDA5AFC0E7F4688C35C7359D2195F/@KeyIndexDefined">True</s:Boolean>
-	<s:Double x:Key="/Default/Environment/InjectedLayers/InjectedLayerCustomization/=File291CDA5AFC0E7F4688C35C7359D2195F/RelativePriority/@EntryValue">1</s:Double>
-	
-	
-	
-	
-	
-	
 	<s:Boolean x:Key="/Default/Environment/SettingsMigration/IsMigratorApplied/=JetBrains_002EReSharper_002EPsi_002ECSharp_002ECodeStyle_002ECSharpAttributeForSingleLineMethodUpgrade/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/Environment/SettingsMigration/IsMigratorApplied/=JetBrains_002EReSharper_002EPsi_002ECSharp_002ECodeStyle_002ECSharpFileLayoutPatternsUpgrade/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/Environment/SettingsMigration/IsMigratorApplied/=JetBrains_002EReSharper_002EPsi_002ECSharp_002ECodeStyle_002ECSharpKeepExistingMigration/@EntryIndexedValue">True</s:Boolean>

@@ -6,7 +6,7 @@
 
     using Fabric.Terminology.Domain.Persistence;
 
-    public static partial class Extensions
+    public static partial class DomainExtensions
     {
         internal static T Value<T>(this Operation ro) => (T)ro.Value;
 

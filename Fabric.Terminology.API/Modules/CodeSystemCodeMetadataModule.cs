@@ -17,8 +17,7 @@
     {
         public CodeSystemCodeMetadataModule(
             ISwaggerModelCatalog modelCatalog,
-            ISwaggerTagCatalog tagCatalog,
-            TerminologySqlSettings settings)
+            ISwaggerTagCatalog tagCatalog)
             : base(modelCatalog, tagCatalog)
         {
             modelCatalog.AddModel<CodeSystemCodeApiModel>();
@@ -54,7 +53,7 @@
                 new[]
                 {
                     ParameterFactory.GetSkip(),
-                    ParameterFactory.GetTop(settings.DefaultItemsPerPage),
+                    ParameterFactory.GetTop(),
                     ParameterFactory.GetCodeSystemGuidsArray()
                 },
                 new[] { TagsFactory.GetCodeSystemCodeTag() });

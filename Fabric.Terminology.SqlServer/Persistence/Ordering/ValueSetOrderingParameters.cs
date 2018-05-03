@@ -6,6 +6,7 @@
     using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Persistence.Querying;
 
+#pragma warning disable CA1308 // Normalize strings to uppercase
     public class ValueSetOrderingParameters : IOrderingParameters
     {
         private static readonly IEnumerable<string> ValidValueSetSortFields =
@@ -29,4 +30,5 @@
 
         public SortDirection Direction { get; set; } = SortDirection.Asc;
     }
+#pragma warning restore CA1308 // Normalize strings to uppercase
 }

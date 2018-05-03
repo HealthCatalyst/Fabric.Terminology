@@ -2,9 +2,6 @@
 {
     public static partial class Constants
     {
-        public static class HttpResponseHeaders
-        {
-            public const string Location = "Location";
-        }
+        public const string HttpResponseHeaderLocation = "Location";
     }
 }

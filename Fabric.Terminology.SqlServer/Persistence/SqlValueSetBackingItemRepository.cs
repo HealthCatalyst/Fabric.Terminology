@@ -128,12 +128,14 @@
         {
             var dtos = latestVersionsOnly ? this.DbSet.Where(GetBaseExpression(statusCodes)) : this.DbSet.AsQueryable();
 
+#pragma warning disable CA1307 // Specify StringComparison
             if (!filterText.IsNullOrWhiteSpace())
             {
                 dtos = dtos.Where(
                     dto => dto.ValueSetNM.Contains(filterText) ||
                            dto.ValueSetReferenceID.StartsWith(filterText));
             }
+#pragma warning restore CA1307 // Specify StringComparison
 
             var systemCodes = codeSystemGuids as Guid[] ?? codeSystemGuids.ToArray();
             if (systemCodes.Any())
@@ -180,10 +182,10 @@
 
             pagingStrategy.EnsurePagerSettings(pagerSettings);
 
-            var count = await source.CountAsync();
+            var count = await source.CountAsync().ConfigureAwait(false);
             var items = await source.Skip((pagerSettings.CurrentPage - 1) * pagerSettings.ItemsPerPage)
                             .Take(pagerSettings.ItemsPerPage)
-                            .ToListAsync();
+                            .ToListAsync().ConfigureAwait(false);
 
             var factory = new ValueSetBackingItemFactory();
 

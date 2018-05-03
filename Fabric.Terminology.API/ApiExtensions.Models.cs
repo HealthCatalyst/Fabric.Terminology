@@ -11,7 +11,7 @@
 
     using FluentValidation.Results;
 
-    public static partial class Extensions
+    public static partial class ApiExtensions
     {
         public static ValueSetApiModel ToValueSetApiModel(this IValueSet valueSet) =>
             valueSet.ToValueSetApiModel(new List<Guid>());
@@ -106,7 +106,6 @@
                     model.CodeComparisons.Where(cc => codeSystemGuids.Contains(cc.Code.CodeSystemGuid))
                         .Select(Mapper.Map<CodeComparisonApiModel>)
             };
-
         }
 
         // acquired from Fabric.Authorization.Domain (renamed from ToError)

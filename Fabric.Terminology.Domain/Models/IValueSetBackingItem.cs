@@ -1,7 +1,7 @@
-﻿using System;
-
-namespace Fabric.Terminology.Domain.Models
+﻿namespace Fabric.Terminology.Domain.Models
 {
+    using System;
+
     public interface IValueSetBackingItem : IValueSetMeta, IHaveValueSetGuid
     {
         string ValueSetReferenceId { get; }

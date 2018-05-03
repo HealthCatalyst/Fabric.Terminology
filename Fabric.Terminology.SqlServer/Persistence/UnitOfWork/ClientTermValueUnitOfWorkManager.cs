@@ -43,10 +43,10 @@
             Maybe.From(this.ValueSetDescriptions.SingleOrDefault(vsd => vsd.ValueSetGUID == valueSetGuid));
 
         public IReadOnlyCollection<ValueSetCodeDto> GetCodeDtos(Guid valueSetGuid) =>
-            this.ValueSetCodes.Get(vsc => vsc.ValueSetGUID == valueSetGuid);
+            this.ValueSetCodes.GetEntity(vsc => vsc.ValueSetGUID == valueSetGuid);
 
         public IReadOnlyCollection<ValueSetCodeCountDto> GetCodeCountDtos(Guid valueSetGuid) =>
-            this.ValueSetCodeCounts.Get(vscc => vscc.ValueSetGUID == valueSetGuid);
+            this.ValueSetCodeCounts.GetEntity(vscc => vscc.ValueSetGUID == valueSetGuid);
 
         private void Initialize()
         {

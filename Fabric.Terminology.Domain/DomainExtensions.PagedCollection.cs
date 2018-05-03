@@ -5,7 +5,7 @@
     /// <summary>
     /// Extension methods for <see cref="PagedCollection{T}"/>
     /// </summary>
-    public static partial class Extensions
+    public static partial class DomainExtensions
     {
         public static bool IsFirstPage<T>(this PagedCollection<T> collection)
         {

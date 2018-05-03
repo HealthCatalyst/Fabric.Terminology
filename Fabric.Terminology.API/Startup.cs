@@ -1,17 +1,13 @@
 ﻿namespace Fabric.Terminology.API
 {
-    using System;
-
     using AutoMapper;
 
     using Fabric.Terminology.API.Configuration;
     using Fabric.Terminology.API.Logging;
-    using Fabric.Terminology.API.Models;
-    using Fabric.Terminology.Domain.Models;
 
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
-    using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Logging;
     using Nancy.Owin;
     using Serilog;
@@ -21,22 +17,16 @@
     {
         private readonly IAppConfiguration appConfig;
 
-        public Startup(IHostingEnvironment env)
+        public Startup(IConfiguration configuration)
         {
-            this.appConfig = new TerminologyConfigurationProvider().GetAppConfiguration(env.ContentRootPath);
+            this.appConfig = new TerminologyConfigurationProvider().GetAppConfiguration(configuration);
 
             var logger = LogFactory.CreateLogger(new LoggingLevelSwitch());
             Log.Logger = logger;
         }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
-        public void ConfigureServices(IServiceCollection services)
-        {
-        }
-
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IApplicationLifetime appLifetime)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             loggerFactory.AddSerilog();
 

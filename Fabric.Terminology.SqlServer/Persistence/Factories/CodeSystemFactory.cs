@@ -12,10 +12,10 @@
             return new CodeSystem
             {
                 CodeSystemGuid = dto.CodeSystemGUID,
-                Copyright = dto.CopyrightDSC.IsNullOrWhiteSpace() ? string.Empty : dto.CopyrightDSC,
-                Description = dto.CodeSystemDSC.IsNullOrWhiteSpace() ? string.Empty : dto.CodeSystemDSC,
-                Name = dto.CodeSystemNM,
-                Owner = dto.OwnerDSC.IsNullOrWhiteSpace() ? string.Empty : dto.OwnerDSC,
+                Copyright = dto.CopyrightDSC.OrEmptyIfNull(),
+                Description = dto.CodeSystemDSC.OrEmptyIfNull(),
+                Name = dto.CodeSystemNM.OrEmptyIfNull(),
+                Owner = dto.OwnerDSC.OrEmptyIfNull(),
                 CodeCount = dto.CodeCountNBR,
                 VersionDate = dto.VersionDTS
             };

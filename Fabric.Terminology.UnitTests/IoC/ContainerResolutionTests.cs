@@ -15,12 +15,12 @@
 
     public class ContainerResolutionTests : IClassFixture<ContainerFixture>
     {
-        public readonly TinyIoCContainer Container;
-
         public ContainerResolutionTests(ContainerFixture fixture)
         {
             this.Container = fixture.Container;
         }
+
+        public TinyIoCContainer Container { get; }
 
         [Fact]
         public void CanResolveCachingManagerFactory()

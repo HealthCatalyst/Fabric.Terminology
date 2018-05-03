@@ -8,6 +8,7 @@
     using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Services;
+    using Fabric.Terminology.SqlServer.Services;
 
     public class ClientTermCustomizationService : IClientTermCustomizationService
     {

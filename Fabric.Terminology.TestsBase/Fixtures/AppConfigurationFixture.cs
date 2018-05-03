@@ -1,13 +1,10 @@
 ﻿namespace Fabric.Terminology.TestsBase.Fixtures
 {
-    using System;
     using System.IO;
 
     using AutoMapper;
 
     using Fabric.Terminology.API.Configuration;
-    using Fabric.Terminology.API.Models;
-    using Fabric.Terminology.Domain.Models;
 
     using Microsoft.Extensions.Configuration;
 
@@ -18,23 +15,15 @@
             Mapper.Initialize(
                 cfg =>
                     {
-                        cfg.CreateMap<ICodeSystemCode, CodeSystemCodeApiModel>();
-                        cfg.CreateMap<CodeSystemCodeApiModel, CodeSystemCode>();
-                        cfg.CreateMap<IValueSetCode, ValueSetCodeApiModel>();
-
-                        cfg.CreateMap<IValueSet, ValueSetApiModel>()
-                            .ForMember(
-                                dest => dest.Identifier,
-                                opt => opt.MapFrom(
-                                    src => src.ValueSetGuid.Equals(Guid.Empty)
-                                               ? Guid.NewGuid().ToString()
-                                               : src.ValueSetGuid.ToString()));
+                        cfg.AddProfile<CodeSystemApiProfile>();
+                        cfg.AddProfile<CodeSystemCodeApiProfile>();
+                        cfg.AddProfile<ValueSetApiProfile>();
                     });
 
             var builder = new ConfigurationBuilder()
                 .AddEnvironmentVariables()
                 .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile(TestHelper.GetAppConfigFile().FullName);
+                .AddJsonFile(TerminologyTestHelper.GetAppConfigFile().FullName);
 
             this.Configuration = builder.Build();
 

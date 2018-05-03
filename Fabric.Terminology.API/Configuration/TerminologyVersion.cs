@@ -1,6 +1,7 @@
 namespace Fabric.Terminology.API.Configuration
 {
     using System;
+    using System.Globalization;
     using System.Reflection;
 
     using Fabric.Terminology.Domain;
@@ -22,6 +23,6 @@ namespace Fabric.Terminology.API.Configuration
             Current.Minor,
             Current.Build,
             CurrentComment.IsNullOrWhiteSpace() ? null : CurrentComment,
-            Current.Revision > 0 ? Current.Revision.ToString() : null);
+            Current.Revision > 0 ? Current.Revision.ToString(CultureInfo.InvariantCulture) : null);
     }
 }

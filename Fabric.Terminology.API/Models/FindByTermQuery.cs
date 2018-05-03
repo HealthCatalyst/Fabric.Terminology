@@ -7,9 +7,9 @@
     public class FindByTermQuery : MultipleCodeSystemQuery
     {
         [JsonProperty("term")]
-        public string Term { get; set; }
+        public string Term { get; set; } = string.Empty;
 
         [JsonProperty("pagerSettings")]
-        public PagerSettings PagerSettings { get; set; }
+        public PagerSettings PagerSettings { get; set; } = new PagerSettings();
     }
 }

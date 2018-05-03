@@ -112,7 +112,7 @@
 
             if (!filterText.IsNullOrWhiteSpace())
             {
-                dtos = dtos.Where(dto => dto.CodeDSC.Contains(filterText) || dto.CodeCD.StartsWith(filterText));
+                dtos = dtos.Where(dto => dto.CodeDSC.Contains(filterText) || dto.CodeCD.StartsWith(filterText, StringComparison.OrdinalIgnoreCase));
             }
 
             var systemCodes = codeSystemGuids as Guid[] ?? codeSystemGuids.ToArray();
@@ -192,13 +192,13 @@
 
             pagingStrategy.EnsurePagerSettings(pagerSettings);
 
-            var count = await source.CountAsync();
+            var count = await source.CountAsync().ConfigureAwait(false);
 
             source = orderingStrategy.SetOrdering(source, pagerSettings.AsOrderingParameters());
 
             var items = await source.Skip((pagerSettings.CurrentPage - 1) * pagerSettings.ItemsPerPage)
                             .Take(pagerSettings.ItemsPerPage)
-                            .ToListAsync();
+                            .ToListAsync().ConfigureAwait(false);
 
             var factory = new ValueSetCodeFactory();
 

@@ -11,7 +11,7 @@
         TEntity SingleOrDefault(Expression<Func<TEntity, bool>> filter,
             string includeProperties = "");
 
-        IReadOnlyCollection<TEntity> Get(
+        IReadOnlyCollection<TEntity> GetEntity(
             Expression<Func<TEntity, bool>> filter = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
             string includeProperties = "");
