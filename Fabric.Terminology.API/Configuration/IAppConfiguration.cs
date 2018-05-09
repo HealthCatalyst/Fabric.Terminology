@@ -7,5 +7,9 @@
         TerminologySqlSettings TerminologySqlSettings { get; set; }
 
         HostingOptions HostingOptions { get; set; }
+
+        IdentityServerConfidentialClientSettings IdentityServerSettings { get; set; }
+
+        ApplicationInsightsSettings ApplicationInsightsSettings { get; set; }
     }
 }

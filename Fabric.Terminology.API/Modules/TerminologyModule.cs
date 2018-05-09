@@ -44,7 +44,7 @@
 
             return this.Negotiate.WithModel(model)
                 .WithStatusCode(HttpStatusCode.Created)
-                .WithHeader(Constants.HttpResponseHeaderLocation, selfLink);
+                .WithHeader(Constants.HttpResponseHeaders.Location, selfLink);
         }
 
         protected Negotiator CreateFailureResponse(string message, HttpStatusCode statusCode)

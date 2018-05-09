@@ -1,4 +1,4 @@
-﻿namespace Fabric.Terminology.API
+﻿namespace Fabric.Terminology.API.Bootstrapping
 {
     using Fabric.Terminology.API.Configuration;
     using Fabric.Terminology.API.DependencyInjection;

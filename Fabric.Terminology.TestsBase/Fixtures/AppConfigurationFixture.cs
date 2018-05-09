@@ -4,6 +4,7 @@
 
     using AutoMapper;
 
+    using Fabric.Terminology.API.Bootstrapping.MapperProfiles;
     using Fabric.Terminology.API.Configuration;
 
     using Microsoft.Extensions.Configuration;

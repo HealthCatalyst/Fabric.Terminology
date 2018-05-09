@@ -2,6 +2,6 @@
 {
     public static partial class Constants
     {
-        public const string HttpResponseHeaderLocation = "Location";
+        //// Actual implementations are nested under this file for organizational purposes.
     }
 }
