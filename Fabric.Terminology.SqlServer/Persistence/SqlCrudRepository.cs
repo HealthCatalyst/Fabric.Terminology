@@ -1,4 +1,4 @@
-﻿namespace Fabric.Terminology.SqlServer.Persistence
+namespace Fabric.Terminology.SqlServer.Persistence
 {
     using System;
     using System.Collections.Generic;
@@ -16,18 +16,18 @@
 
         private readonly ILogger logger;
 
-        private readonly DbSet<TEntity> dbSet;
+        private readonly DbSet<TEntity> dbset;
 
         public SqlCrudRepository(DbContext context, ILogger logger)
         {
             this.context = context;
             this.logger = logger;
-            this.dbSet = context.Set<TEntity>();
+            this.dbset = context.Set<TEntity>();
         }
 
         public TEntity SingleOrDefault(Expression<Func<TEntity, bool>> filter, string includeProperties = "")
         {
-            var query = this.dbSet.Where(filter);
+            var query = this.dbset.Where(filter);
 
             query = includeProperties
                 .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
@@ -41,7 +41,7 @@
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
             string includeProperties = "")
         {
-            var query = this.dbSet.AsQueryable();
+            var query = this.dbset.AsQueryable();
 
             if (filter != null)
             {
@@ -63,10 +63,7 @@
             }
         }
 
-        public void Insert(TEntity entity)
-        {
-            this.dbSet.Add(entity);
-        }
+        public void Insert(TEntity entity) => this.dbset.Add(entity);
 
         public void Update(TEntity entity)
         {
@@ -77,14 +74,14 @@
         public void Delete(TEntity entity)
         {
             this.EnsureAttached(entity);
-            this.dbSet.Remove(entity);
+            this.dbset.Remove(entity);
         }
 
         private void EnsureAttached(TEntity entity)
         {
             if (this.context.Entry(entity).State == EntityState.Detached)
             {
-                this.dbSet.Attach(entity);
+                this.dbset.Attach(entity);
             }
         }
     }

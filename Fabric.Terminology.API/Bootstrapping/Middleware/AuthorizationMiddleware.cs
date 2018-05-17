@@ -4,6 +4,7 @@ namespace Fabric.Terminology.API.Bootstrapping.Middleware
 {
     using System.Linq;
     using System.Threading.Tasks;
+
     using LibOwin;
     using AppFunc = System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>;
 
@@ -28,13 +29,12 @@ namespace Fabric.Terminology.API.Bootstrapping.Middleware
                     }
                 }
 
-                return next(env);
-                //ctx.Response.Headers.Add("Access-Control-Allow-Origin", new[] { "*" });
-                //ctx.Response.Headers.Add("Access-Control-Allow-Headers", new[] { "Origin, X-Requested-With, Content-Type, Accept, Authorization" });
-                //ctx.Response.Headers.Add("Access-Control-Allow-Methods", new[] { "POST, GET, PUT, DELETE, PATCH" });
-                //ctx.Response.StatusCode = 403;
+                ctx.Response.Headers.Add("Access-Control-Allow-Origin", new[] { "*" });
+                ctx.Response.Headers.Add("Access-Control-Allow-Headers", new[] { "Origin, X-Requested-With, Content-Type, Accept, Authorization" });
+                ctx.Response.Headers.Add("Access-Control-Allow-Methods", new[] { "POST, GET, PUT, DELETE, PATCH" });
+                ctx.Response.StatusCode = 403;
 
-                //return Task.CompletedTask;
+                return Task.CompletedTask;
             };
         }
     }

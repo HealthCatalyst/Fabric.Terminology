@@ -1,5 +1,6 @@
-﻿namespace Fabric.Terminology.API
+namespace Fabric.Terminology.API
 {
+    using System.Linq;
     using System.Text;
 
     using AutoMapper;
@@ -84,16 +85,16 @@
 
             app.UseAuthentication();
 
-            //app.UseIdentityServerAuthentication(new IdentityServerAuthenticationOptions
-            //{
-            //    Authority = this.appConfig.IdentityServerSettings.Authority,
-            //    RequireHttpsMetadata = false,
-            //    ApiName = this.appConfig.IdentityServerSettings.ClientId
-            //});
+            ////app.UseIdentityServerAuthentication(new IdentityServerAuthenticationOptions
+            ////{
+            ////    Authority = this.appConfig.IdentityServerSettings.Authority,
+            ////    RequireHttpsMetadata = false,
+            ////    ApiName = this.appConfig.IdentityServerSettings.ClientId
+            ////});
 
             app.UseStaticFiles()
                 .UseOwin()
-                .UseAuthPlatform(this.appConfig.IdentityServerSettings.Scopes, this.allowedPaths)
+                .UseAuthPlatform(this.appConfig.IdentityServerSettings.Scopes.ToArray(), this.allowedPaths)
                 .UseNancy(opt => opt.Bootstrapper = new Bootstrapper(this.appConfig, this.logger));
 
             Log.Logger.Information("Fabric.Terminology.API started!");

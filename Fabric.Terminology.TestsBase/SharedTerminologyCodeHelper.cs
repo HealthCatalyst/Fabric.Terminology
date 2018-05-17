@@ -1,10 +1,11 @@
-﻿namespace Fabric.Terminology.TestsBase
+namespace Fabric.Terminology.TestsBase
 {
     using System;
+    using System.Collections.Generic;
 
     public static class SharedTerminologyCodeHelper
     {
-        public static Guid[] ValidCodeGuidsSafeToAdd =>
+        public static IEnumerable<Guid> ValidCodeGuidsSafeToAdd =>
             new Guid[]
             {
                 Guid.Parse("7B8BD883-D3C8-4A77-82DB-000024F21A02"),
@@ -231,7 +232,7 @@
                 Guid.Parse("1232304A-5302-4159-96A0-0017F16832AE"),
             };
 
-        public static Guid[] ValidCodeGuids => new Guid[]
+        public static IEnumerable<Guid> ValidCodeGuids => new Guid[]
         {
             Guid.Parse("8D5D47FE-9F44-4964-BBF2-001800C5ED03"),
             Guid.Parse("0914A90D-F52C-407D-9A5F-0018055EA17E"),

@@ -1,4 +1,4 @@
-﻿namespace Fabric.Terminology.API.Modules
+namespace Fabric.Terminology.API.Modules
 {
     using System;
     using System.Linq;
@@ -83,7 +83,7 @@
             {
                 var model = EnsureQueryModel(this.Bind<MultipleCodeSystemQuery>(new BindingConfig { BodyOnly = true }));
 
-                return this.codeSystemService.GetAll(model.CodeSystemGuids)
+                return this.codeSystemService.GetAll(model.CodeSystemGuids.ToArray())
                     .Select(Mapper.Map<CodeSystemApiModel>)
                     .ToList();
             }

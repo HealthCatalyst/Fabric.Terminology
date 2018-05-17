@@ -1,4 +1,4 @@
-﻿namespace Fabric.Terminology.UnitTests.Caching
+namespace Fabric.Terminology.UnitTests.Caching
 {
     using System;
     using Fabric.Terminology.SqlServer.Caching;
@@ -38,7 +38,7 @@
             var cache = new MemoryCacheProvider(this.fixture.AppConfiguration.TerminologySqlSettings);
             const string Key = "key";
             var dt = DateTime.Now;
-            var obj = new TestObject {Text = "Test", Stamp = dt };
+            var obj = new TestObject { Text = "Test", Stamp = dt };
 
             // Act
             var tmp = cache.GetItem(Key, () => obj);

@@ -1,4 +1,4 @@
-﻿namespace Fabric.Terminology.API.Modules
+namespace Fabric.Terminology.API.Modules
 {
     using System;
     using System.Collections.Generic;
@@ -166,13 +166,13 @@
                                    () => this.valueSetSummaryService.GetValueSetSummariesListAsync(
                                        model.ValueSetGuids,
                                        model.CodeSystemGuids))
-                               .Result.Select(vss => vss.ToValueSetItemApiModel(model.CodeSystemGuids))
+                               .Result.Select(vss => vss.ToValueSetItemApiModel(model.CodeSystemGuids.ToArray()))
                                .ToList()
                            : (IReadOnlyCollection<object>)Execute(
                                    () => this.valueSetService.GetValueSetsListAsync(
                                        model.ValueSetGuids,
                                        model.CodeSystemGuids))
-                               .Result.Select(vs => vs.ToValueSetApiModel(model.CodeSystemGuids))
+                               .Result.Select(vs => vs.ToValueSetApiModel(model.CodeSystemGuids.ToArray()))
                                .ToList();
             }
             catch (Exception ex)
@@ -428,7 +428,7 @@
                                      model.ValueSetGuids,
                                      model.CodeSystemGuids).ConfigureAwait(false);
 
-                return comparison.ToValueSetComparisonResultApiModel(model.CodeSystemGuids);
+                return comparison.ToValueSetComparisonResultApiModel(model.CodeSystemGuids.ToArray());
             }
             catch (Exception ex)
             {

@@ -9,6 +9,8 @@
     <RepositoryUrl>https://github.com/HealthCatalyst/Fabric.Terminology</RepositoryUrl>
     <PackageLicenseUrl>https://github.com/HealthCatalyst/Fabric.Terminology/blob/develop/LICENSE</PackageLicenseUrl>
     <AssemblyName>Fabric.Terminology.API</AssemblyName>
+    <CodeAnalysisRuleSet>Fabric.Terminology.API.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
     <StartupObject></StartupObject>
  </PropertyGroup>
 
@@ -40,6 +42,10 @@
 
   <ItemGroup>
     <Content Remove="web.config" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Fabric.Terminology.API.ruleset" />
   </ItemGroup>
 
   <ItemGroup>
