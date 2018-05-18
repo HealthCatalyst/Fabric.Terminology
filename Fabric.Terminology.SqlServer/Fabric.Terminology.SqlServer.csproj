@@ -21,6 +21,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Fabric.Terminology.SqlServer.ruleset" />
+    <None Remove="FodyWeavers.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Anotar.Serilog.Fody" Version="4.3.2" />
     <PackageReference Include="AutoMapper" Version="6.1.1" />
     <PackageReference Include="CallMeMaybe" Version="0.6.8" />

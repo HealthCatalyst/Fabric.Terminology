@@ -8,6 +8,8 @@
     <PackageProjectUrl>https://github.com/HealthCatalyst/Fabric.Terminology</PackageProjectUrl>
     <RepositoryUrl>https://github.com/HealthCatalyst/Fabric.Terminology</RepositoryUrl>
     <PackageLicenseUrl>https://github.com/HealthCatalyst/Fabric.Terminology/blob/develop/LICENSE</PackageLicenseUrl>
+    <CodeAnalysisRuleSet>Fabric.Terminology.Domain.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -20,6 +22,11 @@
     <Compile Remove="Persistence\IValueSetCodeRepository.cs" />
     <Compile Remove="Services\ValueSetService.cs" />
     <Compile Remove="Services\ValueSetSummaryService.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Fabric.Terminology.Domain.ruleset" />
+    <None Remove="FodyWeavers.xml" />
   </ItemGroup>
 
   <ItemGroup>
