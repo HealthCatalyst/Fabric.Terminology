@@ -6,6 +6,7 @@
     using CallMeMaybe;
 
     using Fabric.Terminology.API.Configuration;
+    using Fabric.Terminology.API.Constants;
     using Fabric.Terminology.API.Models;
     using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Models;
@@ -44,7 +45,7 @@
 
             return this.Negotiate.WithModel(model)
                 .WithStatusCode(HttpStatusCode.Created)
-                .WithHeader(Constants.HttpResponseHeaders.Location, selfLink);
+                .WithHeader(HttpResponseHeaders.Location, selfLink);
         }
 
         protected Negotiator CreateFailureResponse(string message, HttpStatusCode statusCode)
