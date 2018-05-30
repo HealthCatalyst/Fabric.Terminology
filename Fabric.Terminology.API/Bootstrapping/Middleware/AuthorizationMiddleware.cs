@@ -1,4 +1,4 @@
-﻿#pragma warning disable CA1309 // Use ordinal stringcomparison
+#pragma warning disable CA1309 // Use ordinal stringcomparison
 #pragma warning disable SA1503 // Braces must not be omitted
 namespace Fabric.Terminology.API.Bootstrapping.Middleware
 {
@@ -10,33 +10,31 @@ namespace Fabric.Terminology.API.Bootstrapping.Middleware
 
     public sealed class AuthorizationMiddleware
     {
-        public static AppFunc Inject(AppFunc next, string[] requiredScopes, string[] allowedPaths = null)
-        {
-            return env =>
-            {
-                var ctx = new OwinContext(env);
-
-                if (ctx.Request.Method == "OPTIONS") return next(env);
-
-                if (allowedPaths != null && allowedPaths.Contains(ctx.Request.Path.Value)) return next(env);
-
-                var principal = ctx.Request.User;
-                if (principal != null)
+        public static AppFunc Inject(AppFunc next, string[] requiredScopes, string[] allowedPaths = null) =>
+            env =>
                 {
-                    if (requiredScopes.Any(requiredScope => principal.HasClaim("scope", requiredScope)))
+                    var ctx = new OwinContext(env);
+
+                    if (ctx.Request.Method == "OPTIONS") return next(env);
+
+                    if (allowedPaths != null && allowedPaths.Contains(ctx.Request.Path.Value)) return next(env);
+
+                    var principal = ctx.Request.User;
+                    if (principal != null)
                     {
-                        return next(env);
+                        if (requiredScopes.Any(requiredScope => principal.HasClaim("scope", requiredScope)))
+                        {
+                            return next(env);
+                        }
                     }
-                }
 
-                ctx.Response.Headers.Add("Access-Control-Allow-Origin", new[] { "*" });
-                ctx.Response.Headers.Add("Access-Control-Allow-Headers", new[] { "Origin, X-Requested-With, Content-Type, Accept, Authorization" });
-                ctx.Response.Headers.Add("Access-Control-Allow-Methods", new[] { "POST, GET, PUT, DELETE, PATCH" });
-                ctx.Response.StatusCode = 403;
+                    ctx.Response.Headers.Add("Access-Control-Allow-Origin", new[] { "*" });
+                    ctx.Response.Headers.Add("Access-Control-Allow-Headers", new[] { "Origin, X-Requested-With, Content-Type, Accept, Authorization" });
+                    ctx.Response.Headers.Add("Access-Control-Allow-Methods", new[] { "POST, GET, PUT, DELETE, PATCH" });
+                    ctx.Response.StatusCode = 403;
 
-                return Task.CompletedTask;
-            };
-        }
+                    return Task.CompletedTask;
+                };
     }
 }
 #pragma warning restore CA1309 // Use ordinal stringcomparison

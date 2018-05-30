@@ -1,5 +1,7 @@
-﻿namespace Fabric.Terminology.API.Configuration
+namespace Fabric.Terminology.API.Configuration
 {
+    using Catalyst.DosApi.Discovery.Configuration;
+
     using Fabric.Terminology.SqlServer.Configuration;
 
     using NullGuard;
@@ -13,6 +15,8 @@
         public HostingOptions HostingOptions { get; set; }
 
         public IdentityServerConfidentialClientSettings IdentityServerSettings { get; set; }
+
+        public DiscoveryServiceClientSettings DiscoveryServiceClientSettings { get; set; }
 
         public ApplicationInsightsSettings ApplicationInsightsSettings { get; set; }
     }

@@ -1,7 +1,6 @@
 namespace Fabric.Terminology.API
 {
     using System.Linq;
-    using System.Text;
 
     using AutoMapper;
 
@@ -11,14 +10,16 @@ namespace Fabric.Terminology.API
     using Fabric.Terminology.API.Configuration;
     using Fabric.Terminology.API.Logging;
 
+    using Microsoft.AspNetCore.Authentication;
+    using Microsoft.AspNetCore.Authentication.JwtBearer;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
-    using Microsoft.IdentityModel.Tokens;
 
     using Nancy.Owin;
+
     using Serilog;
     using Serilog.Core;
     using ILogger = Serilog.ILogger;
@@ -28,6 +29,8 @@ namespace Fabric.Terminology.API
         private readonly IAppConfiguration appConfig;
 
         private readonly ILogger logger;
+
+        //// private readonly IContainer container;
 
         private readonly string[] allowedPaths =
         {
@@ -47,18 +50,17 @@ namespace Fabric.Terminology.API
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddWebEncoders();
-            services.AddAuthentication()
-                .AddJwtBearer(
-                    cfg =>
+
+            //// services.AddCors()
+
+            // TODO should this be moved to the Nancy Bootstrapper?
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddIdentityServerAuthentication(
+                    options =>
                         {
-                            cfg.RequireHttpsMetadata = false;
-                            cfg.SaveToken = true;
-                            cfg.TokenValidationParameters = new TokenValidationParameters()
-                            {
-                                ValidIssuer = this.appConfig.IdentityServerSettings.Authority,
-                                ValidAudience = this.appConfig.IdentityServerSettings.Authority,
-                                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(this.appConfig.IdentityServerSettings.ClientId))
-                            };
+                            options.Authority = this.appConfig.IdentityServerSettings.Authority;
+                            options.ApiName = this.appConfig.IdentityServerSettings.ClientId;
+                            options.ApiSecret = this.appConfig.IdentityServerSettings.ClientSecret;
                         });
         }
 
@@ -85,17 +87,18 @@ namespace Fabric.Terminology.API
 
             app.UseAuthentication();
 
-            ////app.UseIdentityServerAuthentication(new IdentityServerAuthenticationOptions
-            ////{
-            ////    Authority = this.appConfig.IdentityServerSettings.Authority,
-            ////    RequireHttpsMetadata = false,
-            ////    ApiName = this.appConfig.IdentityServerSettings.ClientId
-            ////});
-
             app.UseStaticFiles()
                 .UseOwin()
                 .UseAuthPlatform(this.appConfig.IdentityServerSettings.Scopes.ToArray(), this.allowedPaths)
-                .UseNancy(opt => opt.Bootstrapper = new Bootstrapper(this.appConfig, this.logger));
+                .UseNancy(
+                    opt =>
+                        {
+                            opt.Bootstrapper = new Bootstrapper(this.appConfig, this.logger);
+                            opt.PassThroughWhenStatusCodesAre(Nancy.HttpStatusCode.Unauthorized);
+                        });
+
+            // After upgrading to .net 2.0 => 401 response isn't redirecting to IdServer
+            app.Use((context, next) => context.ChallengeAsync());
 
             Log.Logger.Information("Fabric.Terminology.API started!");
         }
