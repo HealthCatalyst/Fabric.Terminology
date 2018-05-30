@@ -230,7 +230,7 @@
                 Guid.Parse("CDA617CE-B6C9-4E7F-9F5C-0017EFF77290"),
                 Guid.Parse("1232304A-5302-4159-96A0-0017F16832AE"),
             };
- 
+
         public static Guid[] ValidCodeGuids => new Guid[]
         {
             Guid.Parse("8D5D47FE-9F44-4964-BBF2-001800C5ED03"),

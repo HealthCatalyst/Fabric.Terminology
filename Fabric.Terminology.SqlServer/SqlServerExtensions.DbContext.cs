@@ -6,7 +6,7 @@
     using System.Linq;
     using Microsoft.EntityFrameworkCore;
 
-    public static partial class Extensions
+    public static partial class SqlServerExtensions
     {
         public static string GetTableForEntity<T>(this DbContext context)
         {

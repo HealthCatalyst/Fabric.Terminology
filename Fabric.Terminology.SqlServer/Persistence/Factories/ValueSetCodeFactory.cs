@@ -1,7 +1,6 @@
-﻿using System;
-
-namespace Fabric.Terminology.SqlServer.Persistence.Factories
+﻿namespace Fabric.Terminology.SqlServer.Persistence.Factories
 {
+    using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence.Factories;
     using Fabric.Terminology.SqlServer.Models.Dto;
@@ -17,7 +16,7 @@ namespace Fabric.Terminology.SqlServer.Persistence.Factories
                 Code = dto.CodeCD,
                 CodeGuid = dto.CodeGUID.GetValueOrDefault(),
                 CodeSystemName = dto.CodeSystemNM,
-                Name = dto.CodeDSC
+                Name = dto.CodeDSC.OrEmptyIfNull()
             };
         }
     }

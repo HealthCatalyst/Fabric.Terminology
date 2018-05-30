@@ -1,9 +1,7 @@
 ﻿namespace Fabric.Terminology.TestsBase.Seeding
 {
-    using System.Collections.Generic;
     using System.Linq;
 
-    using Fabric.Terminology.SqlServer.Models.Dto;
     using Fabric.Terminology.SqlServer.Persistence.DataContext;
     using Fabric.Terminology.TestsBase.Mocks;
 
@@ -17,8 +15,8 @@
             context.ValueSetDescriptions.Add(vs1);
             context.ValueSetDescriptions.Add(vs2);
 
-            var codes1 = MockDtoBuilder.ValueSetCodeDtoCollection(vs1);
-            var codes2 = MockDtoBuilder.ValueSetCodeDtoCollection(vs2);
+            var codes1 = MockDtoBuilder.ValueSetCodeDtoCollection();
+            var codes2 = MockDtoBuilder.ValueSetCodeDtoCollection();
             var allCodes = codes1.Concat(codes2).ToList();
 
             foreach (var code in allCodes)

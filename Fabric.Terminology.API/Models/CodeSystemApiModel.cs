@@ -2,6 +2,10 @@
 {
     using System;
 
+    using JetBrains.Annotations;
+
+    using NullGuard;
+
     public class CodeSystemApiModel
     {
         public Guid CodeSystemGuid { get; set; }

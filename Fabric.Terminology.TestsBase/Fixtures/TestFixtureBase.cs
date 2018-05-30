@@ -7,6 +7,8 @@
     using Serilog.Core;
     using Serilog.Events;
 
+#pragma warning disable CA1063 // Implement IDisposable Correctly
+#pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
     public abstract class TestFixtureBase : IDisposable
     {
         protected TestFixtureBase()
@@ -29,4 +31,6 @@
             this.Logger = this.EnableLogging ? LogFactory.CreateLogger(this.LoggingLevelSwitch) : new Mock<ILogger>().Object;
         }
     }
+#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
+#pragma warning restore CA1063 // Implement IDisposable Correctly
 }

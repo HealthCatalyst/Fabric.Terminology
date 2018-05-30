@@ -1,12 +1,9 @@
-﻿namespace Fabric.Terminology.API
+﻿namespace Fabric.Terminology.Domain
 {
-    using System.Collections.Generic;
-    using System.Linq;
-
     /// <summary>
     /// Extension methods
     /// </summary>
-    public static partial class Extensions
+    public static partial class DomainExtensions
     {
         //// Actual implementations are nested under this file for organizational purposes.
     }

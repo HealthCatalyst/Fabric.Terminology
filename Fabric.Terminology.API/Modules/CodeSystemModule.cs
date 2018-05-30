@@ -37,7 +37,7 @@
         {
             if (model.CodeSystemGuids == null)
             {
-                model.CodeSystemGuids = new Guid[] { };
+                model.CodeSystemGuids = Array.Empty<Guid>();
             }
 
             return model;

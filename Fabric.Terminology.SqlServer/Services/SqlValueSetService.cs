@@ -66,9 +66,9 @@ namespace Fabric.Terminology.SqlServer.Services
             var setGuids = valueSetGuids as Guid[] ?? valueSetGuids.ToArray();
             var backingItems = this.valueSetBackingItemRepository.GetValueSetBackingItems(setGuids, codeSystemGuids);
 
-            var codes = await this.valueSetCodeRepository.BuildValueSetCodesDictionary(setGuids);
+            var codes = await this.valueSetCodeRepository.BuildValueSetCodesDictionary(setGuids).ConfigureAwait(false);
 
-            var counts = await this.valueSetCodeCountRepository.BuildValueSetCountsDictionary(setGuids);
+            var counts = await this.valueSetCodeCountRepository.BuildValueSetCountsDictionary(setGuids).ConfigureAwait(false);
 
             return this.BuildValueSets(backingItems, codes, counts);
         }
@@ -84,9 +84,9 @@ namespace Fabric.Terminology.SqlServer.Services
 
             var valueSetGuids = backingItems.Select(bi => bi.ValueSetGuid).ToList();
 
-            var codes = await this.valueSetCodeRepository.BuildValueSetCodesDictionary(valueSetGuids);
+            var codes = await this.valueSetCodeRepository.BuildValueSetCodesDictionary(valueSetGuids).ConfigureAwait(false);
 
-            var counts = await this.valueSetCodeCountRepository.BuildValueSetCountsDictionary(valueSetGuids);
+            var counts = await this.valueSetCodeCountRepository.BuildValueSetCountsDictionary(valueSetGuids).ConfigureAwait(false);
 
             return this.BuildValueSets(backingItems, codes, counts);
         }
@@ -138,13 +138,13 @@ namespace Fabric.Terminology.SqlServer.Services
                                       pagerSettings,
                                       codeSystemGuids,
                                       statusCodes,
-                                      latestVersionsOnly);
+                                      latestVersionsOnly).ConfigureAwait(false);
 
             var valueSetGuids = backingItemPage.Values.Select(bi => bi.ValueSetGuid).ToList();
 
-            var codes = await this.valueSetCodeRepository.BuildValueSetCodesDictionary(valueSetGuids);
+            var codes = await this.valueSetCodeRepository.BuildValueSetCodesDictionary(valueSetGuids).ConfigureAwait(false);
 
-            var counts = await this.valueSetCodeCountRepository.BuildValueSetCountsDictionary(valueSetGuids);
+            var counts = await this.valueSetCodeCountRepository.BuildValueSetCountsDictionary(valueSetGuids).ConfigureAwait(false);
 
             return this.BuildValueSetsPage(backingItemPage, codes, counts);
         }

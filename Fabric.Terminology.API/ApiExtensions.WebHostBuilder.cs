@@ -4,7 +4,7 @@
 
     using Microsoft.AspNetCore.Hosting;
 
-    public static partial class Extensions
+    public static partial class ApiExtensions
     {
         internal static IWebHostBuilder UseIisIntegrationIfConfigured(this IWebHostBuilder builder, IAppConfiguration appConfiguration)
         {

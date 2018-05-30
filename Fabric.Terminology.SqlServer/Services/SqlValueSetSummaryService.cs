@@ -61,7 +61,7 @@
             var setGuids = valueSetGuids as Guid[] ?? valueSetGuids.ToArray();
             var backingItems = this.valueSetBackingItemRepository.GetValueSetBackingItems(setGuids, codeSystemGuids);
 
-            var counts = await this.valueSetCodeCountRepository.BuildValueSetCountsDictionary(setGuids);
+            var counts = await this.valueSetCodeCountRepository.BuildValueSetCountsDictionary(setGuids).ConfigureAwait(false);
 
             return this.BuildValueSetSummaries(backingItems, counts);
         }
@@ -77,7 +77,7 @@
 
             var counts =
                 await this.valueSetCodeCountRepository.BuildValueSetCountsDictionary(
-                    backingItems.Select(bi => bi.ValueSetGuid).ToList());
+                    backingItems.Select(bi => bi.ValueSetGuid).ToList()).ConfigureAwait(false);
 
             return this.BuildValueSetSummaries(backingItems, counts);
         }
@@ -130,11 +130,11 @@
                                       pagerSettings,
                                       codeSystemGuids,
                                       statusCodes,
-                                      latestVersionsOnly);
+                                      latestVersionsOnly).ConfigureAwait(false);
 
             var countsDictionary =
                 await this.valueSetCodeCountRepository.BuildValueSetCountsDictionary(
-                    backingItemPage.Values.Select(bi => bi.ValueSetGuid));
+                    backingItemPage.Values.Select(bi => bi.ValueSetGuid)).ConfigureAwait(false);
 
             return this.BuildValueSetsPage(backingItemPage, countsDictionary);
         }

@@ -1,6 +1,7 @@
 ﻿namespace Fabric.Terminology.API
 {
     using Fabric.Terminology.API.Configuration;
+    using Fabric.Terminology.API.Constants;
     using Fabric.Terminology.API.DependencyInjection;
     using Fabric.Terminology.API.Validators;
     using Fabric.Terminology.Domain.Services;
@@ -97,7 +98,7 @@
 
             container.ComposeFrom<SqlRequestComposition>();
             container.ComposeFrom<ServicesRequestComposition>();
-            container.Register<ValueSetValidator>();
+            container.Register<ValueSetValidatorCollection>();
         }
 
         protected override void RequestStartup(
@@ -106,9 +107,13 @@
             [NotNull] NancyContext context)
         {
             base.RequestStartup(container, pipelines, context);
-
-            pipelines.AfterRequest.AddItemToEndOfPipeline(
-                x => x.Response.Headers.Add("Access-Control-Allow-Origin", "*"));
+            pipelines.AfterRequest += ctx =>
+                {
+                    foreach (var corsHeader in HttpResponseHeaders.CorsHeaders)
+                    {
+                        ctx.Response.Headers.Add(corsHeader.Item1, corsHeader.Item2);
+                    }
+                };
         }
     }
 }

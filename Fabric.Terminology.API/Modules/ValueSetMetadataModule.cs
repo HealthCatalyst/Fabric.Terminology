@@ -17,8 +17,7 @@
     {
         public ValueSetMetadataModule(
             ISwaggerModelCatalog modelCatalog,
-            ISwaggerTagCatalog tagCatalog,
-            TerminologySqlSettings settings)
+            ISwaggerTagCatalog tagCatalog)
             : base(modelCatalog, tagCatalog)
         {
             modelCatalog.AddModels(
@@ -87,11 +86,11 @@
                 new[]
                 {
                     ParameterFactory.GetSkip(),
-                    ParameterFactory.GetTop(settings.DefaultItemsPerPage),
+                    ParameterFactory.GetTop(),
                     ParameterFactory.GetSummary(),
                     ParameterFactory.GetCodeSystemGuidsArray(),
                     ParameterFactory.GetQueryStringStatusCode(),
-                    ParameterFactory.GetOrderBy("Name")
+                    ParameterFactory.GetOrderBy()
                 },
                 new[] { TagsFactory.GetValueSetTag() });
 

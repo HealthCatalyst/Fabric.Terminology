@@ -33,7 +33,7 @@
 
         private readonly IValueSetSummaryService valueSetSummaryService;
 
-        private readonly ValueSetValidator valueSetValidator;
+        private readonly ValueSetValidatorCollection valueSetValidatorCollection;
 
         public ValueSetModule(
             IValueSetService valueSetService,
@@ -43,7 +43,7 @@
             IValueSetComparisonService valueSetComparisonService,
             IAppConfiguration config,
             ILogger logger,
-            ValueSetValidator valueSetValidator)
+            ValueSetValidatorCollection valueSetValidatorCollection)
             : base($"/{TerminologyVersion.Route}/valuesets", config, logger)
         {
             this.valueSetService = valueSetService;
@@ -51,9 +51,9 @@
             this.clientTermValueSetService = clientTermValueSetService;
             this.clientTermCustomizationService = clientTermCustomizationService;
             this.valueSetComparisonService = valueSetComparisonService;
-            this.valueSetValidator = valueSetValidator;
+            this.valueSetValidatorCollection = valueSetValidatorCollection;
 
-            this.Get("/", async _ => await this.GetValueSetPage(), null, "GetPaged");
+            this.Get("/", async _ => await this.GetValueSetPage().ConfigureAwait(false), null, "GetPaged");
 
             this.Get("/{valueSetGuid}", parameters => this.GetValueSet(parameters.valueSetGuid), null, "GetValueSet");
 
@@ -65,11 +65,11 @@
 
             this.Post("/multiple/", _ => this.GetMultipleValueSets(), null, "GetMultipleValueSets");
 
-            this.Post("/search/", async _ => await this.Search(), null, "Search");
+            this.Post("/search/", async _ => await this.Search().ConfigureAwait(false), null, "Search");
 
             this.Post("/copy/", _ => this.CopyValueSet(), null, "CopyValueSet");
 
-            this.Post("/compare/", async _ => await this.CompareValueSets(), null, "CompareValueSets");
+            this.Post("/compare/", async _ => await this.CompareValueSets().ConfigureAwait(false), null, "CompareValueSets");
 
             this.Post("/", _ => this.AddValueSet(), null, "AddValueSet");
 
@@ -98,19 +98,19 @@
 
         private static async Task<T> Execute<T>(Func<Task<T>> query)
         {
-            return await query.Invoke();
+            return await query.Invoke().ConfigureAwait(false);
         }
 
         private static MultipleValueSetsQuery EnsureQueryModel(MultipleValueSetsQuery model)
         {
             if (model.ValueSetGuids == null)
             {
-                model.ValueSetGuids = new Guid[] { };
+                model.ValueSetGuids = Array.Empty<Guid>();
             }
 
             if (model.CodeSystemGuids == null)
             {
-                model.CodeSystemGuids = new Guid[] { };
+                model.CodeSystemGuids = Array.Empty<Guid>();
             }
 
             return model;
@@ -228,9 +228,11 @@
                 return summary
                            ? (await this.valueSetSummaryService.GetValueSetSummariesAsync(
                                   pagerSettings,
-                                  codeSystemGuids, 
-                                  status)).ToValueSetApiModelPage(codeSystemGuids, MapToValueSetItemApiModel)
-                           : (await this.valueSetService.GetValueSetsAsync(pagerSettings, codeSystemGuids, status))
+                                  codeSystemGuids,
+                                  status)
+                                  .ConfigureAwait(false)).ToValueSetApiModelPage(codeSystemGuids, MapToValueSetItemApiModel)
+                           : (await this.valueSetService.GetValueSetsAsync(pagerSettings, codeSystemGuids, status)
+                                  .ConfigureAwait(false))
                            .ToValueSetApiModelPage(codeSystemGuids, MapToValueSetApiModel);
             }
             catch (Exception ex)
@@ -255,14 +257,16 @@
                                   model.Term,
                                   model.PagerSettings,
                                   codeSystemGuids,
-                                  model.StatusCodes))
+                                  model.StatusCodes)
+                                 .ConfigureAwait(false))
                             .ToValueSetApiModelPage(codeSystemGuids, MapToValueSetItemApiModel)
 
                            : (await this.valueSetService.GetValueSetsAsync(
                                   model.Term,
                                   model.PagerSettings,
                                   codeSystemGuids,
-                                  model.StatusCodes))
+                                  model.StatusCodes)
+                                  .ConfigureAwait(false))
                             .ToValueSetApiModelPage(codeSystemGuids, MapToValueSetApiModel);
             }
             catch (Exception ex)
@@ -285,7 +289,7 @@
                 }
 
                 var valueSet = attempt.Result;
-                var validationResult = this.valueSetValidator.Validate(valueSet);
+                var validationResult = this.valueSetValidatorCollection.Validate(valueSet);
                 if (validationResult.IsValid)
                 {
                     this.clientTermValueSetService.SaveAsNew(valueSet);
@@ -422,7 +426,7 @@
 
                 var comparison = await this.valueSetComparisonService.CompareValueSetCodes(
                                      model.ValueSetGuids,
-                                     model.CodeSystemGuids);
+                                     model.CodeSystemGuids).ConfigureAwait(false);
 
                 return comparison.ToValueSetComparisonResultApiModel(model.CodeSystemGuids);
             }
@@ -466,8 +470,7 @@
         private bool GetSummarySetting()
         {
             var val = (string)this.Request.Query["$summary"];
-            bool.TryParse(val, out var ret);
-            return val.IsNullOrWhiteSpace() || ret;
+            return bool.TryParse(val, out var ret) && ret;
         }
 
         private IEnumerable<ValueSetStatus> GetValueSetStatusCode()
@@ -497,7 +500,7 @@
 
             if (model.CodeSystemGuids == null)
             {
-                model.CodeSystemGuids = new Guid[] { };
+                model.CodeSystemGuids = Array.Empty<Guid>();
             }
 
             if (model.Term == null)

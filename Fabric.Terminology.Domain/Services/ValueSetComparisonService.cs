@@ -33,7 +33,7 @@
                 throw new ArgumentException($"Two or more ValueSetGUID expected. {valueSetGuidHash.Count()} passed.", nameof(valueSetGuids));
             }
 
-            var valueSets = await this.valueSetService.GetValueSetsListAsync(valueSetGuidHash, codeSysetmGuidHash);
+            var valueSets = await this.valueSetService.GetValueSetsListAsync(valueSetGuidHash, codeSysetmGuidHash).ConfigureAwait(false);
 
             if (valueSets.Count != valueSetGuidHash.Count)
             {

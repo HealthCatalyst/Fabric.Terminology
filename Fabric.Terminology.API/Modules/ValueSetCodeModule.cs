@@ -26,7 +26,7 @@
         {
             this.valueSetCodeService = valueSetCodeService;
 
-            this.Get("/", async _ => await this.GetAllValueSetCodePage(), null, "GetAllValueSetCodesPaged");
+            this.Get("/", async _ => await this.GetAllValueSetCodePage().ConfigureAwait(false), null, "GetAllValueSetCodesPaged");
 
             this.Get("/{codeGuid}", parameters => this.GetValueSetCodes(parameters.codeGuid), null, "GetValueSetCodes");
 
@@ -55,7 +55,7 @@
             {
                 var pagerSettings = this.GetPagerSettings();
                 var codeSystemGuids = this.GetCodeSystems();
-                return (await this.valueSetCodeService.GetValueSetCodesAsync(pagerSettings, codeSystemGuids)).ToValueSetCodeApiModelPage();
+                return (await this.valueSetCodeService.GetValueSetCodesAsync(pagerSettings, codeSystemGuids).ConfigureAwait(false)).ToValueSetCodeApiModelPage();
             }
             catch (Exception ex)
             {
@@ -73,7 +73,7 @@
                 var pagerSettings = this.GetPagerSettings();
                 var codeSystemGuids = this.GetCodeSystems();
 
-                return (await this.valueSetCodeService.GetValueSetCodesAsync(valueSetGuid, pagerSettings, codeSystemGuids)).ToValueSetCodeApiModelPage();
+                return (await this.valueSetCodeService.GetValueSetCodesAsync(valueSetGuid, pagerSettings, codeSystemGuids).ConfigureAwait(false)).ToValueSetCodeApiModelPage();
             }
             catch (Exception ex)
             {

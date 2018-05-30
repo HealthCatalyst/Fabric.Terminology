@@ -7,6 +7,6 @@
     {
         public CodeSystemCodeApiModel Code { get; set; }
 
-        public IEnumerable<Guid> ValueSetGuids { get; set; }
+        public IEnumerable<Guid> ValueSetGuids { get; set; } = Array.Empty<Guid>();
     }
 }

@@ -58,7 +58,7 @@
             IEnumerable<Guid> codeSystemGuids,
             bool includeRetired = false)
         {
-            return this.GetCodeSystemCodesAsync(string.Empty, settings, codeSystemGuids,includeRetired);
+            return this.GetCodeSystemCodesAsync(string.Empty, settings, codeSystemGuids, includeRetired);
         }
 
         public Task<PagedCollection<ICodeSystemCode>> GetCodeSystemCodesAsync(

@@ -7,7 +7,7 @@
 
     public class HomeMetadataModule : MetadataModule<PathItem>
     {
-        public HomeMetadataModule(ISwaggerModelCatalog modelCatalog)
+        public HomeMetadataModule()
         {
             this.Describe["Ping"] = description => description.AsSwagger(
                 with => with.Operation(

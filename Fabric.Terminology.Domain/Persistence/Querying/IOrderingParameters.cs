@@ -3,6 +3,7 @@
     public interface IOrderingParameters
     {
         SortDirection Direction { get; set; }
+
         string FieldName { get; set; }
     }
 }

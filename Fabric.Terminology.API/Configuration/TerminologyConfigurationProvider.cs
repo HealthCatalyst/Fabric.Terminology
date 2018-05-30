@@ -4,16 +4,10 @@
 
     public class TerminologyConfigurationProvider
     {
-        public IAppConfiguration GetAppConfiguration(string basePath)
+        public IAppConfiguration GetAppConfiguration(IConfiguration configuration)
         {
-            var config = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json")
-                .AddEnvironmentVariables()
-                .SetBasePath(basePath)
-                .Build();
-
             var appConfig = new AppConfiguration();
-            config.Bind(appConfig);
+            configuration.Bind(appConfig);
             return appConfig;
         }
     }

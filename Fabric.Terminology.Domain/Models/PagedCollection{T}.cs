@@ -2,6 +2,8 @@
 {
     using System.Collections.Generic;
 
+#pragma warning disable CA1711 // Identifiers should not have incorrect suffix
+#pragma warning disable CA1000 // Do not declare static members on generic types
     public class PagedCollection<T>
     {
         public int TotalItems { get; set; } = 0;
@@ -17,4 +19,6 @@
             return new PagedCollection<T>();
         }
     }
+#pragma warning restore CA1000 // Do not declare static members on generic types
+#pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 }

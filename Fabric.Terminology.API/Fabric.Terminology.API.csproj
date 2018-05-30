@@ -1,13 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp1.1</TargetFramework>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
     <CodeAnalysisRuleSet>..\Catalyst.MostRules.Error.ruleset</CodeAnalysisRuleSet>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <PackageProjectUrl>https://github.com/HealthCatalyst/Fabric.Terminology</PackageProjectUrl>
     <RepositoryUrl>https://github.com/HealthCatalyst/Fabric.Terminology</RepositoryUrl>
     <PackageLicenseUrl>https://github.com/HealthCatalyst/Fabric.Terminology/blob/develop/LICENSE</PackageLicenseUrl>
+    <AssemblyName>Fabric.Terminology.API</AssemblyName>
+    <StartupObject></StartupObject>
  </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -37,16 +39,25 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Remove="web.config" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="web.config" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Anotar.Serilog.Fody" Version="4.3.2" />
     <PackageReference Include="AutoMapper" Version="6.1.1" />
-    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore" Version="1.1.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Owin" Version="1.1.2" />
-    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="1.1.2" />
+    <PackageReference Include="Microsoft.AspNetCore" Version="2.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Owin" Version="2.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.0.2" />
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.0" />
     <PackageReference Include="Nancy" Version="2.0.0-clinteastwood" />
     <PackageReference Include="Nancy.Swagger" Version="2.2.29-alpha" />
     <PackageReference Include="semver" Version="2.0.4" />
-    <PackageReference Include="Serilog" Version="2.4.0" />
-    <PackageReference Include="Serilog.Sinks.Literate" Version="2.1.0" />
+    <PackageReference Include="Serilog" Version="2.6.0" />
+    <PackageReference Include="Serilog.Sinks.Literate" Version="3.0.0" />
     <PackageReference Include="Serilog.Sinks.RollingFile" Version="3.3.0" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.0.2" />
   </ItemGroup>
@@ -55,8 +66,8 @@
     <ProjectReference Include="..\Fabric.Terminology.SqlServer\Fabric.Terminology.SqlServer.csproj" />
   </ItemGroup>
   <ItemGroup>
-	<Compile Update="Extensions.*.cs">
-		<DependentUpon>Extensions.cs</DependentUpon>
-	</Compile>
-	</ItemGroup>
+    <Compile Update="ApiExtensions.*.cs">
+      <DependentUpon>ApiExtensions.cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
 </Project>

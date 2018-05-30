@@ -7,6 +7,6 @@
     public class MultipleCodeSystemQuery
     {
         [JsonProperty("codeSystemGuids")]
-        public Guid[] CodeSystemGuids { get; set; }
+        public Guid[] CodeSystemGuids { get; set; } = Array.Empty<Guid>();
     }
 }
