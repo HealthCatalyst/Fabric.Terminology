@@ -10,6 +10,8 @@ namespace Fabric.Terminology.API.Configuration
 
     internal static class TerminologyVersion
     {
+        public const string DiscoveryServiceName = "TerminologyService";
+
         public static Version Current { get; } = new AssemblyName(typeof(TerminologyVersion).GetTypeInfo().Assembly.FullName).Version;
 
         public static string CurrentComment => "alpha";

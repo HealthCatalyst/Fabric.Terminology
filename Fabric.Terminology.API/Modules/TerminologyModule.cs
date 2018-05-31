@@ -1,4 +1,4 @@
-﻿namespace Fabric.Terminology.API.Modules
+namespace Fabric.Terminology.API.Modules
 {
     using System;
     using System.Linq;
@@ -17,8 +17,6 @@
     using Nancy.Responses.Negotiation;
 
     using Serilog;
-
-    using Constants = Fabric.Terminology.API.Constants;
 
     public abstract class TerminologyModule<T> : NancyModule
     {
@@ -71,7 +69,7 @@
 
         protected object ParseValueSetGuidAndExecute(string valueSetGuidString, Func<Guid, object> getResponse)
         {
-            if (!Guid.TryParse(valueSetGuidString, out Guid valueSetGuid))
+            if (!Guid.TryParse(valueSetGuidString, out var valueSetGuid))
             {
                 return this.CreateFailureResponse(
                     $"The valueSetGuid parameter '{valueSetGuidString}' could not be parsed as a valid GUID",
@@ -81,10 +79,8 @@
             return getResponse(valueSetGuid);
         }
 
-        protected Guid[] GetCodeSystems()
-        {
-            return this.CreateGuidParameterArray((string)this.Request.Query["$codesystems"]);
-        }
+        protected Guid[] GetCodeSystems() =>
+            this.CreateGuidParameterArray((string)this.Request.Query["$codesystems"]);
 
         protected IOrderingParameters GetValueSetOrdering()
         {
@@ -112,9 +108,7 @@
             return cds.Select(cd => cd.Trim()).Where(cd => !cd.IsNullOrWhiteSpace()).ToArray();
         }
 
-        private Guid[] CreateGuidParameterArray(string value)
-        {
-            return this.CreateParameterArray(value).Select(s => Maybe.From(Guid.Parse(s))).Values().ToArray();
-        }
+        private Guid[] CreateGuidParameterArray(string value) =>
+            this.CreateParameterArray(value).Select(s => Maybe.From(Guid.Parse(s))).Values().ToArray();
     }
 }

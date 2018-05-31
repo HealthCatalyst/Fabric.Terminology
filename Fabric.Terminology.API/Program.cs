@@ -1,4 +1,4 @@
-﻿namespace Fabric.Terminology.API
+namespace Fabric.Terminology.API
 {
     using System;
 
@@ -8,10 +8,7 @@
 
     public static class Program
     {
-        public static void Main()
-        {
-            BuildWebHost(Array.Empty<string>()).Run();
-        }
+        public static void Main() => BuildWebHost(Array.Empty<string>()).Run();
 
         public static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
@@ -19,7 +16,7 @@
                 .ConfigureAppConfiguration((context, config) =>
                     {
                         config.Sources.Clear();
-                        config.AddJsonFile("appsettings.json", optional: false);
+                        config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
                     })
                 .Build();
     }

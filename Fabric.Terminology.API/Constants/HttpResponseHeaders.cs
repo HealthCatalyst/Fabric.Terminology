@@ -1,11 +1,11 @@
-﻿namespace Fabric.Terminology.API.Constants
+namespace Fabric.Terminology.API.Constants
 {
     using System;
     using System.Collections.Generic;
 
-    public static class HttpResponseHeaders
+    internal static class HttpResponseHeaders
     {
-        public static readonly string Location = "Location";
+        public const string Location = "Location";
 
         public static IEnumerable<Tuple<string, string>> CorsHeaders { get; } = new[]
         {

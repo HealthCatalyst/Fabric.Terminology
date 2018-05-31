@@ -1,5 +1,11 @@
-﻿namespace Fabric.Terminology.API.Bootstrapping
+namespace Fabric.Terminology.API.Bootstrapping
 {
+    using System;
+    using System.Collections.Generic;
+
+    using Catalyst.DosApi.Discovery;
+    using Catalyst.DosApi.Discovery.Catalyst.DiscoveryService.Models;
+
     using Fabric.Terminology.API.Configuration;
     using Fabric.Terminology.API.Constants;
     using Fabric.Terminology.API.DependencyInjection;
@@ -19,6 +25,7 @@
     using Serilog;
 
     using Swagger.ObjectModel;
+    using Swagger.ObjectModel.Builders;
 
     internal class Bootstrapper : DefaultNancyBootstrapper
     {
@@ -26,19 +33,21 @@
 
         private readonly ILogger logger;
 
-        public Bootstrapper(IAppConfiguration config, ILogger log)
+        private readonly IDiscoveryServiceClient discoveryServiceClient;
+
+        public Bootstrapper(
+            IAppConfiguration config,
+            ILogger log,
+            IDiscoveryServiceClient discoveryServiceClient)
         {
             this.appConfig = config;
             this.logger = log;
+            this.discoveryServiceClient = discoveryServiceClient;
         }
 
         protected override void ApplicationStartup([NotNull] TinyIoCContainer container, [NotNull] IPipelines pipelines)
         {
-            SwaggerMetadataProvider.SetInfo(
-                "Shared Terminology Data Services",
-                TerminologyVersion.SemanticVersion.ToString(),
-                "Shared Terminology Data Services - Fabric.Terminology.API",
-                new Contact() { EmailAddress = "terminology-api@healthcatalyst.com" });
+            this.InitializeSwaggerMetadata();
 
             base.ApplicationStartup(container, pipelines);
 
@@ -67,6 +76,7 @@
 
             container.Register<IAppConfiguration>(this.appConfig);
             container.Register<IMemoryCacheSettings>(this.appConfig.TerminologySqlSettings);
+            container.Register<IDiscoveryServiceClient>(this.discoveryServiceClient);
             container.Register<ILogger>(this.logger);
 
             // Caching
@@ -114,6 +124,38 @@
                         ctx.Response.Headers.Add(corsHeader.Item1, corsHeader.Item2);
                     }
                 };
+        }
+
+        private void InitializeSwaggerMetadata()
+        {
+            // This seems like a redundant call but the api service is internally "statically" cached so it's essentially
+            // just a lookup
+            var authority = this.discoveryServiceClient.GetApiServiceForIdentityFromConfig(this.appConfig);
+
+            SwaggerMetadataProvider.SetInfo(
+                "Shared Terminology Data Services",
+                TerminologyVersion.SemanticVersion.ToString(),
+                "Shared Terminology Data Services - Fabric.Terminology.API",
+                new Contact() { EmailAddress = "terminology-api@healthcatalyst.com" });
+
+            var securitySchemeBuilder = new Oauth2SecuritySchemeBuilder();
+            securitySchemeBuilder.Flow(Oauth2Flows.Implicit);
+            securitySchemeBuilder.Description("Authentication with Fabric.Identity");
+            securitySchemeBuilder.AuthorizationUrl(authority.AbsoluteUri);
+            securitySchemeBuilder.Scope("fabric/terminology.read", "Grants read access to fabric.terminology resources.");
+            securitySchemeBuilder.Scope("fabric/terminology.write", "Grants write access to fabric.terminology resources.");
+            try
+            {
+                SwaggerMetadataProvider.SetSecuritySchemeBuilder(securitySchemeBuilder, "fabric.identity");
+            }
+            catch (ArgumentException ex)
+            {
+                this.logger.Warning("Error configuring Swagger Security Scheme. {ExceptionMessage}", ex.Message);
+            }
+            catch (NullReferenceException ex)
+            {
+                this.logger.Warning("Error configuring Swagger Security Scheme: {ExceptionMessage}", ex.Message);
+            }
         }
     }
 }

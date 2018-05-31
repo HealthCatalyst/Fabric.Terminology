@@ -56,7 +56,7 @@
   <ItemGroup>
     <PackageReference Include="Anotar.Serilog.Fody" Version="4.3.2" />
     <PackageReference Include="AutoMapper" Version="6.1.1" />
-    <PackageReference Include="Catalyst.DosApi.Discovery" Version="1.0.2-alpha.58584" />
+    <PackageReference Include="Catalyst.DosApi.Discovery" Version="1.0.2-alpha.58814" />
     <PackageReference Include="IdentityServer4.AccessTokenValidation" Version="2.6.0" />
     <PackageReference Include="JetBrains.Annotations" Version="11.1.0" />
     <PackageReference Include="Microsoft.AspNetCore" Version="2.0.2" />

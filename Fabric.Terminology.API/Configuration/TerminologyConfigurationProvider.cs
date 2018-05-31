@@ -1,5 +1,9 @@
-﻿namespace Fabric.Terminology.API.Configuration
+namespace Fabric.Terminology.API.Configuration
 {
+    using System.Collections.Generic;
+
+    using Catalyst.DosApi.Discovery.Configuration;
+
     using Microsoft.Extensions.Configuration;
 
     public class TerminologyConfigurationProvider
@@ -8,6 +12,14 @@
         {
             var appConfig = new AppConfiguration();
             configuration.Bind(appConfig);
+
+            appConfig.DiscoveryRegistrationSettings.ServiceName = TerminologyVersion.DiscoveryServiceName;
+
+            // Manually deserialize the list of DiscoveryLookupArgs
+            var discoveryServices = configuration.GetSection("DiscoveryServiceClientSettings:DiscoveryServices")
+                .Get<List<DiscoveryLookupArgs>>();
+            appConfig.DiscoveryServiceClientSettings.DiscoveryServices = discoveryServices;
+
             return appConfig;
         }
     }

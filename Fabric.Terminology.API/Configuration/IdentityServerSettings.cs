@@ -2,9 +2,9 @@ namespace Fabric.Terminology.API.Configuration
 {
     using System.Collections.Generic;
 
-    public class IdentityServerConfidentialClientSettings
+    public class IdentityServerSettings
     {
-        public string Authority { get; set; }
+        public string ServiceNameInDiscovery { get; set; }
 
         public string ClientId { get; set; }
 

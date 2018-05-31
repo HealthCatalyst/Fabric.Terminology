@@ -1,8 +1,17 @@
 namespace Fabric.Terminology.API
 {
+    using System;
+    using System.Collections.Generic;
     using System.Linq;
+    using System.Net.Http;
+    using System.Threading.Tasks;
 
     using AutoMapper;
+
+    using Catalyst.DosApi.Common;
+    using Catalyst.DosApi.Discovery;
+    using Catalyst.DosApi.Discovery.Catalyst.DiscoveryService.Models;
+    using Catalyst.Infrastructure.Caching;
 
     using Fabric.Terminology.API.Bootstrapping;
     using Fabric.Terminology.API.Bootstrapping.MapperProfiles;
@@ -30,7 +39,7 @@ namespace Fabric.Terminology.API
 
         private readonly ILogger logger;
 
-        //// private readonly IContainer container;
+        private readonly IDiscoveryServiceClient discoveryClient;
 
         private readonly string[] allowedPaths =
         {
@@ -45,6 +54,8 @@ namespace Fabric.Terminology.API
             this.appConfig = new TerminologyConfigurationProvider().GetAppConfiguration(configuration);
 
             this.logger = LogFactory.CreateTraceLogger(new LoggingLevelSwitch(), this.appConfig.ApplicationInsightsSettings);
+
+            this.discoveryClient = this.GetDiscoveryServiceClientInstance(this.appConfig);
         }
 
         public void ConfigureServices(IServiceCollection services)
@@ -53,12 +64,14 @@ namespace Fabric.Terminology.API
 
             //// services.AddCors()
 
+            var authority = this.discoveryClient.GetApiServiceForIdentityFromConfig(this.appConfig);
+
             // TODO should this be moved to the Nancy Bootstrapper?
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddIdentityServerAuthentication(
                     options =>
                         {
-                            options.Authority = this.appConfig.IdentityServerSettings.Authority;
+                            options.Authority = authority.AbsoluteUri;
                             options.ApiName = this.appConfig.IdentityServerSettings.ClientId;
                             options.ApiSecret = this.appConfig.IdentityServerSettings.ClientSecret;
                         });
@@ -93,7 +106,7 @@ namespace Fabric.Terminology.API
                 .UseNancy(
                     opt =>
                         {
-                            opt.Bootstrapper = new Bootstrapper(this.appConfig, this.logger);
+                            opt.Bootstrapper = new Bootstrapper(this.appConfig, this.logger, this.discoveryClient);
                             opt.PassThroughWhenStatusCodesAre(Nancy.HttpStatusCode.Unauthorized);
                         });
 
@@ -101,6 +114,35 @@ namespace Fabric.Terminology.API
             app.Use((context, next) => context.ChallengeAsync());
 
             Log.Logger.Information("Fabric.Terminology.API started!");
+        }
+
+        private IDiscoveryServiceClient GetDiscoveryServiceClientInstance(IAppConfiguration config)
+        {
+            // Setup discovery service client
+            var staticCacheProvider = new StaticCacheProvider();
+            var apiClient = new ApiClient(
+                HttpClientFactory.Create(
+                    new HttpClientHandler
+                    {
+                        UseDefaultCredentials = true
+                    }));
+
+            var client = new DiscoveryServiceClient(apiClient, staticCacheProvider, this.appConfig.DiscoveryServiceClientSettings);
+            if (config.DiscoveryRegistrationSettings.RegisterHeatbeat)
+            {
+                var serviceUri =
+                    new Uri(config.BaseTerminologyEndpoint, UriKind.Absolute).CombineUri(TerminologyVersion.Route);
+                var settings = config.DiscoveryRegistrationSettings;
+                var task = client.RegisterServiceAsync(
+                    settings.ServiceName,
+                    settings.Version,
+                    serviceUri,
+                    TerminologyVersion.SemanticVersion.ToString());
+
+                task.Wait();
+            }
+
+            return client;
         }
     }
 }

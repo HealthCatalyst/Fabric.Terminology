@@ -1,4 +1,4 @@
-﻿namespace Fabric.Terminology.API.Configuration
+namespace Fabric.Terminology.API.Configuration
 {
     public class HostingOptions
     {
