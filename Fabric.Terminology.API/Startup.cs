@@ -1,16 +1,13 @@
 namespace Fabric.Terminology.API
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
     using System.Net.Http;
-    using System.Threading.Tasks;
 
     using AutoMapper;
 
     using Catalyst.DosApi.Common;
     using Catalyst.DosApi.Discovery;
-    using Catalyst.DosApi.Discovery.Catalyst.DiscoveryService.Models;
     using Catalyst.Infrastructure.Caching;
 
     using Fabric.Terminology.API.Bootstrapping;
@@ -62,19 +59,10 @@ namespace Fabric.Terminology.API
         {
             services.AddWebEncoders();
 
-            //// services.AddCors()
-
             var authority = this.discoveryClient.GetApiServiceForIdentityFromConfig(this.appConfig);
 
-            // TODO should this be moved to the Nancy Bootstrapper?
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddIdentityServerAuthentication(
-                    options =>
-                        {
-                            options.Authority = authority.AbsoluteUri;
-                            options.ApiName = this.appConfig.IdentityServerSettings.ClientId;
-                            options.ApiSecret = this.appConfig.IdentityServerSettings.ClientSecret;
-                        });
+                .AddIdentityServerAuthentication(o => o.Authority = authority.AbsoluteUri);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -110,7 +98,7 @@ namespace Fabric.Terminology.API
                             opt.PassThroughWhenStatusCodesAre(Nancy.HttpStatusCode.Unauthorized);
                         });
 
-            // After upgrading to .net 2.0 => 401 response isn't redirecting to IdServer
+            //// After upgrading to .net 2.0 => 401 response isn't redirecting to IdServer
             app.Use((context, next) => context.ChallengeAsync());
 
             Log.Logger.Information("Fabric.Terminology.API started!");
