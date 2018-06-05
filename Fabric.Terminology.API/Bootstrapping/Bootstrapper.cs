@@ -2,10 +2,12 @@ namespace Fabric.Terminology.API.Bootstrapping
 {
     using System;
     using System.Collections.Generic;
+    using System.Runtime.InteropServices.ComTypes;
 
     using Catalyst.DosApi.Discovery;
     using Catalyst.DosApi.Discovery.Catalyst.DiscoveryService.Models;
 
+    using Fabric.Terminology.API.Bootstrapping.PipelineHooks;
     using Fabric.Terminology.API.Configuration;
     using Fabric.Terminology.API.Constants;
     using Fabric.Terminology.API.DependencyInjection;
@@ -61,6 +63,17 @@ namespace Fabric.Terminology.API.Bootstrapping
                             ex.Message);
                         return ctx.Response;
                     });
+
+            pipelines.BeforeRequest += ctx => RequestHooks.RemoveContentTypeHeaderForGet(ctx);
+            pipelines.BeforeRequest += ctx => RequestHooks.ErrorResponseIfContentTypeMissingForPostPutAndPatch(ctx);
+
+            pipelines.AfterRequest += ctx =>
+                {
+                    foreach (var corsHeader in HttpResponseHeaders.CorsHeaders)
+                    {
+                        ctx.Response.Headers.Add(corsHeader.Item1, corsHeader.Item2);
+                    }
+                };
         }
 
         protected override void ConfigureConventions([NotNull] NancyConventions nancyConventions)
@@ -109,21 +122,6 @@ namespace Fabric.Terminology.API.Bootstrapping
             container.ComposeFrom<SqlRequestComposition>();
             container.ComposeFrom<ServicesRequestComposition>();
             container.Register<ValueSetValidatorCollection>();
-        }
-
-        protected override void RequestStartup(
-            [NotNull] TinyIoCContainer container,
-            [NotNull] IPipelines pipelines,
-            [NotNull] NancyContext context)
-        {
-            base.RequestStartup(container, pipelines, context);
-            pipelines.AfterRequest += ctx =>
-                {
-                    foreach (var corsHeader in HttpResponseHeaders.CorsHeaders)
-                    {
-                        ctx.Response.Headers.Add(corsHeader.Item1, corsHeader.Item2);
-                    }
-                };
         }
 
         private void InitializeSwaggerMetadata()
