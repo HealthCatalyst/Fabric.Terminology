@@ -1,4 +1,4 @@
-﻿namespace Fabric.Terminology.API.Modules
+namespace Fabric.Terminology.API.Modules
 {
     using System;
     using System.Linq;
@@ -13,6 +13,7 @@
 
     using Nancy;
     using Nancy.ModelBinding;
+    using Nancy.Security;
 
     using Serilog;
 
@@ -66,6 +67,7 @@
 
         private object GetCodeSystemCode(Guid codeGuid)
         {
+            this.RequiresClaims(this.TerminologyReadClaim);
             try
             {
                 return this.codeSystemCodeService
@@ -86,6 +88,7 @@
 
         private async Task<object> GetCodeSystemCodePage()
         {
+            this.RequiresClaims(this.TerminologyReadClaim);
             try
             {
                 var pagerSettings = this.GetPagerSettings();
@@ -105,6 +108,7 @@
 
         private object GetMultiple()
         {
+            this.RequiresClaims(this.TerminologyReadClaim);
             try
             {
                 var model = EnsureQueryModel(this.Bind<MultipleCodeSystemCodeQuery>(new BindingConfig { BodyOnly = true }));
@@ -123,6 +127,7 @@
 
         private async Task<object> GetBatch()
         {
+            this.RequiresClaims(this.TerminologyReadClaim);
             try
             {
                 var model = EnsureQueryModel(this.Bind<BatchCodeQuery>(new BindingConfig { BodyOnly = true }));
@@ -148,6 +153,7 @@
 
         private async Task<object> Search()
         {
+            this.RequiresClaims(this.TerminologyReadClaim);
             try
             {
                 var model = this.EnsureQueryModel(this.Bind<FindByTermQuery>(new BindingConfig { BodyOnly = true }));

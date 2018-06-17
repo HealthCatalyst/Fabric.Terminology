@@ -2,6 +2,7 @@ namespace Fabric.Terminology.API.Modules
 {
     using System;
     using System.Linq;
+    using System.Security.Claims;
 
     using CallMeMaybe;
 
@@ -30,6 +31,14 @@ namespace Fabric.Terminology.API.Modules
         protected IAppConfiguration Config { get; }
 
         protected ILogger Logger { get; }
+
+        protected Predicate<Claim> TerminologyReadClaim => claim =>
+            claim.Type.Equals(Claims.Scope, StringComparison.OrdinalIgnoreCase) &&
+            claim.Value.Equals(Scopes.ReadScope, StringComparison.OrdinalIgnoreCase);
+
+        protected Predicate<Claim> TerminologyWriteClaim => claim =>
+            claim.Type.Equals(Claims.Scope, StringComparison.OrdinalIgnoreCase) &&
+            claim.Value.Equals(Scopes.WriteScope, StringComparison.OrdinalIgnoreCase);
 
         protected Negotiator CreateSuccessfulPostResponse(IIdentifiable model)
         {

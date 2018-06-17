@@ -62,7 +62,10 @@ namespace Fabric.Terminology.API
             var authority = this.discoveryClient.GetApiServiceForIdentityFromConfig(this.appConfig);
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddIdentityServerAuthentication(o => o.Authority = authority.AbsoluteUri);
+                .AddIdentityServerAuthentication(o =>
+                    {
+                        o.Authority = authority.AbsoluteUri;
+                    });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -1,4 +1,4 @@
-﻿namespace Fabric.Terminology.API.Modules
+namespace Fabric.Terminology.API.Modules
 {
     using System;
     using System.Linq;
@@ -11,6 +11,7 @@
     using Fabric.Terminology.Domain.Services;
 
     using Nancy;
+    using Nancy.Security;
 
     using Serilog;
 
@@ -35,6 +36,7 @@
 
         private object GetValueSetCodes(Guid codeGuid)
         {
+            this.RequiresClaims(this.TerminologyReadClaim);
             try
             {
                 return this.valueSetCodeService.GetValueSetCodesByCodeGuid(codeGuid)
@@ -51,6 +53,7 @@
 
         private async Task<object> GetAllValueSetCodePage()
         {
+            this.RequiresClaims(this.TerminologyReadClaim);
             try
             {
                 var pagerSettings = this.GetPagerSettings();
@@ -68,6 +71,7 @@
 
         private async Task<object> GetValueSetCodePage(Guid valueSetGuid)
         {
+            this.RequiresClaims(this.TerminologyReadClaim);
             try
             {
                 var pagerSettings = this.GetPagerSettings();

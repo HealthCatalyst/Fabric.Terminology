@@ -11,6 +11,7 @@ namespace Fabric.Terminology.API.Modules
 
     using Nancy;
     using Nancy.ModelBinding;
+    using Nancy.Security;
 
     using Serilog;
 
@@ -45,6 +46,7 @@ namespace Fabric.Terminology.API.Modules
 
         private object GetAll()
         {
+            this.RequiresClaims(this.TerminologyReadClaim);
             try
             {
                 return this.codeSystemService.GetAll().Select(Mapper.Map<CodeSystemApiModel>).ToList();
@@ -60,6 +62,7 @@ namespace Fabric.Terminology.API.Modules
 
         private object GetCodeSystem(Guid codeSystemGuid)
         {
+            this.RequiresClaims(this.TerminologyReadClaim);
             try
             {
                 return this.codeSystemService.GetCodeSystem(codeSystemGuid)
@@ -79,6 +82,7 @@ namespace Fabric.Terminology.API.Modules
 
         private object GetMultiple()
         {
+            this.RequiresClaims(this.TerminologyReadClaim);
             try
             {
                 var model = EnsureQueryModel(this.Bind<MultipleCodeSystemQuery>(new BindingConfig { BodyOnly = true }));

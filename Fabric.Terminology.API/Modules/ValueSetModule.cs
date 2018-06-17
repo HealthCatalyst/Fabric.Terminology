@@ -18,6 +18,7 @@ namespace Fabric.Terminology.API.Modules
 
     using Nancy;
     using Nancy.ModelBinding;
+    using Nancy.Security;
 
     using Serilog;
 
@@ -84,22 +85,16 @@ namespace Fabric.Terminology.API.Modules
             this.Delete("/{valueSetGuid}", parameters => this.DeleteValueSet(parameters.valueSetGuid), null, "DeleteValueSet");
         }
 
-        private static ValueSetApiModel MapToValueSetApiModel(IValueSet vs, IReadOnlyCollection<Guid> codeSystemGuids)
-        {
-            return vs.ToValueSetApiModel(codeSystemGuids);
-        }
+        private static ValueSetApiModel MapToValueSetApiModel(IValueSet vs, IReadOnlyCollection<Guid> codeSystemGuids) =>
+            vs.ToValueSetApiModel(codeSystemGuids);
 
         private static ValueSetItemApiModel MapToValueSetItemApiModel(
             IValueSetSummary vss,
-            IReadOnlyCollection<Guid> codeSystemGuids)
-        {
-            return vss.ToValueSetItemApiModel(codeSystemGuids);
-        }
+            IReadOnlyCollection<Guid> codeSystemGuids) =>
+            vss.ToValueSetItemApiModel(codeSystemGuids);
 
-        private static async Task<T> Execute<T>(Func<Task<T>> query)
-        {
-            return await query.Invoke().ConfigureAwait(false);
-        }
+        private static async Task<T> Execute<T>(Func<Task<T>> query) =>
+            await query.Invoke().ConfigureAwait(false);
 
         private static MultipleValueSetsQuery EnsureQueryModel(MultipleValueSetsQuery model)
         {
@@ -118,6 +113,7 @@ namespace Fabric.Terminology.API.Modules
 
         private object GetValueSet(string valueSetGuidString)
         {
+            this.RequiresClaims(this.TerminologyReadClaim);
             return this.ParseValueSetGuidAndExecute(valueSetGuidString, GetValueSetByGuid);
 
             object GetValueSetByGuid(Guid valueSetGuid)
@@ -150,6 +146,7 @@ namespace Fabric.Terminology.API.Modules
 
         private object GetMultipleValueSets()
         {
+            this.RequiresClaims(this.TerminologyReadClaim);
             try
             {
                 var model = EnsureQueryModel(this.Bind<MultipleValueSetsQuery>(new BindingConfig { BodyOnly = true }));
@@ -184,6 +181,7 @@ namespace Fabric.Terminology.API.Modules
 
         private object GetValueSetVersions(string valueSetReferenceId)
         {
+            this.RequiresClaims(this.TerminologyReadClaim);
             try
             {
                 var codeSystemGuids = this.GetCodeSystems();
@@ -218,6 +216,7 @@ namespace Fabric.Terminology.API.Modules
 
         private async Task<object> GetValueSetPage()
         {
+            this.RequiresClaims(this.TerminologyReadClaim);
             try
             {
                 var summary = this.GetSummarySetting();
@@ -246,6 +245,7 @@ namespace Fabric.Terminology.API.Modules
 
         private async Task<object> Search()
         {
+            this.RequiresClaims(this.TerminologyReadClaim);
             try
             {
                 var model = this.EnsureQueryModel(this.Bind<ValueSetFindByTermQuery>(new BindingConfig { BodyOnly = true }));
@@ -278,6 +278,7 @@ namespace Fabric.Terminology.API.Modules
 
         private object AddValueSet()
         {
+            this.RequiresClaims(this.TerminologyWriteClaim);
             try
             {
                 var model = this.Bind<ClientTermValueSetApiModel>();
@@ -309,6 +310,7 @@ namespace Fabric.Terminology.API.Modules
 
         private object PatchValueSet(string valueSetGuidString)
         {
+            this.RequiresClaims(this.TerminologyWriteClaim);
             return this.ParseValueSetGuidAndExecute(valueSetGuidString, PatchValueSetWithValueSetGuid);
 
             object PatchValueSetWithValueSetGuid(Guid valueSetGuid)
@@ -351,6 +353,7 @@ namespace Fabric.Terminology.API.Modules
 
         private object DeleteValueSet(string valueSetGuidString)
         {
+            this.RequiresClaims(this.TerminologyWriteClaim);
             return this.ParseValueSetGuidAndExecute(valueSetGuidString, DeleteValueSetWithValueSetGuid);
 
             object DeleteValueSetWithValueSetGuid(Guid valueSetGuid)
@@ -387,6 +390,7 @@ namespace Fabric.Terminology.API.Modules
 
         private object CopyValueSet()
         {
+            this.RequiresClaims(this.TerminologyWriteClaim);
             try
             {
                 var model = this.Bind<ValueSetCopyApiModel>();
@@ -420,6 +424,7 @@ namespace Fabric.Terminology.API.Modules
 
         private async Task<object> CompareValueSets()
         {
+            this.RequiresClaims(this.TerminologyReadClaim);
             try
             {
                 var model = this.Bind<CompareValueSetsQuery>();
@@ -439,6 +444,7 @@ namespace Fabric.Terminology.API.Modules
 
         private object ChangeStatus(Guid valueSetGuid, string statusCode)
         {
+            this.RequiresClaims(this.TerminologyWriteClaim);
             if (Enum.TryParse(statusCode, true, out ValueSetStatus status))
             {
                 var attempt = this.clientTermValueSetService.ChangeStatus(valueSetGuid, status);
