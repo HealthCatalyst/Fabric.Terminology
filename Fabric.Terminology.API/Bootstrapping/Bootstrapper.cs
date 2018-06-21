@@ -1,16 +1,17 @@
 namespace Fabric.Terminology.API.Bootstrapping
 {
     using System;
-    using System.Collections.Generic;
-    using System.Runtime.InteropServices.ComTypes;
 
+    using Catalyst.DosApi.Authorization;
+    using Catalyst.DosApi.Common;
     using Catalyst.DosApi.Discovery;
-    using Catalyst.DosApi.Discovery.Catalyst.DiscoveryService.Models;
+    using Catalyst.DosApi.Identity.Models;
 
-    using Fabric.Terminology.API.Bootstrapping.PipelineHooks;
     using Fabric.Terminology.API.Configuration;
     using Fabric.Terminology.API.Constants;
     using Fabric.Terminology.API.DependencyInjection;
+    using Fabric.Terminology.API.Infrastructure;
+    using Fabric.Terminology.API.Infrastructure.PipelineHooks;
     using Fabric.Terminology.API.Validators;
     using Fabric.Terminology.Domain.Services;
     using Fabric.Terminology.SqlServer.Caching;
@@ -47,6 +48,16 @@ namespace Fabric.Terminology.API.Bootstrapping
             this.discoveryServiceClient = discoveryServiceClient;
         }
 
+        /// <summary>
+        /// Gets the <see cref="Uri"/> for the Identity Service
+        /// </summary>
+        private Lazy<Uri> IdentityServiceUri => new Lazy<Uri>(() => this.GetUriFromDiscovery(DiscoveryServicesKeys.Identity));
+
+        /// <summary>
+        /// Gets the <see cref="Uri"/> for the Authorization Service
+        /// </summary>
+        private Lazy<Uri> AuthorizationServiceUri => new Lazy<Uri>(() => this.GetUriFromDiscovery(DiscoveryServicesKeys.Authorization));
+
         protected override void ApplicationStartup([NotNull] TinyIoCContainer container, [NotNull] IPipelines pipelines)
         {
             this.InitializeSwaggerMetadata();
@@ -66,10 +77,9 @@ namespace Fabric.Terminology.API.Bootstrapping
 
             pipelines.BeforeRequest += ctx => RequestHooks.RemoveContentTypeHeaderForGet(ctx);
             pipelines.BeforeRequest += ctx => RequestHooks.ErrorResponseIfContentTypeMissingForPostPutAndPatch(ctx);
-
             pipelines.AfterRequest += ctx =>
                 {
-                    foreach (var corsHeader in HttpResponseHeaders.CorsHeaders)
+                    foreach (var corsHeader in HttpHeaderValues.CorsHeaders)
                     {
                         ctx.Response.Headers.Add(corsHeader.Item1, corsHeader.Item2);
                     }
@@ -111,6 +121,12 @@ namespace Fabric.Terminology.API.Bootstrapping
 
             // Persistence (Must precede service registration)
             container.ComposeFrom<SqlAppComposition>();
+
+            // Fabric.Identity and Authorization
+            container.RegisterDosServices(
+                this.appConfig.IdentityServerSettings,
+                this.IdentityServiceUri.Value,
+                this.AuthorizationServiceUri.Value);
         }
 
         protected override void ConfigureRequestContainer(
@@ -119,6 +135,8 @@ namespace Fabric.Terminology.API.Bootstrapping
         {
             base.ConfigureRequestContainer(container, context);
 
+            container.Register<NancyContextWrapper>(new NancyContextWrapper(context));
+
             container.ComposeFrom<SqlRequestComposition>();
             container.ComposeFrom<ServicesRequestComposition>();
             container.Register<ValueSetValidatorCollection>();
@@ -126,10 +144,6 @@ namespace Fabric.Terminology.API.Bootstrapping
 
         private void InitializeSwaggerMetadata()
         {
-            // This seems like a redundant call but the api service is internally "statically" cached so it's essentially
-            // just a lookup
-            var authority = this.discoveryServiceClient.GetApiServiceForIdentityFromConfig(this.appConfig);
-
             SwaggerMetadataProvider.SetInfo(
                 "Shared Terminology Data Services",
                 TerminologyVersion.SemanticVersion.ToString(),
@@ -139,7 +153,7 @@ namespace Fabric.Terminology.API.Bootstrapping
             var securitySchemeBuilder = new Oauth2SecuritySchemeBuilder();
             securitySchemeBuilder.Flow(Oauth2Flows.Implicit);
             securitySchemeBuilder.Description("Authentication with Fabric.Identity");
-            securitySchemeBuilder.AuthorizationUrl(authority.AbsoluteUri);
+            securitySchemeBuilder.AuthorizationUrl(this.IdentityServiceUri.Value.AbsoluteUri);
             securitySchemeBuilder.Scope("fabric/terminology.read", "Grants read access to fabric.terminology resources.");
             securitySchemeBuilder.Scope("fabric/terminology.write", "Grants write access to fabric.terminology resources.");
             try
@@ -154,6 +168,13 @@ namespace Fabric.Terminology.API.Bootstrapping
             {
                 this.logger.Warning("Error configuring Swagger Security Scheme: {ExceptionMessage}", ex.Message);
             }
+        }
+
+        private Uri GetUriFromDiscovery(string serviceKey)
+        {
+            var task = this.discoveryServiceClient.RequestServiceUriByKeyAsync(serviceKey);
+            task.Wait();
+            return task.Result;
         }
     }
 }

@@ -7,7 +7,10 @@ namespace Fabric.Terminology.API.Modules
 
     using AutoMapper;
 
+    using Catalyst.DosApi.Authorization.Compliance;
+
     using Fabric.Terminology.API.Configuration;
+    using Fabric.Terminology.API.Constants;
     using Fabric.Terminology.API.Models;
     using Fabric.Terminology.API.Services;
     using Fabric.Terminology.API.Validators;
@@ -36,6 +39,8 @@ namespace Fabric.Terminology.API.Modules
 
         private readonly ValueSetValidatorCollection valueSetValidatorCollection;
 
+        private readonly UserAccessService userAccessService;
+
         public ValueSetModule(
             IValueSetService valueSetService,
             IValueSetSummaryService valueSetSummaryService,
@@ -44,7 +49,8 @@ namespace Fabric.Terminology.API.Modules
             IValueSetComparisonService valueSetComparisonService,
             IAppConfiguration config,
             ILogger logger,
-            ValueSetValidatorCollection valueSetValidatorCollection)
+            ValueSetValidatorCollection valueSetValidatorCollection,
+            UserAccessService userAccessService)
             : base($"/{TerminologyVersion.Route}/valuesets", config, logger)
         {
             this.valueSetService = valueSetService;
@@ -53,6 +59,7 @@ namespace Fabric.Terminology.API.Modules
             this.clientTermCustomizationService = clientTermCustomizationService;
             this.valueSetComparisonService = valueSetComparisonService;
             this.valueSetValidatorCollection = valueSetValidatorCollection;
+            this.userAccessService = userAccessService;
 
             this.Get("/", async _ => await this.GetValueSetPage().ConfigureAwait(false), null, "GetPaged");
 
@@ -136,7 +143,7 @@ namespace Fabric.Terminology.API.Modules
                 }
                 catch (ValueSetNotFoundException ex)
                 {
-                    this.Logger.Error(ex, ex.Message, valueSetGuid.ToString());
+                    this.Logger.Error(ex, "{Message} - ValueSetGuid was {ValueSetGuid}", ex.Message, valueSetGuid);
                     return this.CreateFailureResponse(
                         $"The ValueSet with id: {valueSetGuid} was not found.",
                         HttpStatusCode.InternalServerError);
@@ -174,7 +181,7 @@ namespace Fabric.Terminology.API.Modules
             }
             catch (Exception ex)
             {
-                this.Logger.Error(ex, ex.Message);
+                this.Logger.Error(ex, "{Message}", ex.Message);
                 return this.CreateFailureResponse("Failed to retrieve value sets", HttpStatusCode.InternalServerError);
             }
         }
@@ -209,7 +216,7 @@ namespace Fabric.Terminology.API.Modules
             }
             catch (Exception ex)
             {
-                this.Logger.Error(ex, ex.Message);
+                this.Logger.Error(ex, "{Message}", ex.Message);
                 return this.CreateFailureResponse("Failed to retrieve value sets", HttpStatusCode.InternalServerError);
             }
         }
@@ -236,7 +243,7 @@ namespace Fabric.Terminology.API.Modules
             }
             catch (Exception ex)
             {
-                this.Logger.Error(ex, ex.Message);
+                this.Logger.Error(ex, "{Message}", ex.Message);
                 return this.CreateFailureResponse(
                     ex.Message,
                     HttpStatusCode.InternalServerError);
@@ -271,14 +278,14 @@ namespace Fabric.Terminology.API.Modules
             }
             catch (Exception ex)
             {
-                this.Logger.Error(ex, ex.Message);
+                this.Logger.Error(ex, "{Message}", ex.Message);
                 return this.CreateFailureResponse(ex.Message, HttpStatusCode.InternalServerError);
             }
         }
 
         private object AddValueSet()
         {
-            this.RequiresClaims(this.TerminologyWriteClaim);
+            this.RequireAuthorizationPermission(AuthorizationPermissions.Publisher);
             try
             {
                 var model = this.Bind<ClientTermValueSetApiModel>();
@@ -303,14 +310,14 @@ namespace Fabric.Terminology.API.Modules
             }
             catch (Exception ex)
             {
-                this.Logger.Error(ex, ex.Message);
+                this.Logger.Error(ex, "{Message}", ex.Message);
                 return this.CreateFailureResponse("Failed to create a value set", HttpStatusCode.InternalServerError);
             }
         }
 
         private object PatchValueSet(string valueSetGuidString)
         {
-            this.RequiresClaims(this.TerminologyWriteClaim);
+            this.RequireAuthorizationPermission(AuthorizationPermissions.Publisher);
             return this.ParseValueSetGuidAndExecute(valueSetGuidString, PatchValueSetWithValueSetGuid);
 
             object PatchValueSetWithValueSetGuid(Guid valueSetGuid)
@@ -345,7 +352,7 @@ namespace Fabric.Terminology.API.Modules
                 }
                 catch (Exception ex)
                 {
-                    this.Logger.Error(ex, ex.Message);
+                    this.Logger.Error(ex, "{Message}", ex.Message);
                     return this.CreateFailureResponse("Failed to update a value set", HttpStatusCode.InternalServerError);
                 }
             }
@@ -353,7 +360,7 @@ namespace Fabric.Terminology.API.Modules
 
         private object DeleteValueSet(string valueSetGuidString)
         {
-            this.RequiresClaims(this.TerminologyWriteClaim);
+            this.RequireAuthorizationPermission(AuthorizationPermissions.Publisher);
             return this.ParseValueSetGuidAndExecute(valueSetGuidString, DeleteValueSetWithValueSetGuid);
 
             object DeleteValueSetWithValueSetGuid(Guid valueSetGuid)
@@ -375,7 +382,7 @@ namespace Fabric.Terminology.API.Modules
                             }
                             catch (Exception ex)
                             {
-                                this.Logger.Error(ex, ex.Message, valueSetGuid);
+                                this.Logger.Error(ex, "{Message}.  ValueSetGuid was: {ValueSetGuid}", ex.Message, valueSetGuid);
                                 return this.CreateFailureResponse(
                                     $"Failed to delete ValueSet with id: {valueSetGuid}",
                                     HttpStatusCode.InternalServerError);
@@ -390,7 +397,7 @@ namespace Fabric.Terminology.API.Modules
 
         private object CopyValueSet()
         {
-            this.RequiresClaims(this.TerminologyWriteClaim);
+            this.RequireAuthorizationPermission(AuthorizationPermissions.Publisher);
             try
             {
                 var model = this.Bind<ValueSetCopyApiModel>();
@@ -412,7 +419,7 @@ namespace Fabric.Terminology.API.Modules
             }
             catch (Exception ex)
             {
-                this.Logger.Error(ex, ex.Message);
+                this.Logger.Error(ex, "{Message}", ex.Message);
                 return this.CreateFailureResponse("Failed to copy a value set", HttpStatusCode.InternalServerError);
             }
 
@@ -437,14 +444,14 @@ namespace Fabric.Terminology.API.Modules
             }
             catch (Exception ex)
             {
-                this.Logger.Error(ex, ex.Message);
+                this.Logger.Error(ex, "{Message}", ex.Message);
                 return this.CreateFailureResponse("Failed to compare value sets", HttpStatusCode.InternalServerError);
             }
         }
 
         private object ChangeStatus(Guid valueSetGuid, string statusCode)
         {
-            this.RequiresClaims(this.TerminologyWriteClaim);
+            this.RequireAuthorizationPermission(AuthorizationPermissions.Publisher);
             if (Enum.TryParse(statusCode, true, out ValueSetStatus status))
             {
                 var attempt = this.clientTermValueSetService.ChangeStatus(valueSetGuid, status);
@@ -463,7 +470,7 @@ namespace Fabric.Terminology.API.Modules
                 }
                 catch (Exception ex)
                 {
-                    this.Logger.Error(ex, ex.Message, valueSetGuid.ToString(), status.ToString());
+                    this.Logger.Error(ex, "{Message} - ValueSetGuid was {ValueSetGuid}.  Attempted to change to status {Status}", ex.Message, valueSetGuid, status);
                     return this.CreateFailureResponse(
                         $"Failed to change the status code for the value set with id: {valueSetGuid}",
                         HttpStatusCode.InternalServerError);
@@ -472,6 +479,12 @@ namespace Fabric.Terminology.API.Modules
 
             return this.CreateFailureResponse($"Failed to cast '{statusCode}' to a valid ValueSetStatus", HttpStatusCode.InternalServerError);
         }
+
+        private void RequireAuthorizationPermission(PermissionName permssionName) =>
+            this.RequiresAuthorizationPermission(
+                this.userAccessService,
+                permssionName,
+                this.TerminologyWriteClaim);
 
         private bool GetSummarySetting()
         {

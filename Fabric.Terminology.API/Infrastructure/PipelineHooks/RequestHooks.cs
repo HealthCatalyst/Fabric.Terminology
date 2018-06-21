@@ -1,4 +1,4 @@
-namespace Fabric.Terminology.API.Bootstrapping.PipelineHooks
+namespace Fabric.Terminology.API.Infrastructure.PipelineHooks
 {
     using System;
     using System.Linq;

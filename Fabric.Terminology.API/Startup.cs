@@ -14,6 +14,7 @@ namespace Fabric.Terminology.API
     using Fabric.Terminology.API.Bootstrapping.MapperProfiles;
     using Fabric.Terminology.API.Bootstrapping.Middleware;
     using Fabric.Terminology.API.Configuration;
+    using Fabric.Terminology.API.Constants;
     using Fabric.Terminology.API.Logging;
 
     using Microsoft.AspNetCore.Authentication;
@@ -59,7 +60,9 @@ namespace Fabric.Terminology.API
         {
             services.AddWebEncoders();
 
-            var authority = this.discoveryClient.GetApiServiceForIdentityFromConfig(this.appConfig);
+            var discoveryTask = this.discoveryClient.RequestServiceUriByKeyAsync(DiscoveryServicesKeys.Identity);
+            discoveryTask.Wait();
+            var authority = discoveryTask.Result;
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddIdentityServerAuthentication(o =>

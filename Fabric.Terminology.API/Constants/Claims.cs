@@ -7,5 +7,7 @@ namespace Fabric.Terminology.API.Constants
         public const string ClientId = "client_id";
 
         public const string Sub = "sub";
+
+        public const string IdentityProvider = "idp";
     }
 }

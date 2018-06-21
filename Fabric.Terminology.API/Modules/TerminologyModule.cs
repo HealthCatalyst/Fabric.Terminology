@@ -52,7 +52,7 @@ namespace Fabric.Terminology.API.Modules
 
             return this.Negotiate.WithModel(model)
                 .WithStatusCode(HttpStatusCode.Created)
-                .WithHeader(HttpResponseHeaders.Location, selfLink);
+                .WithHeader(HttpHeaderValues.Location, selfLink);
         }
 
         protected Negotiator CreateFailureResponse(string message, HttpStatusCode statusCode)

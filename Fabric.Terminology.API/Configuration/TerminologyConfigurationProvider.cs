@@ -17,7 +17,7 @@ namespace Fabric.Terminology.API.Configuration
 
             // Manually deserialize the list of DiscoveryLookupArgs
             var discoveryServices = configuration.GetSection("DiscoveryServiceClientSettings:DiscoveryServices")
-                .Get<List<DiscoveryLookupArgs>>();
+                .Get<Dictionary<string, DiscoveryLookupArgs>>();
             appConfig.DiscoveryServiceClientSettings.DiscoveryServices = discoveryServices;
 
             return appConfig;

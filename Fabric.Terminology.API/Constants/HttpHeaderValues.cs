@@ -3,9 +3,13 @@ namespace Fabric.Terminology.API.Constants
     using System;
     using System.Collections.Generic;
 
-    internal static class HttpResponseHeaders
+    internal static class HttpHeaderValues
     {
         public const string Location = "Location";
+
+        public const string Authorization = "Authorization";
+
+        public const string AuthorizationBearer = "Bearer ";
 
         public static IEnumerable<Tuple<string, string>> CorsHeaders { get; } = new[]
         {
