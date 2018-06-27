@@ -14,7 +14,9 @@ namespace Fabric.Terminology.API.Configuration
 
         public static Version Current { get; } = new AssemblyName(typeof(TerminologyVersion).GetTypeInfo().Assembly.FullName).Version;
 
-        public static string CurrentComment => "alpha";
+#pragma warning disable SA1122 // Use string.Empty for empty strings
+        public static string CurrentComment => "";
+#pragma warning restore SA1122 // Use string.Empty for empty strings
 
         public static string AssemblyVersion => Current.ToString();
 

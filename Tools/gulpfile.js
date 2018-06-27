@@ -7,8 +7,8 @@ var argv = require('yargs').argv;
 var version = new function () {
     // Change these to set the assembly version
     this.releaseComment = "";
-    this.major = 0;
-    this.minor = 7;
+    this.major = 1;
+    this.minor = 0;
     this.patch = 0; // changing this will reset the build number in local
 
     // do not assign. 
@@ -24,7 +24,7 @@ var version = new function () {
  *************************************************************/
 gulp.task("version", ["version:comment"], () => {
     if (argv.setVersion === undefined) { return; }
-
+    
     saveInfo(getInfo("../Fabric.Terminology.API/properties/"));
     saveInfo(getInfo("../Fabric.Terminology.Domain/properties/"));
     saveInfo(getInfo("../Fabric.Terminology.SqlServer/properties/"));

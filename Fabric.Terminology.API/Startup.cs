@@ -42,6 +42,8 @@ namespace Fabric.Terminology.API
         private readonly string[] allowedPaths =
         {
             "/",
+            "/terminology",
+            "/terminology/swagger/index.html",
             "/swagger/index.html",
             "/api-docs/swagger.json",
             "/api-docs"
