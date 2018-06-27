@@ -46,7 +46,7 @@ namespace Fabric.Terminology.API.Services
                 .Select(
                     async token =>
                         {
-                            var access = await this.userPermissionsService.GetPermissionsForUserViaDelegationAsync(token);
+                            var access = await this.userPermissionsService.GetPermissionsForUserViaDelegationAsync(token, permissionName.AsPermissionContext());
 
                             return !access.IsMissingRequiredPermission(permissionName);
                         })
