@@ -10,6 +10,8 @@
     <PackageLicenseUrl>https://github.com/HealthCatalyst/Fabric.Terminology/blob/develop/LICENSE</PackageLicenseUrl>
     <AssemblyName>Fabric.Terminology.API</AssemblyName>
     <StartupObject></StartupObject>
+    <Version Condition=" '$(BUILD_BUILDNUMBER)' == '' ">1.0.0.0-local</Version>
+    <Version Condition=" '$(BUILD_BUILDNUMBER)' != '' ">$(BUILD_BUILDNUMBER)</Version>
  </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
