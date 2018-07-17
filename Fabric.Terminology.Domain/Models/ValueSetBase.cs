@@ -22,6 +22,7 @@
             this.StatusCode = backingItem.StatusCode;
             this.IsCustom = backingItem.IsCustom;
             this.IsLatestVersion = backingItem.IsLatestVersion;
+            this.LastModifiedDate = backingItem.LastModifiedDate;
         }
 
         public DateTime VersionDate { get; internal set; }
@@ -31,6 +32,8 @@
         public string AuthorityDescription { get; internal set; }
 
         public string SourceDescription { get; internal set; }
+
+        public DateTime LastModifiedDate { get; internal set; }
 
         public Guid ValueSetGuid { get; internal set; }
 
