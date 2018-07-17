@@ -18,5 +18,8 @@
         public string AuthorityDescription { get; set; } = string.Empty;
 
         public string SourceDescription { get; set; } = string.Empty;
+
+        [AllowNull]
+        public DateTime LastModifiedDate { get; set; }
     }
 }

@@ -34,7 +34,8 @@
                 ValueSetGuid = dto.ValueSetGUID,
                 ValueSetReferenceId = dto.ValueSetReferenceID,
                 StatusCode = statusCode,
-                VersionDate = dto.VersionDTS
+                VersionDate = dto.VersionDTS,
+                LastModifiedDate = dto.LastModifiedDTS
             };
         }
 
