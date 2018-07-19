@@ -1,4 +1,4 @@
-﻿namespace Fabric.Terminology.API.Modules
+namespace Fabric.Terminology.API.Modules
 {
     using Fabric.Terminology.API.Configuration;
 
@@ -6,8 +6,11 @@
 
     public sealed class HomeModule : NancyModule
     {
-        public HomeModule()
+        private readonly IAppConfiguration appConfig;
+
+        public HomeModule(IAppConfiguration appConfig)
         {
+            this.appConfig = appConfig;
             this.Get("/", _ => this.GetSwaggerUrl());
 
             this.Get("/Ping", _ => HttpStatusCode.OK, null, "Ping");
@@ -19,7 +22,11 @@
         {
             var hostName = this.Request.Url.HostName;
             var port = this.Request.Url.Port ?? 80;
-            return this.Response.AsRedirect($"http://{hostName}:{port}/swagger/index.html?url=http://{hostName}:{port}/api-docs");
+            var redirect = hostName.Contains("localhost") || string.IsNullOrWhiteSpace(this.appConfig.BaseTerminologyEndpoint)
+                               ? $"http://{hostName}:{port}/swagger/index.html?url=http://{hostName}:{port}/api-docs"
+                               : $"{this.appConfig.BaseTerminologyEndpoint}/swagger/index.html?url={this.appConfig.BaseTerminologyEndpoint}/api-docs";
+
+            return this.Response.AsRedirect(redirect);
         }
     }
 }
