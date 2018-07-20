@@ -9,6 +9,9 @@
     public class AppConfiguration : IAppConfiguration
     {
         [AllowNull]
+        public string BaseTerminologyEndpoint { get; set; }
+
+        [AllowNull]
         public TerminologySqlSettings TerminologySqlSettings { get; set; }
 
         [AllowNull]
