@@ -10,12 +10,12 @@
     <AssemblyName>Fabric.Terminology.API</AssemblyName>
     <StartupObject>
     </StartupObject>
-    <FileVersion>0.9.0.0</FileVersion>
-    <AssemblyVersion>0.9.0.0</AssemblyVersion>
+    <FileVersion>0.7.3.0</FileVersion>
+    <AssemblyVersion>0.7.3.0</AssemblyVersion>
     <Copyright>Copyright 2018 © Health Catalyst</Copyright>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.9.0-alpha</Version>
+    <Version>0.7.3-alpha</Version>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DocumentationFile>

@@ -18,10 +18,20 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fabric.Terminology.IntegrationTests", "Fabric.Terminology.IntegrationTests\Fabric.Terminology.IntegrationTests.csproj", "{ADCA8957-4118-4238-A70E-764A8DC2490D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{D92C1446-06EC-4E96-8CDD-CDDDFE23EC44}"
+	ProjectSection(SolutionItems) = preProject
+		Build\UpdateVersions.ps1 = Build\UpdateVersions.ps1
+		Build\version.json = Build\version.json
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{BA6B3403-3331-4D2C-86C0-364C1F1E2488}"
 	ProjectSection(SolutionItems) = preProject
 		FodyWeavers.xml = FodyWeavers.xml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Modules", "Modules", "{99FE11A6-2682-4312-90DB-97C53E8E7663}"
+	ProjectSection(SolutionItems) = preProject
+		Build\Modules\CsprojUtilities.psm1 = Build\Modules\CsprojUtilities.psm1
+		Build\Modules\SolutionVersionConfig.psm1 = Build\Modules\SolutionVersionConfig.psm1
 	EndProjectSection
 EndProject
 Global
@@ -62,6 +72,7 @@ Global
 		{DCDC41F2-0E61-468D-9DCA-583168938829} = {ED1CC761-BD47-43F6-A3D9-77077285ECB6}
 		{7F85FF63-24B7-424C-BBBC-21ADC04E4F2E} = {ED1CC761-BD47-43F6-A3D9-77077285ECB6}
 		{ADCA8957-4118-4238-A70E-764A8DC2490D} = {ED1CC761-BD47-43F6-A3D9-77077285ECB6}
+		{99FE11A6-2682-4312-90DB-97C53E8E7663} = {D92C1446-06EC-4E96-8CDD-CDDDFE23EC44}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0013A09D-D37E-4991-B56C-89E979AF2645}
