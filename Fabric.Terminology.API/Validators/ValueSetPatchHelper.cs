@@ -46,7 +46,7 @@
         private static bool AttemptsToPerformOperationOnDuplicateReferenceKey(IEnumerable<CodeOperation> codeOperations, CodeOperationSource source)
         {
             var operations = codeOperations.Where(co => co.Source == source).ToList();
-            return operations.Distinct().Count() == operations.Count();
+            return operations.Distinct().Count() != operations.Count();
         }
     }
 }
