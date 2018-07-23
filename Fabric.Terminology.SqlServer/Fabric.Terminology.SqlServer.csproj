@@ -1,5 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <CodeAnalysisRuleSet>..\Catalyst.MostRules.Error.ruleset</CodeAnalysisRuleSet>
@@ -7,19 +6,21 @@
     <PackageProjectUrl>https://github.com/HealthCatalyst/Fabric.Terminology</PackageProjectUrl>
     <RepositoryUrl>https://github.com/HealthCatalyst/Fabric.Terminology</RepositoryUrl>
     <PackageLicenseUrl>https://github.com/HealthCatalyst/Fabric.Terminology/blob/develop/LICENSE</PackageLicenseUrl>
+    <FileVersion>0.7.3.0</FileVersion>
+    <AssemblyVersion>0.7.3.0</AssemblyVersion>
+    <Version>0.7.3-alpha</Version>
+    <Copyright>Copyright 2018 © Health Catalyst</Copyright>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile></DocumentationFile>
+    <DocumentationFile>
+    </DocumentationFile>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Remove="Models\Dto\ValueSetCode.cs" />
     <Compile Remove="Persistence\Factories\ValueSetFullCodeListMapper.cs" />
     <Compile Remove="Persistence\Factories\ValueSetMapperBase.cs" />
     <Compile Remove="Persistence\Factories\ValueSetShortCodeListMapper.cs" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="Anotar.Serilog.Fody" Version="4.3.2" />
     <PackageReference Include="AutoMapper" Version="6.1.1" />
@@ -36,11 +37,9 @@
     <PackageReference Include="Serilog.Extensions.Logging" Version="2.0.2" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.0.2" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Fabric.Terminology.Domain\Fabric.Terminology.Domain.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <Compile Update="Constants.*.cs">
       <DependentUpon>Constants.cs</DependentUpon>
