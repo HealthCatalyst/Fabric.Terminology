@@ -22,9 +22,9 @@
             IEnumerable<Guid> valueSetGuids,
             Func<IEnumerable<Guid>, ILookup<Guid, TResult>> doQuery);
 
-        IReadOnlyCollection<TResult> GetMultipleWithFallBack(
-            IEnumerable<Guid> valueSetGuids,
-            Func<IEnumerable<Guid>, ILookup<Guid, TResult>> getLookup);
+        // IReadOnlyCollection<TResult> GetMultipleWithFallBack(
+        //    IEnumerable<Guid> valueSetGuids,
+        //    Func<IEnumerable<Guid>, ILookup<Guid, TResult>> getLookup);
 
         IReadOnlyCollection<TResult> GetMultipleExisting(IEnumerable<Guid> valueSetGuids);
 

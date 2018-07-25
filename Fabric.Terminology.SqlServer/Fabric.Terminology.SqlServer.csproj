@@ -15,6 +15,10 @@
     </DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Caching\ICacheProvider.cs" />
+    <Compile Remove="Caching\IMemoryCacheProvider.cs" />
+    <Compile Remove="Caching\MemoryCacheProvider.cs" />
+    <Compile Remove="Caching\NullMemoryCacheProvider.cs" />
     <Compile Remove="Models\Dto\ValueSetCode.cs" />
     <Compile Remove="Persistence\Factories\ValueSetFullCodeListMapper.cs" />
     <Compile Remove="Persistence\Factories\ValueSetMapperBase.cs" />
@@ -23,13 +27,14 @@
   <ItemGroup>
     <PackageReference Include="Anotar.Serilog.Fody" Version="4.3.2" />
     <PackageReference Include="AutoMapper" Version="6.1.1" />
-    <PackageReference Include="CallMeMaybe" Version="0.6.8" />
+    <PackageReference Include="CallMeMaybe" Version="0.7.0" />
+    <PackageReference Include="Catalyst.Infrastructure.Caching" Version="1.2.1" />
     <PackageReference Include="Fody" Version="3.0.3" />
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.0.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="2.0.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.0.2" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.0.1" />
     <PackageReference Include="NullGuard.Fody" Version="1.8.0" />
     <PackageReference Include="serilog" Version="2.6.0" />
@@ -50,9 +55,6 @@
       <DependentUpon>SqlClientTermUnitOfWorkRepository.cs</DependentUpon>
     </Compile>
     <Compile Update="SqlServerExtensions.Queryable.cs">
-      <DependentUpon>SqlServerExtensions.cs</DependentUpon>
-    </Compile>
-    <Compile Update="SqlServerExtensions.MemoryCacheProvider.cs">
       <DependentUpon>SqlServerExtensions.cs</DependentUpon>
     </Compile>
     <Compile Update="SqlServerExtensions.DbContext.cs">
