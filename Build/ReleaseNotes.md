@@ -6,7 +6,11 @@ Following are notes for each release: new features and any steps required for up
 
 - Fabric.Identity and Fabric.Authorization integration.
 
-## 0.7.4 - In Development ##
+## 0.7.5 - In Development ##
+
+## 0.7.4  ##
+
+- Fixes issue with Swagger root base pathing when deployed in a virtual directory.
 
 ## 0.7.3  ##
 
