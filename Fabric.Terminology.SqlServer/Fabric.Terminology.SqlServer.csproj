@@ -5,9 +5,9 @@
     <PackageProjectUrl>https://github.com/HealthCatalyst/Fabric.Terminology</PackageProjectUrl>
     <RepositoryUrl>https://github.com/HealthCatalyst/Fabric.Terminology</RepositoryUrl>
     <PackageLicenseUrl>https://github.com/HealthCatalyst/Fabric.Terminology/blob/develop/LICENSE</PackageLicenseUrl>
-    <FileVersion>0.7.3.0</FileVersion>
-    <AssemblyVersion>0.7.3.0</AssemblyVersion>
-    <Version>0.7.3-alpha</Version>
+    <FileVersion>0.7.4.0</FileVersion>
+    <AssemblyVersion>0.7.4.0</AssemblyVersion>
+    <Version>0.7.4-alpha</Version>
     <Copyright>Copyright 2018 © Health Catalyst</Copyright>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
