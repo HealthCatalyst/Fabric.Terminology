@@ -44,7 +44,7 @@
             IAppConfiguration config,
             ILogger logger,
             ValueSetValidatorCollection valueSetValidatorCollection)
-            : base($"/{TerminologyVersion.Route}/valuesets", config, logger)
+            : base($"{TerminologyVersion.Route}/valuesets", config, logger)
         {
             this.valueSetService = valueSetService;
             this.valueSetSummaryService = valueSetSummaryService;
