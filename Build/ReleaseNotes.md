@@ -6,7 +6,9 @@ Following are notes for each release: new features and any steps required for up
 
 - Fabric.Identity and Fabric.Authorization integration.
 
-## 0.7.x - In Development ##
+## 0.7.4 - In Development ##
+
+## 0.7.3  ##
 
 - Refactor versioning scripts to use csproj files instead of AssemblyInfo using Powershell rather than gulp.
 
