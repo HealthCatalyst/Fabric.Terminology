@@ -9,6 +9,8 @@
         /// </summary>
         string BaseTerminologyEndpoint { get; set; }
 
+        string SwaggerRootBasePath { get; set; }
+
         TerminologySqlSettings TerminologySqlSettings { get; set; }
 
         HostingOptions HostingOptions { get; set; }
