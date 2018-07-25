@@ -8,7 +8,7 @@
     <PackageLicenseUrl>https://github.com/HealthCatalyst/Fabric.Terminology/blob/develop/LICENSE</PackageLicenseUrl>
     <FileVersion>0.7.3.0</FileVersion>
     <AssemblyVersion>0.7.3.0</AssemblyVersion>
-    <Version>0.7.3-alpha</Version>
+    <Version>0.7.3</Version>
     <Copyright>Copyright 2018 © Health Catalyst</Copyright>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

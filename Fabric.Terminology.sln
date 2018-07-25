@@ -19,6 +19,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fabric.Terminology.Integrat
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{D92C1446-06EC-4E96-8CDD-CDDDFE23EC44}"
 	ProjectSection(SolutionItems) = preProject
+		Build\ReleaseNotes.md = Build\ReleaseNotes.md
 		Build\UpdateVersions.ps1 = Build\UpdateVersions.ps1
 		Build\version.json = Build\version.json
 	EndProjectSection
