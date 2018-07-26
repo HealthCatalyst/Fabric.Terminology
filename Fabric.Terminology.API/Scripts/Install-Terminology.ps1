@@ -11,6 +11,45 @@
 
 #>
 
+param(
+	$configFilePath = "$PSScriptRoot\Install.config",
+	$applicationZipFile = "$PSScriptRoot\Fabric.Terminology.InstallPackage.zip",
+	$moduleFilePath = ""
+)
+
+if([string]::IsNullOrEmpty($moduleFilePath)){
+	Install-Module DosInstallUtilities -Scope CurrentUser
+
+	Import-Module DosInstallUtilities -Force
+}
+else{
+	Import-Module $moduleFilePath -Force
+}
+
+if(!(Test-Path .\Fabric-Install-Utilities.psm1)){
+    Invoke-WebRequest -Uri https://raw.githubusercontent.com/HealthCatalyst/InstallScripts/master/common/Fabric-Install-Utilities.psm1 -Headers @{"Cache-Control"="no-cache"} -OutFile Fabric-Install-Utilities.psm1
+}
+Import-Module -Name .\Fabric-Install-Utilities.psm1 -Force
+
+$installSettings = Get-InstallationSettings "terminology"
+
+[string] $credentialUsername = $installSettings.iisUser
+
+#Todo: maybe we should prompt and not pick this up from the config file?
+[securestring] $credentialPassword = ConvertTo-SecureString $installSettings.iisUserPwd -AsPlainText -Force
+[PSCredential] $identityCredentials = New-Object System.Management.Automation.PSCredential ($credentialUsername, $credentialPassword)
+
+#Not sure if we want to fetch the zip file from the config - if so, remove as a param.
+Publish-DosWebApplication -WebAppPackagePath $applicationZipFile -AppPoolName $installSettings.appPool -AppPoolCredential $identityCredentials -AppName $installSettings.appName -IISWebSite $installSettings.siteName
+
+$configurationReplacementTargets = @("**SqlServerConnectionString**","**DiscoveryServiceUri**")
+
+$configurationReplacementValues = @($installSettings.sqlServerAddress, $installSettings.discoveryService)
+
+$terminologyWebInstallFolder = Get-IISWebSitePath -WebSiteName $installSettings.siteName
+
+Update-DosConfigFile -TargetPatterns $configurationReplacementTargets -ReplacementPattern $configurationReplacementValues -Delimiter "**" -FilePath "$terminologyWebInstallFolder\$($installSettings.appName)\appsettings.json"
+
 
 <# TODO: Ben create Terminology shared db role for iis user
 
