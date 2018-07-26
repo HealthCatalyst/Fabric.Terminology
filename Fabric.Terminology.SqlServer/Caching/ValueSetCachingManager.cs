@@ -31,26 +31,6 @@
         public IReadOnlyCollection<TResult> GetMultipleOrQuery(Guid valueSetGuid, Func<Guid, IReadOnlyCollection<TResult>> doQuery)
             => this.cache.GetItem<IReadOnlyCollection<TResult>>(GetCacheKey(valueSetGuid), () => doQuery(valueSetGuid));
 
-        ////public IReadOnlyCollection<TResult> GetMultipleWithFallBack(
-        ////    IEnumerable<Guid> valueSetGuids,
-        ////    Func<IEnumerable<Guid>, ILookup<Guid, TResult>> getLookup)
-        ////{
-        ////    var setGuids = valueSetGuids as Guid[] ?? valueSetGuids.ToArray();
-        ////    var items = this.GetMultipleExisting(setGuids).ToList();
-
-        ////    var remaining = setGuids.Except(items.Select(bi => bi.ValueSetGuid)).ToImmutableHashSet();
-        ////    if (!remaining.Any())
-        ////    {
-        ////        return items;
-        ////    }
-
-        ////    items.AddRange(
-        ////            getLookup(remaining)
-        ////            .Select(bi => Maybe.From(this.cache.GetItem<TResult>(GetCacheKey(bi.Key), () => bi))).Values());
-
-        ////    return items;
-        ////}
-
         public Task<Dictionary<Guid, IReadOnlyCollection<TResult>>> GetCachedValueDictionary(
             IEnumerable<Guid> valueSetGuids,
             Func<IEnumerable<Guid>, ILookup<Guid, TResult>> doQuery)
