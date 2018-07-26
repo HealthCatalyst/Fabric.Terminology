@@ -7,6 +7,6 @@
     public class CompareValueSetsQuery : MultipleCodeSystemQuery
     {
         [JsonProperty("valueSetGuids")]
-        public Guid[] ValueSetGuids { get; set; }
+        public Guid[] ValueSetGuids { get; set; } = Array.Empty<Guid>();
     }
 }
