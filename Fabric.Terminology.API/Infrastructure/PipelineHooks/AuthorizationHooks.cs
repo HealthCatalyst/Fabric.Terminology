@@ -14,7 +14,7 @@ namespace Fabric.Terminology.API.Infrastructure.PipelineHooks
             UserAccessService service,
             PermissionName permissionName)
         {
-            var accessTask = service.UserHasAccess(permissionName);
+            var accessTask = service.UserHasAccessAsync(permissionName);
             accessTask.Wait();
 
             return (ctx) => accessTask.Result
