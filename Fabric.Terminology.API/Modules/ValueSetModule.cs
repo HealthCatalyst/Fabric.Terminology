@@ -61,7 +61,7 @@ namespace Fabric.Terminology.API.Modules
             this.valueSetValidatorCollection = valueSetValidatorCollection;
             this.userAccessService = userAccessService;
 
-            this.Get("/", async _ => await this.GetValueSetPage().ConfigureAwait(false), null, "GetPaged");
+            this.Get("/", async _ => await this.GetValueSetPageAsync().ConfigureAwait(false), null, "GetPaged");
 
             this.Get("/{valueSetGuid}", parameters => this.GetValueSet(parameters.valueSetGuid), null, "GetValueSet");
 
@@ -73,11 +73,11 @@ namespace Fabric.Terminology.API.Modules
 
             this.Post("/multiple/", _ => this.GetMultipleValueSets(), null, "GetMultipleValueSets");
 
-            this.Post("/search/", async _ => await this.Search().ConfigureAwait(false), null, "Search");
+            this.Post("/search/", async _ => await this.SearchAsync().ConfigureAwait(false), null, "Search");
 
             this.Post("/copy/", _ => this.CopyValueSet(), null, "CopyValueSet");
 
-            this.Post("/compare/", async _ => await this.CompareValueSets().ConfigureAwait(false), null, "CompareValueSets");
+            this.Post("/compare/", async _ => await this.CompareValueSetsAsync().ConfigureAwait(false), null, "CompareValueSets");
 
             this.Post("/", _ => this.AddValueSet(), null, "AddValueSet");
 
@@ -100,7 +100,7 @@ namespace Fabric.Terminology.API.Modules
             IReadOnlyCollection<Guid> codeSystemGuids) =>
             vss.ToValueSetItemApiModel(codeSystemGuids);
 
-        private static async Task<T> Execute<T>(Func<Task<T>> query) =>
+        private static async Task<T> ExecuteAsync<T>(Func<Task<T>> query) =>
             await query.Invoke().ConfigureAwait(false);
 
         private static MultipleValueSetsQuery EnsureQueryModel(MultipleValueSetsQuery model)
@@ -166,13 +166,13 @@ namespace Fabric.Terminology.API.Modules
                 }
 
                 return model.Summary
-                           ? Execute(
+                           ? ExecuteAsync(
                                    () => this.valueSetSummaryService.GetValueSetSummariesListAsync(
                                        model.ValueSetGuids,
                                        model.CodeSystemGuids))
                                .Result.Select(vss => vss.ToValueSetItemApiModel(model.CodeSystemGuids.ToArray()))
                                .ToList()
-                           : (IReadOnlyCollection<object>)Execute(
+                           : (IReadOnlyCollection<object>)ExecuteAsync(
                                    () => this.valueSetService.GetValueSetsListAsync(
                                        model.ValueSetGuids,
                                        model.CodeSystemGuids))
@@ -195,11 +195,11 @@ namespace Fabric.Terminology.API.Modules
                 var summary = this.GetSummarySetting();
 
                 var versions = summary
-                                   ? Execute(
+                                   ? ExecuteAsync(
                                            () => this.valueSetSummaryService.GetValueSetVersionsAsync(
                                                valueSetReferenceId))
                                        .Result.Select(vss => vss.ToValueSetItemApiModel(codeSystemGuids))
-                                   : Execute(
+                                   : ExecuteAsync(
                                            () => this.valueSetSummaryService.GetValueSetVersionsAsync(
                                                valueSetReferenceId))
                                        .Result.Select(vs => vs.ToValueSetItemApiModel(codeSystemGuids))
@@ -221,7 +221,7 @@ namespace Fabric.Terminology.API.Modules
             }
         }
 
-        private async Task<object> GetValueSetPage()
+        private async Task<object> GetValueSetPageAsync()
         {
             this.RequiresClaims(this.TerminologyReadClaim);
             try
@@ -250,7 +250,7 @@ namespace Fabric.Terminology.API.Modules
             }
         }
 
-        private async Task<object> Search()
+        private async Task<object> SearchAsync()
         {
             this.RequiresClaims(this.TerminologyReadClaim);
             try
@@ -429,7 +429,7 @@ namespace Fabric.Terminology.API.Modules
                     : this.CreateFailureResponse("Failed to copy ValueSet", HttpStatusCode.InternalServerError);
         }
 
-        private async Task<object> CompareValueSets()
+        private async Task<object> CompareValueSetsAsync()
         {
             this.RequiresClaims(this.TerminologyReadClaim);
             try

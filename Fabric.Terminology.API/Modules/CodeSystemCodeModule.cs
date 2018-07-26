@@ -29,15 +29,15 @@ namespace Fabric.Terminology.API.Modules
         {
             this.codeSystemCodeService = codeSystemCodeService;
 
-            this.Get("/", async _ => await this.GetCodeSystemCodePage().ConfigureAwait(false), null, "GetPagedCodeSystemCodes");
+            this.Get("/", async _ => await this.GetCodeSystemCodePageAysnc().ConfigureAwait(false), null, "GetPagedCodeSystemCodes");
 
             this.Get("/{codeGuid}", parameters => this.GetCodeSystemCode(parameters.codeGuid), null, "GetCodeSystemCode");
 
-            this.Post("/batch/", async _ => await this.GetBatch().ConfigureAwait(false), null, "GetBatchCodes");
+            this.Post("/batch/", async _ => await this.GetBatchAsync().ConfigureAwait(false), null, "GetBatchCodes");
 
             this.Post("/multiple/", _ => this.GetMultiple(), null, "GetCodeSystemCodes");
 
-            this.Post("/search/", async _ => await this.Search().ConfigureAwait(false), null, "SearchCodeSystemCodes");
+            this.Post("/search/", async _ => await this.SearchAsync().ConfigureAwait(false), null, "SearchCodeSystemCodes");
         }
 
         private static MultipleCodeSystemCodeQuery EnsureQueryModel(MultipleCodeSystemCodeQuery model)
@@ -86,7 +86,7 @@ namespace Fabric.Terminology.API.Modules
             }
         }
 
-        private async Task<object> GetCodeSystemCodePage()
+        private async Task<object> GetCodeSystemCodePageAysnc()
         {
             this.RequiresClaims(this.TerminologyReadClaim);
             try
@@ -125,7 +125,7 @@ namespace Fabric.Terminology.API.Modules
             }
         }
 
-        private async Task<object> GetBatch()
+        private async Task<object> GetBatchAsync()
         {
             this.RequiresClaims(this.TerminologyReadClaim);
             try
@@ -151,7 +151,7 @@ namespace Fabric.Terminology.API.Modules
             }
         }
 
-        private async Task<object> Search()
+        private async Task<object> SearchAsync()
         {
             this.RequiresClaims(this.TerminologyReadClaim);
             try

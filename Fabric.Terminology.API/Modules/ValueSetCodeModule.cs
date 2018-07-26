@@ -27,11 +27,11 @@ namespace Fabric.Terminology.API.Modules
         {
             this.valueSetCodeService = valueSetCodeService;
 
-            this.Get("/", async _ => await this.GetAllValueSetCodePage().ConfigureAwait(false), null, "GetAllValueSetCodesPaged");
+            this.Get("/", async _ => await this.GetAllValueSetCodePageAsync().ConfigureAwait(false), null, "GetAllValueSetCodesPaged");
 
             this.Get("/{codeGuid}", parameters => this.GetValueSetCodes(parameters.codeGuid), null, "GetValueSetCodes");
 
-            this.Get("/valueset/{valueSetGuid}", async parameters => await this.GetValueSetCodePage(parameters.valueSetGuid), null, "GetValueSetCodePagedByValueSet");
+            this.Get("/valueset/{valueSetGuid}", async parameters => await this.GetValueSetCodePageAsync(parameters.valueSetGuid), null, "GetValueSetCodePagedByValueSet");
         }
 
         private object GetValueSetCodes(Guid codeGuid)
@@ -51,7 +51,7 @@ namespace Fabric.Terminology.API.Modules
             }
         }
 
-        private async Task<object> GetAllValueSetCodePage()
+        private async Task<object> GetAllValueSetCodePageAsync()
         {
             this.RequiresClaims(this.TerminologyReadClaim);
             try
@@ -69,7 +69,7 @@ namespace Fabric.Terminology.API.Modules
             }
         }
 
-        private async Task<object> GetValueSetCodePage(Guid valueSetGuid)
+        private async Task<object> GetValueSetCodePageAsync(Guid valueSetGuid)
         {
             this.RequiresClaims(this.TerminologyReadClaim);
             try
