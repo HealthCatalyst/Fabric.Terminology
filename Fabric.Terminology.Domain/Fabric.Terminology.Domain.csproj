@@ -6,9 +6,9 @@
     <PackageProjectUrl>https://github.com/HealthCatalyst/Fabric.Terminology</PackageProjectUrl>
     <RepositoryUrl>https://github.com/HealthCatalyst/Fabric.Terminology</RepositoryUrl>
     <PackageLicenseUrl>https://github.com/HealthCatalyst/Fabric.Terminology/blob/develop/LICENSE</PackageLicenseUrl>
-    <FileVersion>0.7.4.0</FileVersion>
-    <AssemblyVersion>0.7.4.0</AssemblyVersion>
-    <Version>0.7.4-alpha</Version>
+    <FileVersion>0.8.0.0</FileVersion>
+    <AssemblyVersion>0.8.0.0</AssemblyVersion>
+    <Version>0.8.0-alpha</Version>
     <Copyright>Copyright 2018 © Health Catalyst</Copyright>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -23,17 +23,17 @@
     <Compile Remove="Services\ValueSetSummaryService.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Anotar.Serilog.Fody" Version="4.3.2" />
+    <PackageReference Include="Anotar.Serilog.Fody" Version="4.6.2" />
     <PackageReference Include="AutoMapper" Version="6.1.1" />
     <PackageReference Include="CallMeMaybe" Version="0.7.0" />
-    <PackageReference Include="FluentValidation" Version="7.5.2" />
-    <PackageReference Include="Fody" Version="3.0.3" />
+    <PackageReference Include="FluentValidation" Version="7.6.104" />
+    <PackageReference Include="Fody" Version="3.1.3" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" Version="11.1.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.1" />
     <PackageReference Include="NullGuard.Fody" Version="1.8.0" />
-    <PackageReference Include="Serilog" Version="2.6.0" />
+    <PackageReference Include="Serilog" Version="2.7.1" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.0.2" />
   </ItemGroup>
   <ItemGroup>

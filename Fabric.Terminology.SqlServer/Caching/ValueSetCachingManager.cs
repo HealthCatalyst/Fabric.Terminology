@@ -104,8 +104,7 @@
 
         private Maybe<Tuple<Guid, IReadOnlyCollection<TResult>>> GetCachedPartialValueSetAsTuple(Guid valueSetGuid)
         {
-            return Maybe.From(this.cache.GetItem<TResult>(GetCacheKey(valueSetGuid)))
-                .OfType<IReadOnlyCollection<TResult>>()
+            return this.cache.GetItem<IReadOnlyCollection<TResult>>(GetCacheKey(valueSetGuid))
                 .Select(x => new Tuple<Guid, IReadOnlyCollection<TResult>>(valueSetGuid, x));
         }
     }
