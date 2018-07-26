@@ -13,5 +13,7 @@
         string AuthorityDescription { get; }
 
         string SourceDescription { get; }
+
+        DateTime LastModifiedDate { get; }
     }
 }

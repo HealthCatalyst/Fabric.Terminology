@@ -16,6 +16,8 @@
 
         public string SourceDescription { get; internal set; }
 
+        public DateTime LastModifiedDate { get; internal set; }
+
         public string Name { get; internal set; }
 
         public Guid OriginGuid { get; internal set; }

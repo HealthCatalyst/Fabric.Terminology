@@ -1,14 +1,19 @@
 ﻿namespace Fabric.Terminology.API
 {
+    using System;
+
     using Fabric.Terminology.API.Configuration;
     using Fabric.Terminology.API.Constants;
     using Fabric.Terminology.API.DependencyInjection;
     using Fabric.Terminology.API.Validators;
+    using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Services;
     using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Configuration;
 
     using JetBrains.Annotations;
+
+    using Microsoft.AspNetCore.Hosting;
 
     using Nancy;
     using Nancy.Bootstrapper;
@@ -34,11 +39,7 @@
 
         protected override void ApplicationStartup([NotNull] TinyIoCContainer container, [NotNull] IPipelines pipelines)
         {
-            SwaggerMetadataProvider.SetInfo(
-                "Shared Terminology Data Services",
-                TerminologyVersion.SemanticVersion.ToString(),
-                "Shared Terminology Data Services - Fabric.Terminology.API",
-                new Contact() { EmailAddress = "terminology-api@healthcatalyst.com" });
+            this.ConfigureSwagger();
 
             base.ApplicationStartup(container, pipelines);
 
@@ -114,6 +115,20 @@
                         ctx.Response.Headers.Add(corsHeader.Item1, corsHeader.Item2);
                     }
                 };
+        }
+
+        private void ConfigureSwagger()
+        {
+            SwaggerMetadataProvider.SetInfo(
+                "Shared Terminology Data Services",
+                TerminologyVersion.SemanticVersion.ToString(),
+                "Shared Terminology Data Services - Fabric.Terminology.API",
+                new Contact() { EmailAddress = "terminology-api@healthcatalyst.com" });
+
+            if (!this.appConfig.SwaggerRootBasePath.IsNullOrWhiteSpace())
+            {
+                SwaggerMetadataProvider.SetSwaggerRoot(basePath: this.appConfig.SwaggerRootBasePath);
+            }
         }
     }
 }
