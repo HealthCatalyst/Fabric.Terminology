@@ -8,6 +8,7 @@ namespace Fabric.Terminology.API.Modules
 
     using Fabric.Terminology.API.Configuration;
     using Fabric.Terminology.API.Models;
+    using Fabric.Terminology.API.Services;
     using Fabric.Terminology.Domain.Services;
 
     using Nancy;
@@ -22,8 +23,9 @@ namespace Fabric.Terminology.API.Modules
         public ValueSetCodeModule(
             IValueSetCodeService valueSetCodeService,
             IAppConfiguration config,
-            ILogger logger)
-            : base($"/{TerminologyVersion.Route}/valuesetcodes", config, logger)
+            ILogger logger,
+            UserAccessService userAccessService)
+            : base($"/{TerminologyVersion.Route}/valuesetcodes", config, logger, userAccessService)
         {
             this.valueSetCodeService = valueSetCodeService;
 
@@ -36,7 +38,7 @@ namespace Fabric.Terminology.API.Modules
 
         private object GetValueSetCodes(Guid codeGuid)
         {
-            this.RequiresClaims(this.TerminologyReadClaim);
+            this.RequireAccessorAuthorization();
             try
             {
                 return this.valueSetCodeService.GetValueSetCodesByCodeGuid(codeGuid)
@@ -53,7 +55,7 @@ namespace Fabric.Terminology.API.Modules
 
         private async Task<object> GetAllValueSetCodePageAsync()
         {
-            this.RequiresClaims(this.TerminologyReadClaim);
+            this.RequireAccessorAuthorization();
             try
             {
                 var pagerSettings = this.GetPagerSettings();
@@ -71,7 +73,7 @@ namespace Fabric.Terminology.API.Modules
 
         private async Task<object> GetValueSetCodePageAsync(Guid valueSetGuid)
         {
-            this.RequiresClaims(this.TerminologyReadClaim);
+            this.RequireAccessorAuthorization();
             try
             {
                 var pagerSettings = this.GetPagerSettings();

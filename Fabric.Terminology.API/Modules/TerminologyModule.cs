@@ -9,6 +9,7 @@ namespace Fabric.Terminology.API.Modules
     using Fabric.Terminology.API.Configuration;
     using Fabric.Terminology.API.Constants;
     using Fabric.Terminology.API.Models;
+    using Fabric.Terminology.API.Services;
     using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence.Querying;
@@ -21,9 +22,12 @@ namespace Fabric.Terminology.API.Modules
 
     public abstract class TerminologyModule<T> : NancyModule
     {
-        protected TerminologyModule(string path, IAppConfiguration config, ILogger logger)
+        private readonly UserAccessService userAccessService;
+
+        protected TerminologyModule(string path, IAppConfiguration config, ILogger logger, UserAccessService userAccessService)
             : base(path)
         {
+            this.userAccessService = userAccessService;
             this.Config = config;
             this.Logger = logger;
         }
@@ -39,6 +43,18 @@ namespace Fabric.Terminology.API.Modules
         protected Predicate<Claim> TerminologyWriteClaim => claim =>
             claim.Type.Equals(Claims.Scope, StringComparison.OrdinalIgnoreCase) &&
             claim.Value.Equals(Scopes.WriteScope, StringComparison.OrdinalIgnoreCase);
+
+        protected void RequireAccessorAuthorization() =>
+            this.RequiresAuthorizationPermission(
+                this.userAccessService,
+                AuthorizationPermissions.Accessor,
+                this.TerminologyReadClaim);
+
+        protected void RequirePublisherAuthorization() =>
+            this.RequiresAuthorizationPermission(
+                this.userAccessService,
+                AuthorizationPermissions.Publisher,
+                this.TerminologyWriteClaim);
 
         protected Negotiator CreateSuccessfulPostResponse(IIdentifiable model)
         {

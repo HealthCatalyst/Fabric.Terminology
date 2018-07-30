@@ -8,6 +8,7 @@ namespace Fabric.Terminology.API.Modules
 
     using Fabric.Terminology.API.Configuration;
     using Fabric.Terminology.API.Models;
+    using Fabric.Terminology.API.Services;
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Services;
 
@@ -24,8 +25,9 @@ namespace Fabric.Terminology.API.Modules
         public CodeSystemCodeModule(
             ICodeSystemCodeService codeSystemCodeService,
             IAppConfiguration config,
-            ILogger logger)
-            : base($"/{TerminologyVersion.Route}/codes", config, logger)
+            ILogger logger,
+            UserAccessService userAccessService)
+            : base($"/{TerminologyVersion.Route}/codes", config, logger, userAccessService)
         {
             this.codeSystemCodeService = codeSystemCodeService;
 
@@ -67,7 +69,7 @@ namespace Fabric.Terminology.API.Modules
 
         private object GetCodeSystemCode(Guid codeGuid)
         {
-            this.RequiresClaims(this.TerminologyReadClaim);
+            this.RequireAccessorAuthorization();
             try
             {
                 return this.codeSystemCodeService
@@ -88,7 +90,7 @@ namespace Fabric.Terminology.API.Modules
 
         private async Task<object> GetCodeSystemCodePageAysnc()
         {
-            this.RequiresClaims(this.TerminologyReadClaim);
+            this.RequireAccessorAuthorization();
             try
             {
                 var pagerSettings = this.GetPagerSettings();
@@ -108,7 +110,7 @@ namespace Fabric.Terminology.API.Modules
 
         private object GetMultiple()
         {
-            this.RequiresClaims(this.TerminologyReadClaim);
+            this.RequireAccessorAuthorization();
             try
             {
                 var model = EnsureQueryModel(this.Bind<MultipleCodeSystemCodeQuery>(new BindingConfig { BodyOnly = true }));
@@ -127,7 +129,7 @@ namespace Fabric.Terminology.API.Modules
 
         private async Task<object> GetBatchAsync()
         {
-            this.RequiresClaims(this.TerminologyReadClaim);
+            this.RequireAccessorAuthorization();
             try
             {
                 var model = EnsureQueryModel(this.Bind<BatchCodeQuery>(new BindingConfig { BodyOnly = true }));
@@ -153,7 +155,7 @@ namespace Fabric.Terminology.API.Modules
 
         private async Task<object> SearchAsync()
         {
-            this.RequiresClaims(this.TerminologyReadClaim);
+            this.RequireAccessorAuthorization();
             try
             {
                 var model = this.EnsureQueryModel(this.Bind<FindByTermQuery>(new BindingConfig { BodyOnly = true }));

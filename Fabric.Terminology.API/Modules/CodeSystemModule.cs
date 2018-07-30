@@ -7,6 +7,7 @@ namespace Fabric.Terminology.API.Modules
 
     using Fabric.Terminology.API.Configuration;
     using Fabric.Terminology.API.Models;
+    using Fabric.Terminology.API.Services;
     using Fabric.Terminology.Domain.Services;
 
     using Nancy;
@@ -22,8 +23,9 @@ namespace Fabric.Terminology.API.Modules
         public CodeSystemModule(
             ICodeSystemService codeSystemService,
             IAppConfiguration config,
-            ILogger logger)
-            : base($"/{TerminologyVersion.Route}/codesystems", config, logger)
+            ILogger logger,
+            UserAccessService userAccessService)
+            : base($"/{TerminologyVersion.Route}/codesystems", config, logger, userAccessService)
         {
             this.codeSystemService = codeSystemService;
 
@@ -46,7 +48,7 @@ namespace Fabric.Terminology.API.Modules
 
         private object GetAll()
         {
-            this.RequiresClaims(this.TerminologyReadClaim);
+            this.RequireAccessorAuthorization();
             try
             {
                 return this.codeSystemService.GetAll().Select(Mapper.Map<CodeSystemApiModel>).ToList();
@@ -62,7 +64,7 @@ namespace Fabric.Terminology.API.Modules
 
         private object GetCodeSystem(Guid codeSystemGuid)
         {
-            this.RequiresClaims(this.TerminologyReadClaim);
+            this.RequireAccessorAuthorization();
             try
             {
                 return this.codeSystemService.GetCodeSystem(codeSystemGuid)
@@ -82,7 +84,7 @@ namespace Fabric.Terminology.API.Modules
 
         private object GetMultiple()
         {
-            this.RequiresClaims(this.TerminologyReadClaim);
+            this.RequireAccessorAuthorization();
             try
             {
                 var model = EnsureQueryModel(this.Bind<MultipleCodeSystemQuery>(new BindingConfig { BodyOnly = true }));

@@ -1,4 +1,4 @@
-﻿namespace Fabric.Terminology.API.Modules
+namespace Fabric.Terminology.API.Modules
 {
     using System;
     using System.Collections.Generic;
@@ -7,10 +7,7 @@
 
     using AutoMapper;
 
-    using Catalyst.DosApi.Authorization.Compliance;
-
     using Fabric.Terminology.API.Configuration;
-    using Fabric.Terminology.API.Constants;
     using Fabric.Terminology.API.Models;
     using Fabric.Terminology.API.Services;
     using Fabric.Terminology.API.Validators;
@@ -21,7 +18,6 @@
 
     using Nancy;
     using Nancy.ModelBinding;
-    using Nancy.Security;
 
     using Serilog;
 
@@ -39,8 +35,6 @@
 
         private readonly ValueSetValidatorCollection valueSetValidatorCollection;
 
-        private readonly UserAccessService userAccessService;
-
         public ValueSetModule(
             IValueSetService valueSetService,
             IValueSetSummaryService valueSetSummaryService,
@@ -51,7 +45,7 @@
             ILogger logger,
             ValueSetValidatorCollection valueSetValidatorCollection,
             UserAccessService userAccessService)
-            : base($"/{TerminologyVersion.Route}/valuesets", config, logger)
+            : base($"/{TerminologyVersion.Route}/valuesets", config, logger, userAccessService)
         {
             this.valueSetService = valueSetService;
             this.valueSetSummaryService = valueSetSummaryService;
@@ -59,7 +53,6 @@
             this.clientTermCustomizationService = clientTermCustomizationService;
             this.valueSetComparisonService = valueSetComparisonService;
             this.valueSetValidatorCollection = valueSetValidatorCollection;
-            this.userAccessService = userAccessService;
 
             this.Get("/", async _ => await this.GetValueSetPageAsync().ConfigureAwait(false), null, "GetPaged");
 
@@ -120,7 +113,7 @@
 
         private object GetValueSet(string valueSetGuidString)
         {
-            this.RequiresClaims(this.TerminologyReadClaim);
+            this.RequireAccessorAuthorization();
             return this.ParseValueSetGuidAndExecute(valueSetGuidString, GetValueSetByGuid);
 
             object GetValueSetByGuid(Guid valueSetGuid)
@@ -153,7 +146,7 @@
 
         private object GetMultipleValueSets()
         {
-            this.RequiresClaims(this.TerminologyReadClaim);
+            this.RequireAccessorAuthorization();
             try
             {
                 var model = EnsureQueryModel(this.Bind<MultipleValueSetsQuery>(new BindingConfig { BodyOnly = true }));
@@ -188,7 +181,7 @@
 
         private object GetValueSetVersions(string valueSetReferenceId)
         {
-            this.RequiresClaims(this.TerminologyReadClaim);
+            this.RequireAccessorAuthorization();
             try
             {
                 var codeSystemGuids = this.GetCodeSystems();
@@ -223,7 +216,7 @@
 
         private async Task<object> GetValueSetPageAsync()
         {
-            this.RequiresClaims(this.TerminologyReadClaim);
+            this.RequireAccessorAuthorization();
             try
             {
                 var summary = this.GetSummarySetting();
@@ -252,7 +245,7 @@
 
         private async Task<object> SearchAsync()
         {
-            this.RequiresClaims(this.TerminologyReadClaim);
+            this.RequireAccessorAuthorization();
             try
             {
                 var model = this.EnsureQueryModel(this.Bind<ValueSetFindByTermQuery>(new BindingConfig { BodyOnly = true }));
@@ -285,7 +278,7 @@
 
         private object AddValueSet()
         {
-            this.RequireAuthorizationPermission(AuthorizationPermissions.Publisher);
+            this.RequirePublisherAuthorization();
             try
             {
                 var model = this.Bind<ClientTermValueSetApiModel>();
@@ -317,7 +310,7 @@
 
         private object PatchValueSet(string valueSetGuidString)
         {
-            this.RequireAuthorizationPermission(AuthorizationPermissions.Publisher);
+            this.RequirePublisherAuthorization();
             return this.ParseValueSetGuidAndExecute(valueSetGuidString, PatchValueSetWithValueSetGuid);
 
             object PatchValueSetWithValueSetGuid(Guid valueSetGuid)
@@ -360,7 +353,7 @@
 
         private object DeleteValueSet(string valueSetGuidString)
         {
-            this.RequireAuthorizationPermission(AuthorizationPermissions.Publisher);
+            this.RequirePublisherAuthorization();
             return this.ParseValueSetGuidAndExecute(valueSetGuidString, DeleteValueSetWithValueSetGuid);
 
             object DeleteValueSetWithValueSetGuid(Guid valueSetGuid)
@@ -397,7 +390,7 @@
 
         private object CopyValueSet()
         {
-            this.RequireAuthorizationPermission(AuthorizationPermissions.Publisher);
+            this.RequirePublisherAuthorization();
             try
             {
                 var model = this.Bind<ValueSetCopyApiModel>();
@@ -431,7 +424,7 @@
 
         private async Task<object> CompareValueSetsAsync()
         {
-            this.RequiresClaims(this.TerminologyReadClaim);
+            this.RequireAccessorAuthorization();
             try
             {
                 var model = this.Bind<CompareValueSetsQuery>();
@@ -451,7 +444,7 @@
 
         private object ChangeStatus(Guid valueSetGuid, string statusCode)
         {
-            this.RequireAuthorizationPermission(AuthorizationPermissions.Publisher);
+            this.RequirePublisherAuthorization();
             if (Enum.TryParse(statusCode, true, out ValueSetStatus status))
             {
                 var attempt = this.clientTermValueSetService.ChangeStatus(valueSetGuid, status);
@@ -479,12 +472,6 @@
 
             return this.CreateFailureResponse($"Failed to cast '{statusCode}' to a valid ValueSetStatus", HttpStatusCode.InternalServerError);
         }
-
-        private void RequireAuthorizationPermission(PermissionName permssionName) =>
-            this.RequiresAuthorizationPermission(
-                this.userAccessService,
-                permssionName,
-                this.TerminologyWriteClaim);
 
         private bool GetSummarySetting()
         {
