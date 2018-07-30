@@ -11,22 +11,13 @@ namespace Fabric.Terminology.API.Modules
         public HomeModule(IAppConfiguration appConfig)
         {
             this.appConfig = appConfig;
-            this.Get("/", _ => this.GetSwaggerUrl());
+            this.Get("/", _ => this.Redirect(), null, "Redirect");
 
             this.Get("/Ping", _ => HttpStatusCode.OK, null, "Ping");
 
             this.Get("/Version", _ => TerminologyVersion.SemanticVersion.ToString());
         }
 
-        private Response GetSwaggerUrl()
-        {
-            var hostName = this.Request.Url.HostName;
-            var port = this.Request.Url.Port ?? 80;
-            var redirect = hostName.Contains("localhost")
-                               ? $"http://{hostName}:{port}/swagger/index.html?url=http://{hostName}:{port}/api-docs"
-                               : $"{this.appConfig.BaseTerminologyEndpoint}/swagger/index.html?url={this.appConfig.BaseTerminologyEndpoint}/api-docs";
-
-            return this.Response.AsRedirect(redirect);
-        }
+        private dynamic Redirect() => this.Response.AsRedirect($"{this.appConfig.SwaggerRootBasePath}/swagger/index");
     }
 }

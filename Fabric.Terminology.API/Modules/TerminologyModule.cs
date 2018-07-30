@@ -78,7 +78,7 @@ namespace Fabric.Terminology.API.Modules
 
         protected object ParseValueSetGuidAndExecute(string valueSetGuidString, Func<Guid, object> getResponse)
         {
-            if (!Guid.TryParse(valueSetGuidString, out var valueSetGuid))
+            if (!Guid.TryParse(valueSetGuidString, out Guid valueSetGuid))
             {
                 return this.CreateFailureResponse(
                     $"The valueSetGuid parameter '{valueSetGuidString}' could not be parsed as a valid GUID",

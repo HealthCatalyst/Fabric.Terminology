@@ -11,7 +11,7 @@
             return new Tag
             {
                 Description = "Operations related to Shared Terminology value sets",
-                Name = $"{TerminologyVersion.Route}/valuesets/"
+                Name = $"{TerminologyVersion.Route}/valuesets"
             };
         }
 
@@ -20,7 +20,7 @@
             return new Tag
             {
                 Description = "Operations related to Shared Terminology value set codes",
-                Name = $"{TerminologyVersion.Route}/valuesetcodes/"
+                Name = $"{TerminologyVersion.Route}/valuesetcodes"
             };
         }
 

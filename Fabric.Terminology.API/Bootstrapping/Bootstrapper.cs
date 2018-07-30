@@ -2,10 +2,8 @@ namespace Fabric.Terminology.API.Bootstrapping
 {
     using System;
 
-    using Catalyst.DosApi.Authorization;
-    using Catalyst.DosApi.Common;
     using Catalyst.DosApi.Discovery;
-    using Catalyst.DosApi.Identity.Models;
+    using Catalyst.Infrastructure.Caching;
 
     using Fabric.Terminology.API.Configuration;
     using Fabric.Terminology.API.Constants;
@@ -13,7 +11,9 @@ namespace Fabric.Terminology.API.Bootstrapping
     using Fabric.Terminology.API.Infrastructure;
     using Fabric.Terminology.API.Infrastructure.PipelineHooks;
     using Fabric.Terminology.API.Validators;
+    using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Services;
+    using Fabric.Terminology.SqlServer;
     using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Configuration;
 
@@ -98,7 +98,7 @@ namespace Fabric.Terminology.API.Bootstrapping
             base.ConfigureApplicationContainer(container);
 
             container.Register<IAppConfiguration>(this.appConfig);
-            container.Register<IMemoryCacheSettings>(this.appConfig.TerminologySqlSettings);
+            container.Register<MemoryCacheProviderDefaultSettings>(this.appConfig.TerminologySqlSettings.AsMemoryCacheProviderSettings());
             container.Register<IDiscoveryServiceClient>(this.discoveryServiceClient);
             container.Register<ILogger>(this.logger);
 
@@ -109,7 +109,7 @@ namespace Fabric.Terminology.API.Bootstrapping
             }
             else
             {
-                container.Register<IMemoryCacheProvider, NullMemoryCacheProvider>().AsSingleton();
+                container.Register<IMemoryCacheProvider, NullMemoryCachingProvider>().AsSingleton();
             }
 
             container.Register<ICachingManagerFactory, CachingManagerFactory>().AsSingleton();
@@ -149,6 +149,11 @@ namespace Fabric.Terminology.API.Bootstrapping
                 TerminologyVersion.SemanticVersion.ToString(),
                 "Shared Terminology Data Services - Fabric.Terminology.API",
                 new Contact() { EmailAddress = "terminology-api@healthcatalyst.com" });
+
+            if (!this.appConfig.SwaggerRootBasePath.IsNullOrWhiteSpace())
+            {
+                SwaggerMetadataProvider.SetSwaggerRoot(basePath: this.appConfig.SwaggerRootBasePath);
+            }
 
             var securitySchemeBuilder = new Oauth2SecuritySchemeBuilder();
             securitySchemeBuilder.Flow(Oauth2Flows.Implicit);
