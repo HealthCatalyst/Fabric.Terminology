@@ -11,8 +11,6 @@
 
     using Fabric.Terminology.Domain.Models;
 
-    using Microsoft.EntityFrameworkCore.Metadata.Internal;
-
     internal class ValueSetCachingManager<TResult> : IValueSetCachingManager<TResult>
         where TResult : class, IHaveValueSetGuid
     {
