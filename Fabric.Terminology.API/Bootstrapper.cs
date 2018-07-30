@@ -1,6 +1,6 @@
 ﻿namespace Fabric.Terminology.API
 {
-    using System;
+    using Catalyst.Infrastructure.Caching;
 
     using Fabric.Terminology.API.Configuration;
     using Fabric.Terminology.API.Constants;
@@ -8,12 +8,11 @@
     using Fabric.Terminology.API.Validators;
     using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Services;
+    using Fabric.Terminology.SqlServer;
     using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Configuration;
 
     using JetBrains.Annotations;
-
-    using Microsoft.AspNetCore.Hosting;
 
     using Nancy;
     using Nancy.Bootstrapper;
@@ -24,6 +23,9 @@
     using Serilog;
 
     using Swagger.ObjectModel;
+
+    using IMemoryCacheProvider = Catalyst.Infrastructure.Caching.IMemoryCacheProvider;
+    using MemoryCacheProvider = Catalyst.Infrastructure.Caching.MemoryCacheProvider;
 
     internal class Bootstrapper : DefaultNancyBootstrapper
     {
@@ -67,7 +69,7 @@
             base.ConfigureApplicationContainer(container);
 
             container.Register<IAppConfiguration>(this.appConfig);
-            container.Register<IMemoryCacheSettings>(this.appConfig.TerminologySqlSettings);
+            container.Register<MemoryCacheProviderDefaultSettings>(this.appConfig.TerminologySqlSettings.AsMemoryCacheProviderSettings());
             container.Register<ILogger>(this.logger);
 
             // Caching
@@ -77,7 +79,7 @@
             }
             else
             {
-                container.Register<IMemoryCacheProvider, NullMemoryCacheProvider>().AsSingleton();
+                container.Register<IMemoryCacheProvider, NullMemoryCachingProvider>().AsSingleton();
             }
 
             container.Register<ICachingManagerFactory, CachingManagerFactory>().AsSingleton();
