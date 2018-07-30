@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <CodeAnalysisRuleSet>..\Catalyst.MostRules.Error.ruleset</CodeAnalysisRuleSet>
     <PackageProjectUrl>https://github.com/HealthCatalyst/Fabric.Terminology</PackageProjectUrl>
     <RepositoryUrl>https://github.com/HealthCatalyst/Fabric.Terminology</RepositoryUrl>
     <PackageLicenseUrl>https://github.com/HealthCatalyst/Fabric.Terminology/blob/develop/LICENSE</PackageLicenseUrl>
@@ -57,11 +56,11 @@
     <Compile Update="Persistence\SqlClientTermUnitOfWorkRepository.*.cs">
       <DependentUpon>SqlClientTermUnitOfWorkRepository.cs</DependentUpon>
     </Compile>
-    <Compile Update="SqlServerExtensions.*">
-      <DependentUpon>SqlServerExtensions.cs</DependentUpon>
-    </Compile>
     <Compile Update="Persistence\SqlClientTermValueSetRepository.UoWOperation.cs">
       <DependentUpon>SqlClientTermValueSetRepository.cs</DependentUpon>
+    </Compile>
+    <Compile Update="SqlServerExtensions.*.cs">
+      <DependentUpon>SqlServerExtensions.cs</DependentUpon>
     </Compile>
   </ItemGroup>
 </Project>
