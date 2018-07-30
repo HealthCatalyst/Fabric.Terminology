@@ -6,6 +6,8 @@
 
     using CallMeMaybe;
 
+    using Catalyst.Infrastructure.Caching;
+
     using Fabric.Terminology.Domain.Models;
 
     internal class CodeSystemCodeCachingManager : ICodeSystemCodeCachingManager
@@ -19,12 +21,12 @@
 
         public Maybe<ICodeSystemCode> GetOrSet(Guid codeGuid, Func<ICodeSystemCode> getter)
         {
-            return this.cache.GetItem<ICodeSystemCode>(GetCacheKey(codeGuid), getter);
+            return Maybe.From(this.cache.GetItem<ICodeSystemCode>(GetCacheKey(codeGuid), getter));
         }
 
         public Maybe<ICodeSystemCode> GetOrSet(Guid codeGuid, Func<Guid, ICodeSystemCode> doQuery)
         {
-            return this.cache.GetItem<ICodeSystemCode>(GetCacheKey(codeGuid), () => doQuery(codeGuid));
+            return Maybe.From(this.cache.GetItem<ICodeSystemCode>(GetCacheKey(codeGuid), () => doQuery(codeGuid)));
         }
 
         public IReadOnlyCollection<ICodeSystemCode> GetMultipleOrQuery(
@@ -47,8 +49,7 @@
 
             // query -> cache -> add to results
             var newlyCached = doQuery(includeRetired, remaining)
-                .Select(r => this.cache.GetItem<ICodeSystemCode>(GetCacheKey(r.CodeGuid), () => r))
-                .Values();
+                .Select(r => this.cache.GetItem<ICodeSystemCode>(GetCacheKey(r.CodeGuid), () => r));
 
             codes.AddRange(newlyCached);
 

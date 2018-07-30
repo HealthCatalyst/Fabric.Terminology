@@ -2,6 +2,9 @@
 {
     using System;
 
+    using Catalyst.Infrastructure.Caching;
+
+    using Fabric.Terminology.SqlServer;
     using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Persistence.DataContext;
     using Fabric.Terminology.TestsBase.Seeding;
@@ -11,8 +14,8 @@
         protected RepositoryFixtureBase()
         {
             this.Cache = this.AppConfiguration.TerminologySqlSettings.MemoryCacheEnabled ?
-                (IMemoryCacheProvider)new MemoryCacheProvider(this.AppConfiguration.TerminologySqlSettings) :
-                new NullMemoryCacheProvider(this.AppConfiguration.TerminologySqlSettings);
+                (IMemoryCacheProvider)new MemoryCacheProvider(this.AppConfiguration.TerminologySqlSettings.AsMemoryCacheProviderSettings()) :
+                new NullMemoryCachingProvider();
 
             this.Initialize();
         }

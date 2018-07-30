@@ -7,6 +7,7 @@
     using System.Threading.Tasks;
 
     using CallMeMaybe;
+    using Catalyst.Infrastructure.Caching;
 
     using Fabric.Terminology.Domain.Models;
 
@@ -26,30 +27,7 @@
         }
 
         public IReadOnlyCollection<TResult> GetMultipleOrQuery(Guid valueSetGuid, Func<Guid, IReadOnlyCollection<TResult>> doQuery)
-        {
-            return this.cache.GetItem<IReadOnlyCollection<TResult>>(GetCacheKey(valueSetGuid), () => doQuery(valueSetGuid))
-                .Else(new List<TResult>());
-        }
-
-        public IReadOnlyCollection<TResult> GetMultipleWithFallBack(
-            IEnumerable<Guid> valueSetGuids,
-            Func<IEnumerable<Guid>, ILookup<Guid, TResult>> getLookup)
-        {
-            var setGuids = valueSetGuids as Guid[] ?? valueSetGuids.ToArray();
-            var items = this.GetMultipleExisting(setGuids).ToList();
-
-            var remaining = setGuids.Except(items.Select(bi => bi.ValueSetGuid)).ToImmutableHashSet();
-            if (!remaining.Any())
-            {
-                return items;
-            }
-
-            items.AddRange(
-                    getLookup(remaining)
-                    .Select(bi => this.cache.GetItem<TResult>(GetCacheKey(bi.Key), () => bi)).Values());
-
-            return items;
-        }
+            => this.cache.GetItem<IReadOnlyCollection<TResult>>(GetCacheKey(valueSetGuid), () => doQuery(valueSetGuid));
 
         public Task<Dictionary<Guid, IReadOnlyCollection<TResult>>> GetCachedValueDictionary(
             IEnumerable<Guid> valueSetGuids,
@@ -81,7 +59,7 @@
                         {
                             var values = this.cache.GetItem<IReadOnlyCollection<TResult>>(
                                 GetCacheKey(key),
-                                () => lookup[key].ToList()).Else(new List<TResult>());
+                                () => lookup[key].ToList());
 
                             codes.Add(key, values);
                         }
@@ -104,8 +82,7 @@
 
         private Maybe<Tuple<Guid, IReadOnlyCollection<TResult>>> GetCachedPartialValueSetAsTuple(Guid valueSetGuid)
         {
-            return this.cache.GetItem(GetCacheKey(valueSetGuid))
-                .OfType<IReadOnlyCollection<TResult>>()
+            return this.cache.GetItem<IReadOnlyCollection<TResult>>(GetCacheKey(valueSetGuid))
                 .Select(x => new Tuple<Guid, IReadOnlyCollection<TResult>>(valueSetGuid, x));
         }
     }
