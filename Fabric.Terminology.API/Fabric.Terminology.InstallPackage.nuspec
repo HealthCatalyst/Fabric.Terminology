@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>Fabric.Terminology.InstallPackage</id>
+    <version>0.8.0-alpha</version>
+    <authors>Health Catalyst</authors>
+    <owners>Health Catalyst</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Install package for Fabric.Terminology</description>
+  </metadata>
+  <files>
+    <file src="Fabric.Terminology.InstallPackage.zip" target="build" />
+    <file src="Fabric.Terminology.InstallPackage.targets" target="build" />
+  </files>
+</package>

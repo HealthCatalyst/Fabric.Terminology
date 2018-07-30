@@ -1,4 +1,4 @@
-namespace Fabric.Terminology.API.Bootstrapping
+﻿namespace Fabric.Terminology.API.Bootstrapping
 {
     using System;
 
@@ -29,6 +29,9 @@ namespace Fabric.Terminology.API.Bootstrapping
 
     using Swagger.ObjectModel;
     using Swagger.ObjectModel.Builders;
+
+    using IMemoryCacheProvider = Catalyst.Infrastructure.Caching.IMemoryCacheProvider;
+    using MemoryCacheProvider = Catalyst.Infrastructure.Caching.MemoryCacheProvider;
 
     internal class Bootstrapper : DefaultNancyBootstrapper
     {

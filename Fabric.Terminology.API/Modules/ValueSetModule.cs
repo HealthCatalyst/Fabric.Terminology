@@ -1,4 +1,4 @@
-namespace Fabric.Terminology.API.Modules
+﻿namespace Fabric.Terminology.API.Modules
 {
     using System;
     using System.Collections.Generic;

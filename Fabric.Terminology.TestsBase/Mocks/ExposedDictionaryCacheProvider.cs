@@ -2,17 +2,15 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
 
     using CallMeMaybe;
 
-    using Fabric.Terminology.SqlServer.Caching;
+    using Catalyst.Infrastructure.Caching;
+
     using Fabric.Terminology.SqlServer.Configuration;
 
     public class ExposedDictionaryCacheProvider : IMemoryCacheProvider
     {
-        private readonly IDictionary<string, object> cache = new Dictionary<string, object>();
-
         public ExposedDictionaryCacheProvider()
         {
             this.Settings = new TerminologySqlSettings
@@ -25,43 +23,37 @@
 
         public IMemoryCacheSettings Settings { get; }
 
-        public IDictionary<string, object> CachedItems => this.cache;
+        public IDictionary<string, object> CachedItems { get; } = new Dictionary<string, object>();
 
         public void ClearAll()
         {
-            this.cache.Clear();
+            this.CachedItems.Clear();
         }
 
         public void ClearItem(string key)
         {
-            this.cache.Remove(key);
+            this.CachedItems.Remove(key);
         }
 
-        public Maybe<object> GetItem(string key)
+        public Maybe<TItem> GetItem<TItem>(string key)
         {
-            return this.cache.GetMaybe(key);
+            return this.CachedItems.GetMaybe(key).Select(i => (TItem)i);
         }
 
-        public Maybe<object> GetItem(string key, Func<object> getItem)
-        {
-            return this.GetItem(key, getItem, TimeSpan.FromMinutes(5), false);
-        }
+        public TItem GetItem<TItem>(string key, Func<TItem> getter)
+         => this.GetItem<TItem>(key, getter, TimeSpan.FromMinutes(5), false);
 
-        public IEnumerable<object> GetItems(params string[] cacheKeys)
+        public TItem GetItem<TItem>(string key, Func<TItem> getter, TimeSpan? timeout, bool isSliding = true)
         {
-            return !cacheKeys.Any() ? Enumerable.Empty<object>() : cacheKeys.Select(this.GetItem).Values();
-        }
-
-        public Maybe<object> GetItem(string cacheKey, Func<object> getItem, TimeSpan? timeout, bool isSliding = false)
-        {
-            return this.cache.GetMaybe(cacheKey)
+            return this.CachedItems.GetMaybe(key)
+                .Select(i => (TItem)i)
                 .Else(
                     () =>
                         {
-                            var item = getItem();
+                            var item = getter();
                             if (item != null)
                             {
-                                this.cache.Add(cacheKey, item);
+                                this.CachedItems.Add(key, item);
                             }
 
                             return item;

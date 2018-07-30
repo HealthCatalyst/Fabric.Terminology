@@ -6,7 +6,6 @@
     using Fabric.Terminology.API.Models;
     using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Models;
-    using Fabric.Terminology.SqlServer.Configuration;
 
     using Nancy.Swagger;
     using Nancy.Swagger.Modules;
