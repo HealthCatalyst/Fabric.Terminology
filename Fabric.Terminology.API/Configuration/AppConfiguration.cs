@@ -20,12 +20,16 @@ namespace Fabric.Terminology.API.Configuration
         [AllowNull]
         public HostingOptions HostingOptions { get; set; }
 
+        [AllowNull]
         public IdentityServerSettings IdentityServerSettings { get; set; }
 
+        [AllowNull]
         public DiscoveryRegistrationSettings DiscoveryRegistrationSettings { get; set; }
 
+        [AllowNull]
         public DiscoveryServiceClientSettings DiscoveryServiceClientSettings { get; set; }
 
+        [AllowNull]
         public ApplicationInsightsSettings ApplicationInsightsSettings { get; set; }
     }
 }

@@ -98,6 +98,7 @@ namespace Fabric.Terminology.UnitTests.Caching
             cache.GetItem<TestObject>(Key1).Should().NotBeNull();
             cache.GetItem<TestObject>(Key2).Should().NotBeNull();
             cache.GetItem<TestObject>(Key3).Should().NotBeNull();
+
             // Act
             cache.ClearAll();
 

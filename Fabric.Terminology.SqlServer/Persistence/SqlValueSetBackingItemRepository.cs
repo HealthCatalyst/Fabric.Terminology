@@ -140,11 +140,11 @@ namespace Fabric.Terminology.SqlServer.Persistence
             var systemCodes = codeSystemGuids as Guid[] ?? codeSystemGuids.ToArray();
             if (systemCodes.Any())
             {
-                var vsGuids = this.sharedContext.ValueSetCodes.Where(code => systemCodes.Contains(code.CodeSystemGuid))
+                var vsetGuids = this.sharedContext.ValueSetCodes.Where(code => systemCodes.Contains(code.CodeSystemGuid))
                     .Select(code => code.ValueSetGUID)
                     .Distinct();
 
-                dtos = dtos.Join(vsGuids, dto => dto.ValueSetGUID, key => key, (dto, key) => dto);
+                dtos = dtos.Join(vsetGuids, dto => dto.ValueSetGUID, key => key, (dto, key) => dto);
             }
 
             var orderingStrategy = this.orderingStrategyFactory.GetValueSetStrategy(
@@ -212,12 +212,12 @@ namespace Fabric.Terminology.SqlServer.Persistence
 
                 if (codeSystemGuids.Any())
                 {
-                    var vsGuids = this.sharedContext.ValueSetCodes
+                    var vsetGuids = this.sharedContext.ValueSetCodes
                         .Where(code => codeSystemGuids.Contains(code.CodeSystemGuid))
                         .Select(code => code.ValueSetGUID)
                         .Distinct();
 
-                    dtos = dtos.Join(vsGuids, dto => dto.ValueSetGUID, key => key, (dto, key) => dto);
+                    dtos = dtos.Join(vsetGuids, dto => dto.ValueSetGUID, key => key, (dto, key) => dto);
                 }
 
                 return dtos.Select(dto => factory.Build(dto)).ToList();

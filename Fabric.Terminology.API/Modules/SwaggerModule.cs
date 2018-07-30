@@ -1,4 +1,4 @@
-﻿namespace Fabric.Terminology.API.Modules
+namespace Fabric.Terminology.API.Modules
 {
     using Nancy;
     using Nancy.Swagger.Services;
@@ -13,10 +13,8 @@
             this.Get("/swagger.json", _ => converter.GetSwaggerJson(this.Context).ToJson());
         }
 
-        private Response GetSwaggerUrl()
-        {
-            return this.Response.AsRedirect(
+        private Response GetSwaggerUrl() =>
+            this.Response.AsRedirect(
                 $"index.html?url=swagger.json");
-        }
     }
 }

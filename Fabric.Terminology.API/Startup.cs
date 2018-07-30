@@ -41,12 +41,15 @@ namespace Fabric.Terminology.API
 
         private readonly string[] allowedPaths =
         {
+            string.Empty,
             "/",
             "/terminology",
+            "/terminology/swagger/index",
+            "/terminology/swagger/swagger.json",
             "/terminology/swagger/index.html",
-            "/swagger/index.html",
-            "/api-docs/swagger.json",
-            "/api-docs"
+            "/swagger/index",
+            "/swagger/swagger.json",
+            "/swagger/index.html"
         };
 
         public Startup(IConfiguration configuration)

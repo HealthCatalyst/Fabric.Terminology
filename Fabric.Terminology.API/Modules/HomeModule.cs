@@ -18,6 +18,6 @@ namespace Fabric.Terminology.API.Modules
             this.Get("/Version", _ => TerminologyVersion.SemanticVersion.ToString());
         }
 
-        private dynamic Redirect() => this.Response.AsRedirect($"{this.appConfig.SwaggerRootBasePath}/swagger/index");
+        private dynamic Redirect() => this.Response.AsRedirect($"/{this.appConfig.SwaggerRootBasePath}/swagger/index");
     }
 }
