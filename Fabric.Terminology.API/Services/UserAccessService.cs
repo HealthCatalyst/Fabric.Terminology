@@ -1,5 +1,6 @@
 namespace Fabric.Terminology.API.Services
 {
+    using System;
     using System.Security.Claims;
     using System.Threading.Tasks;
 
@@ -7,6 +8,8 @@ namespace Fabric.Terminology.API.Services
 
     using Catalyst.DosApi.Authorization;
     using Catalyst.DosApi.Authorization.Compliance;
+    using Catalyst.DosApi.Authorization.Models;
+    using Catalyst.Infrastructure.Caching;
 
     using Fabric.Terminology.API.Constants;
     using Fabric.Terminology.API.Infrastructure;
@@ -19,13 +22,17 @@ namespace Fabric.Terminology.API.Services
     {
         private readonly IUserPermissionsService userPermissionsService;
 
+        private readonly IMemoryCacheProvider memoryCacheProvider;
+
         private readonly NancyContext context;
 
         public UserAccessService(
             NancyContextWrapper contextWrapper,
-            IUserPermissionsService userPermissionsService)
+            IUserPermissionsService userPermissionsService,
+            IMemoryCacheProvider memoryCacheProvider)
         {
             this.userPermissionsService = userPermissionsService;
+            this.memoryCacheProvider = memoryCacheProvider;
             this.context = contextWrapper.Context;
         }
 
@@ -55,15 +62,34 @@ namespace Fabric.Terminology.API.Services
                 .FirstMaybe()
                 .Select(token => token.Substring(HttpHeaderValues.AuthorizationBearer.Length).Trim());
 
-        public Task<bool> UserHasAccessAsync(PermissionName permissionName) =>
+        public Task<bool> UserHasAccessAsync(PermissionName permissionName, int cacheDurationSeconds = 0) =>
             this.UserToken()
                 .Select(
                     async token =>
                         {
-                            var access = await this.userPermissionsService.GetPermissionsForUserViaDelegationAsync(token, permissionName.AsPermissionContext());
+                            var cacheKey = this.GetCacheKey(permissionName);
+                            var access = await this.memoryCacheProvider.GetItem<Task<AccessPermissions>>(
+                                             cacheKey,
+                                             () => this.userPermissionsService
+                                                 .GetPermissionsForUserViaDelegationAsync(
+                                                     token,
+                                                     permissionName.AsPermissionContext()),
+                                             TimeSpan.FromSeconds(cacheDurationSeconds), // cache expiration
+                                             false); // is sliding expiration
 
                             return !access.IsMissingRequiredPermission(permissionName);
                         })
                 .Else(() => Task.FromResult(false));
+
+        internal string GetCacheKey(PermissionName permissionName)
+        {
+            var subject = this.GetSubject()
+                .Else(
+                    () => throw new InvalidOperationException(
+                              FormattableString.Invariant(
+                                  $"Unable to create unique cache key without a value JWT subject")));
+
+            return FormattableString.Invariant($"{typeof(AccessPermissions)}.{subject}.{permissionName}");
+        }
     }
 }
