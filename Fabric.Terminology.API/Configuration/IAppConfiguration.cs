@@ -17,6 +17,8 @@ namespace Fabric.Terminology.API.Configuration
 
         HostingOptions HostingOptions { get; set; }
 
+        AuthorizationServerSettings AuthorizationServerSettings { get; set; }
+
         IdentityServerSettings IdentityServerSettings { get; set; }
 
         DiscoveryRegistrationSettings DiscoveryRegistrationSettings { get; set; }

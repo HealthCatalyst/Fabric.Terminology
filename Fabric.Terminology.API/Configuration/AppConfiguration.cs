@@ -21,6 +21,9 @@ namespace Fabric.Terminology.API.Configuration
         public HostingOptions HostingOptions { get; set; }
 
         [AllowNull]
+        public AuthorizationServerSettings AuthorizationServerSettings { get; set; }
+
+        [AllowNull]
         public IdentityServerSettings IdentityServerSettings { get; set; }
 
         [AllowNull]

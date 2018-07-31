@@ -5,6 +5,7 @@ namespace Fabric.Terminology.API
 
     using Catalyst.DosApi.Authorization.Compliance;
 
+    using Fabric.Terminology.API.Configuration;
     using Fabric.Terminology.API.Infrastructure.PipelineHooks;
     using Fabric.Terminology.API.Services;
 
@@ -21,11 +22,17 @@ namespace Fabric.Terminology.API
             this INancyModule module,
             UserAccessService userAccessService,
             PermissionName permissionName,
+            AuthorizationServerSettings authorizationServerSettings,
             params Predicate<Claim>[] requiredClaims)
         {
             module.AddBeforeHookOrExecute(SecurityHooks.RequiresAuthentication(), "Requires Authentication");
             module.AddBeforeHookOrExecute(SecurityHooks.RequiresClaims(requiredClaims), "Requires Claims");
-            module.AddBeforeHookOrExecute(AuthorizationHooks.RequiresPermission(userAccessService, permissionName), "Requires Authorization Permission");
+            module.AddBeforeHookOrExecute(AuthorizationHooks.RequiresPermission(
+                userAccessService,
+                permissionName,
+                authorizationServerSettings.EnableCaching ?
+                    authorizationServerSettings.CacheDurationSeconds :
+                    0), "Requires Authorization Permission");
         }
     }
 }

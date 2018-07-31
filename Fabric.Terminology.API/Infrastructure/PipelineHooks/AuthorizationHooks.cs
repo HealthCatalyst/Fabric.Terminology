@@ -12,9 +12,10 @@ namespace Fabric.Terminology.API.Infrastructure.PipelineHooks
     {
         public static Func<NancyContext, Response> RequiresPermission(
             UserAccessService service,
-            PermissionName permissionName)
+            PermissionName permissionName,
+            int cacheDurationSeconds)
         {
-            var accessTask = service.UserHasAccessAsync(permissionName);
+            var accessTask = service.UserHasAccessAsync(permissionName, cacheDurationSeconds);
             accessTask.Wait();
 
             return (ctx) => accessTask.Result

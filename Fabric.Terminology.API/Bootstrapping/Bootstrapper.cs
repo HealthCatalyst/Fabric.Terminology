@@ -1,4 +1,4 @@
-﻿namespace Fabric.Terminology.API.Bootstrapping
+namespace Fabric.Terminology.API.Bootstrapping
 {
     using System;
 
@@ -104,6 +104,7 @@
             container.Register<MemoryCacheProviderDefaultSettings>(this.appConfig.TerminologySqlSettings.AsMemoryCacheProviderSettings());
             container.Register<IDiscoveryServiceClient>(this.discoveryServiceClient);
             container.Register<ILogger>(this.logger);
+            container.Register<AuthorizationServerSettings>(this.appConfig.AuthorizationServerSettings);
 
             // Caching
             if (this.appConfig.TerminologySqlSettings.MemoryCacheEnabled)

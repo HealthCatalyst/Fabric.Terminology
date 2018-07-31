@@ -48,12 +48,14 @@ namespace Fabric.Terminology.API.Modules
             this.RequiresAuthorizationPermission(
                 this.userAccessService,
                 AuthorizationPermissions.Accessor,
+                this.Config.AuthorizationServerSettings,
                 this.TerminologyReadClaim);
 
         protected void RequirePublisherAuthorization() =>
             this.RequiresAuthorizationPermission(
                 this.userAccessService,
                 AuthorizationPermissions.Publisher,
+                this.Config.AuthorizationServerSettings,
                 this.TerminologyWriteClaim);
 
         protected Negotiator CreateSuccessfulPostResponse(IIdentifiable model)
