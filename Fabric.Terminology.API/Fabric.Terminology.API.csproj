@@ -55,6 +55,7 @@
     <PackageReference Include="AutoMapper" Version="6.1.1" />
     <PackageReference Include="Catalyst.DosApi.Authorization" Version="1.1.1" />
     <PackageReference Include="Catalyst.DosApi.Discovery" Version="1.1.1" />
+    <PackageReference Include="Fabric.Platform.Auth" Version="1.0.2018040605" />
     <PackageReference Include="IdentityServer4.AccessTokenValidation" Version="2.6.0" />
     <PackageReference Include="JetBrains.Annotations" Version="11.1.0" />
     <PackageReference Include="Microsoft.AspNetCore" Version="2.0.2" />

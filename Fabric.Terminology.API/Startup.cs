@@ -10,9 +10,9 @@ namespace Fabric.Terminology.API
     using Catalyst.DosApi.Discovery;
     using Catalyst.Infrastructure.Caching;
 
+    using Fabric.Platform.Auth;
     using Fabric.Terminology.API.Bootstrapping;
     using Fabric.Terminology.API.Bootstrapping.MapperProfiles;
-    using Fabric.Terminology.API.Bootstrapping.Middleware;
     using Fabric.Terminology.API.Configuration;
     using Fabric.Terminology.API.Constants;
     using Fabric.Terminology.API.Logging;
@@ -101,7 +101,7 @@ namespace Fabric.Terminology.API
 
             app.UseStaticFiles()
                 .UseOwin()
-                .UseAuthPlatform(this.appConfig.IdentityServerSettings.Scopes.ToArray(), this.allowedPaths)
+                .UseAuthPlatform(this.appConfig.IdentityServerSettings.Scopes.ToArray(), this.allowedPaths) // <-- Fabric.Platform.Auth
                 .UseNancy(
                     opt =>
                         {
