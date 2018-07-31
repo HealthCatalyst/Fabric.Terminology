@@ -1,10 +1,8 @@
-﻿namespace Fabric.Terminology.TestsBase.Fixtures
+namespace Fabric.Terminology.TestsBase.Fixtures
 {
     using System.IO;
 
-    using AutoMapper;
-
-    using Fabric.Terminology.API.Bootstrapping.MapperProfiles;
+    using Fabric.Terminology.API.Bootstrapping;
     using Fabric.Terminology.API.Configuration;
 
     using Microsoft.Extensions.Configuration;
@@ -13,13 +11,7 @@
     {
         public AppConfigurationFixture()
         {
-            Mapper.Initialize(
-                cfg =>
-                    {
-                        cfg.AddProfile<CodeSystemApiProfile>();
-                        cfg.AddProfile<CodeSystemCodeApiProfile>();
-                        cfg.AddProfile<ValueSetApiProfile>();
-                    });
+            AutoMapperConfig.Initialize();
 
             var builder = new ConfigurationBuilder()
                 .AddEnvironmentVariables()

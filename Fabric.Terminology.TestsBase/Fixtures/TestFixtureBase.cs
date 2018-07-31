@@ -1,6 +1,8 @@
-﻿namespace Fabric.Terminology.TestsBase.Fixtures
+namespace Fabric.Terminology.TestsBase.Fixtures
 {
     using System;
+
+    using AutoMapper;
 
     using Fabric.Terminology.API.Configuration;
     using Fabric.Terminology.API.Logging;

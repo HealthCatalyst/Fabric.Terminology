@@ -90,12 +90,8 @@ namespace Fabric.Terminology.API
 
             Log.Logger.Information("Initializing AutoMapper");
 
-            Mapper.Initialize(cfg =>
-                {
-                    cfg.AddProfile<CodeSystemApiProfile>();
-                    cfg.AddProfile<CodeSystemCodeApiProfile>();
-                    cfg.AddProfile<ValueSetApiProfile>();
-                });
+            // Initialize AutoMapper
+            AutoMapperConfig.Initialize();
 
             app.UseAuthentication();
 

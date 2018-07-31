@@ -24,7 +24,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Anotar.Serilog.Fody" Version="4.6.2" />
-    <PackageReference Include="AutoMapper" Version="6.1.1" />
+    <PackageReference Include="AutoMapper" Version="7.0.1" />
     <PackageReference Include="CallMeMaybe" Version="0.7.0" />
     <PackageReference Include="FluentValidation" Version="7.6.104" />
     <PackageReference Include="Fody" Version="3.1.4" />
