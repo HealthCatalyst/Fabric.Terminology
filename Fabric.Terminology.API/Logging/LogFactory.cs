@@ -1,5 +1,7 @@
 ﻿namespace Fabric.Terminology.API.Logging
 {
+    using System.IO;
+
     using Serilog;
     using Serilog.Core;
 
@@ -13,12 +15,12 @@
     {
         public static ILogger CreateLogger(LoggingLevelSwitch levelSwitch)
         {
-            // TODO work on log format
+            var logsPath = Path.Combine("Logs", "fabric-terminology-{Date}.txt");
             return new LoggerConfiguration()
                 .MinimumLevel.ControlledBy(levelSwitch)
                 .Enrich.FromLogContext()
                 .WriteTo.LiterateConsole()
-                .WriteTo.RollingFile("Logs\\fabric-terminology-{Date}.txt")
+                .WriteTo.RollingFile(logsPath)
                 .CreateLogger();
         }
     }
