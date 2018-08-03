@@ -19,7 +19,8 @@
                 .ConfigureAppConfiguration((context, config) =>
                     {
                         config.Sources.Clear();
-                        config.AddJsonFile("appsettings.json", optional: false);
+                        config.AddJsonFile("appsettings.json", optional: false)
+                            .AddJsonFile("appsettings.dev.json", optional: true);
                     })
                 .Build();
     }
