@@ -1,10 +1,15 @@
-﻿namespace Fabric.Terminology.API
+namespace Fabric.Terminology.API.Bootstrapping
 {
+    using System;
+
+    using Catalyst.DosApi.Discovery;
     using Catalyst.Infrastructure.Caching;
 
     using Fabric.Terminology.API.Configuration;
     using Fabric.Terminology.API.Constants;
     using Fabric.Terminology.API.DependencyInjection;
+    using Fabric.Terminology.API.Infrastructure;
+    using Fabric.Terminology.API.Infrastructure.PipelineHooks;
     using Fabric.Terminology.API.Validators;
     using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Services;
@@ -23,6 +28,7 @@
     using Serilog;
 
     using Swagger.ObjectModel;
+    using Swagger.ObjectModel.Builders;
 
     using IMemoryCacheProvider = Catalyst.Infrastructure.Caching.IMemoryCacheProvider;
     using MemoryCacheProvider = Catalyst.Infrastructure.Caching.MemoryCacheProvider;
@@ -33,15 +39,31 @@
 
         private readonly ILogger logger;
 
-        public Bootstrapper(IAppConfiguration config, ILogger log)
+        private readonly IDiscoveryServiceClient discoveryServiceClient;
+
+        public Bootstrapper(
+            IAppConfiguration config,
+            ILogger log,
+            IDiscoveryServiceClient discoveryServiceClient)
         {
             this.appConfig = config;
             this.logger = log;
+            this.discoveryServiceClient = discoveryServiceClient;
         }
+
+        /// <summary>
+        /// Gets the <see cref="Uri"/> for the Identity Service
+        /// </summary>
+        private Lazy<Uri> IdentityServiceUri => new Lazy<Uri>(() => this.GetUriFromDiscovery(DiscoveryServicesKeys.Identity));
+
+        /// <summary>
+        /// Gets the <see cref="Uri"/> for the Authorization Service
+        /// </summary>
+        private Lazy<Uri> AuthorizationServiceUri => new Lazy<Uri>(() => this.GetUriFromDiscovery(DiscoveryServicesKeys.Authorization));
 
         protected override void ApplicationStartup([NotNull] TinyIoCContainer container, [NotNull] IPipelines pipelines)
         {
-            this.ConfigureSwagger();
+            this.InitializeSwaggerMetadata();
 
             base.ApplicationStartup(container, pipelines);
 
@@ -55,6 +77,16 @@
                             ex.Message);
                         return ctx.Response;
                     });
+
+            pipelines.BeforeRequest += ctx => RequestHooks.RemoveContentTypeHeaderForGet(ctx);
+            pipelines.BeforeRequest += ctx => RequestHooks.ErrorResponseIfContentTypeMissingForPostPutAndPatch(ctx);
+            pipelines.AfterRequest += ctx =>
+                {
+                    foreach (var corsHeader in HttpHeaderValues.CorsHeaders)
+                    {
+                        ctx.Response.Headers.Add(corsHeader.Item1, corsHeader.Item2);
+                    }
+                };
         }
 
         protected override void ConfigureConventions([NotNull] NancyConventions nancyConventions)
@@ -70,7 +102,9 @@
 
             container.Register<IAppConfiguration>(this.appConfig);
             container.Register<MemoryCacheProviderDefaultSettings>(this.appConfig.TerminologySqlSettings.AsMemoryCacheProviderSettings());
+            container.Register<IDiscoveryServiceClient>(this.discoveryServiceClient);
             container.Register<ILogger>(this.logger);
+            container.Register<AuthorizationServerSettings>(this.appConfig.AuthorizationServerSettings);
 
             // Caching
             if (this.appConfig.TerminologySqlSettings.MemoryCacheEnabled)
@@ -91,6 +125,12 @@
 
             // Persistence (Must precede service registration)
             container.ComposeFrom<SqlAppComposition>();
+
+            // Fabric.Identity and Authorization
+            container.RegisterDosServices(
+                this.appConfig.IdentityServerSettings,
+                this.IdentityServiceUri.Value,
+                this.AuthorizationServiceUri.Value);
         }
 
         protected override void ConfigureRequestContainer(
@@ -99,27 +139,14 @@
         {
             base.ConfigureRequestContainer(container, context);
 
+            container.Register<NancyContextWrapper>(new NancyContextWrapper(context));
+
             container.ComposeFrom<SqlRequestComposition>();
             container.ComposeFrom<ServicesRequestComposition>();
             container.Register<ValueSetValidatorCollection>();
         }
 
-        protected override void RequestStartup(
-            [NotNull] TinyIoCContainer container,
-            [NotNull] IPipelines pipelines,
-            [NotNull] NancyContext context)
-        {
-            base.RequestStartup(container, pipelines, context);
-            pipelines.AfterRequest += ctx =>
-                {
-                    foreach (var corsHeader in HttpResponseHeaders.CorsHeaders)
-                    {
-                        ctx.Response.Headers.Add(corsHeader.Item1, corsHeader.Item2);
-                    }
-                };
-        }
-
-        private void ConfigureSwagger()
+        private void InitializeSwaggerMetadata()
         {
             SwaggerMetadataProvider.SetInfo(
                 "Shared Terminology Data Services",
@@ -131,6 +158,32 @@
             {
                 SwaggerMetadataProvider.SetSwaggerRoot(basePath: this.appConfig.SwaggerRootBasePath);
             }
+
+            var securitySchemeBuilder = new Oauth2SecuritySchemeBuilder();
+            securitySchemeBuilder.Flow(Oauth2Flows.Implicit);
+            securitySchemeBuilder.Description("Authentication with Fabric.Identity");
+            securitySchemeBuilder.AuthorizationUrl(this.IdentityServiceUri.Value.AbsoluteUri);
+            securitySchemeBuilder.Scope("fabric/terminology.read", "Grants read access to fabric.terminology resources.");
+            securitySchemeBuilder.Scope("fabric/terminology.write", "Grants write access to fabric.terminology resources.");
+            try
+            {
+                SwaggerMetadataProvider.SetSecuritySchemeBuilder(securitySchemeBuilder, "fabric.identity");
+            }
+            catch (ArgumentException ex)
+            {
+                this.logger.Warning("Error configuring Swagger Security Scheme. {ExceptionMessage}", ex.Message);
+            }
+            catch (NullReferenceException ex)
+            {
+                this.logger.Warning("Error configuring Swagger Security Scheme: {ExceptionMessage}", ex.Message);
+            }
+        }
+
+        private Uri GetUriFromDiscovery(string serviceKey)
+        {
+            var task = this.discoveryServiceClient.RequestServiceUriByKeyAsync(serviceKey);
+            task.Wait();
+            return task.Result;
         }
     }
 }

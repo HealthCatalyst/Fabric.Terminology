@@ -1,7 +1,6 @@
-﻿namespace Fabric.Terminology.SqlServer.Caching
+namespace Fabric.Terminology.SqlServer.Caching
 {
     using System;
-    using System.Collections.Generic;
 
     using CallMeMaybe;
 
@@ -32,6 +31,5 @@
 
         public TItem GetItem<TItem>(string key, Func<TItem> getter, TimeSpan? timeout, bool isSliding = true) =>
             this.GetItem(key, getter);
-
     }
 }

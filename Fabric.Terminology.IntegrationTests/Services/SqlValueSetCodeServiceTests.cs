@@ -1,4 +1,4 @@
-﻿namespace Fabric.Terminology.IntegrationTests.Services
+namespace Fabric.Terminology.IntegrationTests.Services
 {
     using System;
 
@@ -47,7 +47,7 @@
         {
             // Arrange
             var valueSetGuid = Guid.Parse(valueSetReferenceId);
-            var pageSettings = new PagerSettings { CurrentPage = pageNumber, ItemsPerPage = itemsPerPage};
+            var pageSettings = new PagerSettings { CurrentPage = pageNumber, ItemsPerPage = itemsPerPage };
 
             // Act
             var page = this.Profiler.ExecuteTimed(async () => await this.valueSetCodeService.GetValueSetCodesAsync(valueSetGuid, pageSettings));

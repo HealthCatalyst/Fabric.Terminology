@@ -1,4 +1,4 @@
-﻿namespace Fabric.Terminology.API.Modules
+namespace Fabric.Terminology.API.Modules
 {
     using System;
     using System.Linq;
@@ -8,9 +8,11 @@
 
     using Fabric.Terminology.API.Configuration;
     using Fabric.Terminology.API.Models;
+    using Fabric.Terminology.API.Services;
     using Fabric.Terminology.Domain.Services;
 
     using Nancy;
+    using Nancy.Security;
 
     using Serilog;
 
@@ -21,20 +23,22 @@
         public ValueSetCodeModule(
             IValueSetCodeService valueSetCodeService,
             IAppConfiguration config,
-            ILogger logger)
-            : base($"/{TerminologyVersion.Route}/valuesetcodes", config, logger)
+            ILogger logger,
+            UserAccessService userAccessService)
+            : base($"/{TerminologyVersion.Route}/valuesetcodes", config, logger, userAccessService)
         {
             this.valueSetCodeService = valueSetCodeService;
 
-            this.Get("/", async _ => await this.GetAllValueSetCodePage().ConfigureAwait(false), null, "GetAllValueSetCodesPaged");
+            this.Get("/", async _ => await this.GetAllValueSetCodePageAsync().ConfigureAwait(false), null, "GetAllValueSetCodesPaged");
 
             this.Get("/{codeGuid}", parameters => this.GetValueSetCodes(parameters.codeGuid), null, "GetValueSetCodes");
 
-            this.Get("/valueset/{valueSetGuid}", async parameters => await this.GetValueSetCodePage(parameters.valueSetGuid), null, "GetValueSetCodePagedByValueSet");
+            this.Get("/valueset/{valueSetGuid}", async parameters => await this.GetValueSetCodePageAsync(parameters.valueSetGuid), null, "GetValueSetCodePagedByValueSet");
         }
 
         private object GetValueSetCodes(Guid codeGuid)
         {
+            this.RequireAccessorAuthorization();
             try
             {
                 return this.valueSetCodeService.GetValueSetCodesByCodeGuid(codeGuid)
@@ -49,8 +53,9 @@
             }
         }
 
-        private async Task<object> GetAllValueSetCodePage()
+        private async Task<object> GetAllValueSetCodePageAsync()
         {
+            this.RequireAccessorAuthorization();
             try
             {
                 var pagerSettings = this.GetPagerSettings();
@@ -66,8 +71,9 @@
             }
         }
 
-        private async Task<object> GetValueSetCodePage(Guid valueSetGuid)
+        private async Task<object> GetValueSetCodePageAsync(Guid valueSetGuid)
         {
+            this.RequireAccessorAuthorization();
             try
             {
                 var pagerSettings = this.GetPagerSettings();

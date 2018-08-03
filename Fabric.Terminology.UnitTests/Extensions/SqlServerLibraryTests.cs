@@ -1,21 +1,16 @@
-﻿namespace Fabric.Terminology.UnitTests.Extensions
+namespace Fabric.Terminology.UnitTests.Extensions
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
 
-    using Fabric.Terminology.Domain.Services;
-    using Fabric.Terminology.SqlServer;
-    using Fabric.Terminology.SqlServer.Persistence;
+    using Fabric.Terminology.Domain;
+    using Fabric.Terminology.Domain.Persistence;
     using Fabric.Terminology.TestsBase.Mocks;
 
     using FluentAssertions;
 
-    using Nancy.Diagnostics;
-
     using Xunit;
-    using Fabric.Terminology.Domain;
-    using Fabric.Terminology.Domain.Persistence;
 
     public class SqlServerLibraryTests
     {
