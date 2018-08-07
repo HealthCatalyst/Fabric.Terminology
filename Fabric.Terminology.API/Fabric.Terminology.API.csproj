@@ -46,6 +46,7 @@
   <ItemGroup>
     <None Remove="Fabric.Terminology.API.ruleset" />
     <None Remove="FodyWeavers.xml" />
+    <None Remove="appsettings.dev.json" />
   </ItemGroup>
   <ItemGroup>
     <None Include="web.config" />

@@ -49,7 +49,9 @@ namespace Fabric.Terminology.API
             "/terminology/swagger/index.html",
             "/swagger/index",
             "/swagger/swagger.json",
-            "/swagger/index.html"
+            "/swagger/index.html",
+            "/Ping",
+            "/terminology/Ping"
         };
 
         public Startup(IConfiguration configuration)
