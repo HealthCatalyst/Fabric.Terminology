@@ -22,7 +22,7 @@ function Import-Modules() {
 	# Fabric Install Utilities
 	$fabricInstallUtilities = ".\Fabric-Install-Utilities.psm1"
     if(!(Test-Path $fabricInstallUtilities -PathType Leaf)){
-        Invoke-WebRequest -Uri https://raw.githubusercontent.com/HealthCatalyst/InstallScripts/master/common/Fabric-Install-Utilities.psm1 -Headers @{"Cache-Control"="no-cache"} -OutFile $dosInstallUtilities
+        Invoke-WebRequest -Uri https://raw.githubusercontent.com/HealthCatalyst/InstallScripts/master/common/Fabric-Install-Utilities.psm1 -Headers @{"Cache-Control"="no-cache"} -OutFile $fabricInstallUtilities
     }
     Import-Module -Name $fabricInstallUtilities -Force
 }
@@ -65,6 +65,8 @@ function Update-AppSettings{
     param(
         [TerminologyConfig] $config
     )
+
+    Import-Module WebAdministration
 
     $appPath = Get-WebURL "IIS:\Sites\$($config.siteName)\$($config.appName)"
     $config.applicationEndpoint = $appPath.ResponseUri
