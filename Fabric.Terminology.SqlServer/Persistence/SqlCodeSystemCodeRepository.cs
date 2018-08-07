@@ -3,13 +3,13 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Linq.Expressions;
     using System.Threading.Tasks;
 
     using CallMeMaybe;
 
     using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Models;
-    using Fabric.Terminology.Domain.Persistence;
     using Fabric.Terminology.Domain.Persistence.Querying;
     using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Models.Dto;
@@ -30,16 +30,20 @@
 
         private readonly ICodeSystemCodeCachingManager codeSystemCodeCachingManager;
 
+        private readonly Lazy<IReadOnlyCollection<ICodeSystem>> codeSystems;
+
         public SqlCodeSystemCodeRepository(
             SharedContext sharedContext,
             ILogger logger,
             ICodeSystemCodeCachingManager codeSystemCodeCachingManager,
+            ICodeSystemRepository codeSystemRepository,
             IPagingStrategyFactory pagingStrategyFactory)
         {
             this.sharedContext = sharedContext;
             this.logger = logger;
             this.pagingStrategyFactory = pagingStrategyFactory;
             this.codeSystemCodeCachingManager = codeSystemCodeCachingManager;
+            this.codeSystems = new Lazy<IReadOnlyCollection<ICodeSystem>>(() => codeSystemRepository.GetAll());
         }
 
         public Maybe<ICodeSystemCode> GetCodeSystemCode(Guid codeGuid)
@@ -101,15 +105,26 @@
             bool includeRetired)
         {
             var dtos = this.GetBaseQuery(includeRetired);
-            var systemGuids = codeSystemGuids as Guid[] ?? codeSystemGuids.ToArray();
-            if (systemGuids.Any())
-            {
-                dtos = dtos.Where(dto => systemGuids.Contains(dto.CodeSystemGUID));
-            }
 
             if (!filterText.IsNullOrWhiteSpace())
             {
-                dtos = dtos.Where(dto => dto.CodeDSC.Contains(filterText) || dto.CodeCD.StartsWith(filterText, StringComparison.OrdinalIgnoreCase));
+                var tokens = filterText.AsSplitSearchTokens();
+                var searchCriteria = tokens.Select(
+                    t => (Expression<Func<CodeSystemCodeDto, bool>>)(c => c.CodeDSC.Contains(t, StringComparison.OrdinalIgnoreCase)));
+
+                searchCriteria = searchCriteria.Concat(
+                    new[]
+                    {
+                        (Expression<Func<CodeSystemCodeDto, bool>>)(c => c.CodeCD.StartsWith(filterText, StringComparison.OrdinalIgnoreCase))
+                    });
+
+                dtos = dtos.Where(ExpressionHelpers.Join(Expression.Or, searchCriteria.ToList()));
+            }
+
+            var systemGuids = codeSystemGuids as Guid[] ?? codeSystemGuids.ToArray();
+            if (systemGuids.Any())
+            {
+                dtos = dtos.Where(c => systemGuids.Contains(c.CodeSystemGUID));
             }
 
             return this.CreatePagedCollectionAsync(dtos, pagerSettings);
@@ -125,7 +140,7 @@
                 dtos = dtos.Where(dto => codeSystemGuids.Contains(dto.CodeSystemGUID));
             }
 
-            var factory = new CodeSystemCodeFactory();
+            var factory = new CodeSystemCodeFactory(this.codeSystems.Value);
             var results = await dtos.ToListAsync().ConfigureAwait(false);
 
             return results.Select(factory.Build).ToList();
@@ -134,14 +149,19 @@
         private IQueryable<CodeSystemCodeDto> GetBaseQuery(bool includeRetired)
         {
             return includeRetired
-                       ? this.sharedContext.CodeSystemCodes.Include(codeDto => codeDto.CodeSystem)
-                       : this.sharedContext.CodeSystemCodes.Include(codeDto => codeDto.CodeSystem)
+                       ? this.sharedContext.CodeSystemCodes
+                       : this.sharedContext.CodeSystemCodes
                            .Where(dto => dto.RetiredFLG == "N");
         }
 
+        private IReadOnlyCollection<Expression<Func<CodeSystemCodeDto, bool>>> GetBaseExpression(bool includeRetired) =>
+            includeRetired
+                ? new[] { (Expression<Func<CodeSystemCodeDto, bool>>)(c => c.RetiredFLG == "N") }
+                : Array.Empty<Expression<Func<CodeSystemCodeDto, bool>>>();
+
         private ICodeSystemCode QueryCodeSystemCode(Guid codeGuid)
         {
-            var factory = new CodeSystemCodeFactory();
+            var factory = new CodeSystemCodeFactory(this.codeSystems.Value);
             var dto = this.GetBaseQuery(true).SingleOrDefault(d => d.CodeGUID == codeGuid);
             return dto != null ? factory.Build(dto) : null;
         }
@@ -153,7 +173,7 @@
                 return new List<ICodeSystemCode>();
             }
 
-            var factory = new CodeSystemCodeFactory();
+            var factory = new CodeSystemCodeFactory(this.codeSystems.Value);
             var dtos = this.GetBaseQuery(includeRetired).Where(dto => codeGuids.Contains(dto.CodeGUID));
             if (!includeRetired)
             {
@@ -178,7 +198,7 @@
                             .Take(pagerSettings.ItemsPerPage)
                             .ToListAsync().ConfigureAwait(false);
 
-            var factory = new CodeSystemCodeFactory();
+            var factory = new CodeSystemCodeFactory(this.codeSystems.Value);
 
             return pagingStrategy.CreatePagedCollection(
                 items.Select(i => this.codeSystemCodeCachingManager.GetOrSet(i.CodeGUID, () => factory.Build(i))
