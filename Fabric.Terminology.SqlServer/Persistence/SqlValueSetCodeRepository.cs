@@ -88,6 +88,9 @@
             IPagerSettings settings,
             IEnumerable<Guid> codeSystemGuids)
         {
+            // IQueryable<ValueSetCodeDto> dtos;
+            // var systemGuids = codeSystemGuids as Guid[] ?? codeSystemGuids.ToArray();
+
             var dtos = this.GetValueSetCodeQueryable(filterText, codeSystemGuids);
 
             if (valueSetGuid != Guid.Empty)
@@ -104,6 +107,7 @@
             return this.cacheManager.GetCachedValueDictionary(valueSetGuids, this.QueryValueSetCodeLookup);
         }
 
+        [Obsolete("Performs poorly")]
         private IQueryable<ValueSetCodeDto> GetValueSetCodeQueryable(
             string filterText,
             IEnumerable<Guid> codeSystemGuids)

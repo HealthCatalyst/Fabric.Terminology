@@ -74,6 +74,7 @@
                 this.SharedContext,
                 this.Logger,
                 new CodeSystemCodeCachingManager(this.Cache),
+                sqlCodeSystemRepository,
                 pagingStrategyFactory);
 
             this.ValueSetService = new SqlValueSetService(

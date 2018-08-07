@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <CodeAnalysisRuleSet>..\Catalyst.MostRules.Error.ruleset</CodeAnalysisRuleSet>
@@ -31,7 +31,6 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.0.2" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.0.1" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.0.1" />
-    <PackageReference Include="NullGuard.Fody" Version="1.8.0" />
     <PackageReference Include="serilog" Version="2.6.0" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="2.0.2" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.0.2" />
@@ -49,13 +48,7 @@
     <Compile Update="Persistence\SqlClientTermUnitOfWorkRepository.*.cs">
       <DependentUpon>SqlClientTermUnitOfWorkRepository.cs</DependentUpon>
     </Compile>
-    <Compile Update="SqlServerExtensions.Queryable.cs">
-      <DependentUpon>SqlServerExtensions.cs</DependentUpon>
-    </Compile>
-    <Compile Update="SqlServerExtensions.MemoryCacheProvider.cs">
-      <DependentUpon>SqlServerExtensions.cs</DependentUpon>
-    </Compile>
-    <Compile Update="SqlServerExtensions.DbContext.cs">
+    <Compile Update="SqlServerExtensions.*.cs">
       <DependentUpon>SqlServerExtensions.cs</DependentUpon>
     </Compile>
     <Compile Update="Persistence\SqlClientTermValueSetRepository.UoWOperation.cs">
