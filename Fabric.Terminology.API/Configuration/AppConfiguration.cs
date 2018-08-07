@@ -1,8 +1,8 @@
-﻿namespace Fabric.Terminology.API.Configuration
+namespace Fabric.Terminology.API.Configuration
 {
-    using Fabric.Terminology.SqlServer.Configuration;
+    using Catalyst.DosApi.Discovery.Configuration;
 
-    using JetBrains.Annotations;
+    using Fabric.Terminology.SqlServer.Configuration;
 
     using NullGuard;
 
@@ -19,5 +19,20 @@
 
         [AllowNull]
         public HostingOptions HostingOptions { get; set; }
+
+        [AllowNull]
+        public AuthorizationServerSettings AuthorizationServerSettings { get; set; }
+
+        [AllowNull]
+        public IdentityServerSettings IdentityServerSettings { get; set; }
+
+        [AllowNull]
+        public DiscoveryRegistrationSettings DiscoveryRegistrationSettings { get; set; }
+
+        [AllowNull]
+        public DiscoveryServiceClientSettings DiscoveryServiceClientSettings { get; set; }
+
+        [AllowNull]
+        public ApplicationInsightsSettings ApplicationInsightsSettings { get; set; }
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace Fabric.Terminology.API.Modules
+namespace Fabric.Terminology.API.Modules
 {
     using System;
     using System.Collections.Generic;
@@ -6,7 +6,6 @@
     using Fabric.Terminology.API.MetaData;
     using Fabric.Terminology.API.Models;
     using Fabric.Terminology.Domain.Models;
-    using Fabric.Terminology.SqlServer.Configuration;
 
     using Nancy.Swagger;
     using Nancy.Swagger.Modules;

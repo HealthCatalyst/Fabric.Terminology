@@ -1,5 +1,7 @@
 ﻿namespace Fabric.Terminology.SqlServer.Caching
 {
+    using Catalyst.Infrastructure.Caching;
+
     using Fabric.Terminology.Domain.Models;
 
     internal class CachingManagerFactory : ICachingManagerFactory

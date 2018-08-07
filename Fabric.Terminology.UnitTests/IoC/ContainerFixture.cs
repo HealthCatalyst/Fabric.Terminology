@@ -2,7 +2,10 @@
 {
     using System;
 
+    using Catalyst.Infrastructure.Caching;
+
     using Fabric.Terminology.API.Configuration;
+    using Fabric.Terminology.SqlServer;
     using Fabric.Terminology.SqlServer.Caching;
     using Fabric.Terminology.SqlServer.Configuration;
 
@@ -44,7 +47,7 @@
             };
 
             container.Register<IAppConfiguration>(appSettings);
-            container.Register<IMemoryCacheSettings>(appSettings.TerminologySqlSettings);
+            container.Register<MemoryCacheProviderDefaultSettings>(appSettings.TerminologySqlSettings.AsMemoryCacheProviderSettings());
             container.Register<IMemoryCacheProvider, MemoryCacheProvider>().AsSingleton();
 
             container.Register<ICachingManagerFactory, CachingManagerFactory>();

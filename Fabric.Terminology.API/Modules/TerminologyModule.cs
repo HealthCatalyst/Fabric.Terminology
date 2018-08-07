@@ -1,13 +1,15 @@
-﻿namespace Fabric.Terminology.API.Modules
+namespace Fabric.Terminology.API.Modules
 {
     using System;
     using System.Linq;
+    using System.Security.Claims;
 
     using CallMeMaybe;
 
     using Fabric.Terminology.API.Configuration;
     using Fabric.Terminology.API.Constants;
     using Fabric.Terminology.API.Models;
+    using Fabric.Terminology.API.Services;
     using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Persistence.Querying;
@@ -18,13 +20,14 @@
 
     using Serilog;
 
-    using Constants = Fabric.Terminology.API.Constants;
-
     public abstract class TerminologyModule<T> : NancyModule
     {
-        protected TerminologyModule(string path, IAppConfiguration config, ILogger logger)
+        private readonly UserAccessService userAccessService;
+
+        protected TerminologyModule(string path, IAppConfiguration config, ILogger logger, UserAccessService userAccessService)
             : base(path)
         {
+            this.userAccessService = userAccessService;
             this.Config = config;
             this.Logger = logger;
         }
@@ -32,6 +35,28 @@
         protected IAppConfiguration Config { get; }
 
         protected ILogger Logger { get; }
+
+        protected Predicate<Claim> TerminologyReadClaim => claim =>
+            claim.Type.Equals(Claims.Scope, StringComparison.OrdinalIgnoreCase) &&
+            claim.Value.Equals(Scopes.ReadScope, StringComparison.OrdinalIgnoreCase);
+
+        protected Predicate<Claim> TerminologyWriteClaim => claim =>
+            claim.Type.Equals(Claims.Scope, StringComparison.OrdinalIgnoreCase) &&
+            claim.Value.Equals(Scopes.WriteScope, StringComparison.OrdinalIgnoreCase);
+
+        protected void RequireAccessorAuthorization() =>
+            this.RequiresAuthorizationPermission(
+                this.userAccessService,
+                AuthorizationPermissions.Accessor,
+                this.Config.AuthorizationServerSettings,
+                this.TerminologyReadClaim);
+
+        protected void RequirePublisherAuthorization() =>
+            this.RequiresAuthorizationPermission(
+                this.userAccessService,
+                AuthorizationPermissions.Publisher,
+                this.Config.AuthorizationServerSettings,
+                this.TerminologyWriteClaim);
 
         protected Negotiator CreateSuccessfulPostResponse(IIdentifiable model)
         {
@@ -45,7 +70,7 @@
 
             return this.Negotiate.WithModel(model)
                 .WithStatusCode(HttpStatusCode.Created)
-                .WithHeader(HttpResponseHeaders.Location, selfLink);
+                .WithHeader(HttpHeaderValues.Location, selfLink);
         }
 
         protected Negotiator CreateFailureResponse(string message, HttpStatusCode statusCode)
@@ -81,10 +106,8 @@
             return getResponse(valueSetGuid);
         }
 
-        protected Guid[] GetCodeSystems()
-        {
-            return this.CreateGuidParameterArray((string)this.Request.Query["$codesystems"]);
-        }
+        protected Guid[] GetCodeSystems() =>
+            this.CreateGuidParameterArray((string)this.Request.Query["$codesystems"]);
 
         protected IOrderingParameters GetValueSetOrdering()
         {
@@ -112,9 +135,7 @@
             return cds.Select(cd => cd.Trim()).Where(cd => !cd.IsNullOrWhiteSpace()).ToArray();
         }
 
-        private Guid[] CreateGuidParameterArray(string value)
-        {
-            return this.CreateParameterArray(value).Select(s => Maybe.From(Guid.Parse(s))).Values().ToArray();
-        }
+        private Guid[] CreateGuidParameterArray(string value) =>
+            this.CreateParameterArray(value).Select(s => Maybe.From(Guid.Parse(s))).Values().ToArray();
     }
 }

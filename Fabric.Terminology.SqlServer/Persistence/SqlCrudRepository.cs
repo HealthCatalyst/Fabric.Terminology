@@ -1,4 +1,4 @@
-﻿namespace Fabric.Terminology.SqlServer.Persistence
+namespace Fabric.Terminology.SqlServer.Persistence
 {
     using System;
     using System.Collections.Generic;
@@ -16,7 +16,9 @@
 
         private readonly ILogger logger;
 
+#pragma warning disable SA1305 // Field names must not use Hungarian notation
         private readonly DbSet<TEntity> dbSet;
+#pragma warning restore SA1305 // Field names must not use Hungarian notation
 
         public SqlCrudRepository(DbContext context, ILogger logger)
         {
@@ -63,10 +65,7 @@
             }
         }
 
-        public void Insert(TEntity entity)
-        {
-            this.dbSet.Add(entity);
-        }
+        public void Insert(TEntity entity) => this.dbSet.Add(entity);
 
         public void Update(TEntity entity)
         {

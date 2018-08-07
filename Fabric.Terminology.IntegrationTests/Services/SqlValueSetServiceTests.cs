@@ -1,4 +1,4 @@
-﻿namespace Fabric.Terminology.IntegrationTests.Services
+namespace Fabric.Terminology.IntegrationTests.Services
 {
     using System;
     using System.Collections.Generic;
@@ -108,8 +108,7 @@
         [InlineData("diabetes", "sourcedescription", SortDirection.Asc, false)]
         [InlineData("diabetes", "sourcedescription", SortDirection.Desc)]
         [InlineData("diabetes", "versiondate", SortDirection.Asc)]
-        [InlineData("diabetes", "versiondate", SortDirection.Desc, false)]
-        // See issue #87 - value set query by ensuring the queryable is not prematurely executed
+        [InlineData("diabetes", "versiondate", SortDirection.Desc, false)] // See issue #87 - value set query by ensuring the queryable is not prematurely executed
         public void CanSearchValueSetsWithCodeSystemFiltersAndOrderingChanges(string term, string orderBy = "Name", SortDirection direction = SortDirection.Asc, bool useCodeFilter = true)
         {
             // Arrange

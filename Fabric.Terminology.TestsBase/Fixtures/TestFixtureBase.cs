@@ -1,6 +1,10 @@
-﻿namespace Fabric.Terminology.TestsBase.Fixtures
+namespace Fabric.Terminology.TestsBase.Fixtures
 {
     using System;
+
+    using AutoMapper;
+
+    using Fabric.Terminology.API.Configuration;
     using Fabric.Terminology.API.Logging;
     using Moq;
     using Serilog;
@@ -28,7 +32,7 @@
 
         private void Initialize()
         {
-            this.Logger = this.EnableLogging ? LogFactory.CreateLogger(this.LoggingLevelSwitch) : new Mock<ILogger>().Object;
+            this.Logger = this.EnableLogging ? LogFactory.CreateTraceLogger(new LoggingLevelSwitch(), new ApplicationInsightsSettings { Enabled = false }) : new Mock<ILogger>().Object;
         }
     }
 #pragma warning restore CA1816 // Dispose methods should call SuppressFinalize

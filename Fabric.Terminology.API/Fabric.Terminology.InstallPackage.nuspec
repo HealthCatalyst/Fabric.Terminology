@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>Fabric.Terminology.InstallPackage</id>
-    <version>0.7.4-alpha</version>
+    <version>1.0.0-alpha</version>
     <authors>Health Catalyst</authors>
     <owners>Health Catalyst</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>

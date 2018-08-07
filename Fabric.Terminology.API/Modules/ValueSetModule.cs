@@ -1,4 +1,4 @@
-﻿namespace Fabric.Terminology.API.Modules
+namespace Fabric.Terminology.API.Modules
 {
     using System;
     using System.Collections.Generic;
@@ -43,8 +43,9 @@
             IValueSetComparisonService valueSetComparisonService,
             IAppConfiguration config,
             ILogger logger,
-            ValueSetValidatorCollection valueSetValidatorCollection)
-            : base($"{TerminologyVersion.Route}/valuesets", config, logger)
+            ValueSetValidatorCollection valueSetValidatorCollection,
+            UserAccessService userAccessService)
+            : base($"/{TerminologyVersion.Route}/valuesets", config, logger, userAccessService)
         {
             this.valueSetService = valueSetService;
             this.valueSetSummaryService = valueSetSummaryService;
@@ -53,7 +54,7 @@
             this.valueSetComparisonService = valueSetComparisonService;
             this.valueSetValidatorCollection = valueSetValidatorCollection;
 
-            this.Get("/", async _ => await this.GetValueSetPage().ConfigureAwait(false), null, "GetPaged");
+            this.Get("/", async _ => await this.GetValueSetPageAsync().ConfigureAwait(false), null, "GetPaged");
 
             this.Get("/{valueSetGuid}", parameters => this.GetValueSet(parameters.valueSetGuid), null, "GetValueSet");
 
@@ -65,11 +66,11 @@
 
             this.Post("/multiple/", _ => this.GetMultipleValueSets(), null, "GetMultipleValueSets");
 
-            this.Post("/search/", async _ => await this.Search().ConfigureAwait(false), null, "Search");
+            this.Post("/search/", async _ => await this.SearchAsync().ConfigureAwait(false), null, "Search");
 
             this.Post("/copy/", _ => this.CopyValueSet(), null, "CopyValueSet");
 
-            this.Post("/compare/", async _ => await this.CompareValueSets().ConfigureAwait(false), null, "CompareValueSets");
+            this.Post("/compare/", async _ => await this.CompareValueSetsAsync().ConfigureAwait(false), null, "CompareValueSets");
 
             this.Post("/", _ => this.AddValueSet(), null, "AddValueSet");
 
@@ -84,22 +85,16 @@
             this.Delete("/{valueSetGuid}", parameters => this.DeleteValueSet(parameters.valueSetGuid), null, "DeleteValueSet");
         }
 
-        private static ValueSetApiModel MapToValueSetApiModel(IValueSet vs, IReadOnlyCollection<Guid> codeSystemGuids)
-        {
-            return vs.ToValueSetApiModel(codeSystemGuids);
-        }
+        private static ValueSetApiModel MapToValueSetApiModel(IValueSet vs, IReadOnlyCollection<Guid> codeSystemGuids) =>
+            vs.ToValueSetApiModel(codeSystemGuids);
 
         private static ValueSetItemApiModel MapToValueSetItemApiModel(
             IValueSetSummary vss,
-            IReadOnlyCollection<Guid> codeSystemGuids)
-        {
-            return vss.ToValueSetItemApiModel(codeSystemGuids);
-        }
+            IReadOnlyCollection<Guid> codeSystemGuids) =>
+            vss.ToValueSetItemApiModel(codeSystemGuids);
 
-        private static async Task<T> Execute<T>(Func<Task<T>> query)
-        {
-            return await query.Invoke().ConfigureAwait(false);
-        }
+        private static async Task<T> ExecuteAsync<T>(Func<Task<T>> query) =>
+            await query.Invoke().ConfigureAwait(false);
 
         private static MultipleValueSetsQuery EnsureQueryModel(MultipleValueSetsQuery model)
         {
@@ -118,6 +113,7 @@
 
         private object GetValueSet(string valueSetGuidString)
         {
+            this.RequireAccessorAuthorization();
             return this.ParseValueSetGuidAndExecute(valueSetGuidString, GetValueSetByGuid);
 
             object GetValueSetByGuid(Guid valueSetGuid)
@@ -140,7 +136,7 @@
                 }
                 catch (ValueSetNotFoundException ex)
                 {
-                    this.Logger.Error(ex, ex.Message, valueSetGuid.ToString());
+                    this.Logger.Error(ex, "{Message} - ValueSetGuid was {ValueSetGuid}", ex.Message, valueSetGuid);
                     return this.CreateFailureResponse(
                         $"The ValueSet with id: {valueSetGuid} was not found.",
                         HttpStatusCode.InternalServerError);
@@ -150,6 +146,7 @@
 
         private object GetMultipleValueSets()
         {
+            this.RequireAccessorAuthorization();
             try
             {
                 var model = EnsureQueryModel(this.Bind<MultipleValueSetsQuery>(new BindingConfig { BodyOnly = true }));
@@ -162,39 +159,40 @@
                 }
 
                 return model.Summary
-                           ? Execute(
+                           ? ExecuteAsync(
                                    () => this.valueSetSummaryService.GetValueSetSummariesListAsync(
                                        model.ValueSetGuids,
                                        model.CodeSystemGuids))
-                               .Result.Select(vss => vss.ToValueSetItemApiModel(model.CodeSystemGuids))
+                               .Result.Select(vss => vss.ToValueSetItemApiModel(model.CodeSystemGuids.ToArray()))
                                .ToList()
-                           : (IReadOnlyCollection<object>)Execute(
+                           : (IReadOnlyCollection<object>)ExecuteAsync(
                                    () => this.valueSetService.GetValueSetsListAsync(
                                        model.ValueSetGuids,
                                        model.CodeSystemGuids))
-                               .Result.Select(vs => vs.ToValueSetApiModel(model.CodeSystemGuids))
+                               .Result.Select(vs => vs.ToValueSetApiModel(model.CodeSystemGuids.ToArray()))
                                .ToList();
             }
             catch (Exception ex)
             {
-                this.Logger.Error(ex, ex.Message);
+                this.Logger.Error(ex, "{Message}", ex.Message);
                 return this.CreateFailureResponse("Failed to retrieve value sets", HttpStatusCode.InternalServerError);
             }
         }
 
         private object GetValueSetVersions(string valueSetReferenceId)
         {
+            this.RequireAccessorAuthorization();
             try
             {
                 var codeSystemGuids = this.GetCodeSystems();
                 var summary = this.GetSummarySetting();
 
                 var versions = summary
-                                   ? Execute(
+                                   ? ExecuteAsync(
                                            () => this.valueSetSummaryService.GetValueSetVersionsAsync(
                                                valueSetReferenceId))
                                        .Result.Select(vss => vss.ToValueSetItemApiModel(codeSystemGuids))
-                                   : Execute(
+                                   : ExecuteAsync(
                                            () => this.valueSetSummaryService.GetValueSetVersionsAsync(
                                                valueSetReferenceId))
                                        .Result.Select(vs => vs.ToValueSetItemApiModel(codeSystemGuids))
@@ -211,13 +209,14 @@
             }
             catch (Exception ex)
             {
-                this.Logger.Error(ex, ex.Message);
+                this.Logger.Error(ex, "{Message}", ex.Message);
                 return this.CreateFailureResponse("Failed to retrieve value sets", HttpStatusCode.InternalServerError);
             }
         }
 
-        private async Task<object> GetValueSetPage()
+        private async Task<object> GetValueSetPageAsync()
         {
+            this.RequireAccessorAuthorization();
             try
             {
                 var summary = this.GetSummarySetting();
@@ -237,15 +236,16 @@
             }
             catch (Exception ex)
             {
-                this.Logger.Error(ex, ex.Message);
+                this.Logger.Error(ex, "{Message}", ex.Message);
                 return this.CreateFailureResponse(
                     ex.Message,
                     HttpStatusCode.InternalServerError);
             }
         }
 
-        private async Task<object> Search()
+        private async Task<object> SearchAsync()
         {
+            this.RequireAccessorAuthorization();
             try
             {
                 var model = this.EnsureQueryModel(this.Bind<ValueSetFindByTermQuery>(new BindingConfig { BodyOnly = true }));
@@ -271,13 +271,14 @@
             }
             catch (Exception ex)
             {
-                this.Logger.Error(ex, ex.Message);
+                this.Logger.Error(ex, "{Message}", ex.Message);
                 return this.CreateFailureResponse(ex.Message, HttpStatusCode.InternalServerError);
             }
         }
 
         private object AddValueSet()
         {
+            this.RequirePublisherAuthorization();
             try
             {
                 var model = this.Bind<ClientTermValueSetApiModel>();
@@ -302,13 +303,14 @@
             }
             catch (Exception ex)
             {
-                this.Logger.Error(ex, ex.Message);
+                this.Logger.Error(ex, "{Message}", ex.Message);
                 return this.CreateFailureResponse("Failed to create a value set", HttpStatusCode.InternalServerError);
             }
         }
 
         private object PatchValueSet(string valueSetGuidString)
         {
+            this.RequirePublisherAuthorization();
             return this.ParseValueSetGuidAndExecute(valueSetGuidString, PatchValueSetWithValueSetGuid);
 
             object PatchValueSetWithValueSetGuid(Guid valueSetGuid)
@@ -343,7 +345,7 @@
                 }
                 catch (Exception ex)
                 {
-                    this.Logger.Error(ex, ex.Message);
+                    this.Logger.Error(ex, "{Message}", ex.Message);
                     return this.CreateFailureResponse("Failed to update a value set", HttpStatusCode.InternalServerError);
                 }
             }
@@ -351,6 +353,7 @@
 
         private object DeleteValueSet(string valueSetGuidString)
         {
+            this.RequirePublisherAuthorization();
             return this.ParseValueSetGuidAndExecute(valueSetGuidString, DeleteValueSetWithValueSetGuid);
 
             object DeleteValueSetWithValueSetGuid(Guid valueSetGuid)
@@ -372,7 +375,7 @@
                             }
                             catch (Exception ex)
                             {
-                                this.Logger.Error(ex, ex.Message, valueSetGuid);
+                                this.Logger.Error(ex, "{Message}.  ValueSetGuid was: {ValueSetGuid}", ex.Message, valueSetGuid);
                                 return this.CreateFailureResponse(
                                     $"Failed to delete ValueSet with id: {valueSetGuid}",
                                     HttpStatusCode.InternalServerError);
@@ -387,6 +390,7 @@
 
         private object CopyValueSet()
         {
+            this.RequirePublisherAuthorization();
             try
             {
                 var model = this.Bind<ValueSetCopyApiModel>();
@@ -408,7 +412,7 @@
             }
             catch (Exception ex)
             {
-                this.Logger.Error(ex, ex.Message);
+                this.Logger.Error(ex, "{Message}", ex.Message);
                 return this.CreateFailureResponse("Failed to copy a value set", HttpStatusCode.InternalServerError);
             }
 
@@ -418,8 +422,9 @@
                     : this.CreateFailureResponse("Failed to copy ValueSet", HttpStatusCode.InternalServerError);
         }
 
-        private async Task<object> CompareValueSets()
+        private async Task<object> CompareValueSetsAsync()
         {
+            this.RequireAccessorAuthorization();
             try
             {
                 var model = this.Bind<CompareValueSetsQuery>();
@@ -428,17 +433,18 @@
                                      model.ValueSetGuids,
                                      model.CodeSystemGuids).ConfigureAwait(false);
 
-                return comparison.ToValueSetComparisonResultApiModel(model.CodeSystemGuids);
+                return comparison.ToValueSetComparisonResultApiModel(model.CodeSystemGuids.ToArray());
             }
             catch (Exception ex)
             {
-                this.Logger.Error(ex, ex.Message);
+                this.Logger.Error(ex, "{Message}", ex.Message);
                 return this.CreateFailureResponse("Failed to compare value sets", HttpStatusCode.InternalServerError);
             }
         }
 
         private object ChangeStatus(Guid valueSetGuid, string statusCode)
         {
+            this.RequirePublisherAuthorization();
             if (Enum.TryParse(statusCode, true, out ValueSetStatus status))
             {
                 var attempt = this.clientTermValueSetService.ChangeStatus(valueSetGuid, status);
@@ -457,7 +463,7 @@
                 }
                 catch (Exception ex)
                 {
-                    this.Logger.Error(ex, ex.Message, valueSetGuid.ToString(), status.ToString());
+                    this.Logger.Error(ex, "{Message} - ValueSetGuid was {ValueSetGuid}.  Attempted to change to status {Status}", ex.Message, valueSetGuid, status);
                     return this.CreateFailureResponse(
                         $"Failed to change the status code for the value set with id: {valueSetGuid}",
                         HttpStatusCode.InternalServerError);

@@ -1,4 +1,4 @@
-﻿namespace Fabric.Terminology.API.Modules
+namespace Fabric.Terminology.API.Modules
 {
     using System;
     using System.Linq;
@@ -8,11 +8,13 @@
 
     using Fabric.Terminology.API.Configuration;
     using Fabric.Terminology.API.Models;
+    using Fabric.Terminology.API.Services;
     using Fabric.Terminology.Domain.Models;
     using Fabric.Terminology.Domain.Services;
 
     using Nancy;
     using Nancy.ModelBinding;
+    using Nancy.Security;
 
     using Serilog;
 
@@ -23,20 +25,21 @@
         public CodeSystemCodeModule(
             ICodeSystemCodeService codeSystemCodeService,
             IAppConfiguration config,
-            ILogger logger)
-            : base($"/{TerminologyVersion.Route}/codes", config, logger)
+            ILogger logger,
+            UserAccessService userAccessService)
+            : base($"/{TerminologyVersion.Route}/codes", config, logger, userAccessService)
         {
             this.codeSystemCodeService = codeSystemCodeService;
 
-            this.Get("/", async _ => await this.GetCodeSystemCodePage().ConfigureAwait(false), null, "GetPagedCodeSystemCodes");
+            this.Get("/", async _ => await this.GetCodeSystemCodePageAysnc().ConfigureAwait(false), null, "GetPagedCodeSystemCodes");
 
             this.Get("/{codeGuid}", parameters => this.GetCodeSystemCode(parameters.codeGuid), null, "GetCodeSystemCode");
 
-            this.Post("/batch/", async _ => await this.GetBatch().ConfigureAwait(false), null, "GetBatchCodes");
+            this.Post("/batch/", async _ => await this.GetBatchAsync().ConfigureAwait(false), null, "GetBatchCodes");
 
             this.Post("/multiple/", _ => this.GetMultiple(), null, "GetCodeSystemCodes");
 
-            this.Post("/search/", async _ => await this.Search().ConfigureAwait(false), null, "SearchCodeSystemCodes");
+            this.Post("/search/", async _ => await this.SearchAsync().ConfigureAwait(false), null, "SearchCodeSystemCodes");
         }
 
         private static MultipleCodeSystemCodeQuery EnsureQueryModel(MultipleCodeSystemCodeQuery model)
@@ -66,6 +69,7 @@
 
         private object GetCodeSystemCode(Guid codeGuid)
         {
+            this.RequireAccessorAuthorization();
             try
             {
                 return this.codeSystemCodeService
@@ -84,8 +88,9 @@
             }
         }
 
-        private async Task<object> GetCodeSystemCodePage()
+        private async Task<object> GetCodeSystemCodePageAysnc()
         {
+            this.RequireAccessorAuthorization();
             try
             {
                 var pagerSettings = this.GetPagerSettings();
@@ -105,6 +110,7 @@
 
         private object GetMultiple()
         {
+            this.RequireAccessorAuthorization();
             try
             {
                 var model = EnsureQueryModel(this.Bind<MultipleCodeSystemCodeQuery>(new BindingConfig { BodyOnly = true }));
@@ -121,8 +127,9 @@
             }
         }
 
-        private async Task<object> GetBatch()
+        private async Task<object> GetBatchAsync()
         {
+            this.RequireAccessorAuthorization();
             try
             {
                 var model = EnsureQueryModel(this.Bind<BatchCodeQuery>(new BindingConfig { BodyOnly = true }));
@@ -146,8 +153,9 @@
             }
         }
 
-        private async Task<object> Search()
+        private async Task<object> SearchAsync()
         {
+            this.RequireAccessorAuthorization();
             try
             {
                 var model = this.EnsureQueryModel(this.Bind<FindByTermQuery>(new BindingConfig { BodyOnly = true }));

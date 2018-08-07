@@ -1,14 +1,13 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <CodeAnalysisRuleSet>..\Catalyst.MostRules.Error.ruleset</CodeAnalysisRuleSet>
     <PackageProjectUrl>https://github.com/HealthCatalyst/Fabric.Terminology</PackageProjectUrl>
     <RepositoryUrl>https://github.com/HealthCatalyst/Fabric.Terminology</RepositoryUrl>
     <PackageLicenseUrl>https://github.com/HealthCatalyst/Fabric.Terminology/blob/develop/LICENSE</PackageLicenseUrl>
     <FileVersion>0.7.4.0</FileVersion>
     <AssemblyVersion>0.7.4.0</AssemblyVersion>
     <Version>0.7.4-alpha</Version>
-    <Copyright>Copyright 2018 © Health Catalyst</Copyright>
+    <Copyright>Copyright 2018 � Health Catalyst</Copyright>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DocumentationFile>
@@ -21,17 +20,19 @@
     <Compile Remove="Persistence\Factories\ValueSetShortCodeListMapper.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Anotar.Serilog.Fody" Version="4.3.2" />
-    <PackageReference Include="AutoMapper" Version="6.1.1" />
-    <PackageReference Include="CallMeMaybe" Version="0.6.8" />
-    <PackageReference Include="Fody" Version="3.0.3" />
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.0" />
+    <PackageReference Include="Anotar.Serilog.Fody" Version="4.6.2" />
+    <PackageReference Include="AutoMapper" Version="7.0.1" />
+    <PackageReference Include="CallMeMaybe" Version="0.7.0" />
+    <PackageReference Include="Catalyst.Infrastructure.Caching" Version="1.2.1" />
+    <PackageReference Include="Fody" Version="3.1.4" />
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.0.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="2.0.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.0.2" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.0.1" />
-    <PackageReference Include="serilog" Version="2.6.0" />
+    <PackageReference Include="NullGuard.Fody" Version="1.8.0" />
+    <PackageReference Include="serilog" Version="2.7.1" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="2.0.2" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.0.2" />
   </ItemGroup>
@@ -48,11 +49,11 @@
     <Compile Update="Persistence\SqlClientTermUnitOfWorkRepository.*.cs">
       <DependentUpon>SqlClientTermUnitOfWorkRepository.cs</DependentUpon>
     </Compile>
-    <Compile Update="SqlServerExtensions.*.cs">
-      <DependentUpon>SqlServerExtensions.cs</DependentUpon>
-    </Compile>
     <Compile Update="Persistence\SqlClientTermValueSetRepository.UoWOperation.cs">
       <DependentUpon>SqlClientTermValueSetRepository.cs</DependentUpon>
+    </Compile>
+    <Compile Update="SqlServerExtensions.*.cs">
+      <DependentUpon>SqlServerExtensions.cs</DependentUpon>
     </Compile>
   </ItemGroup>
 </Project>
