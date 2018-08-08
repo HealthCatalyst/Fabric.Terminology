@@ -3,7 +3,6 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Linq.Expressions;
     using System.Threading.Tasks;
 
     using CallMeMaybe;
@@ -108,17 +107,9 @@
 
             if (!filterText.IsNullOrWhiteSpace())
             {
-                var tokens = filterText.AsSplitSearchTokens();
-                var searchCriteria = tokens.Select(
-                    t => (Expression<Func<CodeSystemCodeDto, bool>>)(c => c.CodeDSC.Contains(t, StringComparison.OrdinalIgnoreCase)));
-
-                searchCriteria = searchCriteria.Concat(
-                    new[]
-                    {
-                        (Expression<Func<CodeSystemCodeDto, bool>>)(c => c.CodeCD.StartsWith(filterText, StringComparison.OrdinalIgnoreCase))
-                    });
-
-                dtos = dtos.Where(ExpressionHelpers.Join(Expression.Or, searchCriteria.ToList()));
+                dtos = dtos.Where(
+                    c => c.CodeDSC.Contains(filterText, StringComparison.OrdinalIgnoreCase) ||
+                         c.CodeCD.Equals(filterText, StringComparison.OrdinalIgnoreCase));
             }
 
             var systemGuids = codeSystemGuids as Guid[] ?? codeSystemGuids.ToArray();
@@ -153,11 +144,6 @@
                        : this.sharedContext.CodeSystemCodes
                            .Where(dto => dto.RetiredFLG == "N");
         }
-
-        private IReadOnlyCollection<Expression<Func<CodeSystemCodeDto, bool>>> GetBaseExpression(bool includeRetired) =>
-            includeRetired
-                ? new[] { (Expression<Func<CodeSystemCodeDto, bool>>)(c => c.RetiredFLG == "N") }
-                : Array.Empty<Expression<Func<CodeSystemCodeDto, bool>>>();
 
         private ICodeSystemCode QueryCodeSystemCode(Guid codeGuid)
         {
