@@ -16,7 +16,8 @@ namespace Fabric.Terminology.API
                 .ConfigureAppConfiguration((context, config) =>
                     {
                         config.Sources.Clear();
-                        config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+                        config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                            .AddJsonFile("appsettings.dev.json", optional: true, reloadOnChange: true);
                     })
                 .Build();
     }
