@@ -41,9 +41,6 @@
     <Compile Remove="Modules\ValueSetSummaryModule.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Remove="web.config" />
-  </ItemGroup>
-  <ItemGroup>
     <None Remove="Fabric.Terminology.API.ruleset" />
     <None Remove="FodyWeavers.xml" />
     <None Remove="appsettings.dev.json" />
