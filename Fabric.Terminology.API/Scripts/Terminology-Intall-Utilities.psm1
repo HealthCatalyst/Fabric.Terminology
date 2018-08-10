@@ -1,5 +1,4 @@
-Class TerminologyConfig
-{
+Class TerminologyConfig {
     [String]$siteName
     [String]$appName
     [String]$sqlServerAddress
@@ -8,60 +7,58 @@ Class TerminologyConfig
     [String]$discoveryServiceUrl
     [PSCredential]$iisUserCredentials
 }
-function Import-Modules() {
-    # Dos Install Utilities
-    $dosInstallUtilities = Get-Childitem -Path ./**/DosInstallUtilities.psm1 -Recurse
-    if($dosInstallUtilities.length -eq 0) {
-        Write-Warning "could not find dos install utilities. Manually installing "
-        Install-Module DosInstallUtilities -Scope CurrentUser
-        Import-Module DosInstallUtilities -Force
-    } else {
-        Import-Module -Name $dosInstallUtilities.FullName -Force
-    }
-	
-	# Fabric Install Utilities
-	$fabricInstallUtilities = ".\Fabric-Install-Utilities.psm1"
-    if(!(Test-Path $fabricInstallUtilities -PathType Leaf)){
-        Invoke-WebRequest -Uri https://raw.githubusercontent.com/HealthCatalyst/InstallScripts/master/common/Fabric-Install-Utilities.psm1 -Headers @{"Cache-Control"="no-cache"} -OutFile $fabricInstallUtilities
-    }
-    Import-Module -Name $fabricInstallUtilities -Force
-}
 
-function Get-TerminologyConfig{
+function Get-TerminologyConfig {
     param(
-        [string] $Path
+        [PSCredential] $Credentials
     )
-    
+
+    $config = [TerminologyConfig]::new()        
+
+    # Get Credentials
+    If ($Null -ne $Credentials) {
+        $config.iisUserCredentials = $Credentials
+    }
+    else {
+        $iisUser = Read-Host "Please enter the IIS App Pool User"
+        $userEnteredPassword = Read-Host "Enter the password for $iisUser" -AsSecureString
+        $credential = New-Object -TypeName "System.Management.Automation.PSCredential" -ArgumentList $iisUser, $userEnteredPassword
+        
+        [System.Reflection.Assembly]::LoadWithPartialName("System.DirectoryServices.AccountManagement") | Out-Null
+        $ct = [System.DirectoryServices.AccountManagement.ContextType]::Domain
+        try {
+            $pc = New-Object System.DirectoryServices.AccountManagement.PrincipalContext -ArgumentList $ct, $credential.GetNetworkCredential().Domain
+        }
+        catch [System.Management.Automation.MethodInvocationException] {
+            Write-DosMessage -Level "Error"  -Message "Failed to connect to active directory: $_.Exception.Message" -ErrorAction Stop
+        }
+
+        $isValid = $pc.ValidateCredentials($credential.GetNetworkCredential().UserName, $credential.GetNetworkCredential().Password)
+        if (!$isValid) {
+            Write-DosMessage -Level "Error" -Message "Incorrect credentials for $iisUser"  -ErrorAction Stop
+        }
+
+        $config.iisUserCredentials = New-Object System.Management.Automation.PSCredential ($iisUser, $userEnteredPassword)
+    }
+
     $installSettings = Get-InstallationSettings "terminology"
 
-    $iisUser = Read-Host "Press Enter to accept the default IIS App Pool User"
-    $userEnteredPassword = Read-Host "Enter the password for $iisUser" -AsSecureString
-    $credential = New-Object -TypeName "System.Management.Automation.PSCredential" -ArgumentList $iisUser, $userEnteredPassword
-    [System.Reflection.Assembly]::LoadWithPartialName("System.DirectoryServices.AccountManagement") | Out-Null
-    $ct = [System.DirectoryServices.AccountManagement.ContextType]::Domain
-    $pc = New-Object System.DirectoryServices.AccountManagement.PrincipalContext -ArgumentList $ct, $credential.GetNetworkCredential().Domain
-    $isValid = $pc.ValidateCredentials($credential.GetNetworkCredential().UserName, $credential.GetNetworkCredential().Password)
-    if (!$isValid) {
-        Write-Error "Incorrect credentials for $iisUser"
-        throw
-    }
-
-    $config = [TerminologyConfig]::new()
-    $config.iisUserCredentials = New-Object System.Management.Automation.PSCredential ($iisUser, $userEnteredPassword)
+    # Setup config
     $config.appName = $installSettings.appName
     $config.appPool = $installSettings.appPool
     $config.siteName = $installSettings.siteName
     if ([string]::IsNullOrWhiteSpace($installSettings.discoveryServiceUrl)) {
         $config.discoveryServiceUrl = Read-Host "Please enter the discovery service Uri (eg. https://SERVER/discoveryservice/v1)"
-    } else {
+    }
+    else {
         $config.discoveryServiceUrl = $installSettings.discoveryServiceUrl
     }
     
 
-	return $config
+    return $config
 }
 
-function Update-AppSettings{
+function Update-AppSettings {
     param(
         [TerminologyConfig] $config
     )
@@ -92,12 +89,12 @@ function Update-DiscoveryService() {
     #$appDirectory = [System.IO.Path]::Combine($webroot, $appName)
 
     $discoveryPostBody = @{
-        buildVersion = "0.1"# TODO: [System.Diagnostics.FileVersionInfo]::GetVersionInfo("$appDirectory\Fabric.Terminology.API.dll").FileVersion;
-        serviceName = "TerminologyService";
+        buildVersion   = "0.1"# TODO: [System.Diagnostics.FileVersionInfo]::GetVersionInfo("$appDirectory\Fabric.Terminology.API.dll").FileVersion;
+        serviceName    = "TerminologyService";
         serviceVersion = 1;
-        friendlyName = "Fabric.Terminology";
-        description = "The Fabric.Terminology Service provides shared healthcare terminology data.";
-        serviceUrl = $config.applicationEndpoint;
+        friendlyName   = "Fabric.Terminology";
+        description    = "The Fabric.Terminology Service provides shared healthcare terminology data.";
+        serviceUrl     = $config.applicationEndpoint;
     }
     Add-DiscoveryRegistration $config.discoveryServiceUrl $config.iisUserCredentials $discoveryPostBody
 }
