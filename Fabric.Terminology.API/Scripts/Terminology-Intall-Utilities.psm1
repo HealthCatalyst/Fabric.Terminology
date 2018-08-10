@@ -12,7 +12,7 @@ function Import-Modules() {
     # Dos Install Utilities
     $dosInstallUtilities = Get-Childitem -Path ./**/DosInstallUtilities.psm1 -Recurse
     if($dosInstallUtilities.length -eq 0) {
-        Write-Warning "could not find dos install utilities. Manually installing "
+        Write-DosMessage -Level "Warning" -Message "could not find dos install utilities. Manually installing "
         Install-Module DosInstallUtilities -Scope CurrentUser
         Import-Module DosInstallUtilities -Force
     } else {
@@ -29,25 +29,42 @@ function Import-Modules() {
 
 function Get-TerminologyConfig{
     param(
-        [string] $Path
+        [PSCredential] $Credentials
     )
-    
-    $installSettings = Get-InstallationSettings "terminology"
 
-    $iisUser = Read-Host "Press Enter to accept the default IIS App Pool User"
-    $userEnteredPassword = Read-Host "Enter the password for $iisUser" -AsSecureString
-    $credential = New-Object -TypeName "System.Management.Automation.PSCredential" -ArgumentList $iisUser, $userEnteredPassword
-    [System.Reflection.Assembly]::LoadWithPartialName("System.DirectoryServices.AccountManagement") | Out-Null
-    $ct = [System.DirectoryServices.AccountManagement.ContextType]::Domain
-    $pc = New-Object System.DirectoryServices.AccountManagement.PrincipalContext -ArgumentList $ct, $credential.GetNetworkCredential().Domain
-    $isValid = $pc.ValidateCredentials($credential.GetNetworkCredential().UserName, $credential.GetNetworkCredential().Password)
-    if (!$isValid) {
-        Write-Error "Incorrect credentials for $iisUser"
-        throw
+    $config = [TerminologyConfig]::new()        
+
+    # Get Credentials
+    If ($Null -ne $Credentials) {
+        $config.iisUserCredentials = $Credentials
+    }
+    else {
+        $iisUser = Read-Host "Press Enter to accept the default IIS App Pool User"
+		$userEnteredPassword = Read-Host "Enter the password for $iisUser" -AsSecureString
+        $credential = New-Object -TypeName "System.Management.Automation.PSCredential" -ArgumentList $iisUser, $userEnteredPassword
+        
+		[System.Reflection.Assembly]::LoadWithPartialName("System.DirectoryServices.AccountManagement") | Out-Null
+		$ct = [System.DirectoryServices.AccountManagement.ContextType]::Domain
+		try
+		{
+			$pc = New-Object System.DirectoryServices.AccountManagement.PrincipalContext -ArgumentList $ct, $credential.GetNetworkCredential().Domain
+		}
+		catch [System.Management.Automation.MethodInvocationException]
+		{
+			Write-DosMessage -Level "Error"  -Message "Failed to connect to active directory: $_.Exception.Message" -ErrorAction Stop
+        }
+
+        $isValid = $pc.ValidateCredentials($credential.GetNetworkCredential().UserName, $credential.GetNetworkCredential().Password)
+		if (!$isValid) {
+			Write-DosMessage -Level "Error" -Message "Incorrect credentials for $iisUser"  -ErrorAction Stop
+        }
+
+        $config.iisUserCredentials = New-Object System.Management.Automation.PSCredential ($iisUser, $userEnteredPassword)
     }
 
-    $config = [TerminologyConfig]::new()
-    $config.iisUserCredentials = New-Object System.Management.Automation.PSCredential ($iisUser, $userEnteredPassword)
+    $installSettings = Get-InstallationSettings "terminology"
+
+    # Setup config
     $config.appName = $installSettings.appName
     $config.appPool = $installSettings.appPool
     $config.siteName = $installSettings.siteName
