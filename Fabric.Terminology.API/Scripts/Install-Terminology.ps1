@@ -15,18 +15,19 @@
 # Import Dos Install Utilities
 $dosInstallUtilities = Get-Childitem -Path ./**/DosInstallUtilities.psm1 -Recurse
 if ($dosInstallUtilities.length -eq 0) {
-    Write-DosMessage -Level "Warning" -Message "could not find dos install utilities. Manually installing"
     Install-Module DosInstallUtilities -Scope CurrentUser
     Import-Module DosInstallUtilities -Force
+    Write-DosMessage -Level "Warning" -Message "Could not find dos install utilities. Manually installing"
 }
 else {
+    Import-Module -Name $dosInstallUtilities.FullName
     Write-DosMessage -Level "Verbose" -Message "Installing DosInstallUtilities at $($dosInstallUtilities.FullName)"
-    Import-Module -Name $dosInstallUtilities.FullName -Force
 }
  
 # Import Fabric Install Utilities
 $fabricInstallUtilities = ".\Fabric-Install-Utilities.psm1"
 if (!(Test-Path $fabricInstallUtilities -PathType Leaf)) {
+    Write-DosMessage -Level "Warning" -Message "Could not find fabric install utilities. Manually downloading and installing"
     Invoke-WebRequest -Uri https://raw.githubusercontent.com/HealthCatalyst/InstallScripts/master/common/Fabric-Install-Utilities.psm1 -Headers @{"Cache-Control" = "no-cache"} -OutFile $fabricInstallUtilities
 }
 Import-Module -Name $fabricInstallUtilities -Force
