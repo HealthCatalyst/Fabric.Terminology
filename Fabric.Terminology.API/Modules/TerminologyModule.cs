@@ -47,14 +47,14 @@ namespace Fabric.Terminology.API.Modules
         protected void RequireAccessorAuthorization() =>
             this.RequiresAuthorizationPermission(
                 this.userAccessService,
-                AuthorizationPermissions.Accessor,
+                AuthorizationPermissions.Access,
                 this.Config.AuthorizationServerSettings,
                 this.TerminologyReadClaim);
 
         protected void RequirePublisherAuthorization() =>
             this.RequiresAuthorizationPermission(
                 this.userAccessService,
-                AuthorizationPermissions.Publisher,
+                AuthorizationPermissions.Publish,
                 this.Config.AuthorizationServerSettings,
                 this.TerminologyWriteClaim);
 

@@ -5,13 +5,13 @@ namespace Fabric.Terminology.API.Constants
     public static class AuthorizationPermissions
     {
         /// <summary>
-        /// Gets the "Accessor" permission
+        /// Gets the "Access" permission
         /// </summary>
-        public static PermissionName Accessor => PermissionName.Create("dos/valuesets.accessor");
+        public static PermissionName Access => PermissionName.Create("dos/valuesets.access");
 
         /// <summary>
-        /// Gets the "Publisher" permssion
+        /// Gets the "Publish" permssion
         /// </summary>
-        public static PermissionName Publisher => PermissionName.Create("dos/valuesets.publisher");
+        public static PermissionName Publish => PermissionName.Create("dos/valuesets.publish");
     }
 }
