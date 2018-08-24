@@ -154,11 +154,6 @@ namespace Fabric.Terminology.API.Bootstrapping
                 "Shared Terminology Data Services - Fabric.Terminology.API",
                 new Contact() { EmailAddress = "terminology-api@healthcatalyst.com" });
 
-            if (!this.appConfig.SwaggerRootBasePath.IsNullOrWhiteSpace())
-            {
-                SwaggerMetadataProvider.SetSwaggerRoot(basePath: this.appConfig.SwaggerRootBasePath);
-            }
-
             var securitySchemeBuilder = new Oauth2SecuritySchemeBuilder();
             securitySchemeBuilder.Flow(Oauth2Flows.Implicit);
             securitySchemeBuilder.Description("Authentication with Fabric.Identity");
