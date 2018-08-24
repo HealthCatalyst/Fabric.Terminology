@@ -75,6 +75,7 @@ namespace Fabric.Terminology.API
                 .AddIdentityServerAuthentication(o =>
                     {
                         o.Authority = authority.AbsoluteUri;
+                        o.RequireHttpsMetadata = false;
                     });
         }
 
