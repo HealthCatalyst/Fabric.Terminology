@@ -104,7 +104,7 @@ namespace Fabric.Terminology.API
                 .UseNancy(
                     opt =>
                         {
-                            opt.Bootstrapper = new Bootstrapper(this.appConfig, this.logger, this.discoveryClient);
+                            opt.Bootstrapper = new Bootstrapper(this.appConfig, this.logger, this.discoveryClient, env.ContentRootPath);
                             opt.PassThroughWhenStatusCodesAre(Nancy.HttpStatusCode.Unauthorized);
                         });
 

@@ -26,11 +26,12 @@ namespace Fabric.Terminology.API
 
         internal static TinyIoCContainer RegisterDosServices(
             this TinyIoCContainer container,
-            IdentityServerSettings settings,
+            IdentityServerSettings appConfigSettings,
             Uri identityServiceUri,
-            Uri authorizationServiceUri)
+            Uri authorizationServiceUri,
+            ClientSettings webConfigSettings)
         {
-            container.Register<ClientCredentials>(settings.CreateClientCredentials(identityServiceUri));
+            container.Register<ClientCredentials>(webConfigSettings.CreateClientCredentials(appConfigSettings, identityServiceUri));
             container.Register<FabricServiceLocations>((c, p) => new FabricServiceLocations(identityServiceUri, authorizationServiceUri));
             container.Register<IAuthenticatedApiClientFactory, AuthenticatedApiClientFactory>().AsSingleton();
             container.Register<IUserPermissionsService>(
