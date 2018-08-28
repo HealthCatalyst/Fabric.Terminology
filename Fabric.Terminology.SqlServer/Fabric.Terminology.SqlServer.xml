@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Fabric.Terminology.SqlServer</name>
+    </assembly>
+    <members>
+        <member name="T:Fabric.Terminology.SqlServer.Models.EmptySamdBinding">
+            <summary>
+            Provides HC specific binding information in instances where field information is required
+            but no binding was used to create the record.
+            </summary>
+        </member>
+        <member name="T:Fabric.Terminology.SqlServer.SqlServerExtensions">
+            <summary>
+            Extension methods
+            </summary>
+        </member>
+        <member name="M:Fabric.Terminology.SqlServer.SqlServerExtensions.BulkDelete(Microsoft.EntityFrameworkCore.DbContext,System.Collections.Generic.IReadOnlyCollection{System.Type},System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object},System.Int32)">
+            <summary>
+            Deletes via where statements rather than one entity at a time.
+            </summary>
+            <remarks>When DbExtensions supports .NET core, it might be worth refactoring this to use that package.</remarks>
+            <returns> The number of rows affected. </returns>
+        </member>
+        <member name="M:Fabric.Terminology.SqlServer.SqlServerExtensions.Contains(System.String,System.String,System.StringComparison)">
+            <summary>
+            An overload for Contains which allows a <see cref="T:System.StringComparison"/> type
+            to be provided, for things like case-insensitive searches.
+            </summary>
+            <param name="source">The string to search</param>
+            <param name="value">The value to search for in the string.</param>
+            <param name="comparisonType">The string comparison type to use.</param>
+            <returns>
+            True if the <paramref name="value"/> is found in the given <paramref name="source"/>
+            according to the given string comparison type.
+            False otherwise.
+            </returns>
+        </member>
+        <member name="M:Fabric.Terminology.SqlServer.SqlServerExtensions.AsSplitSearchTokens(System.String)">
+            <summary>
+            Splits the given string by any whitespace separators.
+            </summary>
+            <param name="searchText">The string to tokenize.</param>
+            <returns>A collection of the individual words found in the given <paramref name="searchText"/>.</returns>
+        </member>
+    </members>
+</doc>

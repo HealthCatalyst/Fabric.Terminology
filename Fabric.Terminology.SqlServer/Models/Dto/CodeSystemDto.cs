@@ -10,7 +10,6 @@ namespace Fabric.Terminology.SqlServer.Models.Dto
 
     public class CodeSystemDto
     {
-        [ForeignKey("CodeSystemCodeDto")]
         public Guid CodeSystemGUID { get; set; }
 
         public string CodeSystemNM { get; set; }
