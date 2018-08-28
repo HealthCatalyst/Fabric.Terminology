@@ -7,11 +7,10 @@
     <FileVersion>0.7.4.0</FileVersion>
     <AssemblyVersion>0.7.4.0</AssemblyVersion>
     <Version>0.7.4-alpha</Version>
-    <Copyright>Copyright 2018 © Health Catalyst</Copyright>
+    <Copyright>Copyright 2018 ï¿½ Health Catalyst</Copyright>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile>
-    </DocumentationFile>
+    <DocumentationFile>C:\Working\GitHub\Fabric.Terminology\Fabric.Terminology.SqlServer\Fabric.Terminology.SqlServer.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Models\Dto\ValueSetCode.cs" />
