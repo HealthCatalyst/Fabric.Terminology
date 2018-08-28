@@ -1,6 +1,9 @@
 namespace Fabric.Terminology.API.Bootstrapping
 {
     using System;
+    using System.IO;
+    using System.Linq;
+    using System.Xml.Linq;
 
     using Catalyst.DosApi.Discovery;
     using Catalyst.Infrastructure.Caching;
@@ -11,11 +14,9 @@ namespace Fabric.Terminology.API.Bootstrapping
     using Fabric.Terminology.API.Infrastructure;
     using Fabric.Terminology.API.Infrastructure.PipelineHooks;
     using Fabric.Terminology.API.Validators;
-    using Fabric.Terminology.Domain;
     using Fabric.Terminology.Domain.Services;
     using Fabric.Terminology.SqlServer;
     using Fabric.Terminology.SqlServer.Caching;
-    using Fabric.Terminology.SqlServer.Configuration;
 
     using JetBrains.Annotations;
 
@@ -41,14 +42,18 @@ namespace Fabric.Terminology.API.Bootstrapping
 
         private readonly IDiscoveryServiceClient discoveryServiceClient;
 
+        private readonly string rootPath;
+
         public Bootstrapper(
             IAppConfiguration config,
             ILogger log,
-            IDiscoveryServiceClient discoveryServiceClient)
+            IDiscoveryServiceClient discoveryServiceClient,
+            string rootPath)
         {
             this.appConfig = config;
             this.logger = log;
             this.discoveryServiceClient = discoveryServiceClient;
+            this.rootPath = rootPath;
         }
 
         /// <summary>
@@ -126,11 +131,14 @@ namespace Fabric.Terminology.API.Bootstrapping
             // Persistence (Must precede service registration)
             container.ComposeFrom<SqlAppComposition>();
 
+            var clientSettings = this.GetClientSettings();
+
             // Fabric.Identity and Authorization
             container.RegisterDosServices(
                 this.appConfig.IdentityServerSettings,
                 this.IdentityServiceUri.Value,
-                this.AuthorizationServiceUri.Value);
+                this.AuthorizationServiceUri.Value,
+                clientSettings);
         }
 
         protected override void ConfigureRequestContainer(
@@ -146,6 +154,44 @@ namespace Fabric.Terminology.API.Bootstrapping
             container.Register<ValueSetValidatorCollection>();
         }
 
+        private ClientSettings GetClientSettings()
+        {
+            var webConfigPath = Path.Combine(this.rootPath, "web.config");
+            this.logger.Warning("PATH - " + webConfigPath);
+            if (!File.Exists(webConfigPath))
+            {
+                throw new FileNotFoundException($"web.config not in {webConfigPath}");
+            }
+
+            var appSettings = XDocument.Load(webConfigPath)
+                .Element("configuration")
+                ?.Element("appSettings")
+                ?.Elements("add")
+                .ToDictionary(
+                    appSetting => appSetting.Attribute("key")?.Value,
+                    appSetting => appSetting.Attribute("value")?.Value);
+
+            if (appSettings == null)
+            {
+                throw new InvalidOperationException("web.config is malformed or is missing appsettings");
+            }
+
+            var clientSettings = new ClientSettings
+            {
+                ClientId = appSettings.Where(keyvalue => keyvalue.Key == "ClientId")
+                    .Select(keyvalue => keyvalue.Value)
+                    .FirstOrDefault(),
+                ClientSecret = appSettings.Where(keyvalue => keyvalue.Key == "ClientSecret")
+                    .Select(keyvalue => keyvalue.Value)
+                    .FirstOrDefault(),
+                ApiSecret = appSettings.Where(keyvalue => keyvalue.Key == "apiSecret")
+                    .Select(keyvalue => keyvalue.Value)
+                    .FirstOrDefault(),
+            };
+
+            return clientSettings;
+        }
+
         private void InitializeSwaggerMetadata()
         {
             SwaggerMetadataProvider.SetInfo(
@@ -153,11 +199,6 @@ namespace Fabric.Terminology.API.Bootstrapping
                 TerminologyVersion.SemanticVersion.ToString(),
                 "Shared Terminology Data Services - Fabric.Terminology.API",
                 new Contact() { EmailAddress = "terminology-api@healthcatalyst.com" });
-
-            if (!this.appConfig.SwaggerRootBasePath.IsNullOrWhiteSpace())
-            {
-                SwaggerMetadataProvider.SetSwaggerRoot(basePath: this.appConfig.SwaggerRootBasePath);
-            }
 
             var securitySchemeBuilder = new Oauth2SecuritySchemeBuilder();
             securitySchemeBuilder.Flow(Oauth2Flows.Implicit);

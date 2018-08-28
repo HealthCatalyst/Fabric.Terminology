@@ -49,7 +49,9 @@ namespace Fabric.Terminology.API
             "/terminology/swagger/index.html",
             "/swagger/index",
             "/swagger/swagger.json",
-            "/swagger/index.html"
+            "/swagger/index.html",
+            "/Ping",
+            "/terminology/Ping"
         };
 
         public Startup(IConfiguration configuration)
@@ -73,6 +75,7 @@ namespace Fabric.Terminology.API
                 .AddIdentityServerAuthentication(o =>
                     {
                         o.Authority = authority.AbsoluteUri;
+                        o.RequireHttpsMetadata = false;
                     });
         }
 
@@ -101,7 +104,7 @@ namespace Fabric.Terminology.API
                 .UseNancy(
                     opt =>
                         {
-                            opt.Bootstrapper = new Bootstrapper(this.appConfig, this.logger, this.discoveryClient);
+                            opt.Bootstrapper = new Bootstrapper(this.appConfig, this.logger, this.discoveryClient, env.ContentRootPath);
                             opt.PassThroughWhenStatusCodesAre(Nancy.HttpStatusCode.Unauthorized);
                         });
 

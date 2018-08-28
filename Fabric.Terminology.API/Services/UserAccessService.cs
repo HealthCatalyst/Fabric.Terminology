@@ -68,14 +68,22 @@ namespace Fabric.Terminology.API.Services
                     async token =>
                         {
                             var cacheKey = this.GetCacheKey(permissionName);
-                            var access = await this.memoryCacheProvider.GetItem<Task<AccessPermissions>>(
-                                             cacheKey,
-                                             () => this.userPermissionsService
-                                                 .GetPermissionsForUserViaDelegationAsync(
-                                                     token,
-                                                     permissionName.AsPermissionContext()),
-                                             TimeSpan.FromSeconds(cacheDurationSeconds), // cache expiration
-                                             false); // is sliding expiration
+
+                            AccessPermissions access;
+                            if (cacheDurationSeconds <= 0)
+                            {
+                                access = await this.userPermissionsService.GetPermissionsForUserViaDelegationAsync(token, permissionName.AsPermissionContext());
+                            }
+                            else
+                            {
+                                access = await this.memoryCacheProvider.GetItem<Task<AccessPermissions>>(
+                                    cacheKey,
+                                    () => this.userPermissionsService.GetPermissionsForUserViaDelegationAsync(
+                                        token,
+                                        permissionName.AsPermissionContext()),
+                                    TimeSpan.FromSeconds(cacheDurationSeconds), // cache expiration
+                                    false); // is sliding expiration
+                            }
 
                             return !access.IsMissingRequiredPermission(permissionName);
                         })

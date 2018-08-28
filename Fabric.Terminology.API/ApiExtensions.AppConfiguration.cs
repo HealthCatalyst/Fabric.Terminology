@@ -11,11 +11,14 @@ namespace Fabric.Terminology.API
     /// </summary>
     public static partial class ApiExtensions
     {
-        internal static ClientCredentials CreateClientCredentials(this IdentityServerSettings settings, Uri identityServiceUri) =>
+        internal static ClientCredentials CreateClientCredentials(
+            this ClientSettings webConfigSettings,
+            IdentityServerSettings appSettings,
+            Uri identityServiceUri) =>
             new ClientCredentials
             {
-                ClientId = settings.ClientId,
-                ClientSecret = settings.ClientSecret,
+                ClientId = string.IsNullOrWhiteSpace(webConfigSettings.ClientId) ? appSettings.ClientId : webConfigSettings.ClientId,
+                ClientSecret = string.IsNullOrWhiteSpace(webConfigSettings.ClientSecret) ? appSettings.ClientSecret : webConfigSettings.ClientSecret,
                 IdentityBaseUri = identityServiceUri
             };
     }

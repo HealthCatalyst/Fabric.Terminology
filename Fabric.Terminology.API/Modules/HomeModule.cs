@@ -3,14 +3,12 @@ namespace Fabric.Terminology.API.Modules
     using Fabric.Terminology.API.Configuration;
 
     using Nancy;
+    using Nancy.Extensions;
 
     public sealed class HomeModule : NancyModule
     {
-        private readonly IAppConfiguration appConfig;
-
-        public HomeModule(IAppConfiguration appConfig)
+        public HomeModule()
         {
-            this.appConfig = appConfig;
             this.Get("/", _ => this.Redirect(), null, "Redirect");
 
             this.Get("/Ping", _ => HttpStatusCode.OK, null, "Ping");
@@ -18,6 +16,6 @@ namespace Fabric.Terminology.API.Modules
             this.Get("/Version", _ => TerminologyVersion.SemanticVersion.ToString());
         }
 
-        private dynamic Redirect() => this.Response.AsRedirect($"/{this.appConfig.SwaggerRootBasePath}/swagger/index");
+        private dynamic Redirect() => this.Response.AsRedirect(this.Context.ToFullPath("~/swagger/index"));
     }
 }

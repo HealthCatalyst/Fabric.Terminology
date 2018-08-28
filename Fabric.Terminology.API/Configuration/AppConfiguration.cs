@@ -12,9 +12,6 @@ namespace Fabric.Terminology.API.Configuration
         public string BaseTerminologyEndpoint { get; set; }
 
         [AllowNull]
-        public string SwaggerRootBasePath { get; set; }
-
-        [AllowNull]
         public TerminologySqlSettings TerminologySqlSettings { get; set; }
 
         [AllowNull]
