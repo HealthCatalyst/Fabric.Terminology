@@ -19,13 +19,9 @@
 
         private void ConfigureRules()
         {
-            //// this.RuleFor(vs => vs.ValueSetId).NotEmpty().WithMessage("Please specify an Id for this client");
-
             this.RuleFor(vs => vs.Name).Must(this.BeUnique).When(vs => !string.IsNullOrEmpty(vs.Name));
 
             this.RuleFor(vs => vs.Name).NotEmpty().WithMessage("Please specify a Name for this client");
-
-            // this.RuleFor(vs => vs.ValueSetGuid).NotEmpty().Must(this.BeUnique);
         }
 
         private bool BeUnique(string name)
