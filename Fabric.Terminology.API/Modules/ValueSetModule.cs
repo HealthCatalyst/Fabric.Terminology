@@ -296,9 +296,11 @@
                     return this.CreateSuccessfulPostResponse(Mapper.Map<IValueSet, ValueSetApiModel>(valueSet));
                 }
 
-                throw new InvalidOperationException(
+                var ex = new InvalidOperationException(
                     "ValueSet validation failed: "
                     + string.Join(Environment.NewLine, validationResult.Errors.Select(vr => vr.ErrorMessage)));
+                this.Logger.Error(ex, "Failed to create value set given the model {Model}", model);
+                return this.CreateFailureResponse("Failed to create a value set", HttpStatusCode.InternalServerError);
             }
             catch (Exception ex)
             {
@@ -331,6 +333,7 @@
                                 var attempt = this.clientTermCustomizationService.UpdateValueSet(valueSetGuid, model);
                                 if (!attempt.Success || attempt.Result == null)
                                 {
+                                    this.Logger.Error(attempt.Exception, "Failed to path value set {ValueSetGuid}", valueSetGuid);
                                     throw attempt.Exception ?? new InvalidOperationException("Failed to patch value set");
                                 }
 
@@ -390,7 +393,7 @@
             try
             {
                 var model = this.Bind<ValueSetCopyApiModel>();
-
+                EnsureModelHasDefinitionDescription(model);
                 var copy = this.valueSetService.GetValueSet(model.OriginGuid)
                             .Select(vs =>
                             {
@@ -412,10 +415,26 @@
                 return this.CreateFailureResponse("Failed to copy a value set", HttpStatusCode.InternalServerError);
             }
 
-            object CreateAttemptFailureResponse(Attempt<IValueSet> attempt) =>
-                attempt.Exception != null
-                    ? this.CreateFailureResponse(attempt.Exception.Message, HttpStatusCode.InternalServerError)
-                    : this.CreateFailureResponse("Failed to copy ValueSet", HttpStatusCode.InternalServerError);
+            //// Published Value Sets may not have definition descriptions which are required when
+            //// creating a client term value set.  Last minute change to catch this omission.
+            void EnsureModelHasDefinitionDescription(ValueSetCopyApiModel copyModel)
+            {
+                if (copyModel.DefinitionDescription.IsNullOrWhiteSpace())
+                {
+                    copyModel.DefinitionDescription = "Unspecified";
+                }
+            }
+
+            object CreateAttemptFailureResponse(Attempt<IValueSet> attempt)
+            {
+                if (attempt.Exception != null)
+                {
+                    this.Logger.Error(attempt.Exception, "Failed to copy value set");
+                    return this.CreateFailureResponse(attempt.Exception.Message, HttpStatusCode.InternalServerError);
+                }
+
+                return this.CreateFailureResponse("Failed to copy ValueSet", HttpStatusCode.InternalServerError);
+            }
         }
 
         private async Task<object> CompareValueSets()
