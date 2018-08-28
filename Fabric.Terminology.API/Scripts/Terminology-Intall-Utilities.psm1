@@ -1,7 +1,10 @@
 function Get-TerminologyConfig {
     param(
         [PSCredential] $Credentials,
-        [String] $DiscoveryServiceUrl
+        [String] $DiscoveryServiceUrl,
+        [String] $SqlAddress,
+        [String] $SharedDbName,
+        [String] $AppInsightsKey
     )
 
     # Get Credentials
@@ -44,6 +47,19 @@ function Get-TerminologyConfig {
         $discoveryServiceUrlConfig = Read-Host "Please enter the discovery service Uri (eg. https://SERVER/discoveryservice/v1)"
     }
 
+    # App insights key
+    
+    # Shared db connection
+    if (-not ([string]::IsNullOrWhiteSpace($SharedDbName))) {
+        $sharedDbNameConfig = $SharedDbName
+    }
+    elseif (-not ([string]::IsNullOrWhiteSpace($installSettings.sqlServerAddress))) {
+        $sharedDbNameConfig = $installSettings.sqlServerAddress
+    }
+    else {
+        $sharedDbNameConfig = Read-Host "Please enter the discovery service Uri (eg. https://SERVER/discoveryservice/v1)"
+    }
+
     # Setup config
     $config = [PSCustomObject]@{
         iisUserCredentials = $iisUserCredentials
@@ -51,6 +67,9 @@ function Get-TerminologyConfig {
         appPool = $installSettings.appPool
         siteName = $installSettings.siteName
         discoveryServiceUrl = $discoveryServiceUrlConfig
+        sqlAddress = $SqlAddress
+        sharedDbName = $sharedDbNameConfig
+        appInsightsKey = $AppInsightsKey
     };
 
     return $config
@@ -69,10 +88,10 @@ function Update-AppSettings {
     $appSettings = "$(Get-IISWebSitePath -WebSiteName $config.siteName)\$($config.appName)\appsettings.json"
     $appSettingsJson = (Get-Content $appSettings -Raw) | ConvertFrom-Json 
     $appSettingsJson.BaseTerminologyEndpoint = $config.applicationEndpoint
-    $appSettingsJson.TerminologySqlSettings.ConnectionString = $config.sqlServerAddress
+    $appSettingsJson.TerminologySqlSettings.ConnectionString = "Data Source=$($config.sqlServerAddress);Initial Catalog=$($config.sharedDbName); Trusted_Connection=True;"
     $appSettingsJson.IdentityServerSettings.ClientSecret = $config.appName
     $appSettingsJson.DiscoveryServiceClientSettings.DiscoveryServiceUrl = $config.discoveryServiceUrl
-    $appSettingsJson.ApplicationInsightsSettings.InstrumentationKey = "???"
+    $appSettingsJson.ApplicationInsightsSettings.InstrumentationKey = $config.appInsightsKey
     $appSettingsJson.ApplicationInsightsSettings.Enabled = $FALSE
 
     $appSettingsJson | ConvertTo-Json -Depth 10 | Set-Content $appSettings
