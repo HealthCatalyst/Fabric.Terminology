@@ -71,7 +71,7 @@ function Update-AppSettings {
     $appSettingsJson.ApplicationInsightsSettings.InstrumentationKey = "???"
     $appSettingsJson.ApplicationInsightsSettings.Enabled = $FALSE
 
-    $appSettingsJson | ConvertTo-Json | Set-Content $appSettings
+    $appSettingsJson | ConvertTo-Json -Depth 10 | Set-Content $appSettings
 }
 
 function Update-DiscoveryService() {
