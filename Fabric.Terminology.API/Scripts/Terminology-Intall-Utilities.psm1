@@ -1,23 +1,11 @@
-Class TerminologyConfig {
-    [String]$siteName
-    [String]$appName
-    [String]$sqlServerAddress
-    [String]$appPool
-    [String]$applicationEndpoint
-    [String]$discoveryServiceUrl
-    [PSCredential]$iisUserCredentials
-}
-
 function Get-TerminologyConfig {
     param(
         [PSCredential] $Credentials
     )
 
-    $config = [TerminologyConfig]::new()        
-
     # Get Credentials
     If ($Null -ne $Credentials) {
-        $config.iisUserCredentials = $Credentials
+        $iisUserCredentials = $Credentials
     }
     else {
         $iisUser = Read-Host "Please enter the IIS App Pool User"
@@ -38,41 +26,46 @@ function Get-TerminologyConfig {
             Write-DosMessage -Level "Error" -Message "Incorrect credentials for $iisUser"  -ErrorAction Stop
         }
 
-        $config.iisUserCredentials = New-Object System.Management.Automation.PSCredential ($iisUser, $userEnteredPassword)
+        $iisUserCredentials = New-Object System.Management.Automation.PSCredential ($iisUser, $userEnteredPassword)
     }
 
+    # Get Configuration
     $installSettings = Get-InstallationSettings "terminology"
 
-    # Setup config
-    $config.appName = $installSettings.appName
-    $config.appPool = $installSettings.appPool
-    $config.siteName = $installSettings.siteName
+    # Discovery Service Url
     if ([string]::IsNullOrWhiteSpace($installSettings.discoveryServiceUrl)) {
-        $config.discoveryServiceUrl = Read-Host "Please enter the discovery service Uri (eg. https://SERVER/discoveryservice/v1)"
+        $discoveryServiceUrl = Read-Host "Please enter the discovery service Uri (eg. https://SERVER/discoveryservice/v1)"
     }
     else {
-        $config.discoveryServiceUrl = $installSettings.discoveryServiceUrl
+        $discoveryServiceUrl = $installSettings.discoveryServiceUrl
     }
-    
+
+    # Setup config
+    $config = [PSCustomObject]@{
+        iisUserCredentials = $iisUserCredentials
+        appName = $installSettings.appName
+        appPool = $installSettings.appPool
+        siteName = $installSettings.siteName
+        discoveryServiceUrl = $discoveryServiceUrl
+    };
 
     return $config
 }
 
 function Update-AppSettings {
     param(
-        [TerminologyConfig] $config
+        [PSCustomObject] $config
     )
 
     Import-Module WebAdministration
 
     $appPath = Get-WebURL "IIS:\Sites\$($config.siteName)\$($config.appName)"
-    $config.applicationEndpoint = $appPath.ResponseUri
+    Add-Member -InputObject $config -MemberType NoteProperty -Name "applicationEndpoint" -Value $appPath.ResponseUri
 
     $appSettings = "$(Get-IISWebSitePath -WebSiteName $config.siteName)\$($config.appName)\appsettings.json"
     $appSettingsJson = (Get-Content $appSettings -Raw) | ConvertFrom-Json 
     $appSettingsJson.BaseTerminologyEndpoint = $config.applicationEndpoint
     $appSettingsJson.TerminologySqlSettings.ConnectionString = $config.sqlServerAddress
-    $appSettingsJson.SwaggerRootBasePath = $config.appName
     $appSettingsJson.IdentityServerSettings.ClientSecret = $config.appName
     $appSettingsJson.DiscoveryServiceClientSettings.DiscoveryServiceUrl = $config.discoveryServiceUrl
     $appSettingsJson.ApplicationInsightsSettings.InstrumentationKey = "???"
@@ -83,18 +76,17 @@ function Update-AppSettings {
 
 function Update-DiscoveryService() {
     param(
-        [TerminologyConfig] $config
+        [PSCustomObject] $config
     )
 
     #$appDirectory = [System.IO.Path]::Combine($webroot, $appName)
 
     $discoveryPostBody = @{
-        buildVersion   = "0.1"# TODO: [System.Diagnostics.FileVersionInfo]::GetVersionInfo("$appDirectory\Fabric.Terminology.API.dll").FileVersion;
-        serviceName    = "TerminologyService";
-        serviceVersion = 1;
-        friendlyName   = "Fabric.Terminology";
-        description    = "The Fabric.Terminology Service provides shared healthcare terminology data.";
-        serviceUrl     = $config.applicationEndpoint;
+        serviceName    = "TerminologyService"
+        serviceVersion = 1
+        friendlyName   = "Fabric.Terminology"
+        description    = "The Fabric.Terminology Service provides shared healthcare terminology data."
+        serviceUrl     = $config.applicationEndpoint
     }
     Add-DiscoveryRegistration $config.discoveryServiceUrl $config.iisUserCredentials $discoveryPostBody
 }
