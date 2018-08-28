@@ -1,6 +1,7 @@
 function Get-TerminologyConfig {
     param(
-        [PSCredential] $Credentials
+        [PSCredential] $Credentials,
+        [String] $DiscoveryServiceUrl
     )
 
     # Get Credentials
@@ -33,11 +34,14 @@ function Get-TerminologyConfig {
     $installSettings = Get-InstallationSettings "terminology"
 
     # Discovery Service Url
-    if ([string]::IsNullOrWhiteSpace($installSettings.discoveryServiceUrl)) {
-        $discoveryServiceUrl = Read-Host "Please enter the discovery service Uri (eg. https://SERVER/discoveryservice/v1)"
+    if (-not ([string]::IsNullOrWhiteSpace($DiscoveryServiceUrl))) {
+        $discoveryServiceUrlConfig = $DiscoveryServiceUrl
+    }
+    elseif (-not ([string]::IsNullOrWhiteSpace($installSettings.discoveryServiceUrl))) {
+        $discoveryServiceUrlConfig = $installSettings.discoveryServiceUrl
     }
     else {
-        $discoveryServiceUrl = $installSettings.discoveryServiceUrl
+        $discoveryServiceUrlConfig = Read-Host "Please enter the discovery service Uri (eg. https://SERVER/discoveryservice/v1)"
     }
 
     # Setup config
@@ -46,7 +50,7 @@ function Get-TerminologyConfig {
         appName = $installSettings.appName
         appPool = $installSettings.appPool
         siteName = $installSettings.siteName
-        discoveryServiceUrl = $discoveryServiceUrl
+        discoveryServiceUrl = $discoveryServiceUrlConfig
     };
 
     return $config

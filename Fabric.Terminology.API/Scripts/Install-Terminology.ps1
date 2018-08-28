@@ -1,14 +1,13 @@
-﻿param(
+param(
     [ValidateNotNullorEmpty()]
     [ValidateScript({
             if (!(Test-Path $_)) {
-                Write-DosMessage -Level "Error" -Message "$_ does not exist. Please enter valid path." -ErrorAction Stop
+                Throw "$_ does not exist. Please enter valid path."
             }
-            else {
-                return $true
-            }
+            return $true
         })]
-    [String] $installFile = "$PSScriptRoot\Fabric.Terminology.InstallPackage.zip",
+    [String] $InstallFile = "$PSScriptRoot\Fabric.Terminology.InstallPackage.zip",
+    [String] $DiscoveryServiceUrl,
     [PSCredential] $Credentials
 )
 
@@ -34,9 +33,9 @@ Import-Module -Name $fabricInstallUtilities -Force
 
 Import-Module "$PSScriptRoot\Terminology-Intall-Utilities.psm1" -Force
 
-$config = Get-TerminologyConfig -Credentials $Credentials
+$config = Get-TerminologyConfig -Credentials $Credentials -DiscoveryServiceUrl $DiscoveryServiceUrl
 
-Publish-DosWebApplication -WebAppPackagePath $installFile -AppPoolName $config.appPool -AppPoolCredential $config.iisUserCredentials -AppName $config.appName -IISWebSite $config.siteName
+Publish-DosWebApplication -WebAppPackagePath $InstallFile -AppPoolName $config.appPool -AppPoolCredential $config.iisUserCredentials -AppName $config.appName -IISWebSite $config.siteName
 
 Update-AppSettings $config
 
