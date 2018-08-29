@@ -1,9 +1,54 @@
+function Get-UserValueOrDefault {
+    param(
+        [String] $Default,
+        [String] $Prompt
+    )
+
+    $value = Read-Host "$Prompt or hit enter to accept the default value [$Default]"
+
+    if ([string]::IsNullOrWhiteSpace($value)) {
+        return $Default
+    }
+    else {
+        return $value
+    }
+}
+
+function Get-ConfigValue {
+    param(
+        [String] $Prompt = $(throw "Please specify a prompt message"),
+        [String] $AdditionalPromptInfo,
+        [String] $DefaultFromInstallConfig = $(throw "Please specify a default value"),
+        [String] $DefaultFromParam,
+        [bool] $Required = $true
+    )
+
+    if (-not ([string]::IsNullOrWhiteSpace($DefaultFromParam))) {
+        return $DefaultFromParam
+    }
+    elseif (-not ([string]::IsNullOrWhiteSpace($DefaultFromInstallConfig))) {
+        return Get-UserValueOrDefault -Default $DefaultFromInstallConfig -Prompt $Prompt
+    }
+    else {
+        if ($Required -eq $true) {
+            while ([string]::IsNullOrWhiteSpace($result)) {
+                $result = Read-Host "$Prompt $AdditionalPromptInfo".Trim()
+            }
+        }
+        else {
+            $result = Read-Host "$Prompt $AdditionalPromptInfo".Trim()
+        }
+
+        return $result
+    }
+}
+
 function Get-TerminologyConfig {
     param(
         [PSCredential] $Credentials,
         [String] $DiscoveryServiceUrl,
         [String] $SqlAddress,
-        [String] $SharedDbName,
+        [String] $MetadataDbName,
         [String] $AppInsightsKey
     )
 
@@ -37,39 +82,27 @@ function Get-TerminologyConfig {
     $installSettings = Get-InstallationSettings "terminology"
 
     # Discovery Service Url
-    if (-not ([string]::IsNullOrWhiteSpace($DiscoveryServiceUrl))) {
-        $discoveryServiceUrlConfig = $DiscoveryServiceUrl
-    }
-    elseif (-not ([string]::IsNullOrWhiteSpace($installSettings.discoveryServiceUrl))) {
-        $discoveryServiceUrlConfig = $installSettings.discoveryServiceUrl
-    }
-    else {
-        $discoveryServiceUrlConfig = Read-Host "Please enter the discovery service Uri (eg. https://SERVER/discoveryservice/v1)"
-    }
+    $discoveryServiceUrlConfig = Get-ConfigValue -Prompt "Enter the Discovery Service URI" -AdditionalPromptInfo "(eg. https://SERVER/DiscoveryService/v1)" -DefaultFromParam $DiscoveryServiceUrl -DefaultFromInstallConfig $installSettings.discoveryServiceUrl
 
-    # App insights key
-    
-    # Shared db connection
-    if (-not ([string]::IsNullOrWhiteSpace($SharedDbName))) {
-        $sharedDbNameConfig = $SharedDbName
-    }
-    elseif (-not ([string]::IsNullOrWhiteSpace($installSettings.sqlServerAddress))) {
-        $sharedDbNameConfig = $installSettings.sqlServerAddress
-    }
-    else {
-        $sharedDbNameConfig = Read-Host "Please enter the discovery service Uri (eg. https://SERVER/discoveryservice/v1)"
-    }
+    # SQL Server Address
+    $sqlAddressConfig = Get-ConfigValue -Prompt "Enter the address for SQL Server" -AdditionalPromptInfo "(eg. SERVER.DOMAIN.local)" -DefaultFromParam $SqlAddress -DefaultFromInstallConfig $installSettings.sqlServerAddress
+
+    # App Insights Key
+    $appInsightsKeyConfig = Get-ConfigValue -Prompt "Enter an Application Insights key" -AdditionalPromptInfo "(optional)" -DefaultFromParam $AppInsightsKey -DefaultFromInstallConfig $installSettings.appInsightsKey -Required $false
+
+    # Metadata DB Name
+    $metadataDbNameConfig = Get-ConfigValue -Prompt "Enter the metadata database name" -DefaultFromParam $MetadataDbName -DefaultFromInstallConfig $installSettings.metadataDbName
 
     # Setup config
     $config = [PSCustomObject]@{
-        iisUserCredentials = $iisUserCredentials
-        appName = $installSettings.appName
-        appPool = $installSettings.appPool
-        siteName = $installSettings.siteName
+        iisUserCredentials  = $iisUserCredentials
+        appName             = $installSettings.appName
+        appPool             = $installSettings.appPool
+        siteName            = $installSettings.siteName
         discoveryServiceUrl = $discoveryServiceUrlConfig
-        sqlAddress = $SqlAddress
-        sharedDbName = $sharedDbNameConfig
-        appInsightsKey = $AppInsightsKey
+        sqlAddress          = $sqlAddressConfig
+        metadataDbName      = $metadataDbNameConfig
+        appInsightsKey      = $appInsightsKeyConfig
     };
 
     return $config
