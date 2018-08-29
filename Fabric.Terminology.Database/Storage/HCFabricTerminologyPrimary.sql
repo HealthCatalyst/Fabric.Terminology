@@ -7,5 +7,5 @@ ALTER DATABASE [$(DatabaseName)]
 	ADD FILE
 	(
 		NAME = [HCFabricTerminologyPrimary],
-		FILENAME = '$(FabricTerminologyDataMountPoint)\HC$(DatabaseName)Primary.mdf'
+		FILENAME = '$(DataMountPoint)\HC$(DatabaseName)Primary.mdf'
 	)

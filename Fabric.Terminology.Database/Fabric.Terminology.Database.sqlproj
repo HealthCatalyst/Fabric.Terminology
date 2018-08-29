@@ -67,11 +67,11 @@
     <Build Include="Storage\HCFabricTerminologyPrimary.sql" />
   </ItemGroup>
   <ItemGroup>
-    <SqlCmdVariable Include="FabricTerminologyDataMountPoint">
+    <SqlCmdVariable Include="DataMountPoint">
       <DefaultValue>C:\SQLData</DefaultValue>
       <Value>$(SqlCmdVar__1)</Value>
     </SqlCmdVariable>
-    <SqlCmdVariable Include="FabricTerminologyLogMountPoint">
+    <SqlCmdVariable Include="LogMountPoint">
       <DefaultValue>C:\SQLData</DefaultValue>
       <Value>$(SqlCmdVar__2)</Value>
     </SqlCmdVariable>
