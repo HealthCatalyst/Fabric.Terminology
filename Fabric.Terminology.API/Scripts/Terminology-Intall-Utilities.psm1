@@ -113,11 +113,6 @@ function Update-AppSettings {
         [PSCustomObject] $config
     )
 
-    Import-Module WebAdministration
-
-    $appPath = Get-WebURL "IIS:\Sites\$($config.siteName)\$($config.appName)"
-    Add-Member -InputObject $config -MemberType NoteProperty -Name "applicationEndpoint" -Value $appPath.ResponseUri
-
     $appSettings = "$(Get-IISWebSitePath -WebSiteName $config.siteName)\$($config.appName)\appsettings.json"
     $appSettingsJson = (Get-Content $appSettings -Raw) | ConvertFrom-Json 
     $appSettingsJson.BaseTerminologyEndpoint = $config.applicationEndpoint
@@ -135,14 +130,18 @@ function Update-DiscoveryService() {
         [PSCustomObject] $config
     )
 
-    #$appDirectory = [System.IO.Path]::Combine($webroot, $appName)
+    Import-Module WebAdministration
+
+    $webroot = Get-WebFilePath -PSPath "IIS:\Sites\$($config.siteName)\$($config.appName)"
+    $terminologyAssembly = [System.IO.Path]::Combine($webroot, "Fabric.Terminology.API.dll")
+    $version = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($terminologyAssembly).FileMajorPart
 
     $discoveryPostBody = @{
         serviceName    = "TerminologyService"
-        serviceVersion = 1
+        serviceVersion = $version
         friendlyName   = "Fabric.Terminology"
         description    = "The Fabric.Terminology Service provides shared healthcare terminology data."
-        serviceUrl     = $config.applicationEndpoint
+        serviceUrl     = "http://localhost/TerminologyService/v$version"# TODO: replace with application endpoint
     }
     Add-DiscoveryRegistration $config.discoveryServiceUrl $config.iisUserCredentials $discoveryPostBody
 }
