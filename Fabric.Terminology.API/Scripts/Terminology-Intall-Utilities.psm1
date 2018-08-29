@@ -43,6 +43,21 @@ function Get-ConfigValue {
     }
 }
 
+function Invoke-SqlCommand{
+    param(
+        [String] $SqlServerAddress,
+        [String] $DatabaseName,
+        [String] $Query
+    )
+
+    try{
+        Invoke-Sql -connectionString "Data Source=$SqlServerAddress;Initial Catalog=$($DatabaseName); Trusted_Connection=True;" -sql $Query -OutputSqlErrors $true 
+    }catch{
+        Write-Error $_.Exception
+        throw $_.Exception
+    }
+}
+
 function Get-TerminologyConfig {
     param(
         [PSCredential] $Credentials,
@@ -151,14 +166,39 @@ function Publish-TerminologyDatabaseUpdates() {
         [PSCustomObject] $config,
         [string] $Dacpac,
         [String] $PublishProfile
-    ) 
+    )
+    Import-Module dbatools
+
+    $DatabaseName = "Terminology"
     Write-DosMessage -Level "Information" -Message "Creating or updating Terminology database on $($config.sqlAddress)"
     
-    Publish-DosDacPac -TargetSqlInstance $config.sqlAddress -DacPacFilePath $Dacpac -TargetDb "Terminology" -PublishOptionsFilePath $PublishProfile
+    Publish-DosDacPac -TargetSqlInstance $config.sqlAddress -DacPacFilePath $Dacpac -TargetDb $DatabaseName -PublishOptionsFilePath $PublishProfile
 
-    <# TODO: Ben create terminology db through dacpac
-    - add the following to Fabric.Identity.InstallPackage.targets: https://github.com/HealthCatalyst/Fabric.Identity/blob/master/Fabric.Identity.API/scripts/Fabric.Identity.InstallPackage.targets
-    #>
+    $Query = "IF DATABASE_PRINCIPAL_ID('TerminologyServiceRole') IS NULL
+    BEGIN
+        CREATE ROLE [TerminologyServiceRole];
+    END";
+    # TODO: Add tables and views here
+    # GRANT SELECT, INSERT, UPDATE, DELETE ON [dbo].[TABLENAME] TO TerminologyServiceRole;
+    # GO
+    Invoke-SqlCommand -SqlServerAddress $config.sqlAddress -DatabaseName $DatabaseName -Query $Query
+
+
+    Write-DosMessage -Level "Information" -Message "Creating login for $($config.iisUserCredentials.UserName) on $($config.sqlAddress)"
+    $Query = "IF NOT EXISTS (SELECT name FROM [sys].[database_principals] WHERE [type] = 'S' AND name = N'$($config.iisUserCredentials.UserName)')
+    Begin
+        CREATE USER [hqcatalyst\dev.test] FOR LOGIN [$($config.iisUserCredentials.UserName)]
+    end
+    ";
+    Invoke-SqlCommand -SqlServerAddress $config.sqlAddress -DatabaseName $DatabaseName -Query $Query
+
+
+    Write-DosMessage -Level "Information" -Message "Adding $($config.iisUserCredentials.UserName) to TerminologyServiceRole on $($config.sqlAddress)"
+    $Query = "IF IS_ROLEMEMBER ('TerminologyServiceRole','$($config.iisUserCredentials.UserName)') <> 1
+    BEGIN
+        ALTER ROLE [TerminologyServiceRole] ADD MEMBER [$($config.iisUserCredentials.UserName)]
+    END";
+    Invoke-SqlCommand -SqlServerAddress $config.sqlAddress -DatabaseName $DatabaseName -Query $Query
     
     <# TODO: Ben create Terminology shared db role for iis user
 
