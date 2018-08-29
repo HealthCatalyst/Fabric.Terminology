@@ -146,7 +146,17 @@ function Update-DiscoveryService() {
     Add-DiscoveryRegistration $config.discoveryServiceUrl $config.iisUserCredentials $discoveryPostBody
 }
 
-function Publish-TerminologyDatabaseUpdates {
+function Publish-TerminologyDatabaseUpdates() {
+    param(
+        [PSCustomObject] $config,
+        [string] $Dacpac,
+        [String] $PublishProfile
+    ) 
+    Import-Module dbatools
+
+    Publish-DbaDacpac -SqlInstance $config.sqlAddress -Database "Terminology" -PublishXml $PublishProfile -Path $Dacpac
+    #Publish-DosDacPac -TargetSqlInstance $config.sqlAddress -DacPacFilePath $Dacpac -TargetDb "Terminology" -PublishOptionsFilePath $PublishProfile
+
     <# TODO: Ben create terminology db through dacpac
     - add the following to Fabric.Identity.InstallPackage.targets: https://github.com/HealthCatalyst/Fabric.Identity/blob/master/Fabric.Identity.API/scripts/Fabric.Identity.InstallPackage.targets
     #>

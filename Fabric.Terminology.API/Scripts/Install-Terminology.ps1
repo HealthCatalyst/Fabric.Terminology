@@ -7,8 +7,27 @@ param(
             return $true
         })]
     [String] $InstallFile = "$PSScriptRoot\Fabric.Terminology.InstallPackage.zip",
+    [ValidateNotNullorEmpty()]
+    [ValidateScript({
+            if (!(Test-Path $_)) {
+                Throw "$_ does not exist. Please enter valid path."
+            }
+            return $true
+        })]
+    [String] $Dacpac = "$PSScriptRoot\Fabric.Terminology.Database.dacpac",
+    [ValidateNotNullorEmpty()]
+    [ValidateScript({
+            if (!(Test-Path $_)) {
+                Throw "$_ does not exist. Please enter valid path."
+            }
+            return $true
+        })]
+    [String] $PublishProfile = "$PSScriptRoot\Fabric.Terminology.Database.publish.xml",
     [String] $DiscoveryServiceUrl,
-    [PSCredential] $Credentials
+    [PSCredential] $Credentials,
+    [String] $SqlAddress,
+    [String] $MetadataDbName,
+    [String] $AppInsightsKey
 )
 
 # Import Dos Install Utilities
@@ -33,7 +52,7 @@ Import-Module -Name $fabricInstallUtilities -Force
 
 Import-Module "$PSScriptRoot\Terminology-Intall-Utilities.psm1" -Force
 
-$config = Get-TerminologyConfig -Credentials $Credentials -DiscoveryServiceUrl $DiscoveryServiceUrl
+$config = Get-TerminologyConfig -Credentials $Credentials -DiscoveryServiceUrl $DiscoveryServiceUrl -SqlAddress $SqlAddress -MetadataDbName $MetadataDbName
 
 Publish-DosWebApplication -WebAppPackagePath $InstallFile -AppPoolName $config.appPool -AppPoolCredential $config.iisUserCredentials -AppName $config.appName -IISWebSite $config.siteName
 
@@ -41,6 +60,6 @@ Update-AppSettings $config
 
 Update-DiscoveryService $config
 
-#Publish-TerminologyDatabaseUpdates
+Publish-TerminologyDatabaseUpdates -Config $config -Dacpac $Dacpac -PublishProfile $PublishProfile
 
 #Test-Terminology
