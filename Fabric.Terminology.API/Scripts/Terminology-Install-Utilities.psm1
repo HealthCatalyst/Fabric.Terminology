@@ -102,7 +102,7 @@ function Get-TerminologyConfig {
     else {
         $iisUserConfig = Get-ConfigValue -Prompt "IIS user name to run the app pool" -DefaultFromParam $IisUserName -DefaultFromInstallConfig $installSettings.iisUser -Silent $Silent
         
-        $passwordPrompt = "IIS user password"
+        $passwordPrompt = "App pool user password"
 
         if (-not ([string]::IsNullOrWhiteSpace($installSettings.iisUserPwd))) {
             if ($Silent -eq $true) {
