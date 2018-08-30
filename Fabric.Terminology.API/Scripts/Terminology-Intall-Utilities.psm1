@@ -64,17 +64,36 @@ function Get-TerminologyConfig {
         [String] $DiscoveryServiceUrl,
         [String] $SqlAddress,
         [String] $MetadataDbName,
-        [String] $AppInsightsKey
+        [String] $AppInsightsKey,
+        [String] $IisUserName,
+        [SecureString] $IisUserPassword,
+        [String] $AppName
     )
 
+    # Get Configuration
+    $installSettings = Get-InstallationSettings "terminology"
+    Write-Host $installSettings
+
     # Get Credentials
-    If ($Null -ne $Credentials) {
+    if ($Null -ne $Credentials) {
         $iisUserCredentials = $Credentials
     }
     else {
-        $iisUser = Read-Host "Please enter the IIS App Pool User"
-        $userEnteredPassword = Read-Host "Enter the password for $iisUser" -AsSecureString
-        $credential = New-Object -TypeName "System.Management.Automation.PSCredential" -ArgumentList $iisUser, $userEnteredPassword
+        $iisUserConfig = Get-ConfigValue -Prompt "Enter the IIS user name to run the app pool" -DefaultFromParam $IisUserName -DefaultFromInstallConfig $installSettings.iisUser
+        
+        $passwordPrompt = "Enter the IIS user password"
+        if (-not ([string]::IsNullOrWhiteSpace($installSettings.iisUserPwd))) {
+            $iisUserPasswordConfig = Read-Host "$passwordPrompt or hit enter to accept the stored password" -AsSecureString
+
+            if ($iisUserPasswordConfig.Length -eq 0) {
+                $iisUserPasswordConfig = ConvertTo-SecureString -String $installSettings.iisUserPwd -AsPlainText -Force
+            }
+        }
+        else {
+            $iisUserPasswordConfig = Read-Host $passwordPrompt -AsSecureString
+        }
+
+        $credential = New-Object -TypeName "System.Management.Automation.PSCredential" -ArgumentList $iisUserConfig, $iisUserPasswordConfig
         
         [System.Reflection.Assembly]::LoadWithPartialName("System.DirectoryServices.AccountManagement") | Out-Null
         $ct = [System.DirectoryServices.AccountManagement.ContextType]::Domain
@@ -87,14 +106,16 @@ function Get-TerminologyConfig {
 
         $isValid = $pc.ValidateCredentials($credential.GetNetworkCredential().UserName, $credential.GetNetworkCredential().Password)
         if (!$isValid) {
-            Write-DosMessage -Level "Error" -Message "Incorrect credentials for $iisUser"  -ErrorAction Stop
+            Write-DosMessage -Level "Error" -Message "Incorrect credentials for $iisUserConfig"  -ErrorAction Stop
         }
 
-        $iisUserCredentials = New-Object System.Management.Automation.PSCredential ($iisUser, $userEnteredPassword)
+        $iisUserCredentials = New-Object System.Management.Automation.PSCredential ($iisUserConfig, $iisUserPasswordConfig)
+    
+        Add-InstallationSetting "terminology" "iisUser" "$iisUserConfig" | Out-Null
     }
-
-    # Get Configuration
-    $installSettings = Get-InstallationSettings "terminology"
+    
+    # App Name
+    $appNameConfig = Get-ConfigValue -Prompt "Enter the service name" -DefaultFromParam $AppName -DefaultFromInstallConfig $installSettings.appName
 
     # Discovery Service Url
     $discoveryServiceUrlConfig = Get-ConfigValue -Prompt "Enter the Discovery Service URI" -AdditionalPromptInfo "(eg. https://SERVER/DiscoveryService/v1)" -DefaultFromParam $DiscoveryServiceUrl -DefaultFromInstallConfig $installSettings.discoveryServiceUrl
@@ -108,10 +129,17 @@ function Get-TerminologyConfig {
     # Metadata DB Name
     $metadataDbNameConfig = Get-ConfigValue -Prompt "Enter the metadata database name" -DefaultFromParam $MetadataDbName -DefaultFromInstallConfig $installSettings.metadataDbName
 
+    Add-InstallationSetting "terminology" "appName" "$appNameConfig" | Out-Null
+    Add-InstallationSetting "terminology" "discoveryServiceUrl" "$discoveryServiceUrlConfig" | Out-Null
+    Add-InstallationSetting "terminology" "sqlServerAddress" "$sqlAddressConfig" | Out-Null
+    Add-InstallationSetting "terminology" "appInsightsInstrumentationKey" "$appInsightsKeyConfig" | Out-Null
+    Add-InstallationSetting "common" "metadataDbName" "$metadataDbNameConfig" | Out-Null
+
+
     # Setup config
     $config = [PSCustomObject]@{
         iisUserCredentials  = $iisUserCredentials
-        appName             = $installSettings.appName
+        appName             = $appNameConfig
         appPool             = $installSettings.appPool
         siteName            = $installSettings.siteName
         discoveryServiceUrl = $discoveryServiceUrlConfig
