@@ -53,7 +53,7 @@ Import-Module -Name $fabricInstallUtilities -Force
 
 Import-Module "$PSScriptRoot\Terminology-Install-Utilities.psm1" -Force
 
-$config = Get-TerminologyConfig -Credentials $Credentials -DiscoveryServiceUrl $DiscoveryServiceUrl -SqlAddress $SqlAddress -MetadataDbName $MetadataDbName -Silent $Silent
+$config = Get-TerminologyConfig -Credentials $Credentials -DiscoveryServiceUrl $DiscoveryServiceUrl -SqlAddress $SqlAddress -MetadataDbName $MetadataDbName -Silent:$Silent
 
 Publish-DosWebApplication -WebAppPackagePath $InstallFile -AppPoolName $config.appPool -AppPoolCredential $config.iisUserCredentials -AppName $config.appName -IISWebSite $config.siteName
 
