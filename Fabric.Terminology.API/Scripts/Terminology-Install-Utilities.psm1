@@ -94,7 +94,6 @@ function Get-TerminologyConfig {
 
     # Get Configuration
     $installSettings = Get-InstallationSettings "terminology"
-    Write-Host $installSettings
 
     # Get Credentials
     if ($Null -ne $Credentials) {
@@ -191,16 +190,16 @@ function Get-TerminologyConfig {
 
 function Update-AppSettings {
     param(
-        [PSCustomObject] $config
+        [PSCustomObject] $Config
     )
 
-    $appSettings = "$(Get-IISWebSitePath -WebSiteName $config.siteName)\$($config.appName)\appsettings.json"
+    $appSettings = "$(Get-IISWebSitePath -WebSiteName $Config.siteName)\$($Config.appName)\appsettings.json"
     $appSettingsJson = (Get-Content $appSettings -Raw) | ConvertFrom-Json 
-    $appSettingsJson.BaseTerminologyEndpoint = $config.applicationEndpoint
-    $appSettingsJson.TerminologySqlSettings.ConnectionString = "Data Source=$($config.sqlServerAddress);Initial Catalog=$($config.sharedDbName); Trusted_Connection=True;"
-    $appSettingsJson.IdentityServerSettings.ClientSecret = $config.appName
-    $appSettingsJson.DiscoveryServiceClientSettings.DiscoveryServiceUrl = $config.discoveryServiceUrl
-    $appSettingsJson.ApplicationInsightsSettings.InstrumentationKey = $config.appInsightsKey
+    $appSettingsJson.BaseTerminologyEndpoint = $Config.applicationEndpoint
+    $appSettingsJson.TerminologySqlSettings.ConnectionString = "Data Source=$($Config.sqlServerAddress);Initial Catalog=$($Config.sharedDbName); Trusted_Connection=True;"
+    $appSettingsJson.IdentityServerSettings.ClientSecret = $Config.appName
+    $appSettingsJson.DiscoveryServiceClientSettings.DiscoveryServiceUrl = $Config.discoveryServiceUrl
+    $appSettingsJson.ApplicationInsightsSettings.InstrumentationKey = $Config.appInsightsKey
     $appSettingsJson.ApplicationInsightsSettings.Enabled = $FALSE
 
     $appSettingsJson | ConvertTo-Json -Depth 10 | Set-Content $appSettings
@@ -208,12 +207,12 @@ function Update-AppSettings {
 
 function Update-DiscoveryService() {
     param(
-        [PSCustomObject] $config
+        [PSCustomObject] $Config
     )
 
     Import-Module WebAdministration
 
-    $webroot = Get-WebFilePath -PSPath "IIS:\Sites\$($config.siteName)\$($config.appName)"
+    $webroot = Get-WebFilePath -PSPath "IIS:\Sites\$($Config.siteName)\$($Config.appName)"
     $terminologyAssembly = [System.IO.Path]::Combine($webroot, "Fabric.Terminology.API.dll")
     $version = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($terminologyAssembly).FileMajorPart
 
@@ -224,12 +223,12 @@ function Update-DiscoveryService() {
         description    = "The Fabric.Terminology Service provides shared healthcare terminology data."
         serviceUrl     = "http://localhost/TerminologyService/v$version"# TODO: replace with application endpoint
     }
-    Add-DiscoveryRegistration $config.discoveryServiceUrl $config.iisUserCredentials $discoveryPostBody
+    Add-DiscoveryRegistration $Config.discoveryServiceUrl $Config.iisUserCredentials $discoveryPostBody
 }
 
 function Publish-TerminologyDatabaseRole() {
     param(
-        [PSCustomObject] $config,
+        [PSCustomObject] $Config,
         [String] $DatabaseName,
         [String] $RoleName
     )
@@ -245,10 +244,10 @@ function Publish-TerminologyDatabaseRole() {
     # GRANT SELECT, INSERT, UPDATE, DELETE ON [dbo].[TABLENAME] TO TerminologyServiceRole;
     # GO
     $Parameters = @{RoleName=$($RoleName)}
-    Invoke-SqlCommand -SqlServerAddress $config.sqlAddress -DatabaseName $DatabaseName -Query $Query -Parameters $Parameters
+    Invoke-SqlCommand -SqlServerAddress $Config.sqlAddress -DatabaseName $DatabaseName -Query $Query -Parameters $Parameters
 
 
-    Write-DosMessage -Level "Information" -Message "Creating login for $($config.iisUserCredentials.UserName) on $($config.sqlAddress)" 
+    Write-DosMessage -Level "Information" -Message "Creating login for $($Config.iisUserCredentials.UserName) on $($Config.sqlAddress)" 
     $Query = "DECLARE @cmd nvarchar(max)
     If Not exists (SELECT * FROM sys.server_principals
         WHERE sid = suser_sid(@User))
@@ -258,11 +257,11 @@ function Publish-TerminologyDatabaseRole() {
         EXEC(@cmd)
     END
     ";
-    $Parameters = @{User=$($config.iisUserCredentials.UserName)}
-    Invoke-SqlCommand -SqlServerAddress $config.sqlAddress -DatabaseName $DatabaseName -Query $Query -Parameters $Parameters
+    $Parameters = @{User=$($Config.iisUserCredentials.UserName)}
+    Invoke-SqlCommand -SqlServerAddress $Config.sqlAddress -DatabaseName $DatabaseName -Query $Query -Parameters $Parameters
 
 
-    Write-DosMessage -Level "Information" -Message "Adding $($config.iisUserCredentials.UserName) to $RoleName on $($config.sqlAddress)"
+    Write-DosMessage -Level "Information" -Message "Adding $($Config.iisUserCredentials.UserName) to $RoleName on $($Config.sqlAddress)"
     $Query = "DECLARE @cmd nvarchar(max)
     IF IS_ROLEMEMBER (@RoleName, @User) <> 1
     BEGIN
@@ -270,23 +269,23 @@ function Publish-TerminologyDatabaseRole() {
         SET @cmd = N'ALTER ROLE ' + quotename(@RoleName, ']') + N' ADD MEMBER ' + quotename(@User, ']')
         EXEC(@cmd)
     END";
-    $Parameters = @{User=$($config.iisUserCredentials.UserName);RoleName=$($RoleName)}
-    Invoke-SqlCommand -SqlServerAddress $config.sqlAddress -DatabaseName $DatabaseName -Query $Query -Parameters $Parameters
+    $Parameters = @{User=$($Config.iisUserCredentials.UserName);RoleName=$($RoleName)}
+    Invoke-SqlCommand -SqlServerAddress $Config.sqlAddress -DatabaseName $DatabaseName -Query $Query -Parameters $Parameters
 }
 
 function Publish-TerminologyDatabaseUpdates() {
     param(
-        [PSCustomObject] $config,
+        [PSCustomObject] $Config,
         [string] $Dacpac,
         [String] $PublishProfile
     )
     Import-Module dbatools
 
-    Write-DosMessage -Level "Information" -Message "Creating or updating Terminology database on $($config.sqlAddress)"
-    Publish-DosDacPac -TargetSqlInstance $config.sqlAddress -DacPacFilePath $Dacpac -TargetDb "Terminology" -PublishOptionsFilePath $PublishProfile
+    Write-DosMessage -Level "Information" -Message "Creating or updating Terminology database on $($Config.sqlAddress)"
+    Publish-DosDacPac -TargetSqlInstance $Config.sqlAddress -DacPacFilePath $Dacpac -TargetDb "Terminology" -PublishOptionsFilePath $PublishProfile
 
-    Publish-TerminologyDatabaseRole -config $config -DatabaseName "Terminology" -RoleName = "TerminologyServiceRole";
-    Publish-TerminologyDatabaseRole -config $config -DatabaseName "Shared" -RoleName = "TerminologySharedServiceRole";
+    Publish-TerminologyDatabaseRole -Config $Config -DatabaseName "Terminology" -RoleName = "TerminologyServiceRole";
+    Publish-TerminologyDatabaseRole -Config $Config -DatabaseName "Shared" -RoleName = "TerminologySharedServiceRole";
     
     <# TODO: Ben create Terminology shared db role for iis user
 
