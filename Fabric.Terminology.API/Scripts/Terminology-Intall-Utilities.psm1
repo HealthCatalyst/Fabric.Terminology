@@ -47,14 +47,26 @@ function Invoke-SqlCommand{
     param(
         [String] $SqlServerAddress,
         [String] $DatabaseName,
-        [String] $Query
+        [String] $Query,
+        [PSCustomObject] $Parameters= @{}
     )
 
-    try{
-        Invoke-Sql -connectionString "Data Source=$SqlServerAddress;Initial Catalog=$($DatabaseName); Trusted_Connection=True;" -sql $Query -OutputSqlErrors $true 
-    }catch{
-        Write-Error $_.Exception
-        throw $_.Exception
+    $connectionString = "Data Source=$SqlServerAddress;Initial Catalog=$($DatabaseName); Trusted_Connection=True;"
+    $connection = New-Object System.Data.SqlClient.SQLConnection($connectionString)
+    $command = New-Object System.Data.SqlClient.SqlCommand($Query, $connection)
+    
+    try {
+        foreach($p in $Parameters.Keys){		
+          $command.Parameters.AddWithValue("@$p",$Parameters[$p]) | Out-Null
+         }
+
+        $connection.Open() 
+        $command.ExecuteNonQuery() | Out-Null
+        $connection.Close()        
+    }catch [System.Data.SqlClient.SqlException] {
+        Write-DosMessage -Level "Error" -Message "An error ocurred while executing the command. 
+        Connection String: $($connectionString)"
+        throw
     }
 }
 
@@ -189,6 +201,53 @@ function Update-DiscoveryService() {
     Add-DiscoveryRegistration $config.discoveryServiceUrl $config.iisUserCredentials $discoveryPostBody
 }
 
+function Publish-TerminologyDatabaseRole() {
+    param(
+        [PSCustomObject] $config,
+        [String] $DatabaseName,
+        [String] $RoleName
+    )
+
+    $Query = "DECLARE @cmd nvarchar(max)
+    IF DATABASE_PRINCIPAL_ID(@RoleName) IS NULL
+    BEGIN
+        print '-- Creating role '
+        SET @cmd = N'CREATE ROLE ' + quotename(@RoleName, ']')
+        EXEC(@cmd)
+    END";
+    # TODO: Add tables and views here
+    # GRANT SELECT, INSERT, UPDATE, DELETE ON [dbo].[TABLENAME] TO TerminologyServiceRole;
+    # GO
+    $Parameters = @{RoleName=$($RoleName)}
+    Invoke-SqlCommand -SqlServerAddress $config.sqlAddress -DatabaseName $DatabaseName -Query $Query -Parameters $Parameters
+
+
+    Write-DosMessage -Level "Information" -Message "Creating login for $($config.iisUserCredentials.UserName) on $($config.sqlAddress)" 
+    $Query = "DECLARE @cmd nvarchar(max)
+    If Not exists (SELECT * FROM sys.server_principals
+        WHERE sid = suser_sid(@User))
+    BEGIN
+        print '-- Creating login '
+        SET @cmd = N'CREATE LOGIN ' + quotename(@User, ']') + N' FROM WINDOWS'
+        EXEC(@cmd)
+    END
+    ";
+    $Parameters = @{User=$($config.iisUserCredentials.UserName)}
+    Invoke-SqlCommand -SqlServerAddress $config.sqlAddress -DatabaseName $DatabaseName -Query $Query -Parameters $Parameters
+
+
+    Write-DosMessage -Level "Information" -Message "Adding $($config.iisUserCredentials.UserName) to $RoleName on $($config.sqlAddress)"
+    $Query = "DECLARE @cmd nvarchar(max)
+    IF IS_ROLEMEMBER (@RoleName, @User) <> 1
+    BEGIN
+        print '-- Adding user to role '
+        SET @cmd = N'ALTER ROLE ' + quotename(@RoleName, ']') + N' ADD MEMBER ' + quotename(@User, ']')
+        EXEC(@cmd)
+    END";
+    $Parameters = @{User=$($config.iisUserCredentials.UserName);RoleName=$($RoleName)}
+    Invoke-SqlCommand -SqlServerAddress $config.sqlAddress -DatabaseName $DatabaseName -Query $Query -Parameters $Parameters
+}
+
 function Publish-TerminologyDatabaseUpdates() {
     param(
         [PSCustomObject] $config,
@@ -197,36 +256,11 @@ function Publish-TerminologyDatabaseUpdates() {
     )
     Import-Module dbatools
 
-    $DatabaseName = "Terminology"
     Write-DosMessage -Level "Information" -Message "Creating or updating Terminology database on $($config.sqlAddress)"
-    
-    Publish-DosDacPac -TargetSqlInstance $config.sqlAddress -DacPacFilePath $Dacpac -TargetDb $DatabaseName -PublishOptionsFilePath $PublishProfile
+    Publish-DosDacPac -TargetSqlInstance $config.sqlAddress -DacPacFilePath $Dacpac -TargetDb "Terminology" -PublishOptionsFilePath $PublishProfile
 
-    $Query = "IF DATABASE_PRINCIPAL_ID('TerminologyServiceRole') IS NULL
-    BEGIN
-        CREATE ROLE [TerminologyServiceRole];
-    END";
-    # TODO: Add tables and views here
-    # GRANT SELECT, INSERT, UPDATE, DELETE ON [dbo].[TABLENAME] TO TerminologyServiceRole;
-    # GO
-    Invoke-SqlCommand -SqlServerAddress $config.sqlAddress -DatabaseName $DatabaseName -Query $Query
-
-
-    Write-DosMessage -Level "Information" -Message "Creating login for $($config.iisUserCredentials.UserName) on $($config.sqlAddress)"
-    $Query = "IF NOT EXISTS (SELECT name FROM [sys].[database_principals] WHERE [type] = 'S' AND name = N'$($config.iisUserCredentials.UserName)')
-    Begin
-        CREATE USER [hqcatalyst\dev.test] FOR LOGIN [$($config.iisUserCredentials.UserName)]
-    end
-    ";
-    Invoke-SqlCommand -SqlServerAddress $config.sqlAddress -DatabaseName $DatabaseName -Query $Query
-
-
-    Write-DosMessage -Level "Information" -Message "Adding $($config.iisUserCredentials.UserName) to TerminologyServiceRole on $($config.sqlAddress)"
-    $Query = "IF IS_ROLEMEMBER ('TerminologyServiceRole','$($config.iisUserCredentials.UserName)') <> 1
-    BEGIN
-        ALTER ROLE [TerminologyServiceRole] ADD MEMBER [$($config.iisUserCredentials.UserName)]
-    END";
-    Invoke-SqlCommand -SqlServerAddress $config.sqlAddress -DatabaseName $DatabaseName -Query $Query
+    Publish-TerminologyDatabaseRole -config $config -DatabaseName "Terminology" -RoleName = "TerminologyServiceRole";
+    Publish-TerminologyDatabaseRole -config $config -DatabaseName "Shared" -RoleName = "TerminologySharedServiceRole";
     
     <# TODO: Ben create Terminology shared db role for iis user
 
