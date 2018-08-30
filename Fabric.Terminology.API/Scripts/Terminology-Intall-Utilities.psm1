@@ -20,23 +20,32 @@ function Get-ConfigValue {
         [String] $AdditionalPromptInfo,
         [String] $DefaultFromInstallConfig = $(throw "Please specify a default value"),
         [String] $DefaultFromParam,
-        [bool] $Required = $true
+        [bool] $Required = $true,
+        [switch] $Silent
     )
 
     if (-not ([string]::IsNullOrWhiteSpace($DefaultFromParam))) {
         return $DefaultFromParam
     }
     elseif (-not ([string]::IsNullOrWhiteSpace($DefaultFromInstallConfig))) {
+        if ($Silent -eq $true) {
+            return $DefaultFromInstallConfig;
+        }
         return Get-UserValueOrDefault -Default $DefaultFromInstallConfig -Prompt $Prompt
     }
     else {
-        if ($Required -eq $true) {
+        if ($Silent -eq $true) {
+            if ($Required -eq $true) {
+                Write-DosMessage -Level "Error"  -Message "$Prompt is required and was not provided through the command parameter nor the install.config." -ErrorAction Stop
+            }
+        }
+        elseif ($Required -eq $true) {
             while ([string]::IsNullOrWhiteSpace($result)) {
-                $result = Read-Host "$Prompt $AdditionalPromptInfo".Trim()
+                $result = Read-Host "Enter the $Prompt $AdditionalPromptInfo".Trim()
             }
         }
         else {
-            $result = Read-Host "$Prompt $AdditionalPromptInfo".Trim()
+            $result = Read-Host "Enter the $Prompt $AdditionalPromptInfo".Trim()
         }
 
         return $result
@@ -79,7 +88,8 @@ function Get-TerminologyConfig {
         [String] $AppInsightsKey,
         [String] $IisUserName,
         [SecureString] $IisUserPassword,
-        [String] $AppName
+        [String] $AppName,
+        [switch] $Silent
     )
 
     # Get Configuration
@@ -91,17 +101,26 @@ function Get-TerminologyConfig {
         $iisUserCredentials = $Credentials
     }
     else {
-        $iisUserConfig = Get-ConfigValue -Prompt "Enter the IIS user name to run the app pool" -DefaultFromParam $IisUserName -DefaultFromInstallConfig $installSettings.iisUser
+        $iisUserConfig = Get-ConfigValue -Prompt "IIS user name to run the app pool" -DefaultFromParam $IisUserName -DefaultFromInstallConfig $installSettings.iisUser -Silent $Silent
         
-        $passwordPrompt = "Enter the IIS user password"
-        if (-not ([string]::IsNullOrWhiteSpace($installSettings.iisUserPwd))) {
-            $iisUserPasswordConfig = Read-Host "$passwordPrompt or hit enter to accept the stored password" -AsSecureString
+        $passwordPrompt = "IIS user password"
 
-            if ($iisUserPasswordConfig.Length -eq 0) {
+        if (-not ([string]::IsNullOrWhiteSpace($installSettings.iisUserPwd))) {
+            if ($Silent -eq $true) {
                 $iisUserPasswordConfig = ConvertTo-SecureString -String $installSettings.iisUserPwd -AsPlainText -Force
+            }
+            else {
+                $iisUserPasswordConfig = Read-Host "$passwordPrompt or hit enter to accept the stored password" -AsSecureString
+
+                if ($iisUserPasswordConfig.Length -eq 0) {
+                    $iisUserPasswordConfig = ConvertTo-SecureString -String $installSettings.iisUserPwd -AsPlainText -Force
+                }
             }
         }
         else {
+            if ($Silent -eq $true) {
+                Write-DosMessage -Level "Error"  -Message "$passwordPrompt is required and was not provided through the command parameter nor the install.config." -ErrorAction Stop
+            }
             $iisUserPasswordConfig = Read-Host $passwordPrompt -AsSecureString
         }
 
@@ -127,19 +146,19 @@ function Get-TerminologyConfig {
     }
     
     # App Name
-    $appNameConfig = Get-ConfigValue -Prompt "Enter the service name" -DefaultFromParam $AppName -DefaultFromInstallConfig $installSettings.appName
+    $appNameConfig = Get-ConfigValue -Prompt "service name" -DefaultFromParam $AppName -DefaultFromInstallConfig $installSettings.appName -Silent $Silent
 
     # Discovery Service Url
-    $discoveryServiceUrlConfig = Get-ConfigValue -Prompt "Enter the Discovery Service URI" -AdditionalPromptInfo "(eg. https://SERVER/DiscoveryService/v1)" -DefaultFromParam $DiscoveryServiceUrl -DefaultFromInstallConfig $installSettings.discoveryServiceUrl
+    $discoveryServiceUrlConfig = Get-ConfigValue -Prompt "Discovery Service URI" -AdditionalPromptInfo "(eg. https://SERVER/DiscoveryService/v1)" -DefaultFromParam $DiscoveryServiceUrl -DefaultFromInstallConfig $installSettings.discoveryServiceUrl -Silent $Silent
 
     # SQL Server Address
-    $sqlAddressConfig = Get-ConfigValue -Prompt "Enter the address for SQL Server" -AdditionalPromptInfo "(eg. SERVER.DOMAIN.local)" -DefaultFromParam $SqlAddress -DefaultFromInstallConfig $installSettings.sqlServerAddress
+    $sqlAddressConfig = Get-ConfigValue -Prompt "address for SQL Server" -AdditionalPromptInfo "(eg. SERVER.DOMAIN.local)" -DefaultFromParam $SqlAddress -DefaultFromInstallConfig $installSettings.sqlServerAddress -Silent $Silent
 
     # App Insights Key
-    $appInsightsKeyConfig = Get-ConfigValue -Prompt "Enter an Application Insights key" -AdditionalPromptInfo "(optional)" -DefaultFromParam $AppInsightsKey -DefaultFromInstallConfig $installSettings.appInsightsKey -Required $false
+    $appInsightsKeyConfig = Get-ConfigValue -Prompt "Application Insights key" -AdditionalPromptInfo "(optional)" -DefaultFromParam $AppInsightsKey -DefaultFromInstallConfig $installSettings.appInsightsKey -Required $false -Silent $Silent
 
     # Metadata DB Name
-    $metadataDbNameConfig = Get-ConfigValue -Prompt "Enter the metadata database name" -DefaultFromParam $MetadataDbName -DefaultFromInstallConfig $installSettings.metadataDbName
+    $metadataDbNameConfig = Get-ConfigValue -Prompt "metadata database name" -DefaultFromParam $MetadataDbName -DefaultFromInstallConfig $installSettings.metadataDbName -Silent $Silent
 
     Add-InstallationSetting "terminology" "appName" "$appNameConfig" | Out-Null
     Add-InstallationSetting "terminology" "discoveryServiceUrl" "$discoveryServiceUrlConfig" | Out-Null
@@ -147,7 +166,14 @@ function Get-TerminologyConfig {
     Add-InstallationSetting "terminology" "appInsightsInstrumentationKey" "$appInsightsKeyConfig" | Out-Null
     Add-InstallationSetting "common" "metadataDbName" "$metadataDbNameConfig" | Out-Null
 
+    if ([string]::IsNullOrWhiteSpace($installSettings.appPool)) {
+        Write-DosMessage -Level "Error"  -Message "App Pool is required and was not provided through the install.config." -ErrorAction Stop
+    }
 
+    if ([string]::IsNullOrWhiteSpace($installSettings.siteName)) {
+        Write-DosMessage -Level "Error"  -Message "Site Name is required and was not provided through the install.config." -ErrorAction Stop
+    }
+    
     # Setup config
     $config = [PSCustomObject]@{
         iisUserCredentials  = $iisUserCredentials
