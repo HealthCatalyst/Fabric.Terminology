@@ -1,15 +1,34 @@
-﻿param(
+param(
     [ValidateNotNullorEmpty()]
     [ValidateScript({
             if (!(Test-Path $_)) {
-                Write-DosMessage -Level "Error" -Message "$_ does not exist. Please enter valid path." -ErrorAction Stop
+                Throw "$_ does not exist. Please enter valid path."
             }
-            else {
-                return $true
-            }
+            return $true
         })]
-    [String] $installFile = "$PSScriptRoot\Fabric.Terminology.InstallPackage.zip",
-    [PSCredential] $Credentials
+    [String] $InstallFile = "$PSScriptRoot\Fabric.Terminology.InstallPackage.zip",
+    [ValidateNotNullorEmpty()]
+    [ValidateScript({
+            if (!(Test-Path $_)) {
+                Throw "$_ does not exist. Please enter valid path."
+            }
+            return $true
+        })]
+    [String] $Dacpac = "$PSScriptRoot\Fabric.Terminology.Database.dacpac",
+    [ValidateNotNullorEmpty()]
+    [ValidateScript({
+            if (!(Test-Path $_)) {
+                Throw "$_ does not exist. Please enter valid path."
+            }
+            return $true
+        })]
+    [String] $PublishProfile = "$PSScriptRoot\Fabric.Terminology.Database.publish.xml",
+    [String] $DiscoveryServiceUrl,
+    [PSCredential] $Credentials,
+    [String] $SqlAddress,
+    [String] $MetadataDbName,
+    [String] $AppInsightsKey,
+    [switch] $Silent
 )
 
 # Import Dos Install Utilities
@@ -32,16 +51,16 @@ if (!(Test-Path $fabricInstallUtilities -PathType Leaf)) {
 }
 Import-Module -Name $fabricInstallUtilities -Force
 
-Import-Module "$PSScriptRoot\Terminology-Intall-Utilities.psm1" -Force
+Import-Module "$PSScriptRoot\Terminology-Install-Utilities.psm1" -Force
 
-$config = Get-TerminologyConfig -Credentials $Credentials
+$config = Get-TerminologyConfig -Credentials $Credentials -DiscoveryServiceUrl $DiscoveryServiceUrl -SqlAddress $SqlAddress -MetadataDbName $MetadataDbName -Silent $Silent
 
-Publish-DosWebApplication -WebAppPackagePath $installFile -AppPoolName $config.appPool -AppPoolCredential $config.iisUserCredentials -AppName $config.appName -IISWebSite $config.siteName
+Publish-DosWebApplication -WebAppPackagePath $InstallFile -AppPoolName $config.appPool -AppPoolCredential $config.iisUserCredentials -AppName $config.appName -IISWebSite $config.siteName
 
-Update-AppSettings $config
+Update-AppSettings -Config $config
 
-Update-DiscoveryService $config
+Update-DiscoveryService -Config $config
 
-#Publish-TerminologyDatabaseUpdates
+Publish-TerminologyDatabaseUpdates -Config $config -Dacpac $Dacpac -PublishProfile $PublishProfile
 
 #Test-Terminology

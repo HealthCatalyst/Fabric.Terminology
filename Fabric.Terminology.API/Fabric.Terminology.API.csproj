@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
@@ -32,7 +32,7 @@
     <EmbeddedResource Remove="wwwroot\swagger\dist\**" />
     <None Remove="Logs\**" />
     <None Remove="Properties\PublishProfiles\**" />
-    <None Remove="wwwroot\swagger\dist\**" />
+    <None Remove="wwwroot\swagger\dist\**" />    
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Models\ClientTermRequestInterpreter.cs" />
@@ -43,9 +43,10 @@
   <ItemGroup>
     <None Remove="Fabric.Terminology.API.ruleset" />
     <None Remove="FodyWeavers.xml" />
-    <None Remove="appsettings.dev.json" />
+    <Content Remove="appsettings.dev.json" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="appsettings.dev.json" />
     <None Include="web.config" />
   </ItemGroup>
   <ItemGroup>
