@@ -31,7 +31,7 @@ param(
     [String] $SqlDataDirectory,
     [String] $SqlLogDirectory,
     [String] $AppEndpoint,
-    [switch] $Silent
+    [switch] $Quiet
 )
 
 # Import Dos Install Utilities
@@ -61,9 +61,16 @@ Import-Module WebAdministration
 
 Import-Module -Name $fabricInstallUtilities -Force
 
+# Download Registration Script
+$fabricRegistration = ".\Register.ps1"
+if (!(Test-Path $fabricRegistration -PathType Leaf)) {
+    Write-DosMessage -Level "Warning" -Message "Could not find registration script. Manually downloading"
+    Invoke-WebRequest -Uri https://raw.githubusercontent.com/HealthCatalyst/Fabric.Identity/master/Fabric.Identity.API/scripts/Register.ps1 -Headers @{"Cache-Control" = "no-cache"} -OutFile $fabricRegistration
+}
+
 Import-Module "$PSScriptRoot\Terminology-Install-Utilities.psm1" -Force
 
-$config = Get-TerminologyConfig -Credentials $Credentials -DiscoveryServiceUrl $DiscoveryServiceUrl -SqlAddress $SqlAddress -MetadataDbName $MetadataDbName -SqlDataDirectory $SqlDataDirectory -SqlLogDirectory $SqlLogDirectory -AppEndpoint $AppEndpoint -Silent:$Silent
+$config = Get-TerminologyConfig -Credentials $Credentials -DiscoveryServiceUrl $DiscoveryServiceUrl -SqlAddress $SqlAddress -MetadataDbName $MetadataDbName -SqlDataDirectory $SqlDataDirectory -SqlLogDirectory $SqlLogDirectory -AppEndpoint $AppEndpoint -Quiet:$Quiet
 
 Publish-DosWebApplication -WebAppPackagePath $InstallFile -AppPoolName $config.appPool -AppPoolCredential $config.iisUserCredentials -AppName $config.appName -IISWebSite $config.siteName
 
@@ -74,3 +81,6 @@ Update-DiscoveryService -Config $config
 Publish-TerminologyDatabaseUpdates -Config $config -Dacpac $Dacpac -PublishProfile $PublishProfile
 
 Test-Terminology -Config $config
+
+Write-DosMessage -Level "Information" -Message "Registering Terminology with fabric authorization"
+& $fabricRegistration -discoveryServiceUrl $DiscoveryServiceUrl -quiet:$Quiet
