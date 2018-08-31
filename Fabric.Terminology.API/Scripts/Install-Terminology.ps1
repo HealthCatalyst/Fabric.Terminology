@@ -1,6 +1,6 @@
 param(
     [ValidateNotNullorEmpty()]
-    [ValidateScript({
+    [ValidateScript( {
             if (!(Test-Path $_)) {
                 Throw "$_ does not exist. Please enter valid path."
             }
@@ -8,7 +8,7 @@ param(
         })]
     [String] $InstallFile = "$PSScriptRoot\Fabric.Terminology.InstallPackage.zip",
     [ValidateNotNullorEmpty()]
-    [ValidateScript({
+    [ValidateScript( {
             if (!(Test-Path $_)) {
                 Throw "$_ does not exist. Please enter valid path."
             }
@@ -16,7 +16,7 @@ param(
         })]
     [String] $Dacpac = "$PSScriptRoot\Fabric.Terminology.Database.dacpac",
     [ValidateNotNullorEmpty()]
-    [ValidateScript({
+    [ValidateScript( {
             if (!(Test-Path $_)) {
                 Throw "$_ does not exist. Please enter valid path."
             }
@@ -72,4 +72,4 @@ Update-DiscoveryService -Config $config
 
 Publish-TerminologyDatabaseUpdates -Config $config -Dacpac $Dacpac -PublishProfile $PublishProfile
 
-#Test-Terminology
+Test-Terminology -Config $config
