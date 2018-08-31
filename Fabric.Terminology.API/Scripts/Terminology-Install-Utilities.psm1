@@ -89,6 +89,8 @@ function Get-TerminologyConfig {
         [String] $IisUserName,
         [SecureString] $IisUserPassword,
         [String] $AppName,
+        [String] $SqlDataDirectory,
+        [String] $SqlLogDirectory,
         [switch] $Silent
     )
 
@@ -159,11 +161,31 @@ function Get-TerminologyConfig {
     # Metadata DB Name
     $metadataDbNameConfig = Get-ConfigValue -Prompt "metadata database name" -DefaultFromParam $MetadataDbName -DefaultFromInstallConfig $installSettings.metadataDbName -Silent:$Silent
 
+    # Data Directory
+    if ([string]::IsNullOrWhiteSpace($installSettings.defaultSqlDataDirectory)) {
+        $dbDefaults = Get-DbaDefaultPath -SqlInstance "localhost"
+        $sqlDataDirectoryParam = $dbDefaults.Data
+    } else {
+        $sqlDataDirectoryParam = $installSettings.defaultSqlDataDirectory
+    }
+    $sqlDataDirectoryConfig = Get-ConfigValue -Prompt "Data directory to create Terminology database" -DefaultFromParam $SqlDataDirectory -DefaultFromInstallConfig $sqlDataDirectoryParam -Silent:$Silent
+
+    # Log Directory
+    if ([string]::IsNullOrWhiteSpace($installSettings.defaultSqlLogDirectory)) {
+        $dbDefaults = Get-DbaDefaultPath -SqlInstance "localhost"
+        $sqlLogDirectoryParam = $dbDefaults.Log
+    } else {
+        $sqlLogDirectoryParam = $installSettings.defaultSqlLogDirectory
+    }
+    $sqlLogDirectoryConfig = Get-ConfigValue -Prompt "Log directory to create Terminology database" -DefaultFromParam $SqlLogDirectory -DefaultFromInstallConfig $sqlLogDirectoryParam -Silent:$Silent
+
     Add-InstallationSetting "terminology" "appName" "$appNameConfig" | Out-Null
     Add-InstallationSetting "terminology" "discoveryServiceUrl" "$discoveryServiceUrlConfig" | Out-Null
     Add-InstallationSetting "terminology" "sqlServerAddress" "$sqlAddressConfig" | Out-Null
     Add-InstallationSetting "terminology" "appInsightsInstrumentationKey" "$appInsightsKeyConfig" | Out-Null
     Add-InstallationSetting "common" "metadataDbName" "$metadataDbNameConfig" | Out-Null
+    Add-InstallationSetting "common" "sqlDataDirectory" "$sqlDataDirectoryConfig" | Out-Null
+    Add-InstallationSetting "common" "sqlLogDirectory" "$sqlLogDirectoryConfig" | Out-Null
 
     if ([string]::IsNullOrWhiteSpace($installSettings.appPool)) {
         Write-DosMessage -Level "Error"  -Message "App Pool is required and was not provided through the install.config." -ErrorAction Stop
@@ -183,6 +205,8 @@ function Get-TerminologyConfig {
         sqlAddress          = $sqlAddressConfig
         metadataDbName      = $metadataDbNameConfig
         appInsightsKey      = $appInsightsKeyConfig
+        sqlDataDirectory    = $sqlDataDirectoryConfig
+        sqlLogDirectory     = $sqlLogDirectoryConfig
     };
 
     return $config
@@ -210,8 +234,6 @@ function Update-DiscoveryService() {
         [PSCustomObject] $Config
     )
 
-    Import-Module WebAdministration
-
     $webroot = Get-WebFilePath -PSPath "IIS:\Sites\$($Config.siteName)\$($Config.appName)"
     $terminologyAssembly = [System.IO.Path]::Combine($webroot, "Fabric.Terminology.API.dll")
     $version = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($terminologyAssembly).FileMajorPart
@@ -224,6 +246,28 @@ function Update-DiscoveryService() {
         serviceUrl     = "http://localhost/TerminologyService/v$version"# TODO: replace with application endpoint
     }
     Add-DiscoveryRegistration $Config.discoveryServiceUrl $Config.iisUserCredentials $discoveryPostBody
+}
+
+function Publish-TerminologyDacpac() {
+    param(
+        [PSCustomObject] $Config,
+        [string] $Dacpac,
+        [String] $PublishProfile
+    )
+
+    Write-DosMessage -Level "Information" -Message "Updating data and log mount points in: $publishProfileXml"
+    [System.Xml.XmlDocument]$publishProfileXml = new-object System.Xml.XmlDocument
+    $publishProfileXml.load($PublishProfile)
+    [System.Xml.XmlNamespaceManager]$nsmgr = new-object System.Xml.XmlNamespaceManager $publishProfileXml.NameTable
+    $nsmgr.AddNamespace("msft", "http://schemas.microsoft.com/developer/msbuild/2003")
+    $data = $publishProfileXml.SelectSingleNode("/msft:Project/msft:ItemGroup/msft:SqlCmdVariable[@Include='DataMountPoint']/msft:Value", $nsmgr);
+    $data.InnerText = $Config.sqlDataDirectory
+    $log = $publishProfileXml.SelectSingleNode("/msft:Project/msft:ItemGroup/msft:SqlCmdVariable[@Include='LogMountPoint']/msft:Value", $nsmgr);
+    $log.InnerText = $Config.sqlDataDirectory
+    $publishProfileXml.Save($PublishProfile);
+    
+    Write-DosMessage -Level "Information" -Message "Creating or updating Terminology database on $($Config.sqlAddress)"
+    Publish-DosDacPac -TargetSqlInstance $Config.sqlAddress -DacPacFilePath $Dacpac -TargetDb "Terminology" -PublishOptionsFilePath $PublishProfile
 }
 
 function Publish-TerminologyDatabaseRole() {
@@ -279,11 +323,8 @@ function Publish-TerminologyDatabaseUpdates() {
         [string] $Dacpac,
         [String] $PublishProfile
     )
-    Import-Module dbatools
-
-    Write-DosMessage -Level "Information" -Message "Creating or updating Terminology database on $($Config.sqlAddress)"
-    Publish-DosDacPac -TargetSqlInstance $Config.sqlAddress -DacPacFilePath $Dacpac -TargetDb "Terminology" -PublishOptionsFilePath $PublishProfile
-
+    
+    Publish-TerminologyDacpac -Config $Config -Dacpac $Dacpac -PublishProfile $PublishProfile
     Publish-TerminologyDatabaseRole -Config $Config -DatabaseName "Terminology" -RoleName = "TerminologyServiceRole";
     Publish-TerminologyDatabaseRole -Config $Config -DatabaseName "Shared" -RoleName = "TerminologySharedServiceRole";
     
