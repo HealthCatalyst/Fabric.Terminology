@@ -28,6 +28,8 @@ param(
     [String] $SqlAddress,
     [String] $MetadataDbName,
     [String] $AppInsightsKey,
+    [String] $SqlDataDirectory,
+    [String] $SqlLogDirectory,
     [switch] $Silent
 )
 
@@ -49,11 +51,18 @@ if (!(Test-Path $fabricInstallUtilities -PathType Leaf)) {
     Write-DosMessage -Level "Warning" -Message "Could not find fabric install utilities. Manually downloading and installing"
     Invoke-WebRequest -Uri https://raw.githubusercontent.com/HealthCatalyst/InstallScripts/master/common/Fabric-Install-Utilities.psm1 -Headers @{"Cache-Control" = "no-cache"} -OutFile $fabricInstallUtilities
 }
+
+# DBA tools
+Import-Module dbatools
+
+# IIS web administration
+Import-Module WebAdministration
+
 Import-Module -Name $fabricInstallUtilities -Force
 
 Import-Module "$PSScriptRoot\Terminology-Install-Utilities.psm1" -Force
 
-$config = Get-TerminologyConfig -Credentials $Credentials -DiscoveryServiceUrl $DiscoveryServiceUrl -SqlAddress $SqlAddress -MetadataDbName $MetadataDbName -Silent:$Silent
+$config = Get-TerminologyConfig -Credentials $Credentials -DiscoveryServiceUrl $DiscoveryServiceUrl -SqlAddress $SqlAddress -MetadataDbName $MetadataDbName -SqlDataDirectory $SqlDataDirectory -SqlLogDirectory $SqlLogDirectory -Silent:$Silent
 
 Publish-DosWebApplication -WebAppPackagePath $InstallFile -AppPoolName $config.appPool -AppPoolCredential $config.iisUserCredentials -AppName $config.appName -IISWebSite $config.siteName
 
