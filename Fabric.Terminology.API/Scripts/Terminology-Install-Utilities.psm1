@@ -16,9 +16,11 @@ function Get-UserValueOrDefault {
 
 function Get-ConfigValue {
     param(
-        [String] $Prompt = $(throw "Please specify a prompt message"),
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [String] $Prompt,
         [String] $AdditionalPromptInfo,
-        [String] $DefaultFromInstallConfig = $(throw "Please specify a default value"),
+        [String] $DefaultFromInstallConfig,
         [String] $DefaultFromParam,
         [bool] $Required = $true,
         [switch] $Silent
@@ -54,9 +56,15 @@ function Get-ConfigValue {
 
 function Get-ServiceFromDiscovery {
     param(
-        [String] $DiscoveryUrl = $(throw "Please specify the Discovery Service Uri"),
-        [String] $Name = $(throw "Please specify a service or application name"),
-        [String] $Version = $(throw "Please specify a service or application version")
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [String] $DiscoveryUrl,
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [String] $Name,
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [String] $Version
     )
 
     $discoveryServiceQuery = "/Services?`$filter=ServiceName eq '$Name' and Version eq $Version&`$select=ServiceUrl"
@@ -82,7 +90,9 @@ function Get-ServiceFromDiscovery {
 
 function Invoke-PingService {
     param(
-        [String] $ServiceUrl = $(throw "Please specify a service uri to ping"),
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [String] $ServiceUrl,
         [String] $ServiceName
     )
     
@@ -103,7 +113,9 @@ function Invoke-PingService {
 
 function Invoke-ValidateServiceDependencies {
     param(
-        [String] $DiscoveryUrl = $(throw "Please specify the Discovery Service Uri")
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [String] $DiscoveryUrl
     )
 
     $services = @{ServiceName = "MetadataService"; Version = 2}, @{ServiceName = "DataProcessingService"; Version = 1}, @{ServiceName = "IdentityService"; Version = 1}, @{ServiceName = "AuthorizationService"; Version = 1}
@@ -143,8 +155,12 @@ function Invoke-SqlCommand {
 
 function Test-DatabaseExists {
     param(
-        [String] $SqlAddress = $(throw "Please specify an address to SQL Server"),
-        [String] $Name = $(throw "Please specify a database name")
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [String] $SqlAddress,
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [String] $Name
     )
     $query = "IF DB_ID(@dbname) IS NULL
         BEGIN
@@ -258,10 +274,10 @@ function Get-TerminologyConfig {
     }
 
     Write-DosMessage -Level "Information" -Message "Verifying metadata database ($metadataDbNameConfig) exists"
-    Test-DatabaseExists -SqlAddress $Config.sqlAddress -Name $metadataDbNameConfig
+    Test-DatabaseExists -SqlAddress $sqlAddressConfig -Name $metadataDbNameConfig
 
     Write-DosMessage -Level "Information" -Message "Verifying Shared database exists"
-    Test-DatabaseExists -SqlAddress $Config.sqlAddress -Name "Shared"
+    Test-DatabaseExists -SqlAddress $sqlAddressConfig -Name "Shared"
     
     # Setup config
     $config = [PSCustomObject]@{
@@ -394,7 +410,9 @@ function Publish-TerminologyDatabaseUpdates() {
 
 function Test-Terminology {
     param(
-        [PSobject] $Config = $(throw "Please provide the config object")
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [PSobject] $Config
     )
 
     $terminologyUrl = Get-ServiceFromDiscovery -DiscoveryUrl $Config.discoveryServiceUrl -Name $Config.appName -Version 1
