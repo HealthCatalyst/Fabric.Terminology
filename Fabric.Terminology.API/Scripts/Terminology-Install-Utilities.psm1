@@ -74,7 +74,7 @@ function Get-ServiceFromDiscovery {
     try {
         $response = Invoke-WebRequest -Uri $uri -Method GET -UseDefaultCredentials
     }
-    catch {
+    catch [System.Net.WebException] {
         throw "There was an error communicating with the Discovery Service.`n
         Request: $uri`n
         Status Code: $($_.Exception.Response.StatusCode.value__)`n
@@ -103,7 +103,7 @@ function Invoke-PingService {
         Write-DosMessage -Level "Information" -Message "Attempting to ping $ServiceName ($uri)"  
         Invoke-WebRequest -Uri $uri -Method GET -UseDefaultCredentials | Out-Null
     }
-    catch {
+    catch [System.Net.WebException] {
         throw "There was an error communicating with the service.`n
         Request: $uri`n
         Status Code: $($_.Exception.Response.StatusCode.value__)`n
