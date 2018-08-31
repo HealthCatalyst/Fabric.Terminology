@@ -247,7 +247,7 @@ function Get-TerminologyConfig {
     Add-InstallationSetting "terminology" "discoveryServiceUrl" "$discoveryServiceUrlConfig" | Out-Null
     Add-InstallationSetting "terminology" "sqlServerAddress" "$sqlAddressConfig" | Out-Null
     Add-InstallationSetting "terminology" "appInsightsInstrumentationKey" "$appInsightsKeyConfig" | Out-Null
-    Add-InstallationSetting "terminology" "metadataDbName" "$metadataDbNameConfig" | Out-Null
+    Add-InstallationSetting "common" "metadataDbName" "$metadataDbNameConfig" | Out-Null
 
     if ([string]::IsNullOrWhiteSpace($installSettings.appPool)) {
         Write-DosMessage -Level "Error"  -Message "App Pool is required and was not provided through the install.config." -ErrorAction Stop
@@ -396,7 +396,7 @@ function Test-Terminology {
     param(
         [PSobject] $Config = $(throw "Please provide the config object")
     )
-    
+
     $terminologyUrl = Get-ServiceFromDiscovery -DiscoveryUrl $Config.discoveryServiceUrl -Name $Config.appName -Version 1
     Invoke-PingService -ServiceUrl $terminologyUrl -ServiceName $Config.appName
 
