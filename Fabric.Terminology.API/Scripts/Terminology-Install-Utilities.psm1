@@ -182,6 +182,7 @@ function Get-TerminologyConfig {
         [String] $IisUserName,
         [SecureString] $IisUserPassword,
         [String] $AppName,
+        [String] $AppEndpoint,
         [String] $SqlDataDirectory,
         [String] $SqlLogDirectory,
         [switch] $Silent
@@ -251,6 +252,9 @@ function Get-TerminologyConfig {
     
     # App Name
     $appNameConfig = Get-ConfigValue -Prompt "service name" -DefaultFromParam $AppName -DefaultFromInstallConfig $installSettings.appName -Silent:$Silent
+    
+    # Terminology Service Endpoint
+    $terminologyEndpointConfig = Get-ConfigValue -Prompt "$appNameConfig endpoint" -AdditionalPromptInfo "(https://SERVER/TerminologyService)" -DefaultFromParam $AppEnpoint -DefaultFromInstallConfig $installSettings.appEndpoint -Silent:$Silent
 
     # SQL Server Address
     $sqlAddressConfig = Get-ConfigValue -Prompt "address for SQL Server" -AdditionalPromptInfo "(eg. SERVER.DOMAIN.local)" -DefaultFromParam $SqlAddress -DefaultFromInstallConfig $installSettings.sqlServerAddress -Silent:$Silent
@@ -265,7 +269,8 @@ function Get-TerminologyConfig {
     if ([string]::IsNullOrWhiteSpace($installSettings.defaultSqlDataDirectory)) {
         $dbDefaults = Get-DbaDefaultPath -SqlInstance "localhost"
         $sqlDataDirectoryParam = $dbDefaults.Data
-    } else {
+    }
+    else {
         $sqlDataDirectoryParam = $installSettings.defaultSqlDataDirectory
     }
     $sqlDataDirectoryConfig = Get-ConfigValue -Prompt "Data directory to create Terminology database" -DefaultFromParam $SqlDataDirectory -DefaultFromInstallConfig $sqlDataDirectoryParam -Silent:$Silent
@@ -274,12 +279,14 @@ function Get-TerminologyConfig {
     if ([string]::IsNullOrWhiteSpace($installSettings.defaultSqlLogDirectory)) {
         $dbDefaults = Get-DbaDefaultPath -SqlInstance "localhost"
         $sqlLogDirectoryParam = $dbDefaults.Log
-    } else {
+    }
+    else {
         $sqlLogDirectoryParam = $installSettings.defaultSqlLogDirectory
     }
     $sqlLogDirectoryConfig = Get-ConfigValue -Prompt "Log directory to create Terminology database" -DefaultFromParam $SqlLogDirectory -DefaultFromInstallConfig $sqlLogDirectoryParam -Silent:$Silent
 
     Add-InstallationSetting "terminology" "appName" "$appNameConfig" | Out-Null
+    Add-InstallationSetting "terminology" "appEndpoint" "$terminologyEndpointConfig" | Out-Null
     Add-InstallationSetting "terminology" "discoveryServiceUrl" "$discoveryServiceUrlConfig" | Out-Null
     Add-InstallationSetting "terminology" "sqlServerAddress" "$sqlAddressConfig" | Out-Null
     Add-InstallationSetting "terminology" "appInsightsInstrumentationKey" "$appInsightsKeyConfig" | Out-Null
@@ -305,6 +312,7 @@ function Get-TerminologyConfig {
     $config = [PSCustomObject]@{
         iisUserCredentials  = $iisUserCredentials
         appName             = $appNameConfig
+        appEndpoint         = $terminologyEndpointConfig
         appPool             = $installSettings.appPool
         siteName            = $installSettings.siteName
         discoveryServiceUrl = $discoveryServiceUrlConfig
@@ -337,6 +345,7 @@ function Update-AppSettings {
 
 function Update-DiscoveryService() {
     param(
+        [Parameter(Mandatory = $true)]
         [PSCustomObject] $Config
     )
 
@@ -349,8 +358,9 @@ function Update-DiscoveryService() {
         serviceVersion = $version
         friendlyName   = "Fabric.Terminology"
         description    = "The Fabric.Terminology Service provides shared healthcare terminology data."
-        serviceUrl     = "http://localhost/TerminologyService/v$version"# TODO: replace with application endpoint
+        serviceUrl     = "$($Config.appEndpoint)/v$version"
     }
+
     Add-DiscoveryRegistration $Config.discoveryServiceUrl $Config.iisUserCredentials $discoveryPostBody
 }
 

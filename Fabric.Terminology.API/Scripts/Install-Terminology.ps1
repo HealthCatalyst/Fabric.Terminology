@@ -30,6 +30,7 @@ param(
     [String] $AppInsightsKey,
     [String] $SqlDataDirectory,
     [String] $SqlLogDirectory,
+    [String] $AppEndpoint,
     [switch] $Silent
 )
 
@@ -62,7 +63,7 @@ Import-Module -Name $fabricInstallUtilities -Force
 
 Import-Module "$PSScriptRoot\Terminology-Install-Utilities.psm1" -Force
 
-$config = Get-TerminologyConfig -Credentials $Credentials -DiscoveryServiceUrl $DiscoveryServiceUrl -SqlAddress $SqlAddress -MetadataDbName $MetadataDbName -SqlDataDirectory $SqlDataDirectory -SqlLogDirectory $SqlLogDirectory -Silent:$Silent
+$config = Get-TerminologyConfig -Credentials $Credentials -DiscoveryServiceUrl $DiscoveryServiceUrl -SqlAddress $SqlAddress -MetadataDbName $MetadataDbName -SqlDataDirectory $SqlDataDirectory -SqlLogDirectory $SqlLogDirectory -AppEndpoint $AppEndpoint -Silent:$Silent
 
 Publish-DosWebApplication -WebAppPackagePath $InstallFile -AppPoolName $config.appPool -AppPoolCredential $config.iisUserCredentials -AppName $config.appName -IISWebSite $config.siteName
 
