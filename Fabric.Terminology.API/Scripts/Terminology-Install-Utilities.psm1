@@ -4,7 +4,7 @@ function Get-UserValueOrDefault {
         [String] $Prompt
     )
 
-    $value = Read-Host "$Prompt or hit enter to accept the default value [$Default]"
+    $value = Read-Host "Enter the $Prompt or hit enter to accept the default value [$Default]"
 
     if ([string]::IsNullOrWhiteSpace($value)) {
         return $Default
@@ -52,12 +52,73 @@ function Get-ConfigValue {
     }
 }
 
-function Invoke-SqlCommand{
+function Get-ServiceFromDiscovery {
+    param(
+        [String] $DiscoveryUrl = $(throw "Please specify the Discovery Service Uri"),
+        [String] $Name = $(throw "Please specify a service or application name"),
+        [String] $Version = $(throw "Please specify a service or application version")
+    )
+
+    $discoveryServiceQuery = "/Services?`$filter=ServiceName eq '$Name' and Version eq $Version&`$select=ServiceUrl"
+
+    $uri = "$DiscoveryUrl$discoveryServiceQuery"
+
+    try {
+        $response = Invoke-WebRequest -Uri $uri -Method GET -UseDefaultCredentials
+    }
+    catch {
+        throw "There was an error communicating with the Discovery Service.`n
+        Request: $uri`n
+        Status Code: $($_.Exception.Response.StatusCode.value__)`n
+        Message: $($_.Exception.Response.StatusDescription)"
+    }
+
+    if (($response | ConvertFrom-Json).value.Length -eq 0) {
+        throw "$Name (v$Version) could not be found with the Discovery Service. Please verify $Name has been installed and registered then try again."
+    }
+
+    return ($response | ConvertFrom-Json).value.ServiceUrl
+}
+
+function Invoke-PingService {
+    param(
+        [String] $ServiceUrl = $(throw "Please specify a service uri to ping"),
+        [String] $ServiceName
+    )
+    
+    $uriWithoutVersion = $ServiceUrl.Substring(0, $ServiceUrl.LastIndexOf('/'))
+    $uri = "$uriWithoutVersion/Ping"
+
+    try {
+        Write-DosMessage -Level "Information" -Message "Attempting to ping $ServiceName ($uri)"  
+        Invoke-WebRequest -Uri $uri -Method GET -UseDefaultCredentials | Out-Null
+    }
+    catch {
+        throw "There was an error communicating with the service.`n
+        Request: $uri`n
+        Status Code: $($_.Exception.Response.StatusCode.value__)`n
+        Message: $($_.Exception.Response.StatusDescription)"
+    }
+}
+
+function Invoke-ValidateServiceDependencies {
+    param(
+        [String] $DiscoveryUrl = $(throw "Please specify the Discovery Service Uri")
+    )
+
+    $services = @{ServiceName = "MetadataService"; Version = 2}, @{ServiceName = "DataProcessingService"; Version = 1}, @{ServiceName = "IdentityService"; Version = 1}, @{ServiceName = "AuthorizationService"; Version = 1}
+    foreach ($service in $services) {
+        Write-Host "Verifying $($service.ServiceName) (v$($service.Version))"
+        Get-ServiceFromDiscovery -DiscoveryUrl $DiscoveryUrl -Name $service.ServiceName -Version $service.Version
+    }
+}
+
+function Invoke-SqlCommand {
     param(
         [String] $SqlServerAddress,
         [String] $DatabaseName,
         [String] $Query,
-        [PSCustomObject] $Parameters= @{}
+        [PSCustomObject] $Parameters = @{}
     )
 
     $connectionString = "Data Source=$SqlServerAddress;Initial Catalog=$($DatabaseName); Trusted_Connection=True;"
@@ -65,18 +126,34 @@ function Invoke-SqlCommand{
     $command = New-Object System.Data.SqlClient.SqlCommand($Query, $connection)
     
     try {
-        foreach($p in $Parameters.Keys){		
-          $command.Parameters.AddWithValue("@$p",$Parameters[$p]) | Out-Null
-         }
+        foreach ($p in $Parameters.Keys) {		
+            $command.Parameters.AddWithValue("@$p", $Parameters[$p]) | Out-Null
+        }
 
         $connection.Open() 
         $command.ExecuteNonQuery() | Out-Null
         $connection.Close()        
-    }catch [System.Data.SqlClient.SqlException] {
+    }
+    catch [System.Data.SqlClient.SqlException] {
         Write-DosMessage -Level "Error" -Message "An error ocurred while executing the command. 
         Connection String: $($connectionString)"
         throw
     }
+}
+
+function Test-DatabaseExists {
+    param(
+        [String] $SqlAddress = $(throw "Please specify an address to SQL Server"),
+        [String] $Name = $(throw "Please specify a database name")
+    )
+    $query = "IF DB_ID(@dbname) IS NULL
+        BEGIN
+        DECLARE @errorMessage NVARCHAR(256)
+        SET @errorMessage = N'Could not confirm the ' + @dbname + ' database exists. Please verify the database was deployed. You may run this step again.'
+        RAISERROR (@errorMessage, 11, 1)
+        END"
+    $parameters = @{dbname = "$Name"}
+    Invoke-SqlCommand -SqlServerAddress $SqlAddress -Query $query -Parameters $parameters
 }
 
 function Get-TerminologyConfig {
@@ -95,6 +172,16 @@ function Get-TerminologyConfig {
     # Get Configuration
     $installSettings = Get-InstallationSettings "terminology"
 
+    # Discovery Service Url
+    $discoveryServiceUrlConfig = Get-ConfigValue -Prompt "Discovery Service URI" -AdditionalPromptInfo "(eg. https://SERVER/DiscoveryService/v1)" -DefaultFromParam $DiscoveryServiceUrl -DefaultFromInstallConfig $installSettings.discoveryServiceUrl
+
+    # Validate Service Dependencies
+    $services = @{ServiceName = "MetadataService"; Version = 2}, @{ServiceName = "DataProcessingService"; Version = 1}, @{ServiceName = "IdentityService"; Version = 1}, @{ServiceName = "AuthorizationService"; Version = 1}
+    foreach ($service in $services) {
+        Write-DosMessage -Level "Information" -Message "Verifying $($service.ServiceName) (v$($service.Version)) is installed and registered"
+        Get-ServiceFromDiscovery -DiscoveryUrl $discoveryServiceUrlConfig -Name $service.ServiceName -Version $service.Version
+    }
+
     # Get Credentials
     if ($Null -ne $Credentials) {
         $iisUserCredentials = $Credentials
@@ -109,7 +196,7 @@ function Get-TerminologyConfig {
                 $iisUserPasswordConfig = ConvertTo-SecureString -String $installSettings.iisUserPwd -AsPlainText -Force
             }
             else {
-                $iisUserPasswordConfig = Read-Host "$passwordPrompt or hit enter to accept the stored password" -AsSecureString
+                $iisUserPasswordConfig = Read-Host "Enter the $passwordPrompt or hit enter to accept the stored password" -AsSecureString
 
                 if ($iisUserPasswordConfig.Length -eq 0) {
                     $iisUserPasswordConfig = ConvertTo-SecureString -String $installSettings.iisUserPwd -AsPlainText -Force
@@ -147,9 +234,6 @@ function Get-TerminologyConfig {
     # App Name
     $appNameConfig = Get-ConfigValue -Prompt "service name" -DefaultFromParam $AppName -DefaultFromInstallConfig $installSettings.appName -Silent:$Silent
 
-    # Discovery Service Url
-    $discoveryServiceUrlConfig = Get-ConfigValue -Prompt "Discovery Service URI" -AdditionalPromptInfo "(eg. https://SERVER/DiscoveryService/v1)" -DefaultFromParam $DiscoveryServiceUrl -DefaultFromInstallConfig $installSettings.discoveryServiceUrl -Silent:$Silent
-
     # SQL Server Address
     $sqlAddressConfig = Get-ConfigValue -Prompt "address for SQL Server" -AdditionalPromptInfo "(eg. SERVER.DOMAIN.local)" -DefaultFromParam $SqlAddress -DefaultFromInstallConfig $installSettings.sqlServerAddress -Silent:$Silent
 
@@ -163,7 +247,7 @@ function Get-TerminologyConfig {
     Add-InstallationSetting "terminology" "discoveryServiceUrl" "$discoveryServiceUrlConfig" | Out-Null
     Add-InstallationSetting "terminology" "sqlServerAddress" "$sqlAddressConfig" | Out-Null
     Add-InstallationSetting "terminology" "appInsightsInstrumentationKey" "$appInsightsKeyConfig" | Out-Null
-    Add-InstallationSetting "common" "metadataDbName" "$metadataDbNameConfig" | Out-Null
+    Add-InstallationSetting "terminology" "metadataDbName" "$metadataDbNameConfig" | Out-Null
 
     if ([string]::IsNullOrWhiteSpace($installSettings.appPool)) {
         Write-DosMessage -Level "Error"  -Message "App Pool is required and was not provided through the install.config." -ErrorAction Stop
@@ -172,6 +256,12 @@ function Get-TerminologyConfig {
     if ([string]::IsNullOrWhiteSpace($installSettings.siteName)) {
         Write-DosMessage -Level "Error"  -Message "Site Name is required and was not provided through the install.config." -ErrorAction Stop
     }
+
+    Write-DosMessage -Level "Information" -Message "Verifying metadata database ($metadataDbNameConfig) exists"
+    Test-DatabaseExists -SqlAddress $Config.sqlAddress -Name $metadataDbNameConfig
+
+    Write-DosMessage -Level "Information" -Message "Verifying Shared database exists"
+    Test-DatabaseExists -SqlAddress $Config.sqlAddress -Name "Shared"
     
     # Setup config
     $config = [PSCustomObject]@{
@@ -243,7 +333,7 @@ function Publish-TerminologyDatabaseRole() {
     # TODO: Add tables and views here
     # GRANT SELECT, INSERT, UPDATE, DELETE ON [dbo].[TABLENAME] TO TerminologyServiceRole;
     # GO
-    $Parameters = @{RoleName=$($RoleName)}
+    $Parameters = @{RoleName = $($RoleName)}
     Invoke-SqlCommand -SqlServerAddress $Config.sqlAddress -DatabaseName $DatabaseName -Query $Query -Parameters $Parameters
 
 
@@ -257,7 +347,7 @@ function Publish-TerminologyDatabaseRole() {
         EXEC(@cmd)
     END
     ";
-    $Parameters = @{User=$($Config.iisUserCredentials.UserName)}
+    $Parameters = @{User = $($Config.iisUserCredentials.UserName)}
     Invoke-SqlCommand -SqlServerAddress $Config.sqlAddress -DatabaseName $DatabaseName -Query $Query -Parameters $Parameters
 
 
@@ -269,7 +359,7 @@ function Publish-TerminologyDatabaseRole() {
         SET @cmd = N'ALTER ROLE ' + quotename(@RoleName, ']') + N' ADD MEMBER ' + quotename(@User, ']')
         EXEC(@cmd)
     END";
-    $Parameters = @{User=$($Config.iisUserCredentials.UserName);RoleName=$($RoleName)}
+    $Parameters = @{User = $($Config.iisUserCredentials.UserName); RoleName = $($RoleName)}
     Invoke-SqlCommand -SqlServerAddress $Config.sqlAddress -DatabaseName $DatabaseName -Query $Query -Parameters $Parameters
 }
 
@@ -303,10 +393,15 @@ function Publish-TerminologyDatabaseUpdates() {
 }
 
 function Test-Terminology {
-    # TODO: verify install was successful
-    # Tests
-    # 1. Ping
-    # 2. Shared Db exists and ClientTerm.ValueSetCodeCountBASE Table exists (exists in 2.0)
+    param(
+        [PSobject] $Config = $(throw "Please provide the config object")
+    )
+    
+    $terminologyUrl = Get-ServiceFromDiscovery -DiscoveryUrl $Config.discoveryServiceUrl -Name $Config.appName -Version 1
+    Invoke-PingService -ServiceUrl $terminologyUrl -ServiceName $Config.appName
+
+    Write-DosMessage -Level "Information" -Message "Verifying Terminology database exists"
+    Test-DatabaseExists -SqlAddress $Config.sqlAddress -Name "Terminology"
 }
 
 Export-ModuleMember -function Import-Modules
