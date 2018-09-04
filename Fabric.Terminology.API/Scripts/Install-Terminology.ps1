@@ -73,4 +73,6 @@ Update-DiscoveryService -Config $config
 
 Publish-TerminologyDatabaseUpdates -Config $config -Dacpac $Dacpac -PublishProfile $PublishProfile
 
+Add-MetadataAndStructures -Config $config
+
 Test-Terminology -Config $config
