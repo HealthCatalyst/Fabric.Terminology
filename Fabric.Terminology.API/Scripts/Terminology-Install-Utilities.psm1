@@ -23,20 +23,20 @@ function Get-ConfigValue {
         [String] $DefaultFromInstallConfig,
         [String] $DefaultFromParam,
         [bool] $Required = $true,
-        [switch] $Silent
+        [switch] $Quiet
     )
 
     if (-not ([string]::IsNullOrWhiteSpace($DefaultFromParam))) {
         return $DefaultFromParam
     }
     elseif (-not ([string]::IsNullOrWhiteSpace($DefaultFromInstallConfig))) {
-        if ($Silent -eq $true) {
+        if ($Quiet -eq $true) {
             return $DefaultFromInstallConfig;
         }
         return Get-UserValueOrDefault -Default $DefaultFromInstallConfig -Prompt $Prompt
     }
     else {
-        if ($Silent -eq $true) {
+        if ($Quiet -eq $true) {
             if ($Required -eq $true) {
                 Write-DosMessage -Level "Error"  -Message "$Prompt is required and was not provided through the command parameter nor the install.config." -ErrorAction Stop
             }
@@ -185,14 +185,14 @@ function Get-TerminologyConfig {
         [String] $AppEndpoint,
         [String] $SqlDataDirectory,
         [String] $SqlLogDirectory,
-        [switch] $Silent
+        [switch] $Quiet
     )
 
     # Get Configuration
     $installSettings = Get-InstallationSettings "terminology"
 
     # Discovery Service Url
-    $discoveryServiceUrlConfig = Get-ConfigValue -Prompt "Discovery Service URI" -AdditionalPromptInfo "(eg. https://SERVER/DiscoveryService/v1)" -DefaultFromParam $DiscoveryServiceUrl -DefaultFromInstallConfig $installSettings.discoveryServiceUrl
+    $discoveryServiceUrlConfig = Get-ConfigValue -Prompt "Discovery Service URI" -AdditionalPromptInfo "(eg. https://SERVER/DiscoveryService/v1)" -DefaultFromParam $DiscoveryServiceUrl -DefaultFromInstallConfig $installSettings.discoveryServiceUrl -Quiet:$Quiet
 
     # Validate Service Dependencies
     $services = @{ServiceName = "MetadataService"; Version = 2}, @{ServiceName = "DataProcessingService"; Version = 1}, @{ServiceName = "IdentityService"; Version = 1}, @{ServiceName = "AuthorizationService"; Version = 1}
@@ -206,12 +206,12 @@ function Get-TerminologyConfig {
         $iisUserCredentials = $Credentials
     }
     else {
-        $iisUserConfig = Get-ConfigValue -Prompt "IIS user name to run the app pool" -DefaultFromParam $IisUserName -DefaultFromInstallConfig $installSettings.iisUser -Silent:$Silent
+        $iisUserConfig = Get-ConfigValue -Prompt "IIS user name to run the app pool" -DefaultFromParam $IisUserName -DefaultFromInstallConfig $installSettings.iisUser -Quiet:$Quiet
         
         $passwordPrompt = "App pool user password"
 
         if (-not ([string]::IsNullOrWhiteSpace($installSettings.iisUserPwd))) {
-            if ($Silent -eq $true) {
+            if ($Quiet -eq $true) {
                 $iisUserPasswordConfig = ConvertTo-SecureString -String $installSettings.iisUserPwd -AsPlainText -Force
             }
             else {
@@ -223,7 +223,7 @@ function Get-TerminologyConfig {
             }
         }
         else {
-            if ($Silent -eq $true) {
+            if ($Quiet -eq $true) {
                 Write-DosMessage -Level "Error"  -Message "$passwordPrompt is required and was not provided through the command parameter nor the install.config." -ErrorAction Stop
             }
             $iisUserPasswordConfig = Read-Host $passwordPrompt -AsSecureString
@@ -251,19 +251,24 @@ function Get-TerminologyConfig {
     }
     
     # App Name
-    $appNameConfig = Get-ConfigValue -Prompt "service name" -DefaultFromParam $AppName -DefaultFromInstallConfig $installSettings.appName -Silent:$Silent
-    
+    $appNameConfig = Get-ConfigValue -Prompt "service name" -DefaultFromParam $AppName -DefaultFromInstallConfig $installSettings.appName -Quiet:$Quiet
+
     # Terminology Service Endpoint
-    $terminologyEndpointConfig = Get-ConfigValue -Prompt "$appNameConfig endpoint" -AdditionalPromptInfo "(https://SERVER/TerminologyService)" -DefaultFromParam $AppEnpoint -DefaultFromInstallConfig $installSettings.appEndpoint -Silent:$Silent
+    $terminologyEndpointConfig = Get-ConfigValue -Prompt "$appNameConfig endpoint" -AdditionalPromptInfo "(https://SERVER/TerminologyService)" -DefaultFromParam $AppEnpoint -DefaultFromInstallConfig $installSettings.appEndpoint -Quiet:$Quiet
 
     # SQL Server Address
-    $sqlAddressConfig = Get-ConfigValue -Prompt "address for SQL Server" -AdditionalPromptInfo "(eg. SERVER.DOMAIN.local)" -DefaultFromParam $SqlAddress -DefaultFromInstallConfig $installSettings.sqlServerAddress -Silent:$Silent
+    $sqlAddressConfig = Get-ConfigValue -Prompt "address for SQL Server" -AdditionalPromptInfo "(eg. SERVER.DOMAIN.local)" -DefaultFromParam $SqlAddress -DefaultFromInstallConfig $installSettings.sqlServerAddress -Quiet:$Quiet
 
     # App Insights Key
-    $appInsightsKeyConfig = Get-ConfigValue -Prompt "Application Insights key" -AdditionalPromptInfo "(optional)" -DefaultFromParam $AppInsightsKey -DefaultFromInstallConfig $installSettings.appInsightsKey -Required $false -Silent:$Silent
+    $appInsightsKeyConfig = Get-ConfigValue -Prompt "Application Insights key" -AdditionalPromptInfo "(optional)" -DefaultFromParam $AppInsightsKey -DefaultFromInstallConfig $installSettings.appInsightsKey -Required $false -Quiet:$Quiet
 
     # Metadata DB Name
-    $metadataDbNameConfig = Get-ConfigValue -Prompt "metadata database name" -DefaultFromParam $MetadataDbName -DefaultFromInstallConfig $installSettings.metadataDbName -Silent:$Silent
+    if ([string]::IsNullOrWhiteSpace($installSettings.metadataDbName)) {
+        $metadataDbNameParam = "EDWAdmin"
+    } else {
+        $metadataDbNameParam = $installSettings.metadataDbName
+    }
+    $metadataDbNameConfig = Get-ConfigValue -Prompt "metadata database name" -DefaultFromParam $MetadataDbName -DefaultFromInstallConfig $metadataDbNameParam -Quiet:$Quiet
 
     # Data Directory
     if ([string]::IsNullOrWhiteSpace($installSettings.defaultSqlDataDirectory)) {
@@ -273,7 +278,7 @@ function Get-TerminologyConfig {
     else {
         $sqlDataDirectoryParam = $installSettings.defaultSqlDataDirectory
     }
-    $sqlDataDirectoryConfig = Get-ConfigValue -Prompt "Data directory to create Terminology database" -DefaultFromParam $SqlDataDirectory -DefaultFromInstallConfig $sqlDataDirectoryParam -Silent:$Silent
+    $sqlDataDirectoryConfig = Get-ConfigValue -Prompt "Data directory to create Terminology database" -DefaultFromParam $SqlDataDirectory -DefaultFromInstallConfig $sqlDataDirectoryParam -Quiet:$Quiet
 
     # Log Directory
     if ([string]::IsNullOrWhiteSpace($installSettings.defaultSqlLogDirectory)) {
@@ -283,7 +288,7 @@ function Get-TerminologyConfig {
     else {
         $sqlLogDirectoryParam = $installSettings.defaultSqlLogDirectory
     }
-    $sqlLogDirectoryConfig = Get-ConfigValue -Prompt "Log directory to create Terminology database" -DefaultFromParam $SqlLogDirectory -DefaultFromInstallConfig $sqlLogDirectoryParam -Silent:$Silent
+    $sqlLogDirectoryConfig = Get-ConfigValue -Prompt "Log directory to create Terminology database" -DefaultFromParam $SqlLogDirectory -DefaultFromInstallConfig $sqlLogDirectoryParam -Quiet:$Quiet
 
     Add-InstallationSetting "terminology" "appName" "$appNameConfig" | Out-Null
     Add-InstallationSetting "terminology" "appEndpoint" "$terminologyEndpointConfig" | Out-Null
