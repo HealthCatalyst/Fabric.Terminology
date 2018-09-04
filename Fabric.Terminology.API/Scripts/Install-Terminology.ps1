@@ -34,6 +34,13 @@ param(
     [switch] $Quiet
 )
 
+[string[]] $requiredFiles = @($InstallFile, $Dacpac, $PublishProfile, "$PSScriptRoot\Install.config", "$PSScriptRoot\Register.ps1", "$PSScriptRoot\Terminology-Install-Utilities.psm1", "$PSScriptRoot\registration.config")
+For ($i=0; $i -lt $requiredFiles.Length; $i++) {
+    if (!(Test-Path -Path $requiredFiles[$i])) {
+        Throw "$($requiredFiles[$i]) does not exist and is required for install."
+    }
+}
+
 # Import Dos Install Utilities
 $dosInstallUtilities = Get-Childitem -Path ./**/DosInstallUtilities.psm1 -Recurse
 if ($dosInstallUtilities.length -eq 0) {

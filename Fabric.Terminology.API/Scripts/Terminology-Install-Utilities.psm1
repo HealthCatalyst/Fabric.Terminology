@@ -192,7 +192,7 @@ function Get-TerminologyConfig {
     $installSettings = Get-InstallationSettings "terminology"
 
     # Discovery Service Url
-    $discoveryServiceUrlConfig = Get-ConfigValue -Prompt "Discovery Service URI" -AdditionalPromptInfo "(eg. https://SERVER/DiscoveryService/v1)" -DefaultFromParam $DiscoveryServiceUrl -DefaultFromInstallConfig $installSettings.discoveryServiceUrl
+    $discoveryServiceUrlConfig = Get-ConfigValue -Prompt "Discovery Service URI" -AdditionalPromptInfo "(eg. https://SERVER/DiscoveryService/v1)" -DefaultFromParam $DiscoveryServiceUrl -DefaultFromInstallConfig $installSettings.discoveryServiceUrl -Quiet:$Quiet
 
     # Validate Service Dependencies
     $services = @{ServiceName = "MetadataService"; Version = 2}, @{ServiceName = "DataProcessingService"; Version = 1}, @{ServiceName = "IdentityService"; Version = 1}, @{ServiceName = "AuthorizationService"; Version = 1}
@@ -256,9 +256,6 @@ function Get-TerminologyConfig {
     # Terminology Service Endpoint
     $terminologyEndpointConfig = Get-ConfigValue -Prompt "$appNameConfig endpoint" -AdditionalPromptInfo "(https://SERVER/TerminologyService)" -DefaultFromParam $AppEnpoint -DefaultFromInstallConfig $installSettings.appEndpoint -Quiet:$Quiet
 
-    # Discovery Service Url
-    $discoveryServiceUrlConfig = Get-ConfigValue -Prompt "Discovery Service URI" -AdditionalPromptInfo "(eg. https://SERVER/DiscoveryService/v1)" -DefaultFromParam $DiscoveryServiceUrl -DefaultFromInstallConfig $installSettings.discoveryServiceUrl -Quiet:$Quiet
-
     # SQL Server Address
     $sqlAddressConfig = Get-ConfigValue -Prompt "address for SQL Server" -AdditionalPromptInfo "(eg. SERVER.DOMAIN.local)" -DefaultFromParam $SqlAddress -DefaultFromInstallConfig $installSettings.sqlServerAddress -Quiet:$Quiet
 
@@ -266,7 +263,12 @@ function Get-TerminologyConfig {
     $appInsightsKeyConfig = Get-ConfigValue -Prompt "Application Insights key" -AdditionalPromptInfo "(optional)" -DefaultFromParam $AppInsightsKey -DefaultFromInstallConfig $installSettings.appInsightsKey -Required $false -Quiet:$Quiet
 
     # Metadata DB Name
-    $metadataDbNameConfig = Get-ConfigValue -Prompt "metadata database name" -DefaultFromParam $MetadataDbName -DefaultFromInstallConfig $installSettings.metadataDbName -Quiet:$Quiet
+    if ([string]::IsNullOrWhiteSpace($installSettings.metadataDbName)) {
+        $metadataDbNameParam = "EDWAdmin"
+    } else {
+        $metadataDbNameParam = $installSettings.metadataDbName
+    }
+    $metadataDbNameConfig = Get-ConfigValue -Prompt "metadata database name" -DefaultFromParam $MetadataDbName -DefaultFromInstallConfig $metadataDbNameParam -Quiet:$Quiet
 
     # Data Directory
     if ([string]::IsNullOrWhiteSpace($installSettings.defaultSqlDataDirectory)) {
@@ -276,7 +278,7 @@ function Get-TerminologyConfig {
     else {
         $sqlDataDirectoryParam = $installSettings.defaultSqlDataDirectory
     }
-    $sqlDataDirectoryConfig = Get-ConfigValue -Prompt "Data directory to create Terminology database" -DefaultFromParam $SqlDataDirectory -DefaultFromInstallConfig $sqlDataDirectoryParam -Silent:$Silent
+    $sqlDataDirectoryConfig = Get-ConfigValue -Prompt "Data directory to create Terminology database" -DefaultFromParam $SqlDataDirectory -DefaultFromInstallConfig $sqlDataDirectoryParam -Quiet:$Quiet
 
     # Log Directory
     if ([string]::IsNullOrWhiteSpace($installSettings.defaultSqlLogDirectory)) {
@@ -286,7 +288,7 @@ function Get-TerminologyConfig {
     else {
         $sqlLogDirectoryParam = $installSettings.defaultSqlLogDirectory
     }
-    $sqlLogDirectoryConfig = Get-ConfigValue -Prompt "Log directory to create Terminology database" -DefaultFromParam $SqlLogDirectory -DefaultFromInstallConfig $sqlLogDirectoryParam -Silent:$Silent
+    $sqlLogDirectoryConfig = Get-ConfigValue -Prompt "Log directory to create Terminology database" -DefaultFromParam $SqlLogDirectory -DefaultFromInstallConfig $sqlLogDirectoryParam -Quiet:$Quiet
 
     Add-InstallationSetting "terminology" "appName" "$appNameConfig" | Out-Null
     Add-InstallationSetting "terminology" "appEndpoint" "$terminologyEndpointConfig" | Out-Null
