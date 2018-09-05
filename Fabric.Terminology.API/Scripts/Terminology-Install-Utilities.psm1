@@ -203,7 +203,7 @@ function Get-TerminologyConfig {
     $installSettings = Get-InstallationSettings "terminology"
 
     # Discovery Service Url
-    $discoveryServiceUrlConfig = Get-ConfigValue -Prompt "Discovery Service URI" -AdditionalPromptInfo "(eg. https://SERVER/DiscoveryService/v1)" -DefaultFromParam $DiscoveryServiceUrl -DefaultFromInstallConfig $installSettings.discoveryServiceUrl -Quiet:$Quiet
+    $discoveryServiceUrlConfig = Get-ConfigValue -Prompt "Discovery Service URI" -AdditionalPromptInfo "(eg. https://SERVER/DiscoveryService/v1)" -DefaultFromParam $DiscoveryServiceUrl -DefaultFromInstallConfig $installSettings.discoveryService -Quiet:$Quiet
 
     # Validate Service Dependencies
     $services = @{ServiceName = "MetadataService"; Version = 2}, @{ServiceName = "DataProcessingService"; Version = 1}, @{ServiceName = "IdentityService"; Version = 1}, @{ServiceName = "AuthorizationService"; Version = 1}
@@ -304,9 +304,9 @@ function Get-TerminologyConfig {
 
     Add-InstallationSetting "terminology" "appName" "$appNameConfig" | Out-Null
     Add-InstallationSetting "terminology" "appEndpoint" "$terminologyEndpointConfig" | Out-Null
-    Add-InstallationSetting "terminology" "discoveryServiceUrl" "$discoveryServiceUrlConfig" | Out-Null
-    Add-InstallationSetting "terminology" "sqlServerAddress" "$sqlAddressConfig" | Out-Null
     Add-InstallationSetting "terminology" "appInsightsInstrumentationKey" "$appInsightsKeyConfig" | Out-Null
+    Add-InstallationSetting "common" "discoveryService" "$discoveryServiceUrlConfig" | Out-Null
+    Add-InstallationSetting "common" "sqlServerAddress" "$sqlAddressConfig" | Out-Null
     Add-InstallationSetting "common" "metadataDbName" "$metadataDbNameConfig" | Out-Null
     Add-InstallationSetting "common" "sqlDataDirectory" "$sqlDataDirectoryConfig" | Out-Null
     Add-InstallationSetting "common" "sqlLogDirectory" "$sqlLogDirectoryConfig" | Out-Null
