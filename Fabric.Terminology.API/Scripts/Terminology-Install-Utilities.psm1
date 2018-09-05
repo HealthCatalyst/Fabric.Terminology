@@ -130,10 +130,11 @@ function Invoke-SqlCommand {
         [String] $SqlServerAddress,
         [String] $DatabaseName,
         [String] $Query,
-        [PSCustomObject] $Parameters = @{}
+        [PSCustomObject] $Parameters = @{},
+        [Boolean] $ReturnData = $false
     )
 
-    $connectionString = "Data Source=$SqlServerAddress;Initial Catalog=$($DatabaseName); Trusted_Connection=True;"
+    $connectionString = "Data Source=$SqlServerAddress;Initial Catalog=$DatabaseName; Trusted_Connection=True;"
     $connection = New-Object System.Data.SqlClient.SQLConnection($connectionString)
     $command = New-Object System.Data.SqlClient.SqlCommand($Query, $connection)
     
@@ -143,7 +144,17 @@ function Invoke-SqlCommand {
         }
 
         $connection.Open() 
-        $command.ExecuteNonQuery() | Out-Null
+
+        if ($ReturnData) {
+            $adapter = New-Object System.Data.sqlclient.sqlDataAdapter $command
+            $dataset = New-Object System.Data.DataSet
+            $adapter.Fill($dataSet) | Out-Null
+            $dataSet.Tables
+        }
+        else {
+            $command.ExecuteNonQuery() | Out-Null
+        }
+
         $connection.Close()        
     }
     catch [System.Data.SqlClient.SqlException] {
@@ -265,7 +276,8 @@ function Get-TerminologyConfig {
     # Metadata DB Name
     if ([string]::IsNullOrWhiteSpace($installSettings.metadataDbName)) {
         $metadataDbNameParam = "EDWAdmin"
-    } else {
+    }
+    else {
         $metadataDbNameParam = $installSettings.metadataDbName
     }
     $metadataDbNameConfig = Get-ConfigValue -Prompt "metadata database name" -DefaultFromParam $MetadataDbName -DefaultFromInstallConfig $metadataDbNameParam -Quiet:$Quiet
@@ -391,6 +403,210 @@ function Publish-TerminologyDacpac() {
     Publish-DosDacPac -TargetSqlInstance $Config.sqlAddress -DacPacFilePath $Dacpac -TargetDb "Terminology" -PublishOptionsFilePath $PublishProfile
 }
 
+function Get-RoleId {
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $Role,
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $SqlAddress
+    )
+
+    $query = "SELECT TOP (1) [RoleID] FROM [$metadataDatabase].[CatalystAdmin].[RoleBASE] WHERE RoleNM = '$Role'"
+    $roleQueryResult = Invoke-SqlCommand -SqlServerAddress $SqlAddress -Query $query -DatabaseName $metadataDatabase -ReturnData $true
+    $roleId = $roleQueryResult.Table.RoleID
+
+    if ($roleId) {
+        Write-Host "RoleID for $Role`: $roleId"
+    }
+    else {
+        throw "No RoleID found for role '$Role'"
+    }
+
+    return $roleId
+}
+
+
+function Invoke-PostToMds {
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $name,
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $path,
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $discoveryServiceUrl
+    )
+
+    # TODO THIS NEEDS TO CHANGE AFTER THE FABRIC UPDATES!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    $authToken = Read-Host "Log into Atlas was a DosAdmin, and copy the access token from one of the auth headers to MDS and copy it here. This is a temporary workaround"
+    $dataMartJson = Get-Content -Raw -Path $path
+    $headers = @{"Content-Type" = "application/json"}
+    $headers.Add("Authorization", "Bearer $authToken")
+
+    $mdsUrl = Get-ServiceFromDiscovery -DiscoveryUrl $discoveryServiceUrl -Name "MetadataService" -Version 2
+       
+    try {
+        Write-DosMessage -Level "Information" -Message "Starting to create metadata for $name"
+        $response = Invoke-RestMethod -Uri $mdsUrl/DataMarts -Method POST -Body $dataMartJson -Headers $headers
+        Write-DosMessage -Level "Information" -Message "Completed creating metadata for $name"
+        return $response.Id
+    }
+    catch [System.Net.WebException] {
+        Write-DosMessage -Level "Error" -Message "Creating metadata for $name stopped"
+        Write-DosMessage -Level "Error" -Message "Description:" $_.Exception.Response.StatusDescription
+        Write-DosMessage -Level "Error" -Message  $_.ErrorDetails.Message | ConvertFrom-Json | Select-Object -Expand message
+    }
+}
+
+function Invoke-PostToDps {
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $dataMartId,
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $discoveryServiceUrl
+    )
+
+    $headers = @{"Content-Type" = "application/json"}
+    $dpsUrl = Get-ServiceFromDiscovery- DiscoveryUrl $discoveryServiceUrl -Name "DataProcessingService" -version 1
+
+    try {
+        $response = Invoke-RestMethod -Uri $dpsUrl/ExecuteDataMart -Method POST -UseDefaultCredentials -Headers $headers -Body "{ `"DataMartId`": $dataMartId, `"BatchExecution`": { `"PipelineType`": `"Migration`", `"OverrideLoadType`": `"Incremental`", `"LoggingLevel`": `"Diagnostic`" } }"
+        $batchExecutionId = ($response.value | ConvertFrom-Json).Id
+        Write-DosMessage -Level "Info" -Message  "Batch execution successfully sent to the data processing service."
+
+        return $batchExecutionId;
+    }
+    catch [System.Net.WebException] {
+        Write-DosMessage -Level "Error" -Message  "POST for '$name' failed with status code:" $_.Exception.Response.StatusCode.value__ 
+        Write-DosMessage -Level "Error" -Message  "Description:" $_.Exception.Response.StatusDescription
+    }
+}
+
+function Invoke-PollBatchExecutions {
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $terminologyBatchExecutionId,
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $sharedTerminologyBatchExecutionId
+    )
+
+    $dpsUrl = Get-ServiceFromDiscovery -name "DataProcessingService" -version 1
+    $terminologyUrl = "$dpsUrl/BatchExecutions($terminologyBatchExecutionId)"
+    $terminologyResponse = "";
+    $sharedTerminologyResponse = "";
+    $wasSuccessful = 0;
+
+    foreach ($i in 1..30) {
+        Start-Sleep -s 5
+        if ($terminologyResponse -ne "Failed") {
+            $terminologyResponse = Invoke-RestMethod -Uri $terminologyUrl -Method GET -UseDefaultCredentials
+        }
+        if ($sharedTerminologyResponse -ne "Failed") {
+            $sharedTerminologyResponse = Invoke-RestMethod -Uri $terminologyUrl -Method GET -UseDefaultCredentials
+        }
+
+        if ($terminologyResponse.Status -eq "Failed" -or $sharedTerminologyResponse.Status -eq "Failed") {
+            Write-DosMessage -Level "Error" -Error "One of the batch executions has failed. Please check EDW Console for additional logging. Halting the terminology registration."
+            break
+        }
+        if ($terminologyResponse.Status -eq "Success" -and $sharedTerminologyResponse.Status -eq "Success") {
+            Write-DosMessage -Level "Error" -Message "Both batch executions have run successfully."
+            $wasSuccessful = 1;
+            break
+        }
+
+        Write-DosMessage -Level "Information" -Message  "Terminology data mart status: $($terminologyResponse.Status)"
+        Write-DosMessage -Level "Information" -Message  "SharedTerminology data mart status: $($sharedTerminologyResponse.Status)"
+    }
+    return $wasSuccessful;
+
+}
+
+function Add-MetadataAndStructures() {
+    param(
+        [Parameter(Mandatory = $true)]
+        [PSobject] $Config
+    )
+    $discoveryServiceUrl = $Config.discoveryServiceUrl
+    $metadataDatabase = $Config.metadataDbName
+    $sqlAddress = $Config.sqlAddress
+      
+   
+    # get IdentityID from IdentityBASE
+    $user = "$env:USERDOMAIN\$env:USERNAME"
+    $identityBaseQuery = "SELECT TOP (1) [IdentityID] FROM [$metadataDatabase].[CatalystAdmin].[IdentityBASE] WHERE UPPER(IdentityNM) = UPPER('$user')"
+    $identityQueryResult = Invoke-SqlCommand -SqlServerAddress $sqlAddress -DatabaseName $metadataDatabase -Query $identityBaseQuery -ReturnData $true
+    $identityId = $identityQueryResult.Table.IdentityID
+
+    if ($identityId) {
+        Write-DosMessage -Level "Information" -Message  "IdentityID for $user`: $identityId"
+    }
+    else {
+        Write-DosMessage -Level "Information" -Message   "User is not in IdentityBASE... Adding user: $user"
+        Invoke-SqlCommand -SqlServerAddress $sqlAddress -DatabaseName $metadataDatabase -Query "INSERT INTO [$metadataDatabase].[CatalystAdmin].[IdentityBASE] (IdentityNM) VALUES (UPPER('$user'))" -ReturnData $true
+        $identityBaseQuery = "SELECT TOP (1) [IdentityID] FROM [$metadataDatabase].[CatalystAdmin].[IdentityBASE] WHERE UPPER(IdentityNM) = UPPER('$user')"
+        $identityQueryResult = Invoke-SqlCommand -SqlServerAddress $sqlAddress -DatabaseName $metadataDatabase -Query $identityBaseQuery -ReturnData $true
+        $identityId = $identityQueryResult.Table.IdentityID
+    }
+
+    $dataProcessingRole = "DataProcessingServiceUser"
+    $dataProcessingServiceRoleId = Get-RoleId -Role $dataProcessingRole -SqlAddress $sqlAddress
+    
+    # check IdentityRoleBASE for DPS role
+    $identityRoleBaseQuery = "SELECT TOP (1) [IdentityRoleID] FROM [$metadataDatabase].[CatalystAdmin].[IdentityRoleBASE] WHERE IdentityId = $identityId AND RoleID = $dataProcessingServiceRoleId"
+    $identityRoleQueryResult = Invoke-SqlCommand -SqlServerAddress $sqlAddress -DatabaseName $metadataDatabase -Query $identityRoleBaseQuery -ReturnData $true
+    $dataProcessingRoleId = $identityRoleQueryResult.Table.IdentityRoleID
+    $dataProcessingRoleAdded = $false
+
+    if ($dataProcessingRoleId) {
+        Write-Host "User $user already has the $dataProcessingRole role"
+    }
+    else {
+        Write-Host "User $user does not have the $dataProcessingRole role"
+        Write-Host "Adding $dataProcessingRole role now"
+        $identityRoleBaseQuery = "INSERT INTO [$metadataDatabase].[CatalystAdmin].[IdentityRoleBASE] (IdentityID, RoleID) VALUES ($identityId, $dataProcessingServiceRoleId)"
+        Invoke-SqlCommand -SqlServerAddress $sqlAddress -DatabaseName $metadataDatabase -Query $identityRoleBaseQuery -ReturnData $true
+        Write-Host "$dataProcessingRole role added for user $user"
+        $dataProcessingRoleAdded = $true
+    }
+
+    # POST Terminology data marts to MDS
+    Write-DosMessage -Level "Information" -Message "Creating Terminology metadata. This will take several minutes."
+    $terminologyDataMartId = Invoke-PostToMds -discoveryServiceUrl $discoveryServiceUrl -name "Terminology" -path ".\Terminology.json"
+
+    Write-DosMessage -Level "Information" -Message "Creating SharedTerminology metadata. This will take several minutes."
+    $sharedTerminologyDataMartId = Invoke-PostToMds -discoveryServiceUrl $discoveryServiceUrl -name "SharedTerminology" -path ".\SharedTerminologyFiveNPEs.json"
+
+
+    # POST executions 
+    Write-DosMessage -Level "Information" -Message "Creating physical tables for Terminology and SharedTerminology data marts"
+    $terminologyBatchExecutionId = Invoke-PostToDps -discoveryServiceUrl $discoveryServiceUrl -dataMartId $terminologyDataMartId
+    $sharedTerminologyBatchExecutionId = Invoke-PostToDps -discoveryServiceUrl $discoveryServiceUrl -dataMartId $sharedTerminologyDataMartId
+
+    # Poll batch executions for 5 minutes to determine if they've been successful
+    $wasSuccessful = Invoke-PollBatchExecutions -terminologyBatchExecutionId $terminologyBatchExecutionId -sharedTerminologyBatchExecutionId $sharedTerminologyBatchExecutionId
+
+    # if DPS role was added for user, remove the role
+    if ($dataProcessingRoleAdded) {
+        Write-DosMessage -Level "Information" -Message "Removing $dataProcessingRole role from user $user"
+        $identityRoleBaseQuery = "DELETE FROM [$metadataDatabase].[CatalystAdmin].[IdentityRoleBASE] WHERE IdentityId = $identityId AND RoleID = $dataProcessingServiceRoleId"
+        Invoke-SqlCommand -SqlServerAddress $sqlAddress -DatabaseName $metadataDatabase -Query $identityRoleBaseQuery
+        Write-DosMessage -Level "Information" -Message "Role removed"
+    }
+
+    if (!$wasSuccessful) {
+        Write-DosMessage -ErrorAction Stop -Level "Error" -Message "Terminology installation is halting, since batches could not be executed properly. Please check the logs in EDW Console and requeue if necessary."
+    }
+}
+
 function Publish-TerminologyDatabaseRole() {
     param(
         [PSCustomObject] $Config,
@@ -483,4 +699,5 @@ Export-ModuleMember -function Get-TerminologyConfig
 Export-ModuleMember -function Update-DiscoveryService
 Export-ModuleMember -function Update-AppSettings
 Export-ModuleMember -function Publish-TerminologyDatabaseUpdates
+Export-ModuleMember -function Add-MetadataAndStructures
 Export-ModuleMember -function Test-Terminology
