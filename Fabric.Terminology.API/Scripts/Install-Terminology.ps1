@@ -46,7 +46,7 @@ $dosInstallUtilities = Get-Childitem -Path ./**/DosInstallUtilities.psm1 -Recurs
 if ($dosInstallUtilities.length -eq 0) {
     Install-Module DosInstallUtilities -Scope CurrentUser
     Import-Module DosInstallUtilities -Force
-    Write-DosMessage -Level "Warning" -Message "Could not find dos install utilities. Manually installing"
+    Write-DosMessage -Level "Warning" -Message "Could not find DosInstallUtilities. Manually installing..."
 }
 else {
     Import-Module -Name $dosInstallUtilities.FullName
@@ -56,12 +56,12 @@ else {
 # Import Fabric Install Utilities
 $fabricInstallUtilities = ".\Fabric-Install-Utilities.psm1"
 if (!(Test-Path $fabricInstallUtilities -PathType Leaf)) {
-    Write-DosMessage -Level "Warning" -Message "Could not find fabric install utilities. Manually downloading and installing"
+    Write-DosMessage -Level "Warning" -Message "Could not find FabricInstallUtilities. Manually downloading and installing..."
     Invoke-WebRequest -Uri https://raw.githubusercontent.com/HealthCatalyst/InstallScripts/master/common/Fabric-Install-Utilities.psm1 -Headers @{"Cache-Control" = "no-cache"} -OutFile $fabricInstallUtilities
 }
 
 # DBA tools
-Import-Module dbatools
+Install-Module dbatools
 
 # IIS web administration
 Import-Module WebAdministration
@@ -71,7 +71,7 @@ Import-Module -Name $fabricInstallUtilities -Force
 # Download Registration Script
 $fabricRegistration = ".\Register.ps1"
 if (!(Test-Path $fabricRegistration -PathType Leaf)) {
-    Write-DosMessage -Level "Warning" -Message "Could not find registration script. Manually downloading"
+    Write-DosMessage -Level "Warning" -Message "Could not find Fabric registration script. Manually downloading..."
     Invoke-WebRequest -Uri https://raw.githubusercontent.com/HealthCatalyst/Fabric.Identity/master/Fabric.Identity.API/scripts/Register.ps1 -Headers @{"Cache-Control" = "no-cache"} -OutFile $fabricRegistration
 }
 
@@ -91,5 +91,5 @@ Add-MetadataAndStructures -Config $config
 
 Test-Terminology -Config $config
 
-Write-DosMessage -Level "Information" -Message "Registering Terminology with fabric authorization"
+Write-DosMessage -Level "Information" -Message "Registering Terminology with Fabric Authorization"
 & $fabricRegistration -discoveryServiceUrl $DiscoveryServiceUrl -quiet:$Quiet
