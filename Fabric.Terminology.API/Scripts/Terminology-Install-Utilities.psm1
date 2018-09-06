@@ -421,7 +421,7 @@ function Publish-TerminologyDacpac() {
     $log.InnerText = $Config.sqlDataDirectory
     $publishProfileXml.Save($PublishProfile);
     
-    Write-DosMessage -Level "Information" -Message "Creating or updating Terminology database on $($Config.sqlAddress)"
+    Write-DosMessage -Level "Information" -Message "Creating or updating Terminology database on $($Config.sqlAddress). This may take a few minutes"
     Publish-DosDacPac -TargetSqlInstance $Config.sqlAddress -DacPacFilePath $Dacpac -TargetDb "Terminology" -PublishOptionsFilePath $PublishProfile -ErrorAction Stop
 }
 
