@@ -34,6 +34,9 @@
     [switch] $Quiet
 )
 
+# Fail installation on first error
+$ErrorActionPreference = "Stop"
+
 [string[]] $requiredFiles = @($InstallFile, $Dacpac, $PublishProfile, "$PSScriptRoot\Install.config", "$PSScriptRoot\Terminology-Install-Utilities.psm1", "$PSScriptRoot\registration.config")
 For ($i = 0; $i -lt $requiredFiles.Length; $i++) {
     if (!(Test-Path -Path $requiredFiles[$i])) {

@@ -54,6 +54,10 @@ function Get-ConfigValue {
     }
 }
 
+function Get-FullyQualifiedMachineName() {
+	return "$env:computername.$((Get-WmiObject Win32_ComputerSystem).Domain.tolower())";
+}
+
 function Get-ServiceFromDiscovery {
     param(
         [Parameter(Mandatory = $true)]
@@ -203,7 +207,13 @@ function Get-TerminologyConfig {
     $installSettings = Get-InstallationSettings "terminology"
 
     # Discovery Service Url
-    $discoveryServiceUrlConfig = Get-ConfigValue -Prompt "Discovery Service URI" -AdditionalPromptInfo "(eg. https://SERVER/DiscoveryService/v1)" -DefaultFromParam $DiscoveryServiceUrl -DefaultFromInstallConfig $installSettings.discoveryService -Quiet:$Quiet
+    if ([string]::IsNullOrWhiteSpace($installSettings.discoveryService)) {
+        $discoveryServiceParam = "https://$(Get-FullyQualifiedMachineName)/DiscoveryService/v1"
+    }
+    else {
+        $discoveryServiceParam = $installSettings.discoveryService
+    }
+    $discoveryServiceUrlConfig = Get-ConfigValue -Prompt "Discovery Service URI" -DefaultFromParam $DiscoveryServiceUrl -DefaultFromInstallConfig $discoveryServiceParam -Quiet:$Quiet
 
     # Validate Service Dependencies
     $services = @{ServiceName = "MetadataService"; Version = 2}, @{ServiceName = "DataProcessingService"; Version = 1}, @{ServiceName = "IdentityService"; Version = 1}, @{ServiceName = "AuthorizationService"; Version = 1}
@@ -265,10 +275,22 @@ function Get-TerminologyConfig {
     $appNameConfig = Get-ConfigValue -Prompt "service name" -DefaultFromParam $AppName -DefaultFromInstallConfig $installSettings.appName -Quiet:$Quiet
 
     # Terminology Service Endpoint
-    $terminologyEndpointConfig = Get-ConfigValue -Prompt "$appNameConfig endpoint" -AdditionalPromptInfo "(https://SERVER/TerminologyService)" -DefaultFromParam $AppEnpoint -DefaultFromInstallConfig $installSettings.appEndpoint -Quiet:$Quiet
+    if ([string]::IsNullOrWhiteSpace($installSettings.appEndpoint)) {
+        $terminologyEndpointParam = "https://$(Get-FullyQualifiedMachineName)/TerminologyService"
+    }
+    else {
+        $terminologyEndpointParam = $installSettings.appEndpoint
+    }
+    $terminologyEndpointConfig = Get-ConfigValue -Prompt "$appNameConfig endpoint" -DefaultFromParam $AppEnpoint -DefaultFromInstallConfig $terminologyEndpointParam  -Quiet:$Quiet
 
     # SQL Server Address
-    $sqlAddressConfig = Get-ConfigValue -Prompt "address for SQL Server" -AdditionalPromptInfo "(eg. SERVER.DOMAIN.local)" -DefaultFromParam $SqlAddress -DefaultFromInstallConfig $installSettings.sqlServerAddress -Quiet:$Quiet
+    if ([string]::IsNullOrWhiteSpace($installSettings.sqlServerAddress)) {
+        $sqlAddressConfigParam = "$(Get-FullyQualifiedMachineName)"
+    }
+    else {
+        $sqlAddressConfigParam = $installSettings.sqlServerAddress
+    }
+    $sqlAddressConfig = Get-ConfigValue -Prompt "address for SQL Server" -DefaultFromParam $SqlAddress -DefaultFromInstallConfig $sqlAddressConfigParam -Quiet:$Quiet
 
     # App Insights Key
     $appInsightsKeyConfig = Get-ConfigValue -Prompt "Application Insights key" -AdditionalPromptInfo "(optional)" -DefaultFromParam $AppInsightsKey -DefaultFromInstallConfig $installSettings.appInsightsKey -Required $false -Quiet:$Quiet
@@ -400,7 +422,7 @@ function Publish-TerminologyDacpac() {
     $publishProfileXml.Save($PublishProfile);
     
     Write-DosMessage -Level "Information" -Message "Creating or updating Terminology database on $($Config.sqlAddress)"
-    Publish-DosDacPac -TargetSqlInstance $Config.sqlAddress -DacPacFilePath $Dacpac -TargetDb "Terminology" -PublishOptionsFilePath $PublishProfile
+    Publish-DosDacPac -TargetSqlInstance $Config.sqlAddress -DacPacFilePath $Dacpac -TargetDb "Terminology" -PublishOptionsFilePath $PublishProfile -ErrorAction Stop
 }
 
 function Get-RoleId {
@@ -585,7 +607,7 @@ function Add-MetadataAndStructures() {
     Write-DosMessage -Level "Information" -Message "Creating SharedTerminology metadata. This will take several minutes."
     $sharedTerminologyDataMartId = Invoke-PostToMds -discoveryServiceUrl $discoveryServiceUrl -name "SharedTerminology" -path ".\SharedTerminologyFiveNPEs.json"
 
-
+    
     # POST executions 
     Write-DosMessage -Level "Information" -Message "Creating physical tables for Terminology and SharedTerminology data marts"
     $terminologyBatchExecutionId = Invoke-PostToDps -discoveryServiceUrl $discoveryServiceUrl -dataMartId $terminologyDataMartId
