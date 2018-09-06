@@ -34,7 +34,10 @@
     [switch] $Quiet
 )
 
-[string[]] $requiredFiles = @($InstallFile, $Dacpac, $PublishProfile, "$PSScriptRoot\Install.config", "$PSScriptRoot\Register.ps1", "$PSScriptRoot\Terminology-Install-Utilities.psm1", "$PSScriptRoot\registration.config")
+# Fail installation on first error
+$ErrorActionPreference = "Stop"
+
+[string[]] $requiredFiles = @($InstallFile, $Dacpac, $PublishProfile, "$PSScriptRoot\Install.config", "$PSScriptRoot\Terminology-Install-Utilities.psm1", "$PSScriptRoot\registration.config")
 For ($i = 0; $i -lt $requiredFiles.Length; $i++) {
     if (!(Test-Path -Path $requiredFiles[$i])) {
         Throw "$($requiredFiles[$i]) does not exist and is required for install."
@@ -42,16 +45,11 @@ For ($i = 0; $i -lt $requiredFiles.Length; $i++) {
 }
 
 # Import Dos Install Utilities
-$dosInstallUtilities = Get-Childitem -Path ./**/DosInstallUtilities.psm1 -Recurse
-if ($dosInstallUtilities.length -eq 0) {
-    Install-Module DosInstallUtilities -Scope CurrentUser
-    Import-Module DosInstallUtilities -Force
-    Write-DosMessage -Level "Warning" -Message "Could not find DosInstallUtilities. Manually installing..."
-}
-else {
-    Import-Module -Name $dosInstallUtilities.FullName
-    Write-DosMessage -Level "Verbose" -Message "Installing DosInstallUtilities at $($dosInstallUtilities.FullName)"
-}
+$MinimumVersion = [Version]::new(1, 0, 163)
+Import-Module -Name DosInstallUtilities -MinimumVersion $MinimumVersion -ErrorAction Stop
+
+# DBA tools
+Import-Module -Name dbatools -ErrorAction Stop
  
 # Import Fabric Install Utilities
 $fabricInstallUtilities = ".\Fabric-Install-Utilities.psm1"
@@ -59,14 +57,16 @@ if (!(Test-Path $fabricInstallUtilities -PathType Leaf)) {
     Write-DosMessage -Level "Warning" -Message "Could not find FabricInstallUtilities. Manually downloading and installing..."
     Invoke-WebRequest -Uri https://raw.githubusercontent.com/HealthCatalyst/InstallScripts/master/common/Fabric-Install-Utilities.psm1 -Headers @{"Cache-Control" = "no-cache"} -OutFile $fabricInstallUtilities
 }
-
-# DBA tools
-Install-Module dbatools
+Import-Module -Name $fabricInstallUtilities -Force
 
 # IIS web administration
-Import-Module WebAdministration
-
-Import-Module -Name $fabricInstallUtilities -Force
+try {
+    Import-Module WebAdministration
+}
+catch {
+    Write-Error -Message "Error importing module WebAdministration. Please verify IIS installed and you are running Windows Server 2012 or above"
+    throw $_.Exception
+}
 
 # Download Registration Script
 $fabricRegistration = ".\Register.ps1"
