@@ -35,6 +35,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Modules", "Modules", "{99FE
 		Build\Modules\SolutionVersionConfig.psm1 = Build\Modules\SolutionVersionConfig.psm1
 	EndProjectSection
 EndProject
+Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "Fabric.Terminology.Database", "Fabric.Terminology.Database\Fabric.Terminology.Database.sqlproj", "{B9E4641D-F0B4-4B9C-8D21-C06E830DE686}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -65,6 +67,12 @@ Global
 		{ADCA8957-4118-4238-A70E-764A8DC2490D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ADCA8957-4118-4238-A70E-764A8DC2490D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ADCA8957-4118-4238-A70E-764A8DC2490D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B9E4641D-F0B4-4B9C-8D21-C06E830DE686}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B9E4641D-F0B4-4B9C-8D21-C06E830DE686}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B9E4641D-F0B4-4B9C-8D21-C06E830DE686}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{B9E4641D-F0B4-4B9C-8D21-C06E830DE686}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B9E4641D-F0B4-4B9C-8D21-C06E830DE686}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B9E4641D-F0B4-4B9C-8D21-C06E830DE686}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

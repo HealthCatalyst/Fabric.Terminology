@@ -220,3 +220,6 @@ Fabric.Terminology.ElasticSearch.Indexer/Logs/
 Fabric.Terminology.API/Scripts/DosInstallUtilities/
 Fabric.Terminology.API/Scripts/Fabric.Terminology.InstallPackage.zip
 Fabric.Terminology.API/Scripts/Fabric-Install-Utilities.psm1
+Fabric.Terminology.API/Scripts/Fabric.Terminology.Database.dacpac
+Fabric.Terminology.Database/Fabric.Terminology.Database.jfm
+Fabric.Terminology.API/Scripts/Register.ps1
