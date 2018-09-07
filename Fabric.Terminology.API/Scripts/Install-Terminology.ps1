@@ -45,20 +45,35 @@ For ($i = 0; $i -lt $requiredFiles.Length; $i++) {
 }
 
 # Import Dos Install Utilities
-$MinimumVersion = [Version]::new(1, 0, 163)
-Import-Module -Name DosInstallUtilities -MinimumVersion $MinimumVersion -ErrorAction Stop
+$dosInstallUtilities = Get-Childitem -Path ./**/DosInstallUtilities.psm1 -Recurse
+if ($dosInstallUtilities.length -eq 0) {
+    Install-Module DosInstallUtilities -Scope CurrentUser
+    Import-Module DosInstallUtilities -Force
+    Write-DosMessage -Level "Warning" -Message "Could not find DosInstallUtilities. Manually installing..."
+}
+else {
+    Import-Module -Name $dosInstallUtilities.FullName
+    Write-DosMessage -Level "Verbose" -Message "Installing DosInstallUtilities at $($dosInstallUtilities.FullName)"
+}
+
+# Fabric install utilities
+if (!(Test-Path .\Fabric-Install-Utilities.psm1)) {
+    Invoke-WebRequest -Uri https://raw.githubusercontent.com/HealthCatalyst/InstallScripts/master/common/Fabric-Install-Utilities.psm1 -OutFile Fabric-Install-Utilities.psm1
+}
+Import-Module -Name .\Fabric-Install-Utilities.psm1 -Force
 
 # DBA tools
-Import-Module -Name dbatools -ErrorAction Stop
- 
-# Import Fabric Install Utilities
-$fabricInstallUtilities = ".\Fabric-Install-Utilities.psm1"
-if (!(Test-Path $fabricInstallUtilities -PathType Leaf)) {
-    Write-DosMessage -Level "Warning" -Message "Could not find FabricInstallUtilities. Manually downloading and installing..."
-    Invoke-WebRequest -Uri https://raw.githubusercontent.com/HealthCatalyst/InstallScripts/master/common/Fabric-Install-Utilities.psm1 -Headers @{"Cache-Control" = "no-cache"} -OutFile $fabricInstallUtilities
+$dbatools = Get-Childitem -Path ./**/dbatools.psm1 -Recurse
+if ($dbatools.length -eq 0) {
+    Write-DosMessage -Level "Warning" -Message "Could not find dbatools. Manually installing..."
+    Install-Module dbatools -Scope CurrentUser
+    Import-Module dbatools -Force
 }
-Import-Module -Name $fabricInstallUtilities -Force
-
+else {
+    Write-DosMessage -Level "Verbose" -Message "Installing dbatools at $($dbatools.FullName)"
+    Import-Module -Name $dbatools.FullName
+}
+ 
 # IIS web administration
 try {
     Import-Module WebAdministration
@@ -77,6 +92,34 @@ if (!(Test-Path $fabricRegistration -PathType Leaf)) {
 
 Import-Module "$PSScriptRoot\Terminology-Install-Utilities.psm1" -Force
 
+if (!(Test-Prerequisite "*.NET Core*Windows Server Hosting*" 2.0.7)) {    
+    try {
+        Write-DosMessage -Level "Warning" -Message ".NET Core Runtime & Hosting Bundle for Windows not installed...installing version 2.1.3"        
+        Invoke-WebRequest -Uri https://download.microsoft.com/download/6/E/B/6EBD972D-2E2F-41EB-9668-F73F5FDDC09C/dotnet-hosting-2.1.3-win.exe -OutFile $env:Temp\bundle.exe
+        Start-Process $env:Temp\bundle.exe -Wait -ArgumentList '/quiet /install'
+        net stop was /y
+        net start w3svc
+    }
+    catch {
+        Write-DosMessage -Level "Error" -Message "Could not install .NET Windows Server Hosting bundle. Please install the hosting bundle before proceeding. https://www.microsoft.com/net/download/dotnet-core/2.0"
+        throw $_.Exception
+    }
+    try {
+        Remove-Item $env:Temp\bundle.exe
+    }
+    catch {
+        Write-DosMessage -Level "Error" -Message "Unable to remove Server Hosting bundle exe" 
+        throw $_.Exception
+    }
+
+}
+else {
+    Write-Success ".NET Core Windows Server Hosting Bundle installed and meets expectations."
+    Write-Host ""
+}
+
+
+
 $config = Get-TerminologyConfig -Credentials $Credentials -DiscoveryServiceUrl $DiscoveryServiceUrl -SqlAddress $SqlAddress -MetadataDbName $MetadataDbName -SqlDataDirectory $SqlDataDirectory -SqlLogDirectory $SqlLogDirectory -AppEndpoint $AppEndpoint -Quiet:$Quiet
 
 Publish-DosWebApplication -WebAppPackagePath $InstallFile -AppPoolName $config.appPool -AppPoolCredential $config.iisUserCredentials -AppName $config.appName -IISWebSite $config.siteName
@@ -89,7 +132,7 @@ Publish-TerminologyDatabaseUpdates -Config $config -Dacpac $Dacpac -PublishProfi
 
 Add-MetadataAndStructures -Config $config
 
-Test-Terminology -Config $config
-
 Write-DosMessage -Level "Information" -Message "Registering Terminology with Fabric Authorization"
-& $fabricRegistration -discoveryServiceUrl $DiscoveryServiceUrl -quiet:$Quiet
+& $fabricRegistration -discoveryServiceUrl $DiscoveryServiceUrl -quiet -ErrorAction Stop
+
+Test-Terminology -Config $config
