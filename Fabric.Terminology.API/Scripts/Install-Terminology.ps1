@@ -47,7 +47,7 @@ For ($i = 0; $i -lt $requiredFiles.Length; $i++) {
 # Import Dos Install Utilities
 $dosInstallUtilities = Get-Childitem -Path ./**/DosInstallUtilities.psm1 -Recurse
 if ($dosInstallUtilities.length -eq 0) {
-    Install-Module DosInstallUtilities -Scope CurrentUser
+    Install-Module DosInstallUtilities -Scope CurrentUser -MinimumVersion 1.0.164.0 -Force
     Import-Module DosInstallUtilities -Force
     Write-DosMessage -Level "Warning" -Message "Could not find DosInstallUtilities. Manually installing..."
 }
@@ -66,7 +66,7 @@ Import-Module -Name .\Fabric-Install-Utilities.psm1 -Force
 $dbatools = Get-Childitem -Path ./**/dbatools.psm1 -Recurse
 if ($dbatools.length -eq 0) {
     Write-DosMessage -Level "Warning" -Message "Could not find dbatools. Manually installing..."
-    Install-Module dbatools -Scope CurrentUser
+    Install-Module dbatools -Scope CurrentUser -MinimumVersion 0.9.12 -Force
     Import-Module dbatools -Force
 }
 else {
