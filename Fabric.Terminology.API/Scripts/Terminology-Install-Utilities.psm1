@@ -115,20 +115,6 @@ function Invoke-PingService {
     }
 }
 
-function Invoke-ValidateServiceDependencies {
-    param(
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [String] $DiscoveryUrl
-    )
-
-    $services = @{ServiceName = "MetadataService"; Version = 2}, @{ServiceName = "DataProcessingService"; Version = 1}, @{ServiceName = "IdentityService"; Version = 1}, @{ServiceName = "AuthorizationService"; Version = 1}
-    foreach ($service in $services) {
-        Write-Host "Verifying $($service.ServiceName) (v$($service.Version))"
-        Get-ServiceFromDiscovery -DiscoveryUrl $DiscoveryUrl -Name $service.ServiceName -Version $service.Version
-    }
-}
-
 function Invoke-SqlCommand {
     param(
         [String] $SqlServerAddress,
@@ -216,11 +202,26 @@ function Get-TerminologyConfig {
     $discoveryServiceUrlConfig = Get-ConfigValue -Prompt "Discovery Service URI" -DefaultFromParam $DiscoveryServiceUrl -DefaultFromInstallConfig $discoveryServiceParam -Quiet:$Quiet
 
     # Validate Service Dependencies
-    $services = @{ServiceName = "MetadataService"; Version = 2}, @{ServiceName = "DataProcessingService"; Version = 1}, @{ServiceName = "IdentityService"; Version = 1}, @{ServiceName = "AuthorizationService"; Version = 1}
-    foreach ($service in $services) {
-        Write-DosMessage -Level "Information" -Message "Verifying $($service.ServiceName) (v$($service.Version)) is installed and registered"
-        Get-ServiceFromDiscovery -DiscoveryUrl $discoveryServiceUrlConfig -Name $service.ServiceName -Version $service.Version
-    }
+    $serviceName = "MetadataService";
+    $serviceVersion = 2;
+    Write-DosMessage -Level "Information" -Message "Verifying $serviceName (v$serviceVersion) is installed and registered"
+    $mdsServiceUrl = Get-ServiceFromDiscovery -DiscoveryUrl $discoveryServiceUrlConfig -Name $serviceName -Version $serviceVersion
+
+    $serviceName = "DataProcessingService";
+    $serviceVersion = 1;
+    Write-DosMessage -Level "Information" -Message "Verifying $serviceName (v$serviceVersion) is installed and registered"
+    $dpsServiceUrl = Get-ServiceFromDiscovery -DiscoveryUrl $discoveryServiceUrlConfig -Name $serviceName -Version $serviceVersion
+
+    $serviceName = "IdentityService";
+    $serviceVersion = 1;
+    Write-DosMessage -Level "Information" -Message "Verifying $serviceName (v$serviceVersion) is installed and registered"
+    $identityServiceUrl = Get-ServiceFromDiscovery -DiscoveryUrl $discoveryServiceUrlConfig -Name $serviceName -Version $serviceVersion
+
+    $serviceName = "AuthorizationService";
+    $serviceVersion = 1;
+    Write-DosMessage -Level "Information" -Message "Verifying $serviceName (v$serviceVersion) is installed and registered"
+    $authorizationServiceUrl = Get-ServiceFromDiscovery -DiscoveryUrl $discoveryServiceUrlConfig -Name $serviceName -Version $serviceVersion
+    
 
     # Get Credentials
     if ($Null -ne $Credentials) {
@@ -361,6 +362,10 @@ function Get-TerminologyConfig {
         sqlDataDirectory    = $sqlDataDirectoryConfig
         sqlLogDirectory     = $sqlLogDirectoryConfig
         sharedDbName        = $installSettings.sharedDbName
+        mdsServiceUrl       = $mdsServiceUrl
+        dpsServiceUrl       = $dpsServiceUrl
+        identityServiceUrl  = $identityServiceUrl
+        authorizationServiceUrl = $authorizationServiceUrl
     };
 
     return $config
@@ -466,7 +471,7 @@ function Invoke-PostToMds {
         [string] $path,
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [string] $discoveryServiceUrl
+        [PSCustomObject] $Config
     )
 
     # TODO THIS NEEDS TO CHANGE AFTER THE FABRIC UPDATES!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -475,11 +480,9 @@ function Invoke-PostToMds {
     $headers = @{"Content-Type" = "application/json"}
     $headers.Add("Authorization", "Bearer $authToken")
 
-    $mdsUrl = Get-ServiceFromDiscovery -DiscoveryUrl $discoveryServiceUrl -Name "MetadataService" -Version 2
-       
     try {
         Write-DosMessage -Level "Information" -Message "Starting to create metadata for $name"
-        $response = Invoke-RestMethod -Uri $mdsUrl/DataMarts -Method POST -Body $dataMartJson -Headers $headers
+        $response = Invoke-RestMethod -Uri "$($Config.mdsServiceUrl)/DataMarts" -Method POST -Body $dataMartJson -Headers $headers
         Write-DosMessage -Level "Information" -Message "Completed creating metadata for $name"
         return $response.Id
     }
@@ -497,14 +500,13 @@ function Invoke-PostToDps {
         [string] $dataMartId,
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [string] $discoveryServiceUrl
+        [PSCustomObject] $Config
     )
 
     $headers = @{"Content-Type" = "application/json"}
-    $dpsUrl = Get-ServiceFromDiscovery- DiscoveryUrl $discoveryServiceUrl -Name "DataProcessingService" -version 1
 
     try {
-        $response = Invoke-RestMethod -Uri $dpsUrl/ExecuteDataMart -Method POST -UseDefaultCredentials -Headers $headers -Body "{ `"DataMartId`": $dataMartId, `"BatchExecution`": { `"PipelineType`": `"Migration`", `"OverrideLoadType`": `"Incremental`", `"LoggingLevel`": `"Diagnostic`" } }"
+        $response = Invoke-RestMethod -Uri "$($Config.dpsServiceUrl)/ExecuteDataMart" -Method POST -UseDefaultCredentials -Headers $headers -Body "{ `"DataMartId`": $dataMartId, `"BatchExecution`": { `"PipelineType`": `"Migration`", `"OverrideLoadType`": `"Incremental`", `"LoggingLevel`": `"Diagnostic`" } }"
         $batchExecutionId = ($response.value | ConvertFrom-Json).Id
         Write-DosMessage -Level "Info" -Message  "Batch execution successfully sent to the data processing service."
 
@@ -523,11 +525,13 @@ function Invoke-PollBatchExecutions {
         [string] $terminologyBatchExecutionId,
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [string] $sharedTerminologyBatchExecutionId
+        [string] $sharedTerminologyBatchExecutionId,
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [PSCustomObject] $Config
     )
 
-    $dpsUrl = Get-ServiceFromDiscovery -name "DataProcessingService" -version 1
-    $terminologyUrl = "$dpsUrl/BatchExecutions($terminologyBatchExecutionId)"
+    $terminologyUrl = "$($Config.dpsServiceUrl)/BatchExecutions($terminologyBatchExecutionId)"
     $terminologyResponse = "";
     $sharedTerminologyResponse = "";
     $wasSuccessful = 0;
@@ -608,19 +612,19 @@ function Add-MetadataAndStructures() {
 
     # POST Terminology data marts to MDS
     Write-DosMessage -Level "Information" -Message "Creating Terminology metadata. This will take several minutes."
-    $terminologyDataMartId = Invoke-PostToMds -discoveryServiceUrl $discoveryServiceUrl -name "Terminology" -path ".\Terminology.json"
+    $terminologyDataMartId = Invoke-PostToMds -Config $Config -name "Terminology" -path ".\Terminology.json"
 
     Write-DosMessage -Level "Information" -Message "Creating SharedTerminology metadata. This will take several minutes."
-    $sharedTerminologyDataMartId = Invoke-PostToMds -discoveryServiceUrl $discoveryServiceUrl -name "SharedTerminology" -path ".\SharedTerminologyFiveNPEs.json"
+    $sharedTerminologyDataMartId = Invoke-PostToMds -Config $Config -name "SharedTerminology" -path ".\SharedTerminologyFiveNPEs.json"
 
     
     # POST executions 
     Write-DosMessage -Level "Information" -Message "Creating physical tables for Terminology and SharedTerminology data marts"
-    $terminologyBatchExecutionId = Invoke-PostToDps -discoveryServiceUrl $discoveryServiceUrl -dataMartId $terminologyDataMartId
-    $sharedTerminologyBatchExecutionId = Invoke-PostToDps -discoveryServiceUrl $discoveryServiceUrl -dataMartId $sharedTerminologyDataMartId
+    $terminologyBatchExecutionId = Invoke-PostToDps -Config $Config -dataMartId $terminologyDataMartId
+    $sharedTerminologyBatchExecutionId = Invoke-PostToDps -Config $Config -dataMartId $sharedTerminologyDataMartId
 
     # Poll batch executions for 5 minutes to determine if they've been successful
-    $wasSuccessful = Invoke-PollBatchExecutions -terminologyBatchExecutionId $terminologyBatchExecutionId -sharedTerminologyBatchExecutionId $sharedTerminologyBatchExecutionId
+    $wasSuccessful = Invoke-PollBatchExecutions -Config $Config -terminologyBatchExecutionId $terminologyBatchExecutionId -sharedTerminologyBatchExecutionId $sharedTerminologyBatchExecutionId
 
     # if DPS role was added for user, remove the role
     if ($dataProcessingRoleAdded) {
