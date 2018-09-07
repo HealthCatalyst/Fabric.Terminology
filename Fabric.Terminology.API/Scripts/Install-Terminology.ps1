@@ -130,7 +130,7 @@ Update-DiscoveryService -Config $config
 
 Publish-TerminologyDatabaseUpdates -Config $config -Dacpac $Dacpac -PublishProfile $PublishProfile
 
-Add-MetadataAndStructures -Config $config
+# Add-MetadataAndStructures -Config $config
 
 Write-DosMessage -Level "Information" -Message "Registering Terminology with Fabric Authorization"
 & $fabricRegistration -discoveryServiceUrl $config.discoveryServiceUrl -authorizationServiceUrl $config.authorizationServiceUrl -identityServiceUrl $Config.identityServiceUrl -registrationFile "$PSScriptRoot\terminology-registration.config" -quiet -ErrorAction Stop
