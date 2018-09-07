@@ -45,20 +45,35 @@ For ($i = 0; $i -lt $requiredFiles.Length; $i++) {
 }
 
 # Import Dos Install Utilities
-$MinimumVersion = [Version]::new(1, 0, 163)
-Import-Module -Name DosInstallUtilities -MinimumVersion $MinimumVersion -ErrorAction Stop
+$dosInstallUtilities = Get-Childitem -Path ./**/DosInstallUtilities.psm1 -Recurse
+if ($dosInstallUtilities.length -eq 0) {
+    Install-Module DosInstallUtilities -Scope CurrentUser
+    Import-Module DosInstallUtilities -Force
+    Write-DosMessage -Level "Warning" -Message "Could not find DosInstallUtilities. Manually installing..."
+}
+else {
+    Import-Module -Name $dosInstallUtilities.FullName
+    Write-DosMessage -Level "Verbose" -Message "Installing DosInstallUtilities at $($dosInstallUtilities.FullName)"
+}
+
+# Fabric install utilities
+if (!(Test-Path .\Fabric-Install-Utilities.psm1)) {
+    Invoke-WebRequest -Uri https://raw.githubusercontent.com/HealthCatalyst/InstallScripts/master/common/Fabric-Install-Utilities.psm1 -OutFile Fabric-Install-Utilities.psm1
+}
+Import-Module -Name .\Fabric-Install-Utilities.psm1 -Force
 
 # DBA tools
-Import-Module -Name dbatools -ErrorAction Stop
- 
-# Import Fabric Install Utilities
-$fabricInstallUtilities = ".\Fabric-Install-Utilities.psm1"
-if (!(Test-Path $fabricInstallUtilities -PathType Leaf)) {
-    Write-DosMessage -Level "Warning" -Message "Could not find FabricInstallUtilities. Manually downloading and installing..."
-    Invoke-WebRequest -Uri https://raw.githubusercontent.com/HealthCatalyst/InstallScripts/master/common/Fabric-Install-Utilities.psm1 -Headers @{"Cache-Control" = "no-cache"} -OutFile $fabricInstallUtilities
+$dbatools = Get-Childitem -Path ./**/dbatools.psm1 -Recurse
+if ($dbatools.length -eq 0) {
+    Write-DosMessage -Level "Warning" -Message "Could not find dbatools. Manually installing..."
+    Install-Module dbatools -Scope CurrentUser
+    Import-Module dbatools -Force
 }
-Import-Module -Name $fabricInstallUtilities -Force
-
+else {
+    Write-DosMessage -Level "Verbose" -Message "Installing dbatools at $($dbatools.FullName)"
+    Import-Module -Name $dbatools.FullName
+}
+ 
 # IIS web administration
 try {
     Import-Module WebAdministration
@@ -89,7 +104,7 @@ Publish-TerminologyDatabaseUpdates -Config $config -Dacpac $Dacpac -PublishProfi
 
 Add-MetadataAndStructures -Config $config
 
-Test-Terminology -Config $config
-
 Write-DosMessage -Level "Information" -Message "Registering Terminology with Fabric Authorization"
-& $fabricRegistration -discoveryServiceUrl $DiscoveryServiceUrl -quiet:$Quiet
+& $fabricRegistration -discoveryServiceUrl $DiscoveryServiceUrl -quiet -ErrorAction Stop
+
+Test-Terminology -Config $config

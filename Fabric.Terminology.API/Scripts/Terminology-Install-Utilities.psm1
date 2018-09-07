@@ -229,7 +229,7 @@ function Get-TerminologyConfig {
     else {
         $iisUserConfig = Get-ConfigValue -Prompt "IIS user name to run the app pool" -DefaultFromParam $IisUserName -DefaultFromInstallConfig $installSettings.iisUser -Quiet:$Quiet
         
-        $passwordPrompt = "App pool user password"
+        $passwordPrompt = "App pool user password for $iisUserConfig"
 
         if (-not ([string]::IsNullOrWhiteSpace($installSettings.iisUserPwd))) {
             if ($Quiet -eq $true) {
@@ -306,7 +306,7 @@ function Get-TerminologyConfig {
 
     # Data Directory
     if ([string]::IsNullOrWhiteSpace($installSettings.defaultSqlDataDirectory)) {
-        $dbDefaults = Get-DbaDefaultPath -SqlInstance "localhost"
+        $dbDefaults = Get-DbaDefaultPath -SqlInstance $sqlAddressConfig
         $sqlDataDirectoryParam = $dbDefaults.Data
     }
     else {
@@ -316,7 +316,7 @@ function Get-TerminologyConfig {
 
     # Log Directory
     if ([string]::IsNullOrWhiteSpace($installSettings.defaultSqlLogDirectory)) {
-        $dbDefaults = Get-DbaDefaultPath -SqlInstance "localhost"
+        $dbDefaults = Get-DbaDefaultPath -SqlInstance $sqlAddressConfig
         $sqlLogDirectoryParam = $dbDefaults.Log
     }
     else {
@@ -360,6 +360,7 @@ function Get-TerminologyConfig {
         appInsightsKey      = $appInsightsKeyConfig
         sqlDataDirectory    = $sqlDataDirectoryConfig
         sqlLogDirectory     = $sqlLogDirectoryConfig
+        sharedDbName        = $installSettings.sharedDbName
     };
 
     return $config
@@ -372,12 +373,16 @@ function Update-AppSettings {
 
     $appSettings = "$(Get-IISWebSitePath -WebSiteName $Config.siteName)\$($Config.appName)\appsettings.json"
     $appSettingsJson = (Get-Content $appSettings -Raw) | ConvertFrom-Json 
-    $appSettingsJson.BaseTerminologyEndpoint = $Config.applicationEndpoint
+    $appSettingsJson.BaseTerminologyEndpoint = $Config.terminologyEndpointConfig
     $appSettingsJson.TerminologySqlSettings.ConnectionString = "Data Source=$($Config.sqlServerAddress);Initial Catalog=$($Config.sharedDbName); Trusted_Connection=True;"
     $appSettingsJson.IdentityServerSettings.ClientSecret = $Config.appName
     $appSettingsJson.DiscoveryServiceClientSettings.DiscoveryServiceUrl = $Config.discoveryServiceUrl
-    $appSettingsJson.ApplicationInsightsSettings.InstrumentationKey = $Config.appInsightsKey
-    $appSettingsJson.ApplicationInsightsSettings.Enabled = $FALSE
+    if ([string]::IsNullOrWhiteSpace($Config.appInsightsKeyConfig)) {
+        $appSettingsJson.ApplicationInsightsSettings.Enabled = $false
+    } else {
+        $appSettingsJson.ApplicationInsightsSettings.InstrumentationKey = $Config.appInsightsKeyConfig    
+        $appSettingsJson.ApplicationInsightsSettings.Enabled = $true
+    }
 
     $appSettingsJson | ConvertTo-Json -Depth 10 | Set-Content $appSettings
 }
@@ -422,7 +427,8 @@ function Publish-TerminologyDacpac() {
     $publishProfileXml.Save($PublishProfile);
     
     Write-DosMessage -Level "Information" -Message "Creating or updating Terminology database on $($Config.sqlAddress). This may take a few minutes"
-    Publish-DosDacPac -TargetSqlInstance $Config.sqlAddress -DacPacFilePath $Dacpac -TargetDb "Terminology" -PublishOptionsFilePath $PublishProfile -ErrorAction Stop
+    # Publish-DosDacPac -TargetSqlInstance $Config.sqlAddress -DacPacFilePath $Dacpac -TargetDb "Terminology" -PublishOptionsFilePath $PublishProfile -ErrorAction Stop
+    Publish-DbaDacpac -SqlInstance $Config.sqlAddress -Database "Terminology" -Path $Dacpac -PublishXml $PublishProfile -EnableException
 }
 
 function Get-RoleId {
