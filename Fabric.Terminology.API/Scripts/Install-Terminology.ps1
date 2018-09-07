@@ -37,7 +37,7 @@
 # Fail installation on first error
 $ErrorActionPreference = "Stop"
 
-[string[]] $requiredFiles = @($InstallFile, $Dacpac, $PublishProfile, "$PSScriptRoot\Install.config", "$PSScriptRoot\Terminology-Install-Utilities.psm1", "$PSScriptRoot\registration.config")
+[string[]] $requiredFiles = @($InstallFile, $Dacpac, $PublishProfile, "$PSScriptRoot\Install.config", "$PSScriptRoot\Terminology-Install-Utilities.psm1", "$PSScriptRoot\terminology-registration.config")
 For ($i = 0; $i -lt $requiredFiles.Length; $i++) {
     if (!(Test-Path -Path $requiredFiles[$i])) {
         Throw "$($requiredFiles[$i]) does not exist and is required for install."
@@ -133,6 +133,6 @@ Publish-TerminologyDatabaseUpdates -Config $config -Dacpac $Dacpac -PublishProfi
 Add-MetadataAndStructures -Config $config
 
 Write-DosMessage -Level "Information" -Message "Registering Terminology with Fabric Authorization"
-& $fabricRegistration -discoveryServiceUrl $DiscoveryServiceUrl -quiet -ErrorAction Stop
+& $fabricRegistration -discoveryServiceUrl $config.discoveryServiceUrl -authorizationServiceUrl $config.authorizationServiceUrl -identityServiceUrl $Config.identityServiceUrl -registrationFile "$PSScriptRoot\terminology-registration.config" -quiet -ErrorAction Stop
 
 Test-Terminology -Config $config
