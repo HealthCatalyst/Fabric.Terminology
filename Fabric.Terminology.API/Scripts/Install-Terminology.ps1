@@ -92,6 +92,34 @@ if (!(Test-Path $fabricRegistration -PathType Leaf)) {
 
 Import-Module "$PSScriptRoot\Terminology-Install-Utilities.psm1" -Force
 
+if (!(Test-Prerequisite "*.NET Core*Windows Server Hosting*" 2.0.7)) {    
+    try {
+        Write-DosMessage -Level "Warning" -Message ".NET Core Runtime & Hosting Bundle for Windows not installed...installing version 2.1.3"        
+        Invoke-WebRequest -Uri https://download.microsoft.com/download/6/E/B/6EBD972D-2E2F-41EB-9668-F73F5FDDC09C/dotnet-hosting-2.1.3-win.exe -OutFile $env:Temp\bundle.exe
+        Start-Process $env:Temp\bundle.exe -Wait -ArgumentList '/quiet /install'
+        net stop was /y
+        net start w3svc
+    }
+    catch {
+        Write-DosMessage -Level "Error" -Message "Could not install .NET Windows Server Hosting bundle. Please install the hosting bundle before proceeding. https://www.microsoft.com/net/download/dotnet-core/2.0"
+        throw $_.Exception
+    }
+    try {
+        Remove-Item $env:Temp\bundle.exe
+    }
+    catch {
+        Write-DosMessage -Level "Error" -Message "Unable to remove Server Hosting bundle exe" 
+        throw $_.Exception
+    }
+
+}
+else {
+    Write-Success ".NET Core Windows Server Hosting Bundle installed and meets expectations."
+    Write-Host ""
+}
+
+
+
 $config = Get-TerminologyConfig -Credentials $Credentials -DiscoveryServiceUrl $DiscoveryServiceUrl -SqlAddress $SqlAddress -MetadataDbName $MetadataDbName -SqlDataDirectory $SqlDataDirectory -SqlLogDirectory $SqlLogDirectory -AppEndpoint $AppEndpoint -Quiet:$Quiet
 
 Publish-DosWebApplication -WebAppPackagePath $InstallFile -AppPoolName $config.appPool -AppPoolCredential $config.iisUserCredentials -AppName $config.appName -IISWebSite $config.siteName
