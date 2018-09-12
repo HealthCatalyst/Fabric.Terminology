@@ -149,7 +149,8 @@ function Invoke-SqlCommand {
     }
     catch [System.Data.SqlClient.SqlException] {
         Write-DosMessage -Level "Error" -Message "An error ocurred while executing the command. 
-        Connection String: $($connectionString)"
+        Connection String: $($connectionString)
+        Query: $Query"
         throw
     }
 }
@@ -404,6 +405,8 @@ function Update-DiscoveryService() {
         [PSCustomObject] $Config
     )
 
+    $roleAdded = Add-EdwAdminRole -RoleName "DiscoveryServiceUser" -Config $Config
+
     $webroot = Get-WebFilePath -PSPath "IIS:\Sites\$($Config.siteName)\$($Config.appName)"
     $terminologyAssembly = [System.IO.Path]::Combine($webroot, "Fabric.Terminology.API.dll")
     $version = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($terminologyAssembly).FileMajorPart
@@ -417,6 +420,10 @@ function Update-DiscoveryService() {
     }
 
     Add-DiscoveryRegistration $Config.discoveryServiceUrl $Config.iisUserCredentials $discoveryPostBody
+
+    if ($roleAdded) {
+        Remove-EdwAdminRole -RoleName "DiscoveryServiceUser" -Config $Config
+    }
 }
 
 function Publish-TerminologyDacpac() {
@@ -452,14 +459,17 @@ function Get-RoleId {
         [string] $SqlAddress
     )
 
-    $query = "SELECT TOP (1) [RoleID] FROM [$metadataDatabase].[CatalystAdmin].[RoleBASE] WHERE RoleNM = '$Role'"
-    $roleQueryResult = Invoke-SqlCommand -SqlServerAddress $SqlAddress -Query $query -DatabaseName $metadataDatabase -ReturnData $true
+    $parameters = @{Role = $($Role)}
+    $query = "SELECT TOP (1) [RoleID] FROM [$metadataDatabase].[CatalystAdmin].[RoleBASE] WHERE RoleNM = @Role"
+    $roleQueryResult = Invoke-SqlCommand -SqlServerAddress $SqlAddress -Query $query -DatabaseName $metadataDatabase -Parameters $parameters -ReturnData $true
     $roleId = $roleQueryResult.Table.RoleID
 
     if ($roleId) {
-        Write-Host "RoleID for $Role`: $roleId"
+        Write-DosMessage -Level "Information" -Message "RoleID for $Role`: $roleId"
+        
     }
     else {
+        Write-DosMessage -Level "Error" -Message "No RoleID found for role '$Role'"
         throw "No RoleID found for role '$Role'"
     }
 
@@ -568,20 +578,23 @@ function Invoke-PollBatchExecutions {
 
 }
 
-function Add-MetadataAndStructures() {
+function Add-EdwAdminRole() {
     param(
         [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [String] $RoleName,
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [PSobject] $Config
     )
-    $discoveryServiceUrl = $Config.discoveryServiceUrl
     $metadataDatabase = $Config.metadataDbName
     $sqlAddress = $Config.sqlAddress
-      
-   
+
     # get IdentityID from IdentityBASE
     $user = "$env:USERDOMAIN\$env:USERNAME"
-    $identityBaseQuery = "SELECT TOP (1) [IdentityID] FROM [$metadataDatabase].[CatalystAdmin].[IdentityBASE] WHERE UPPER(IdentityNM) = UPPER('$user')"
-    $identityQueryResult = Invoke-SqlCommand -SqlServerAddress $sqlAddress -DatabaseName $metadataDatabase -Query $identityBaseQuery -ReturnData $true
+    $parameters = @{user = $($user)}
+    $identityBaseQuery = "SELECT TOP (1) [IdentityID] FROM [$metadataDatabase].[CatalystAdmin].[IdentityBASE] WHERE UPPER(IdentityNM) = UPPER(@user)"
+    $identityQueryResult = Invoke-SqlCommand -SqlServerAddress $sqlAddress -DatabaseName $metadataDatabase -Query $identityBaseQuery -Parameters $parameters -ReturnData $true
     $identityId = $identityQueryResult.Table.IdentityID
 
     if ($identityId) {
@@ -589,32 +602,71 @@ function Add-MetadataAndStructures() {
     }
     else {
         Write-DosMessage -Level "Information" -Message   "User is not in IdentityBASE... Adding user: $user"
-        Invoke-SqlCommand -SqlServerAddress $sqlAddress -DatabaseName $metadataDatabase -Query "INSERT INTO [$metadataDatabase].[CatalystAdmin].[IdentityBASE] (IdentityNM) VALUES (UPPER('$user'))" -ReturnData $true
-        $identityBaseQuery = "SELECT TOP (1) [IdentityID] FROM [$metadataDatabase].[CatalystAdmin].[IdentityBASE] WHERE UPPER(IdentityNM) = UPPER('$user')"
-        $identityQueryResult = Invoke-SqlCommand -SqlServerAddress $sqlAddress -DatabaseName $metadataDatabase -Query $identityBaseQuery -ReturnData $true
+        Invoke-SqlCommand -SqlServerAddress $sqlAddress -DatabaseName $metadataDatabase -Query "INSERT INTO [$metadataDatabase].[CatalystAdmin].[IdentityBASE] (IdentityNM) VALUES (UPPER(@user))" -Parameters $parameters -ReturnData $true
+        $parameters = @{user = $($user)}
+        $identityBaseQuery = "SELECT TOP (1) [IdentityID] FROM [$metadataDatabase].[CatalystAdmin].[IdentityBASE] WHERE UPPER(IdentityNM) = UPPER(@user)"
+        $identityQueryResult = Invoke-SqlCommand -SqlServerAddress $sqlAddress -DatabaseName $metadataDatabase -Query $identityBaseQuery -Parameters $parameters -ReturnData $true
         $identityId = $identityQueryResult.Table.IdentityID
     }
 
-    $dataProcessingRole = "DataProcessingServiceUser"
-    $dataProcessingServiceRoleId = Get-RoleId -Role $dataProcessingRole -SqlAddress $sqlAddress
+    $roleId = Get-RoleId -Role $RoleName -SqlAddress $sqlAddress
     
     # check IdentityRoleBASE for DPS role
-    $identityRoleBaseQuery = "SELECT TOP (1) [IdentityRoleID] FROM [$metadataDatabase].[CatalystAdmin].[IdentityRoleBASE] WHERE IdentityId = $identityId AND RoleID = $dataProcessingServiceRoleId"
-    $identityRoleQueryResult = Invoke-SqlCommand -SqlServerAddress $sqlAddress -DatabaseName $metadataDatabase -Query $identityRoleBaseQuery -ReturnData $true
-    $dataProcessingRoleId = $identityRoleQueryResult.Table.IdentityRoleID
-    $dataProcessingRoleAdded = $false
+    $parameters = @{identityId = $identityId;roleId=$roleId}
+    $identityRoleBaseQuery = "SELECT TOP (1) [IdentityRoleID] FROM [$metadataDatabase].[CatalystAdmin].[IdentityRoleBASE] WHERE IdentityId = @identityId AND RoleID = @roleId"
+    $identityRoleQueryResult = Invoke-SqlCommand -SqlServerAddress $sqlAddress -DatabaseName $metadataDatabase -Query $identityRoleBaseQuery -Parameters $parameters -ReturnData $true
+    $identityRoleId = $identityRoleQueryResult.Table.IdentityRoleID
 
-    if ($dataProcessingRoleId) {
-        Write-Host "User $user already has the $dataProcessingRole role"
+    if ($identityRoleId) {
+        Write-DosMessage -Level "Information" -Message "User $user already has the $RoleName role"
+        return $false
     }
-    else {
-        Write-Host "User $user does not have the $dataProcessingRole role"
-        Write-Host "Adding $dataProcessingRole role now"
-        $identityRoleBaseQuery = "INSERT INTO [$metadataDatabase].[CatalystAdmin].[IdentityRoleBASE] (IdentityID, RoleID) VALUES ($identityId, $dataProcessingServiceRoleId)"
-        Invoke-SqlCommand -SqlServerAddress $sqlAddress -DatabaseName $metadataDatabase -Query $identityRoleBaseQuery -ReturnData $true
-        Write-Host "$dataProcessingRole role added for user $user"
-        $dataProcessingRoleAdded = $true
-    }
+
+    Write-DosMessage -Level "Information" -Message "User $user does not have the $RoleName role"
+    Write-DosMessage -Level "Information" -Message "Adding $RoleName role now"
+    $parameters = @{identityId = $identityId; roleId = $roleId}
+    $identityRoleBaseQuery = "INSERT INTO [$metadataDatabase].[CatalystAdmin].[IdentityRoleBASE] (IdentityID, RoleID) VALUES (@identityId, @roleId)"
+    Invoke-SqlCommand -SqlServerAddress $sqlAddress -DatabaseName $metadataDatabase -Query $identityRoleBaseQuery -Parameters $parameters -ReturnData $true
+    Write-DosMessage -Level "Information" -Message "$RoleName role added for user $user"
+    return $true
+}
+
+function Remove-EdwAdminRole() {
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [String] $RoleName,
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [PSobject] $Config
+    )
+
+    $metadataDatabase = $Config.metadataDbName
+    $sqlAddress = $Config.sqlAddress
+
+    # get IdentityID from IdentityBASE
+    $user = "$env:USERDOMAIN\$env:USERNAME"
+    $parameters = @{user = $($user)}
+    $identityBaseQuery = "SELECT TOP (1) [IdentityID] FROM [$metadataDatabase].[CatalystAdmin].[IdentityBASE] WHERE UPPER(IdentityNM) = UPPER(@user)"
+    $identityQueryResult = Invoke-SqlCommand -SqlServerAddress $sqlAddress -DatabaseName $metadataDatabase -Query $identityBaseQuery -Parameters $parameters -ReturnData $true
+    $identityId = $identityQueryResult.Table.IdentityID
+ 
+    $roleId = Get-RoleId -Role $RoleName -SqlAddress $sqlAddress
+
+    Write-DosMessage -Level "Information" -Message "Removing $RoleName role from user $user"
+    $parameters = @{identityId = $identityId; roleId = $roleId};
+    $identityRoleBaseQuery = "DELETE FROM [$metadataDatabase].[CatalystAdmin].[IdentityRoleBASE] WHERE IdentityId = @identityId AND RoleID = @roleId"
+    Invoke-SqlCommand -SqlServerAddress $sqlAddress -DatabaseName $metadataDatabase -Query $identityRoleBaseQuery -Parameters $parameters
+    Write-DosMessage -Level "Information" -Message "Role removed"
+}
+
+function Add-MetadataAndStructures() {
+    param(
+        [Parameter(Mandatory = $true)]
+        [PSobject] $Config
+    )
+
+    $roleAdded = Add-EdwAdminRole -RoleName "DataProcessingServiceUser" -Config $Config
 
     # POST Terminology data marts to MDS
     Write-DosMessage -Level "Information" -Message "Creating Terminology metadata. This will take several minutes."
@@ -623,7 +675,6 @@ function Add-MetadataAndStructures() {
     Write-DosMessage -Level "Information" -Message "Creating SharedTerminology metadata. This will take several minutes."
     $sharedTerminologyDataMartId = Invoke-PostToMds -Config $Config -name "SharedTerminology" -path ".\SharedTerminologyFiveNPEs.json"
 
-    
     # POST executions 
     Write-DosMessage -Level "Information" -Message "Creating physical tables for Terminology and SharedTerminology data marts"
     $terminologyBatchExecutionId = Invoke-PostToDps -Config $Config -dataMartId $terminologyDataMartId
@@ -633,11 +684,8 @@ function Add-MetadataAndStructures() {
     $wasSuccessful = Invoke-PollBatchExecutions -Config $Config -terminologyBatchExecutionId $terminologyBatchExecutionId -sharedTerminologyBatchExecutionId $sharedTerminologyBatchExecutionId
 
     # if DPS role was added for user, remove the role
-    if ($dataProcessingRoleAdded) {
-        Write-DosMessage -Level "Information" -Message "Removing $dataProcessingRole role from user $user"
-        $identityRoleBaseQuery = "DELETE FROM [$metadataDatabase].[CatalystAdmin].[IdentityRoleBASE] WHERE IdentityId = $identityId AND RoleID = $dataProcessingServiceRoleId"
-        Invoke-SqlCommand -SqlServerAddress $sqlAddress -DatabaseName $metadataDatabase -Query $identityRoleBaseQuery
-        Write-DosMessage -Level "Information" -Message "Role removed"
+    if ($roleAdded) {
+        Remove-EdwAdminRole -RoleName "DataProcessingServiceUser" -Config $Config
     }
 
     if (!$wasSuccessful) {
@@ -662,8 +710,8 @@ function Publish-TerminologyDatabaseRole() {
     # TODO: Add tables and views here
     # GRANT SELECT, INSERT, UPDATE, DELETE ON [dbo].[TABLENAME] TO TerminologyServiceRole;
     # GO
-    $Parameters = @{RoleName = $($RoleName)}
-    Invoke-SqlCommand -SqlServerAddress $Config.sqlAddress -DatabaseName $DatabaseName -Query $Query -Parameters $Parameters
+    $parameters = @{RoleName = $($RoleName)}
+    Invoke-SqlCommand -SqlServerAddress $Config.sqlAddress -DatabaseName $DatabaseName -Query $Query -Parameters $parameters
 
 
     Write-DosMessage -Level "Information" -Message "Creating login for $($Config.iisUserCredentials.UserName) on $($Config.sqlAddress)" 
@@ -676,8 +724,8 @@ function Publish-TerminologyDatabaseRole() {
         EXEC(@cmd)
     END
     ";
-    $Parameters = @{User = $($Config.iisUserCredentials.UserName)}
-    Invoke-SqlCommand -SqlServerAddress $Config.sqlAddress -DatabaseName $DatabaseName -Query $Query -Parameters $Parameters
+    $parameters = @{User = $($Config.iisUserCredentials.UserName)}
+    Invoke-SqlCommand -SqlServerAddress $Config.sqlAddress -DatabaseName $DatabaseName -Query $Query -Parameters $parameters
 
 
     Write-DosMessage -Level "Information" -Message "Adding $($Config.iisUserCredentials.UserName) to $RoleName on $($Config.sqlAddress)"
@@ -688,8 +736,8 @@ function Publish-TerminologyDatabaseRole() {
         SET @cmd = N'ALTER ROLE ' + quotename(@RoleName, ']') + N' ADD MEMBER ' + quotename(@User, ']')
         EXEC(@cmd)
     END";
-    $Parameters = @{User = $($Config.iisUserCredentials.UserName); RoleName = $($RoleName)}
-    Invoke-SqlCommand -SqlServerAddress $Config.sqlAddress -DatabaseName $DatabaseName -Query $Query -Parameters $Parameters
+    $parameters = @{User = $($Config.iisUserCredentials.UserName); RoleName = $($RoleName)}
+    Invoke-SqlCommand -SqlServerAddress $Config.sqlAddress -DatabaseName $DatabaseName -Query $Query -Parameters $parameters
 }
 
 function Publish-TerminologyDatabaseUpdates() {
