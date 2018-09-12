@@ -166,11 +166,17 @@ function Test-DatabaseExists {
     $query = "IF DB_ID(@dbname) IS NULL
         BEGIN
         DECLARE @errorMessage NVARCHAR(256)
-        SET @errorMessage = N'Could not confirm the ' + @dbname + ' database exists. Please verify the database was deployed. You may run this step again.'
+        SET @errorMessage = N'Could not confirm the ' + @dbname + ' database exists. Please verify the database was deployed then run this step again.'
         RAISERROR (@errorMessage, 11, 1)
         END"
     $parameters = @{dbname = "$Name"}
-    Invoke-SqlCommand -SqlServerAddress $SqlAddress -Query $query -Parameters $parameters
+    try {
+        Invoke-SqlCommand -SqlServerAddress $SqlAddress -Query $query -Parameters $parameters
+    }
+    catch [System.Data.SqlClient.SqlException] {
+        Write-DosMessage -Level "Error" -Message $_.Exception.Message -ErrorAction Stop
+        throw
+    }
 }
 
 function Get-TerminologyConfig {
