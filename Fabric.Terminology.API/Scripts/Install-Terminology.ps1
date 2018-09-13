@@ -26,6 +26,7 @@
     [String] $DiscoveryServiceUrl,
     [PSCredential] $Credentials,
     [String] $SqlAddress,
+    [String] $EdwAddress,
     [String] $MetadataDbName,
     [String] $AppInsightsKey,
     [String] $SqlDataDirectory,
@@ -128,13 +129,8 @@ if (!(Test-Prerequisite "*.NET Core*Windows Server Hosting*" 2.0.7)) {
     }
 
 }
-else {
-    Write-DosMessage -Level "Information" -Message ".NET Core Windows Server Hosting Bundle installed and meets expectations."
-}
 
-
-
-$config = Get-TerminologyConfig -Credentials $Credentials -DiscoveryServiceUrl $DiscoveryServiceUrl -SqlAddress $SqlAddress -MetadataDbName $MetadataDbName -SqlDataDirectory $SqlDataDirectory -SqlLogDirectory $SqlLogDirectory -AppEndpoint $AppEndpoint -Quiet:$Quiet
+$config = Get-TerminologyConfig -Credentials $Credentials -DiscoveryServiceUrl $DiscoveryServiceUrl -SqlAddress $SqlAddress -EdwAddress $EdwAddress -MetadataDbName $MetadataDbName -SqlDataDirectory $SqlDataDirectory -SqlLogDirectory $SqlLogDirectory -AppEndpoint $AppEndpoint -Quiet:$Quiet
 
 Publish-DosWebApplication -WebAppPackagePath $InstallFile -AppPoolName $config.appPool -AppPoolCredential $config.iisUserCredentials -AppName $config.appName -IISWebSite $config.siteName
 

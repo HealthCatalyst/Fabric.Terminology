@@ -185,6 +185,7 @@ function Get-TerminologyConfig {
         [PSCredential] $Credentials,
         [String] $DiscoveryServiceUrl,
         [String] $SqlAddress,
+        [String] $EdwAddress,
         [String] $MetadataDbName,
         [String] $AppInsightsKey,
         [String] $IisUserName,
@@ -235,7 +236,7 @@ function Get-TerminologyConfig {
         $iisUserCredentials = $Credentials
     }
     else {
-        $iisUserConfig = Get-ConfigValue -Prompt "IIS user name to run the app pool" -DefaultFromParam $IisUserName -DefaultFromInstallConfig $installSettings.iisUser -Quiet:$Quiet
+        $iisUserConfig = Get-ConfigValue -Prompt "IIS user name to run the app pool" -AdditionalPromptInfo "(ex. DOMAIN\USER)" -DefaultFromParam $IisUserName -DefaultFromInstallConfig $installSettings.iisUser -Quiet:$Quiet
         
         $passwordPrompt = "App pool user password for $iisUserConfig"
 
@@ -291,17 +292,14 @@ function Get-TerminologyConfig {
     }
     $terminologyEndpointConfig = Get-ConfigValue -Prompt "$appNameConfig endpoint" -DefaultFromParam $AppEnpoint -DefaultFromInstallConfig $terminologyEndpointParam  -Quiet:$Quiet
 
-    # SQL Server Address
+    # ETL Server Address
     if ([string]::IsNullOrWhiteSpace($installSettings.sqlServerAddress)) {
         $sqlAddressConfigParam = "$(Get-FullyQualifiedMachineName)"
     }
     else {
         $sqlAddressConfigParam = $installSettings.sqlServerAddress
     }
-    $sqlAddressConfig = Get-ConfigValue -Prompt "address for SQL Server" -DefaultFromParam $SqlAddress -DefaultFromInstallConfig $sqlAddressConfigParam -Quiet:$Quiet
-
-    # App Insights Key
-    $appInsightsKeyConfig = Get-ConfigValue -Prompt "Application Insights key" -AdditionalPromptInfo "(optional)" -DefaultFromParam $AppInsightsKey -DefaultFromInstallConfig $installSettings.appInsightsKey -Required $false -Quiet:$Quiet
+    $sqlAddressConfig = Get-ConfigValue -Prompt "address for ETL Server (server that hosts EDWAdmin database)" -AdditionalPromptInfo "(ex. SERVERNAME)" -DefaultFromParam $SqlAddress -DefaultFromInstallConfig $sqlAddressConfigParam -Quiet:$Quiet
 
     # Metadata DB Name
     if ([string]::IsNullOrWhiteSpace($installSettings.metadataDbName)) {
@@ -312,9 +310,33 @@ function Get-TerminologyConfig {
     }
     $metadataDbNameConfig = Get-ConfigValue -Prompt "metadata database name" -DefaultFromParam $MetadataDbName -DefaultFromInstallConfig $metadataDbNameParam -Quiet:$Quiet
 
+    # Verify EDWAdmin exists
+    Write-DosMessage -Level "Information" -Message "Verifying metadata database ($metadataDbNameConfig) exists"
+    Test-DatabaseExists -SqlAddress $sqlAddressConfig -Name $metadataDbNameConfig
+
+    # EDW Server Address
+    if ([string]::IsNullOrWhiteSpace($installSettings.edwAddress)) {
+        # Default to the ETL Server as many times they are the same
+        $edwAddressConfigParam = $sqlAddressConfig
+    }
+    else {
+        $query = "SELECT TOP 1 [AttributeValueTXT] FROM [$metadataDbNameConfig].[CatalystAdmin].[ObjectAttributeBASE] WHERE AttributeNM = 'EDWServerAndPort'"
+        $objAttributesResults = Invoke-SqlCommand -SqlServerAddress $sqlAddressConfig -Query $query -DatabaseName $metadataDbNameConfig -ReturnData $true
+        if ([string]::IsNullOrWhiteSpace($objAttributesResults.table.AttributeValueTXT)) {
+            $edwAddressConfigParam = $installSettings.edwAddress
+        }
+        else {
+            $edwAddressConfigParam = $objAttributesResults.table.AttributeValueTXT
+        }
+    }
+    $edwAddressConfig = Get-ConfigValue -Prompt "address for EDW Server (server that hosts Shared/SAM database)" -AdditionalPromptInfo "(ex. SERVERNAME)" -DefaultFromParam $EdwAddress -DefaultFromInstallConfig $edwAddressConfigParam -Quiet:$Quiet
+
+    # App Insights Key
+    $appInsightsKeyConfig = Get-ConfigValue -Prompt "Application Insights key" -AdditionalPromptInfo "(optional)" -DefaultFromParam $AppInsightsKey -DefaultFromInstallConfig $installSettings.appInsightsKey -Required $false -Quiet:$Quiet    
+
     # Data Directory
     if ([string]::IsNullOrWhiteSpace($installSettings.defaultSqlDataDirectory)) {
-        $dbDefaults = Get-DbaDefaultPath -SqlInstance $sqlAddressConfig
+        $dbDefaults = Get-DbaDefaultPath -SqlInstance $edwAddressConfig
         $sqlDataDirectoryParam = $dbDefaults.Data
     }
     else {
@@ -324,7 +346,7 @@ function Get-TerminologyConfig {
 
     # Log Directory
     if ([string]::IsNullOrWhiteSpace($installSettings.defaultSqlLogDirectory)) {
-        $dbDefaults = Get-DbaDefaultPath -SqlInstance $sqlAddressConfig
+        $dbDefaults = Get-DbaDefaultPath -SqlInstance $edwAddressConfig
         $sqlLogDirectoryParam = $dbDefaults.Log
     }
     else {
@@ -337,6 +359,7 @@ function Get-TerminologyConfig {
     Add-InstallationSetting "terminology" "appInsightsInstrumentationKey" "$appInsightsKeyConfig" | Out-Null
     Add-InstallationSetting "common" "discoveryService" "$discoveryServiceUrlConfig" | Out-Null
     Add-InstallationSetting "common" "sqlServerAddress" "$sqlAddressConfig" | Out-Null
+    Add-InstallationSetting "common" "edwAddress" "$edwAddressConfig" | Out-Null
     Add-InstallationSetting "common" "metadataDbName" "$metadataDbNameConfig" | Out-Null
     Add-InstallationSetting "common" "sqlDataDirectory" "$sqlDataDirectoryConfig" | Out-Null
     Add-InstallationSetting "common" "sqlLogDirectory" "$sqlLogDirectoryConfig" | Out-Null
@@ -349,11 +372,16 @@ function Get-TerminologyConfig {
         Write-DosMessage -Level "Error"  -Message "Site Name is required and was not provided through the install.config." -ErrorAction Stop
     }
 
-    Write-DosMessage -Level "Information" -Message "Verifying metadata database ($metadataDbNameConfig) exists"
-    Test-DatabaseExists -SqlAddress $sqlAddressConfig -Name $metadataDbNameConfig
+    if ([string]::IsNullOrWhiteSpace($installSettings.fabricInstallerSecret)) {
+        Write-DosMessage -Level "Error"  -Message "Fabric Installer Secret and was not provided through the install.config. Please install fabric Identity and Authorization and retry running installation" -ErrorAction Stop
+    }
+
+    if ([string]::IsNullOrWhiteSpace($installSettings.encryptionCertificateThumbprint)) {
+        Write-DosMessage -Level "Error"  -Message "Encryption certificate thumbprint is required and was not provided through the install.config. Please install fabric Identity and Authorization and retry running installation" -ErrorAction Stop
+    }    
 
     Write-DosMessage -Level "Information" -Message "Verifying Shared database exists"
-    Test-DatabaseExists -SqlAddress $sqlAddressConfig -Name "Shared"
+    Test-DatabaseExists -SqlAddress $edwAddressConfig -Name "Shared"
     
     # Setup config
     $config = [PSCustomObject]@{
@@ -364,6 +392,7 @@ function Get-TerminologyConfig {
         siteName            = $installSettings.siteName
         discoveryServiceUrl = $discoveryServiceUrlConfig
         sqlAddress          = $sqlAddressConfig
+        edwAddress          = $edwAddressConfig
         metadataDbName      = $metadataDbNameConfig
         appInsightsKey      = $appInsightsKeyConfig
         sqlDataDirectory    = $sqlDataDirectoryConfig
@@ -386,7 +415,7 @@ function Update-AppSettings {
     $appSettings = "$(Get-IISWebSitePath -WebSiteName $Config.siteName)\$($Config.appName)\appsettings.json"
     $appSettingsJson = (Get-Content $appSettings -Raw) | ConvertFrom-Json 
     $appSettingsJson.BaseTerminologyEndpoint = $Config.terminologyEndpointConfig
-    $appSettingsJson.TerminologySqlSettings.ConnectionString = "Data Source=$($Config.sqlServerAddress);Initial Catalog=$($Config.sharedDbName); Trusted_Connection=True;"
+    $appSettingsJson.TerminologySqlSettings.ConnectionString = "Data Source=$($Config.edwAddressConfig);Initial Catalog=$($Config.sharedDbName); Trusted_Connection=True;"
     $appSettingsJson.IdentityServerSettings.ClientSecret = $Config.appName
     $appSettingsJson.DiscoveryServiceClientSettings.DiscoveryServiceUrl = $Config.discoveryServiceUrl
     if ([string]::IsNullOrWhiteSpace($Config.appInsightsKeyConfig)) {
@@ -444,9 +473,9 @@ function Publish-TerminologyDacpac() {
     $log.InnerText = $Config.sqlDataDirectory
     $publishProfileXml.Save($PublishProfile);
     
-    Write-DosMessage -Level "Information" -Message "Creating or updating Terminology database on $($Config.sqlAddress). This may take a few minutes"
+    Write-DosMessage -Level "Information" -Message "Creating or updating Terminology database on $($Config.edwAddress). This may take a few minutes"
     # Publish-DosDacPac -TargetSqlInstance $Config.sqlAddress -DacPacFilePath $Dacpac -TargetDb "Terminology" -PublishOptionsFilePath $PublishProfile -ErrorAction Stop
-    Publish-DbaDacpac -SqlInstance $Config.sqlAddress -Database "Terminology" -Path $Dacpac -PublishXml $PublishProfile -EnableException
+    Publish-DbaDacpac -SqlInstance $Config.edwAddress -Database "Terminology" -Path $Dacpac -PublishXml $PublishProfile -EnableException
 }
 
 function Get-RoleId {
@@ -700,6 +729,8 @@ function Publish-TerminologyDatabaseRole() {
         [String] $RoleName
     )
 
+    $serverAddress = $Config.edwAddress
+
     $Query = "DECLARE @cmd nvarchar(max)
     IF DATABASE_PRINCIPAL_ID(@RoleName) IS NULL
     BEGIN
@@ -711,10 +742,10 @@ function Publish-TerminologyDatabaseRole() {
     # GRANT SELECT, INSERT, UPDATE, DELETE ON [dbo].[TABLENAME] TO TerminologyServiceRole;
     # GO
     $parameters = @{RoleName = $($RoleName)}
-    Invoke-SqlCommand -SqlServerAddress $Config.sqlAddress -DatabaseName $DatabaseName -Query $Query -Parameters $parameters
+    Invoke-SqlCommand -SqlServerAddress $serverAddress -DatabaseName $DatabaseName -Query $Query -Parameters $parameters
 
 
-    Write-DosMessage -Level "Information" -Message "Creating login for $($Config.iisUserCredentials.UserName) on $($Config.sqlAddress)" 
+    Write-DosMessage -Level "Information" -Message "Creating login for $($Config.iisUserCredentials.UserName) on $serverAddress" 
     $Query = "DECLARE @cmd nvarchar(max)
     If Not exists (SELECT * FROM sys.server_principals
         WHERE sid = suser_sid(@User))
@@ -725,10 +756,10 @@ function Publish-TerminologyDatabaseRole() {
     END
     ";
     $parameters = @{User = $($Config.iisUserCredentials.UserName)}
-    Invoke-SqlCommand -SqlServerAddress $Config.sqlAddress -DatabaseName $DatabaseName -Query $Query -Parameters $parameters
+    Invoke-SqlCommand -SqlServerAddress $serverAddress -DatabaseName $DatabaseName -Query $Query -Parameters $parameters
 
 
-    Write-DosMessage -Level "Information" -Message "Adding $($Config.iisUserCredentials.UserName) to $RoleName on $($Config.sqlAddress)"
+    Write-DosMessage -Level "Information" -Message "Adding $($Config.iisUserCredentials.UserName) to $RoleName on $serverAddress"
     $Query = "DECLARE @cmd nvarchar(max)
     IF IS_ROLEMEMBER (@RoleName, @User) <> 1
     BEGIN
@@ -737,7 +768,7 @@ function Publish-TerminologyDatabaseRole() {
         EXEC(@cmd)
     END";
     $parameters = @{User = $($Config.iisUserCredentials.UserName); RoleName = $($RoleName)}
-    Invoke-SqlCommand -SqlServerAddress $Config.sqlAddress -DatabaseName $DatabaseName -Query $Query -Parameters $parameters
+    Invoke-SqlCommand -SqlServerAddress $serverAddress -DatabaseName $DatabaseName -Query $Query -Parameters $parameters
 }
 
 function Publish-TerminologyDatabaseUpdates() {
@@ -777,7 +808,7 @@ function Test-Terminology {
     Invoke-PingService -ServiceUrl $terminologyUrl -ServiceName $Config.appName
 
     Write-DosMessage -Level "Information" -Message "Verifying Terminology database exists"
-    Test-DatabaseExists -SqlAddress $Config.sqlAddress -Name "Terminology"
+    Test-DatabaseExists -SqlAddress $Config.edwAddress -Name "Terminology"
 }
 
 Export-ModuleMember -function Import-Modules
