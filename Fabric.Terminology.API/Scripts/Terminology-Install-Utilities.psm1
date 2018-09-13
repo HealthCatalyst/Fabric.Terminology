@@ -55,7 +55,7 @@ function Get-ConfigValue {
 }
 
 function Get-FullyQualifiedMachineName() {
-	return "$env:computername.$((Get-WmiObject Win32_ComputerSystem).Domain.tolower())";
+    return "$env:computername.$((Get-WmiObject Win32_ComputerSystem).Domain.tolower())";
 }
 
 function Get-ServiceFromDiscovery {
@@ -148,10 +148,10 @@ function Invoke-SqlCommand {
         $connection.Close()        
     }
     catch [System.Data.SqlClient.SqlException] {
-        Write-DosMessage -Level "Error" -Message "An error ocurred while executing the command. 
+        Write-DosMessage -Level "Error" -Message "An error ocurred while executing the command.
         Connection String: $($connectionString)
-        Query: $Query"
-        throw
+        Query: $Query" -ErrorAction Continue
+        throw $_.Exception
     }
 }
 
@@ -175,8 +175,8 @@ function Test-DatabaseExists {
         Invoke-SqlCommand -SqlServerAddress $SqlAddress -Query $query -Parameters $parameters
     }
     catch [System.Data.SqlClient.SqlException] {
-        Write-DosMessage -Level "Error" -Message $_.Exception.Message -ErrorAction Stop
-        throw
+        Write-DosMessage -Level "Error" -Message $_.Exception.Message -ErrorAction Continue
+        throw $_.Exception
     }
 }
 
@@ -267,7 +267,8 @@ function Get-TerminologyConfig {
             $pc = New-Object System.DirectoryServices.AccountManagement.PrincipalContext -ArgumentList $ct, $credential.GetNetworkCredential().Domain
         }
         catch [System.Management.Automation.MethodInvocationException] {
-            Write-DosMessage -Level "Error"  -Message "Failed to connect to active directory: $_.Exception.Message" -ErrorAction Stop
+            Write-DosMessage -Level "Error"  -Message "Failed to connect to active directory: $_.Exception.Message" -ErrorAction Continue
+            throw $_.Exception
         }
 
         $isValid = $pc.ValidateCredentials($credential.GetNetworkCredential().UserName, $credential.GetNetworkCredential().Password)
@@ -385,22 +386,22 @@ function Get-TerminologyConfig {
     
     # Setup config
     $config = [PSCustomObject]@{
-        iisUserCredentials  = $iisUserCredentials
-        appName             = $appNameConfig
-        appEndpoint         = $terminologyEndpointConfig
-        appPool             = $installSettings.appPool
-        siteName            = $installSettings.siteName
-        discoveryServiceUrl = $discoveryServiceUrlConfig
-        sqlAddress          = $sqlAddressConfig
-        edwAddress          = $edwAddressConfig
-        metadataDbName      = $metadataDbNameConfig
-        appInsightsKey      = $appInsightsKeyConfig
-        sqlDataDirectory    = $sqlDataDirectoryConfig
-        sqlLogDirectory     = $sqlLogDirectoryConfig
-        sharedDbName        = $installSettings.sharedDbName
-        mdsServiceUrl       = $mdsServiceUrl
-        dpsServiceUrl       = $dpsServiceUrl
-        identityServiceUrl  = $identityServiceUrl
+        iisUserCredentials      = $iisUserCredentials
+        appName                 = $appNameConfig
+        appEndpoint             = $terminologyEndpointConfig
+        appPool                 = $installSettings.appPool
+        siteName                = $installSettings.siteName
+        discoveryServiceUrl     = $discoveryServiceUrlConfig
+        sqlAddress              = $sqlAddressConfig
+        edwAddress              = $edwAddressConfig
+        metadataDbName          = $metadataDbNameConfig
+        appInsightsKey          = $appInsightsKeyConfig
+        sqlDataDirectory        = $sqlDataDirectoryConfig
+        sqlLogDirectory         = $sqlLogDirectoryConfig
+        sharedDbName            = $installSettings.sharedDbName
+        mdsServiceUrl           = $mdsServiceUrl
+        dpsServiceUrl           = $dpsServiceUrl
+        identityServiceUrl      = $identityServiceUrl
         authorizationServiceUrl = $authorizationServiceUrl
     };
 
@@ -420,7 +421,8 @@ function Update-AppSettings {
     $appSettingsJson.DiscoveryServiceClientSettings.DiscoveryServiceUrl = $Config.discoveryServiceUrl
     if ([string]::IsNullOrWhiteSpace($Config.appInsightsKeyConfig)) {
         $appSettingsJson.ApplicationInsightsSettings.Enabled = $false
-    } else {
+    }
+    else {
         $appSettingsJson.ApplicationInsightsSettings.InstrumentationKey = $Config.appInsightsKeyConfig    
         $appSettingsJson.ApplicationInsightsSettings.Enabled = $true
     }
@@ -532,9 +534,10 @@ function Invoke-PostToMds {
         return $response.Id
     }
     catch [System.Net.WebException] {
-        Write-DosMessage -Level "Error" -Message "Creating metadata for $name stopped"
-        Write-DosMessage -Level "Error" -Message "Description:" $_.Exception.Response.StatusDescription
-        Write-DosMessage -Level "Error" -Message  $_.ErrorDetails.Message | ConvertFrom-Json | Select-Object -Expand message
+        Write-DosMessage -Level "Error" -Message "Creating metadata for $name stopped" -ErrorAction Continue
+        Write-DosMessage -Level "Error" -Message "Description:" $_.Exception.Response.StatusDescription -ErrorAction Continue
+        Write-DosMessage -Level "Error" -Message  $_.ErrorDetails.Message | ConvertFrom-Json | Select-Object -Expand message -ErrorAction Continue
+        throw $_.Exception
     }
 }
 
@@ -558,8 +561,9 @@ function Invoke-PostToDps {
         return $batchExecutionId;
     }
     catch [System.Net.WebException] {
-        Write-DosMessage -Level "Error" -Message  "POST for '$name' failed with status code:" $_.Exception.Response.StatusCode.value__ 
-        Write-DosMessage -Level "Error" -Message  "Description:" $_.Exception.Response.StatusDescription
+        Write-DosMessage -Level "Error" -Message  "POST for '$name' failed with status code:" $_.Exception.Response.StatusCode.value__ -ErrorAction Continue
+        Write-DosMessage -Level "Error" -Message  "Description:" $_.Exception.Response.StatusDescription -ErrorAction Continue
+        throw $_.Exception
     }
 }
 
@@ -641,7 +645,7 @@ function Add-EdwAdminRole() {
     $roleId = Get-RoleId -Role $RoleName -SqlAddress $sqlAddress
     
     # check IdentityRoleBASE for DPS role
-    $parameters = @{identityId = $identityId;roleId=$roleId}
+    $parameters = @{identityId = $identityId; roleId = $roleId}
     $identityRoleBaseQuery = "SELECT TOP (1) [IdentityRoleID] FROM [$metadataDatabase].[CatalystAdmin].[IdentityRoleBASE] WHERE IdentityId = @identityId AND RoleID = @roleId"
     $identityRoleQueryResult = Invoke-SqlCommand -SqlServerAddress $sqlAddress -DatabaseName $metadataDatabase -Query $identityRoleBaseQuery -Parameters $parameters -ReturnData $true
     $identityRoleId = $identityRoleQueryResult.Table.IdentityRoleID
