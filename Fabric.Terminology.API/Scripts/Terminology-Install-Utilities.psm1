@@ -148,9 +148,8 @@ function Invoke-SqlCommand {
         $connection.Close()        
     }
     catch [System.Data.SqlClient.SqlException] {
-        Write-DosMessage -Level "Error" -Message "An error ocurred while executing the command. 
-        Connection String: $($connectionString)"
-        throw
+        Write-DosMessage -Level "Error" -Message "An error ocurred while executing the command. Connection String: $($connectionString)" -ErrorAction Continue
+        throw $_.Exception
     }
 }
 
@@ -174,8 +173,8 @@ function Test-DatabaseExists {
         Invoke-SqlCommand -SqlServerAddress $SqlAddress -Query $query -Parameters $parameters
     }
     catch [System.Data.SqlClient.SqlException] {
-        Write-DosMessage -Level "Error" -Message $_.Exception.Message -ErrorAction Stop
-        throw
+        Write-DosMessage -Level "Error" -Message $_.Exception.Message -ErrorAction Continue
+        throw $_.Exception
     }
 }
 
@@ -265,7 +264,8 @@ function Get-TerminologyConfig {
             $pc = New-Object System.DirectoryServices.AccountManagement.PrincipalContext -ArgumentList $ct, $credential.GetNetworkCredential().Domain
         }
         catch [System.Management.Automation.MethodInvocationException] {
-            Write-DosMessage -Level "Error"  -Message "Failed to connect to active directory: $_.Exception.Message" -ErrorAction Stop
+            Write-DosMessage -Level "Error"  -Message "Failed to connect to active directory: $_.Exception.Message" -ErrorAction Continue
+            throw $_.Exception
         }
 
         $isValid = $pc.ValidateCredentials($credential.GetNetworkCredential().UserName, $credential.GetNetworkCredential().Password)
@@ -493,9 +493,10 @@ function Invoke-PostToMds {
         return $response.Id
     }
     catch [System.Net.WebException] {
-        Write-DosMessage -Level "Error" -Message "Creating metadata for $name stopped"
-        Write-DosMessage -Level "Error" -Message "Description:" $_.Exception.Response.StatusDescription
-        Write-DosMessage -Level "Error" -Message  $_.ErrorDetails.Message | ConvertFrom-Json | Select-Object -Expand message
+        Write-DosMessage -Level "Error" -Message "Creating metadata for $name stopped" -ErrorAction Continue
+        Write-DosMessage -Level "Error" -Message "Description:" $_.Exception.Response.StatusDescription -ErrorAction Continue
+        Write-DosMessage -Level "Error" -Message  $_.ErrorDetails.Message | ConvertFrom-Json | Select-Object -Expand message -ErrorAction Continue
+        throw $_.Exception
     }
 }
 
@@ -519,8 +520,9 @@ function Invoke-PostToDps {
         return $batchExecutionId;
     }
     catch [System.Net.WebException] {
-        Write-DosMessage -Level "Error" -Message  "POST for '$name' failed with status code:" $_.Exception.Response.StatusCode.value__ 
-        Write-DosMessage -Level "Error" -Message  "Description:" $_.Exception.Response.StatusDescription
+        Write-DosMessage -Level "Error" -Message  "POST for '$name' failed with status code:" $_.Exception.Response.StatusCode.value__ -ErrorAction Continue
+        Write-DosMessage -Level "Error" -Message  "Description:" $_.Exception.Response.StatusDescription -ErrorAction Continue
+        throw $_.Exception
     }
 }
 
