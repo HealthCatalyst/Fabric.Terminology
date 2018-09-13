@@ -26,6 +26,7 @@
     [String] $DiscoveryServiceUrl,
     [PSCredential] $Credentials,
     [String] $SqlAddress,
+    [String] $EdwAddress,
     [String] $MetadataDbName,
     [String] $AppInsightsKey,
     [String] $SqlDataDirectory,
@@ -45,15 +46,23 @@ For ($i = 0; $i -lt $requiredFiles.Length; $i++) {
 }
 
 # Import Dos Install Utilities
+$minVersion = [System.Version]::new(1, 0, 164 ,0)
 $dosInstallUtilities = Get-Childitem -Path ./**/DosInstallUtilities.psm1 -Recurse
 if ($dosInstallUtilities.length -eq 0) {
-    Install-Module DosInstallUtilities -Scope CurrentUser -MinimumVersion 1.0.164.0 -Force
-    Import-Module DosInstallUtilities -Force
-    Write-DosMessage -Level "Warning" -Message "Could not find DosInstallUtilities. Manually installing..."
+    $installed = Get-Module -Name DosInstallUtilities
+    if ($null -eq $installed) {
+        $installed = Get-InstalledModule -Name DosInstallUtilities
+    }
+
+    if (($null -eq $installed) -or ($installed.Version.CompareTo($minVersion) -lt 0)) {
+        Write-Host "Installing DosInstallUtilities from Powershell Gallery"
+        Install-Module DosInstallUtilities -Scope CurrentUser -MinimumVersion 1.0.164.0 -Force
+        Import-Module DosInstallUtilities -Force
+    }
 }
 else {
+    Write-Host "Installing DosInstallUtilities at $($dosInstallUtilities.FullName)"
     Import-Module -Name $dosInstallUtilities.FullName
-    Write-DosMessage -Level "Verbose" -Message "Installing DosInstallUtilities at $($dosInstallUtilities.FullName)"
 }
 
 # Fabric install utilities
@@ -64,10 +73,17 @@ Import-Module -Name .\Fabric-Install-Utilities.psm1 -Force
 
 # DBA tools
 $dbatools = Get-Childitem -Path ./**/dbatools.psm1 -Recurse
+$minVersion = [System.Version]::new(0, 9, 12 ,0)
 if ($dbatools.length -eq 0) {
-    Write-DosMessage -Level "Warning" -Message "Could not find dbatools. Manually installing..."
-    Install-Module dbatools -Scope CurrentUser -MinimumVersion 0.9.12 -Force
-    Import-Module dbatools -Force
+    $installed = Get-Module dbatools
+    if ($null -eq $installed) {
+        $installed = Get-InstalledModule -Name dbatools
+    }
+    if (($null -eq $installed) -or ($installed.Version.CompareTo($minVersion) -lt 0)) {
+        Write-DosMessage -Level "Warning" -Message "Installing dbatools from Powershell Gallery"
+        Install-Module dbatools -Scope CurrentUser -MinimumVersion 0.9.12 -Force
+        Import-Module dbatools -Force
+    }
 }
 else {
     Write-DosMessage -Level "Verbose" -Message "Installing dbatools at $($dbatools.FullName)"
@@ -113,14 +129,8 @@ if (!(Test-Prerequisite "*.NET Core*Windows Server Hosting*" 2.0.7)) {
     }
 
 }
-else {
-    Write-Success ".NET Core Windows Server Hosting Bundle installed and meets expectations."
-    Write-Host ""
-}
 
-
-
-$config = Get-TerminologyConfig -Credentials $Credentials -DiscoveryServiceUrl $DiscoveryServiceUrl -SqlAddress $SqlAddress -MetadataDbName $MetadataDbName -SqlDataDirectory $SqlDataDirectory -SqlLogDirectory $SqlLogDirectory -AppEndpoint $AppEndpoint -Quiet:$Quiet
+$config = Get-TerminologyConfig -Credentials $Credentials -DiscoveryServiceUrl $DiscoveryServiceUrl -SqlAddress $SqlAddress -EdwAddress $EdwAddress -MetadataDbName $MetadataDbName -SqlDataDirectory $SqlDataDirectory -SqlLogDirectory $SqlLogDirectory -AppEndpoint $AppEndpoint -Quiet:$Quiet
 
 Publish-DosWebApplication -WebAppPackagePath $InstallFile -AppPoolName $config.appPool -AppPoolCredential $config.iisUserCredentials -AppName $config.appName -IISWebSite $config.siteName
 

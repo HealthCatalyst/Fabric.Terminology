@@ -55,7 +55,7 @@ function Get-ConfigValue {
 }
 
 function Get-FullyQualifiedMachineName() {
-	return "$env:computername.$((Get-WmiObject Win32_ComputerSystem).Domain.tolower())";
+    return "$env:computername.$((Get-WmiObject Win32_ComputerSystem).Domain.tolower())";
 }
 
 function Get-ServiceFromDiscovery {
@@ -148,7 +148,9 @@ function Invoke-SqlCommand {
         $connection.Close()        
     }
     catch [System.Data.SqlClient.SqlException] {
-        Write-DosMessage -Level "Error" -Message "An error ocurred while executing the command. Connection String: $($connectionString)" -ErrorAction Continue
+        Write-DosMessage -Level "Error" -Message "An error ocurred while executing the command.
+        Connection String: $($connectionString)
+        Query: $Query" -ErrorAction Continue
         throw $_.Exception
     }
 }
@@ -183,6 +185,7 @@ function Get-TerminologyConfig {
         [PSCredential] $Credentials,
         [String] $DiscoveryServiceUrl,
         [String] $SqlAddress,
+        [String] $EdwAddress,
         [String] $MetadataDbName,
         [String] $AppInsightsKey,
         [String] $IisUserName,
@@ -233,7 +236,7 @@ function Get-TerminologyConfig {
         $iisUserCredentials = $Credentials
     }
     else {
-        $iisUserConfig = Get-ConfigValue -Prompt "IIS user name to run the app pool" -DefaultFromParam $IisUserName -DefaultFromInstallConfig $installSettings.iisUser -Quiet:$Quiet
+        $iisUserConfig = Get-ConfigValue -Prompt "IIS user name to run the app pool" -AdditionalPromptInfo "(ex. DOMAIN\USER)" -DefaultFromParam $IisUserName -DefaultFromInstallConfig $installSettings.iisUser -Quiet:$Quiet
         
         $passwordPrompt = "App pool user password for $iisUserConfig"
 
@@ -290,17 +293,14 @@ function Get-TerminologyConfig {
     }
     $terminologyEndpointConfig = Get-ConfigValue -Prompt "$appNameConfig endpoint" -DefaultFromParam $AppEnpoint -DefaultFromInstallConfig $terminologyEndpointParam  -Quiet:$Quiet
 
-    # SQL Server Address
+    # ETL Server Address
     if ([string]::IsNullOrWhiteSpace($installSettings.sqlServerAddress)) {
         $sqlAddressConfigParam = "$(Get-FullyQualifiedMachineName)"
     }
     else {
         $sqlAddressConfigParam = $installSettings.sqlServerAddress
     }
-    $sqlAddressConfig = Get-ConfigValue -Prompt "address for SQL Server" -DefaultFromParam $SqlAddress -DefaultFromInstallConfig $sqlAddressConfigParam -Quiet:$Quiet
-
-    # App Insights Key
-    $appInsightsKeyConfig = Get-ConfigValue -Prompt "Application Insights key" -AdditionalPromptInfo "(optional)" -DefaultFromParam $AppInsightsKey -DefaultFromInstallConfig $installSettings.appInsightsKey -Required $false -Quiet:$Quiet
+    $sqlAddressConfig = Get-ConfigValue -Prompt "address for ETL Server (server that hosts EDWAdmin database)" -AdditionalPromptInfo "(ex. SERVERNAME)" -DefaultFromParam $SqlAddress -DefaultFromInstallConfig $sqlAddressConfigParam -Quiet:$Quiet
 
     # Metadata DB Name
     if ([string]::IsNullOrWhiteSpace($installSettings.metadataDbName)) {
@@ -311,9 +311,33 @@ function Get-TerminologyConfig {
     }
     $metadataDbNameConfig = Get-ConfigValue -Prompt "metadata database name" -DefaultFromParam $MetadataDbName -DefaultFromInstallConfig $metadataDbNameParam -Quiet:$Quiet
 
+    # Verify EDWAdmin exists
+    Write-DosMessage -Level "Information" -Message "Verifying metadata database ($metadataDbNameConfig) exists"
+    Test-DatabaseExists -SqlAddress $sqlAddressConfig -Name $metadataDbNameConfig
+
+    # EDW Server Address
+    if ([string]::IsNullOrWhiteSpace($installSettings.edwAddress)) {
+        # Default to the ETL Server as many times they are the same
+        $edwAddressConfigParam = $sqlAddressConfig
+    }
+    else {
+        $query = "SELECT TOP 1 [AttributeValueTXT] FROM [$metadataDbNameConfig].[CatalystAdmin].[ObjectAttributeBASE] WHERE AttributeNM = 'EDWServerAndPort'"
+        $objAttributesResults = Invoke-SqlCommand -SqlServerAddress $sqlAddressConfig -Query $query -DatabaseName $metadataDbNameConfig -ReturnData $true
+        if ([string]::IsNullOrWhiteSpace($objAttributesResults.table.AttributeValueTXT)) {
+            $edwAddressConfigParam = $installSettings.edwAddress
+        }
+        else {
+            $edwAddressConfigParam = $objAttributesResults.table.AttributeValueTXT
+        }
+    }
+    $edwAddressConfig = Get-ConfigValue -Prompt "address for EDW Server (server that hosts Shared/SAM database)" -AdditionalPromptInfo "(ex. SERVERNAME)" -DefaultFromParam $EdwAddress -DefaultFromInstallConfig $edwAddressConfigParam -Quiet:$Quiet
+
+    # App Insights Key
+    $appInsightsKeyConfig = Get-ConfigValue -Prompt "Application Insights key" -AdditionalPromptInfo "(optional)" -DefaultFromParam $AppInsightsKey -DefaultFromInstallConfig $installSettings.appInsightsKey -Required $false -Quiet:$Quiet    
+
     # Data Directory
     if ([string]::IsNullOrWhiteSpace($installSettings.defaultSqlDataDirectory)) {
-        $dbDefaults = Get-DbaDefaultPath -SqlInstance $sqlAddressConfig
+        $dbDefaults = Get-DbaDefaultPath -SqlInstance $edwAddressConfig
         $sqlDataDirectoryParam = $dbDefaults.Data
     }
     else {
@@ -323,7 +347,7 @@ function Get-TerminologyConfig {
 
     # Log Directory
     if ([string]::IsNullOrWhiteSpace($installSettings.defaultSqlLogDirectory)) {
-        $dbDefaults = Get-DbaDefaultPath -SqlInstance $sqlAddressConfig
+        $dbDefaults = Get-DbaDefaultPath -SqlInstance $edwAddressConfig
         $sqlLogDirectoryParam = $dbDefaults.Log
     }
     else {
@@ -336,6 +360,7 @@ function Get-TerminologyConfig {
     Add-InstallationSetting "terminology" "appInsightsInstrumentationKey" "$appInsightsKeyConfig" | Out-Null
     Add-InstallationSetting "common" "discoveryService" "$discoveryServiceUrlConfig" | Out-Null
     Add-InstallationSetting "common" "sqlServerAddress" "$sqlAddressConfig" | Out-Null
+    Add-InstallationSetting "common" "edwAddress" "$edwAddressConfig" | Out-Null
     Add-InstallationSetting "common" "metadataDbName" "$metadataDbNameConfig" | Out-Null
     Add-InstallationSetting "common" "sqlDataDirectory" "$sqlDataDirectoryConfig" | Out-Null
     Add-InstallationSetting "common" "sqlLogDirectory" "$sqlLogDirectoryConfig" | Out-Null
@@ -348,29 +373,35 @@ function Get-TerminologyConfig {
         Write-DosMessage -Level "Error"  -Message "Site Name is required and was not provided through the install.config." -ErrorAction Stop
     }
 
-    Write-DosMessage -Level "Information" -Message "Verifying metadata database ($metadataDbNameConfig) exists"
-    Test-DatabaseExists -SqlAddress $sqlAddressConfig -Name $metadataDbNameConfig
+    if ([string]::IsNullOrWhiteSpace($installSettings.fabricInstallerSecret)) {
+        Write-DosMessage -Level "Error"  -Message "Fabric Installer Secret and was not provided through the install.config. Please install fabric Identity and Authorization and retry running installation" -ErrorAction Stop
+    }
+
+    if ([string]::IsNullOrWhiteSpace($installSettings.encryptionCertificateThumbprint)) {
+        Write-DosMessage -Level "Error"  -Message "Encryption certificate thumbprint is required and was not provided through the install.config. Please install fabric Identity and Authorization and retry running installation" -ErrorAction Stop
+    }    
 
     Write-DosMessage -Level "Information" -Message "Verifying Shared database exists"
-    Test-DatabaseExists -SqlAddress $sqlAddressConfig -Name "Shared"
+    Test-DatabaseExists -SqlAddress $edwAddressConfig -Name "Shared"
     
     # Setup config
     $config = [PSCustomObject]@{
-        iisUserCredentials  = $iisUserCredentials
-        appName             = $appNameConfig
-        appEndpoint         = $terminologyEndpointConfig
-        appPool             = $installSettings.appPool
-        siteName            = $installSettings.siteName
-        discoveryServiceUrl = $discoveryServiceUrlConfig
-        sqlAddress          = $sqlAddressConfig
-        metadataDbName      = $metadataDbNameConfig
-        appInsightsKey      = $appInsightsKeyConfig
-        sqlDataDirectory    = $sqlDataDirectoryConfig
-        sqlLogDirectory     = $sqlLogDirectoryConfig
-        sharedDbName        = $installSettings.sharedDbName
-        mdsServiceUrl       = $mdsServiceUrl
-        dpsServiceUrl       = $dpsServiceUrl
-        identityServiceUrl  = $identityServiceUrl
+        iisUserCredentials      = $iisUserCredentials
+        appName                 = $appNameConfig
+        appEndpoint             = $terminologyEndpointConfig
+        appPool                 = $installSettings.appPool
+        siteName                = $installSettings.siteName
+        discoveryServiceUrl     = $discoveryServiceUrlConfig
+        sqlAddress              = $sqlAddressConfig
+        edwAddress              = $edwAddressConfig
+        metadataDbName          = $metadataDbNameConfig
+        appInsightsKey          = $appInsightsKeyConfig
+        sqlDataDirectory        = $sqlDataDirectoryConfig
+        sqlLogDirectory         = $sqlLogDirectoryConfig
+        sharedDbName            = $installSettings.sharedDbName
+        mdsServiceUrl           = $mdsServiceUrl
+        dpsServiceUrl           = $dpsServiceUrl
+        identityServiceUrl      = $identityServiceUrl
         authorizationServiceUrl = $authorizationServiceUrl
     };
 
@@ -385,12 +416,13 @@ function Update-AppSettings {
     $appSettings = "$(Get-IISWebSitePath -WebSiteName $Config.siteName)\$($Config.appName)\appsettings.json"
     $appSettingsJson = (Get-Content $appSettings -Raw) | ConvertFrom-Json 
     $appSettingsJson.BaseTerminologyEndpoint = $Config.terminologyEndpointConfig
-    $appSettingsJson.TerminologySqlSettings.ConnectionString = "Data Source=$($Config.sqlServerAddress);Initial Catalog=$($Config.sharedDbName); Trusted_Connection=True;"
+    $appSettingsJson.TerminologySqlSettings.ConnectionString = "Data Source=$($Config.edwAddressConfig);Initial Catalog=$($Config.sharedDbName); Trusted_Connection=True;"
     $appSettingsJson.IdentityServerSettings.ClientSecret = $Config.appName
     $appSettingsJson.DiscoveryServiceClientSettings.DiscoveryServiceUrl = $Config.discoveryServiceUrl
     if ([string]::IsNullOrWhiteSpace($Config.appInsightsKeyConfig)) {
         $appSettingsJson.ApplicationInsightsSettings.Enabled = $false
-    } else {
+    }
+    else {
         $appSettingsJson.ApplicationInsightsSettings.InstrumentationKey = $Config.appInsightsKeyConfig    
         $appSettingsJson.ApplicationInsightsSettings.Enabled = $true
     }
@@ -403,6 +435,8 @@ function Update-DiscoveryService() {
         [Parameter(Mandatory = $true)]
         [PSCustomObject] $Config
     )
+
+    $roleAdded = Add-EdwAdminRole -RoleName "DiscoveryServiceUser" -Config $Config
 
     $webroot = Get-WebFilePath -PSPath "IIS:\Sites\$($Config.siteName)\$($Config.appName)"
     $terminologyAssembly = [System.IO.Path]::Combine($webroot, "Fabric.Terminology.API.dll")
@@ -417,6 +451,10 @@ function Update-DiscoveryService() {
     }
 
     Add-DiscoveryRegistration $Config.discoveryServiceUrl $Config.iisUserCredentials $discoveryPostBody
+
+    if ($roleAdded) {
+        Remove-EdwAdminRole -RoleName "DiscoveryServiceUser" -Config $Config
+    }
 }
 
 function Publish-TerminologyDacpac() {
@@ -437,9 +475,9 @@ function Publish-TerminologyDacpac() {
     $log.InnerText = $Config.sqlDataDirectory
     $publishProfileXml.Save($PublishProfile);
     
-    Write-DosMessage -Level "Information" -Message "Creating or updating Terminology database on $($Config.sqlAddress). This may take a few minutes"
+    Write-DosMessage -Level "Information" -Message "Creating or updating Terminology database on $($Config.edwAddress). This may take a few minutes"
     # Publish-DosDacPac -TargetSqlInstance $Config.sqlAddress -DacPacFilePath $Dacpac -TargetDb "Terminology" -PublishOptionsFilePath $PublishProfile -ErrorAction Stop
-    Publish-DbaDacpac -SqlInstance $Config.sqlAddress -Database "Terminology" -Path $Dacpac -PublishXml $PublishProfile -EnableException
+    Publish-DbaDacpac -SqlInstance $Config.edwAddress -Database "Terminology" -Path $Dacpac -PublishXml $PublishProfile -EnableException
 }
 
 function Get-RoleId {
@@ -452,14 +490,17 @@ function Get-RoleId {
         [string] $SqlAddress
     )
 
-    $query = "SELECT TOP (1) [RoleID] FROM [$metadataDatabase].[CatalystAdmin].[RoleBASE] WHERE RoleNM = '$Role'"
-    $roleQueryResult = Invoke-SqlCommand -SqlServerAddress $SqlAddress -Query $query -DatabaseName $metadataDatabase -ReturnData $true
+    $parameters = @{Role = $($Role)}
+    $query = "SELECT TOP (1) [RoleID] FROM [$metadataDatabase].[CatalystAdmin].[RoleBASE] WHERE RoleNM = @Role"
+    $roleQueryResult = Invoke-SqlCommand -SqlServerAddress $SqlAddress -Query $query -DatabaseName $metadataDatabase -Parameters $parameters -ReturnData $true
     $roleId = $roleQueryResult.Table.RoleID
 
     if ($roleId) {
-        Write-Host "RoleID for $Role`: $roleId"
+        Write-DosMessage -Level "Information" -Message "RoleID for $Role`: $roleId"
+        
     }
     else {
+        Write-DosMessage -Level "Error" -Message "No RoleID found for role '$Role'"
         throw "No RoleID found for role '$Role'"
     }
 
@@ -570,20 +611,23 @@ function Invoke-PollBatchExecutions {
 
 }
 
-function Add-MetadataAndStructures() {
+function Add-EdwAdminRole() {
     param(
         [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [String] $RoleName,
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [PSobject] $Config
     )
-    $discoveryServiceUrl = $Config.discoveryServiceUrl
     $metadataDatabase = $Config.metadataDbName
     $sqlAddress = $Config.sqlAddress
-      
-   
+
     # get IdentityID from IdentityBASE
     $user = "$env:USERDOMAIN\$env:USERNAME"
-    $identityBaseQuery = "SELECT TOP (1) [IdentityID] FROM [$metadataDatabase].[CatalystAdmin].[IdentityBASE] WHERE UPPER(IdentityNM) = UPPER('$user')"
-    $identityQueryResult = Invoke-SqlCommand -SqlServerAddress $sqlAddress -DatabaseName $metadataDatabase -Query $identityBaseQuery -ReturnData $true
+    $parameters = @{user = $($user)}
+    $identityBaseQuery = "SELECT TOP (1) [IdentityID] FROM [$metadataDatabase].[CatalystAdmin].[IdentityBASE] WHERE UPPER(IdentityNM) = UPPER(@user)"
+    $identityQueryResult = Invoke-SqlCommand -SqlServerAddress $sqlAddress -DatabaseName $metadataDatabase -Query $identityBaseQuery -Parameters $parameters -ReturnData $true
     $identityId = $identityQueryResult.Table.IdentityID
 
     if ($identityId) {
@@ -591,32 +635,71 @@ function Add-MetadataAndStructures() {
     }
     else {
         Write-DosMessage -Level "Information" -Message   "User is not in IdentityBASE... Adding user: $user"
-        Invoke-SqlCommand -SqlServerAddress $sqlAddress -DatabaseName $metadataDatabase -Query "INSERT INTO [$metadataDatabase].[CatalystAdmin].[IdentityBASE] (IdentityNM) VALUES (UPPER('$user'))" -ReturnData $true
-        $identityBaseQuery = "SELECT TOP (1) [IdentityID] FROM [$metadataDatabase].[CatalystAdmin].[IdentityBASE] WHERE UPPER(IdentityNM) = UPPER('$user')"
-        $identityQueryResult = Invoke-SqlCommand -SqlServerAddress $sqlAddress -DatabaseName $metadataDatabase -Query $identityBaseQuery -ReturnData $true
+        Invoke-SqlCommand -SqlServerAddress $sqlAddress -DatabaseName $metadataDatabase -Query "INSERT INTO [$metadataDatabase].[CatalystAdmin].[IdentityBASE] (IdentityNM) VALUES (UPPER(@user))" -Parameters $parameters -ReturnData $true
+        $parameters = @{user = $($user)}
+        $identityBaseQuery = "SELECT TOP (1) [IdentityID] FROM [$metadataDatabase].[CatalystAdmin].[IdentityBASE] WHERE UPPER(IdentityNM) = UPPER(@user)"
+        $identityQueryResult = Invoke-SqlCommand -SqlServerAddress $sqlAddress -DatabaseName $metadataDatabase -Query $identityBaseQuery -Parameters $parameters -ReturnData $true
         $identityId = $identityQueryResult.Table.IdentityID
     }
 
-    $dataProcessingRole = "DataProcessingServiceUser"
-    $dataProcessingServiceRoleId = Get-RoleId -Role $dataProcessingRole -SqlAddress $sqlAddress
+    $roleId = Get-RoleId -Role $RoleName -SqlAddress $sqlAddress
     
     # check IdentityRoleBASE for DPS role
-    $identityRoleBaseQuery = "SELECT TOP (1) [IdentityRoleID] FROM [$metadataDatabase].[CatalystAdmin].[IdentityRoleBASE] WHERE IdentityId = $identityId AND RoleID = $dataProcessingServiceRoleId"
-    $identityRoleQueryResult = Invoke-SqlCommand -SqlServerAddress $sqlAddress -DatabaseName $metadataDatabase -Query $identityRoleBaseQuery -ReturnData $true
-    $dataProcessingRoleId = $identityRoleQueryResult.Table.IdentityRoleID
-    $dataProcessingRoleAdded = $false
+    $parameters = @{identityId = $identityId; roleId = $roleId}
+    $identityRoleBaseQuery = "SELECT TOP (1) [IdentityRoleID] FROM [$metadataDatabase].[CatalystAdmin].[IdentityRoleBASE] WHERE IdentityId = @identityId AND RoleID = @roleId"
+    $identityRoleQueryResult = Invoke-SqlCommand -SqlServerAddress $sqlAddress -DatabaseName $metadataDatabase -Query $identityRoleBaseQuery -Parameters $parameters -ReturnData $true
+    $identityRoleId = $identityRoleQueryResult.Table.IdentityRoleID
 
-    if ($dataProcessingRoleId) {
-        Write-Host "User $user already has the $dataProcessingRole role"
+    if ($identityRoleId) {
+        Write-DosMessage -Level "Information" -Message "User $user already has the $RoleName role"
+        return $false
     }
-    else {
-        Write-Host "User $user does not have the $dataProcessingRole role"
-        Write-Host "Adding $dataProcessingRole role now"
-        $identityRoleBaseQuery = "INSERT INTO [$metadataDatabase].[CatalystAdmin].[IdentityRoleBASE] (IdentityID, RoleID) VALUES ($identityId, $dataProcessingServiceRoleId)"
-        Invoke-SqlCommand -SqlServerAddress $sqlAddress -DatabaseName $metadataDatabase -Query $identityRoleBaseQuery -ReturnData $true
-        Write-Host "$dataProcessingRole role added for user $user"
-        $dataProcessingRoleAdded = $true
-    }
+
+    Write-DosMessage -Level "Information" -Message "User $user does not have the $RoleName role"
+    Write-DosMessage -Level "Information" -Message "Adding $RoleName role now"
+    $parameters = @{identityId = $identityId; roleId = $roleId}
+    $identityRoleBaseQuery = "INSERT INTO [$metadataDatabase].[CatalystAdmin].[IdentityRoleBASE] (IdentityID, RoleID) VALUES (@identityId, @roleId)"
+    Invoke-SqlCommand -SqlServerAddress $sqlAddress -DatabaseName $metadataDatabase -Query $identityRoleBaseQuery -Parameters $parameters -ReturnData $true
+    Write-DosMessage -Level "Information" -Message "$RoleName role added for user $user"
+    return $true
+}
+
+function Remove-EdwAdminRole() {
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [String] $RoleName,
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [PSobject] $Config
+    )
+
+    $metadataDatabase = $Config.metadataDbName
+    $sqlAddress = $Config.sqlAddress
+
+    # get IdentityID from IdentityBASE
+    $user = "$env:USERDOMAIN\$env:USERNAME"
+    $parameters = @{user = $($user)}
+    $identityBaseQuery = "SELECT TOP (1) [IdentityID] FROM [$metadataDatabase].[CatalystAdmin].[IdentityBASE] WHERE UPPER(IdentityNM) = UPPER(@user)"
+    $identityQueryResult = Invoke-SqlCommand -SqlServerAddress $sqlAddress -DatabaseName $metadataDatabase -Query $identityBaseQuery -Parameters $parameters -ReturnData $true
+    $identityId = $identityQueryResult.Table.IdentityID
+ 
+    $roleId = Get-RoleId -Role $RoleName -SqlAddress $sqlAddress
+
+    Write-DosMessage -Level "Information" -Message "Removing $RoleName role from user $user"
+    $parameters = @{identityId = $identityId; roleId = $roleId};
+    $identityRoleBaseQuery = "DELETE FROM [$metadataDatabase].[CatalystAdmin].[IdentityRoleBASE] WHERE IdentityId = @identityId AND RoleID = @roleId"
+    Invoke-SqlCommand -SqlServerAddress $sqlAddress -DatabaseName $metadataDatabase -Query $identityRoleBaseQuery -Parameters $parameters
+    Write-DosMessage -Level "Information" -Message "Role removed"
+}
+
+function Add-MetadataAndStructures() {
+    param(
+        [Parameter(Mandatory = $true)]
+        [PSobject] $Config
+    )
+
+    $roleAdded = Add-EdwAdminRole -RoleName "DataProcessingServiceUser" -Config $Config
 
     # POST Terminology data marts to MDS
     Write-DosMessage -Level "Information" -Message "Creating Terminology metadata. This will take several minutes."
@@ -625,7 +708,6 @@ function Add-MetadataAndStructures() {
     Write-DosMessage -Level "Information" -Message "Creating SharedTerminology metadata. This will take several minutes."
     $sharedTerminologyDataMartId = Invoke-PostToMds -Config $Config -name "SharedTerminology" -path ".\SharedTerminologyFiveNPEs.json"
 
-    
     # POST executions 
     Write-DosMessage -Level "Information" -Message "Creating physical tables for Terminology and SharedTerminology data marts"
     $terminologyBatchExecutionId = Invoke-PostToDps -Config $Config -dataMartId $terminologyDataMartId
@@ -635,11 +717,8 @@ function Add-MetadataAndStructures() {
     $wasSuccessful = Invoke-PollBatchExecutions -Config $Config -terminologyBatchExecutionId $terminologyBatchExecutionId -sharedTerminologyBatchExecutionId $sharedTerminologyBatchExecutionId
 
     # if DPS role was added for user, remove the role
-    if ($dataProcessingRoleAdded) {
-        Write-DosMessage -Level "Information" -Message "Removing $dataProcessingRole role from user $user"
-        $identityRoleBaseQuery = "DELETE FROM [$metadataDatabase].[CatalystAdmin].[IdentityRoleBASE] WHERE IdentityId = $identityId AND RoleID = $dataProcessingServiceRoleId"
-        Invoke-SqlCommand -SqlServerAddress $sqlAddress -DatabaseName $metadataDatabase -Query $identityRoleBaseQuery
-        Write-DosMessage -Level "Information" -Message "Role removed"
+    if ($roleAdded) {
+        Remove-EdwAdminRole -RoleName "DataProcessingServiceUser" -Config $Config
     }
 
     if (!$wasSuccessful) {
@@ -654,6 +733,8 @@ function Publish-TerminologyDatabaseRole() {
         [String] $RoleName
     )
 
+    $serverAddress = $Config.edwAddress
+
     $Query = "DECLARE @cmd nvarchar(max)
     IF DATABASE_PRINCIPAL_ID(@RoleName) IS NULL
     BEGIN
@@ -664,11 +745,11 @@ function Publish-TerminologyDatabaseRole() {
     # TODO: Add tables and views here
     # GRANT SELECT, INSERT, UPDATE, DELETE ON [dbo].[TABLENAME] TO TerminologyServiceRole;
     # GO
-    $Parameters = @{RoleName = $($RoleName)}
-    Invoke-SqlCommand -SqlServerAddress $Config.sqlAddress -DatabaseName $DatabaseName -Query $Query -Parameters $Parameters
+    $parameters = @{RoleName = $($RoleName)}
+    Invoke-SqlCommand -SqlServerAddress $serverAddress -DatabaseName $DatabaseName -Query $Query -Parameters $parameters
 
 
-    Write-DosMessage -Level "Information" -Message "Creating login for $($Config.iisUserCredentials.UserName) on $($Config.sqlAddress)" 
+    Write-DosMessage -Level "Information" -Message "Creating login for $($Config.iisUserCredentials.UserName) on $serverAddress" 
     $Query = "DECLARE @cmd nvarchar(max)
     If Not exists (SELECT * FROM sys.server_principals
         WHERE sid = suser_sid(@User))
@@ -678,11 +759,11 @@ function Publish-TerminologyDatabaseRole() {
         EXEC(@cmd)
     END
     ";
-    $Parameters = @{User = $($Config.iisUserCredentials.UserName)}
-    Invoke-SqlCommand -SqlServerAddress $Config.sqlAddress -DatabaseName $DatabaseName -Query $Query -Parameters $Parameters
+    $parameters = @{User = $($Config.iisUserCredentials.UserName)}
+    Invoke-SqlCommand -SqlServerAddress $serverAddress -DatabaseName $DatabaseName -Query $Query -Parameters $parameters
 
 
-    Write-DosMessage -Level "Information" -Message "Adding $($Config.iisUserCredentials.UserName) to $RoleName on $($Config.sqlAddress)"
+    Write-DosMessage -Level "Information" -Message "Adding $($Config.iisUserCredentials.UserName) to $RoleName on $serverAddress"
     $Query = "DECLARE @cmd nvarchar(max)
     IF IS_ROLEMEMBER (@RoleName, @User) <> 1
     BEGIN
@@ -690,8 +771,8 @@ function Publish-TerminologyDatabaseRole() {
         SET @cmd = N'ALTER ROLE ' + quotename(@RoleName, ']') + N' ADD MEMBER ' + quotename(@User, ']')
         EXEC(@cmd)
     END";
-    $Parameters = @{User = $($Config.iisUserCredentials.UserName); RoleName = $($RoleName)}
-    Invoke-SqlCommand -SqlServerAddress $Config.sqlAddress -DatabaseName $DatabaseName -Query $Query -Parameters $Parameters
+    $parameters = @{User = $($Config.iisUserCredentials.UserName); RoleName = $($RoleName)}
+    Invoke-SqlCommand -SqlServerAddress $serverAddress -DatabaseName $DatabaseName -Query $Query -Parameters $parameters
 }
 
 function Publish-TerminologyDatabaseUpdates() {
@@ -731,7 +812,7 @@ function Test-Terminology {
     Invoke-PingService -ServiceUrl $terminologyUrl -ServiceName $Config.appName
 
     Write-DosMessage -Level "Information" -Message "Verifying Terminology database exists"
-    Test-DatabaseExists -SqlAddress $Config.sqlAddress -Name "Terminology"
+    Test-DatabaseExists -SqlAddress $Config.edwAddress -Name "Terminology"
 }
 
 Export-ModuleMember -function Import-Modules
