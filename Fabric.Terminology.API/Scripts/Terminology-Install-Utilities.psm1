@@ -434,25 +434,25 @@ function Update-DiscoveryService() {
         [PSCustomObject] $Config
     )
 
-    $roleAdded = Add-EdwAdminRole -RoleName "DiscoveryServiceUser" -Config $Config
-
     $webroot = Get-WebFilePath -PSPath "IIS:\Sites\$($Config.siteName)\$($Config.appName)"
     $terminologyAssembly = [System.IO.Path]::Combine($webroot, "Fabric.Terminology.API.dll")
-    $version = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($terminologyAssembly).FileMajorPart
+    $version = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($terminologyAssembly)
+    $url = "$($Config.appEndpoint)/v$($version.FileMajorPart)"
 
     $discoveryPostBody = @{
         serviceName    = "TerminologyService"
-        serviceVersion = $version
+        serviceVersion = "$($version.FileMajorPart)"
         friendlyName   = "Fabric.Terminology"
         description    = "The Fabric.Terminology Service provides shared healthcare terminology data."
-        serviceUrl     = "$($Config.appEndpoint)/v$version"
+        serviceUrl     = $url
+        buildVersion   = "$($version.FileVersion)"
+        isHidden       = $true
+        discoveryType  = "Service"
     }
 
-    Add-DiscoveryRegistration $Config.discoveryServiceUrl $Config.iisUserCredentials $discoveryPostBody
-
-    if ($roleAdded) {
-        Remove-EdwAdminRole -RoleName "DiscoveryServiceUser" -Config $Config
-    }
+    Write-DosMessage -Level "Information" -Message "Registering TerminologyService with discovery service. buildVersion: $($version.FileVersion) serviceUrl: $url"
+    $connectionString = "Data Source=$($Config.sqlAddress);Initial Catalog=$($Config.metadataDbName); Trusted_Connection=True;"
+    Add-DiscoveryRegistrationSql -discoveryPostBody $discoveryPostBody -connectionString $connectionString | Out-Null
 }
 
 function Publish-TerminologyDacpac() {
