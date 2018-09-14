@@ -416,7 +416,7 @@ function Update-AppSettings {
     $appSettings = "$(Get-IISWebSitePath -WebSiteName $Config.siteName)\$($Config.appName)\appsettings.json"
     $appSettingsJson = (Get-Content $appSettings -Raw) | ConvertFrom-Json 
     $appSettingsJson.BaseTerminologyEndpoint = $Config.terminologyEndpointConfig
-    $appSettingsJson.TerminologySqlSettings.ConnectionString = "Data Source=$($Config.edwAddressConfig);Initial Catalog=$($Config.sharedDbName); Trusted_Connection=True;"
+    $appSettingsJson.TerminologySqlSettings.ConnectionString = "Data Source=$($Config.edwAddress);Initial Catalog=$($Config.sharedDbName); Trusted_Connection=True;"
     $appSettingsJson.IdentityServerSettings.ClientSecret = $Config.appName
     $appSettingsJson.DiscoveryServiceClientSettings.DiscoveryServiceUrl = $Config.discoveryServiceUrl
     if ([string]::IsNullOrWhiteSpace($Config.appInsightsKeyConfig)) {
