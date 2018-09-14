@@ -76,7 +76,7 @@ function Get-ServiceFromDiscovery {
     $uri = "$DiscoveryUrl$discoveryServiceQuery"
 
     try {
-        $response = Invoke-WebRequest -Uri $uri -Method GET -UseDefaultCredentials
+        $response = Invoke-WebRequest -Uri $uri -Method GET -UseDefaultCredentials -UseBasicParsing
     }
     catch [System.Net.WebException] {
         throw "There was an error communicating with the Discovery Service.`n
@@ -105,7 +105,7 @@ function Invoke-PingService {
 
     try {
         Write-DosMessage -Level "Information" -Message "Attempting to ping $ServiceName ($uri)"  
-        Invoke-WebRequest -Uri $uri -Method GET -UseDefaultCredentials | Out-Null
+        Invoke-WebRequest -Uri $uri -Method GET -UseDefaultCredentials -UseBasicParsing | Out-Null
     }
     catch [System.Net.WebException] {
         throw "There was an error communicating with the service.`n
@@ -529,7 +529,7 @@ function Invoke-PostToMds {
 
     try {
         Write-DosMessage -Level "Information" -Message "Starting to create metadata for $name"
-        $response = Invoke-RestMethod -Uri "$($Config.mdsServiceUrl)/DataMarts" -Method POST -Body $dataMartJson -Headers $headers
+        $response = Invoke-RestMethod -Uri "$($Config.mdsServiceUrl)/DataMarts" -Method POST -Body $dataMartJson -Headers $headers -UseBasicParsing
         Write-DosMessage -Level "Information" -Message "Completed creating metadata for $name"
         return $response.Id
     }
@@ -554,7 +554,7 @@ function Invoke-PostToDps {
     $headers = @{"Content-Type" = "application/json"}
 
     try {
-        $response = Invoke-RestMethod -Uri "$($Config.dpsServiceUrl)/ExecuteDataMart" -Method POST -UseDefaultCredentials -Headers $headers -Body "{ `"DataMartId`": $dataMartId, `"BatchExecution`": { `"PipelineType`": `"Migration`", `"OverrideLoadType`": `"Incremental`", `"LoggingLevel`": `"Diagnostic`" } }"
+        $response = Invoke-RestMethod -Uri "$($Config.dpsServiceUrl)/ExecuteDataMart" -Method POST -UseDefaultCredentials -Headers $headers -Body "{ `"DataMartId`": $dataMartId, `"BatchExecution`": { `"PipelineType`": `"Migration`", `"OverrideLoadType`": `"Incremental`", `"LoggingLevel`": `"Diagnostic`" } }"  -UseBasicParsing
         $batchExecutionId = ($response.value | ConvertFrom-Json).Id
         Write-DosMessage -Level "Info" -Message  "Batch execution successfully sent to the data processing service."
 
@@ -588,10 +588,10 @@ function Invoke-PollBatchExecutions {
     foreach ($i in 1..30) {
         Start-Sleep -s 5
         if ($terminologyResponse -ne "Failed") {
-            $terminologyResponse = Invoke-RestMethod -Uri $terminologyUrl -Method GET -UseDefaultCredentials
+            $terminologyResponse = Invoke-RestMethod -Uri $terminologyUrl -Method GET -UseDefaultCredentials  -UseBasicParsing
         }
         if ($sharedTerminologyResponse -ne "Failed") {
-            $sharedTerminologyResponse = Invoke-RestMethod -Uri $terminologyUrl -Method GET -UseDefaultCredentials
+            $sharedTerminologyResponse = Invoke-RestMethod -Uri $terminologyUrl -Method GET -UseDefaultCredentials  -UseBasicParsing
         }
 
         if ($terminologyResponse.Status -eq "Failed" -or $sharedTerminologyResponse.Status -eq "Failed") {
