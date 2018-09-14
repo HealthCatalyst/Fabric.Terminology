@@ -32,6 +32,8 @@
     [String] $SqlDataDirectory,
     [String] $SqlLogDirectory,
     [String] $AppEndpoint,
+    [String] $LoaderWindowsUser,
+    [String] $ProcessingServiceWindowsUser,
     [switch] $Quiet
 )
 
@@ -130,7 +132,7 @@ if (!(Test-Prerequisite "*.NET Core*Windows Server Hosting*" 2.0.7)) {
 
 }
 
-$config = Get-TerminologyConfig -Credentials $Credentials -DiscoveryServiceUrl $DiscoveryServiceUrl -SqlAddress $SqlAddress -EdwAddress $EdwAddress -MetadataDbName $MetadataDbName -SqlDataDirectory $SqlDataDirectory -SqlLogDirectory $SqlLogDirectory -AppEndpoint $AppEndpoint -Quiet:$Quiet
+$config = Get-TerminologyConfig -Credentials $Credentials -DiscoveryServiceUrl $DiscoveryServiceUrl -SqlAddress $SqlAddress -MetadataDbName $MetadataDbName -SqlDataDirectory $SqlDataDirectory -SqlLogDirectory $SqlLogDirectory -AppEndpoint $AppEndpoint -LoaderWindowsUserParam $LoaderWindowsUser -ProcessingServiceWindowsUserParam $ProcessingServiceWindowsUser -Quiet:$Quiet
 
 Publish-DosWebApplication -WebAppPackagePath $InstallFile -AppPoolName $config.appPool -AppPoolCredential $config.iisUserCredentials -AppName $config.appName -IISWebSite $config.siteName
 
@@ -140,7 +142,7 @@ Update-DiscoveryService -Config $config
 
 Publish-TerminologyDatabaseUpdates -Config $config -Dacpac $Dacpac -PublishProfile $PublishProfile
 
-# Add-MetadataAndStructures -Config $config
+Add-MetadataAndStructures -Config $config
 
 Write-DosMessage -Level "Information" -Message "Registering Terminology with Fabric Authorization"
 & $fabricRegistration -discoveryServiceUrl $config.discoveryServiceUrl -authorizationServiceUrl $config.authorizationServiceUrl -identityServiceUrl $Config.identityServiceUrl -registrationFile "$PSScriptRoot\terminology-registration.config" -quiet -ErrorAction Stop

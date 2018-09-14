@@ -37,6 +37,18 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Modules", "Modules", "{99FE
 EndProject
 Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "Fabric.Terminology.Database", "Fabric.Terminology.Database\Fabric.Terminology.Database.sqlproj", "{B9E4641D-F0B4-4B9C-8D21-C06E830DE686}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{E62B4748-1146-4BF9-8F07-9AA6FD6D7A81}"
+	ProjectSection(SolutionItems) = preProject
+		Scripts\Fabric.Terminology.Database.publish.xml = Scripts\Fabric.Terminology.Database.publish.xml
+		Scripts\Install-Terminology.ps1 = Scripts\Install-Terminology.ps1
+		Scripts\Install.config = Scripts\Install.config
+		Scripts\PreInstall-Terminology.ps1 = Scripts\PreInstall-Terminology.ps1
+		Scripts\SharedTerminology.json = Scripts\SharedTerminology.json
+		Scripts\Terminology-Install-Utilities.psm1 = Scripts\Terminology-Install-Utilities.psm1
+		Scripts\terminology-registration.config = Scripts\terminology-registration.config
+		Scripts\Terminology.json = Scripts\Terminology.json
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

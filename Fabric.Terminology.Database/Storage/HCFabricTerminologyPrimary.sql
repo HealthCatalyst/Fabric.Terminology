@@ -6,6 +6,6 @@ build and deployment.
 ALTER DATABASE [$(DatabaseName)]
 	ADD FILE
 	(
-		NAME = [HCFabricTerminologyPrimary],
+		NAME = [HCTerminologyPrimary],
 		FILENAME = '$(DataMountPoint)\HC$(DatabaseName)Primary.mdf'
 	)
