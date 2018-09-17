@@ -572,7 +572,7 @@ function Invoke-PostToMds {
         [ValidateNotNullOrEmpty()]
         [PSCustomObject] $Config
     )
-    Write-DosMessage "Reading file $path"
+    Write-DosMessage -Level "Information" "Reading file $path"
     $dataMartJson = Get-Content -Raw -Path $path
     $headers = @{"Content-Type" = "application/json"}
     $headers.Add("Authorization", "Bearer $($Config.accessToken)")
@@ -670,41 +670,37 @@ function Invoke-PollBatchExecutions {
     param(
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [string] $terminologyBatchExecutionId,
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [string] $sharedTerminologyBatchExecutionId,
+        [string] $executionId,
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [PSCustomObject] $Config
     )
 
     $terminologyUrl = "$($Config.dpsServiceUrl)/BatchExecutions($terminologyBatchExecutionId)"
-    $terminologyResponse = "";
-    $sharedTerminologyResponse = "";
+    $response = "";
     $wasSuccessful = 0;
 
     foreach ($i in 1..30) {
         Start-Sleep -s 5
-        if ($terminologyResponse -ne "Failed") {
-            $terminologyResponse = Invoke-RestMethod -Uri $terminologyUrl -Method GET -UseDefaultCredentials  -UseBasicParsing
-        }
-        if ($sharedTerminologyResponse -ne "Failed") {
-            $sharedTerminologyResponse = Invoke-RestMethod -Uri $terminologyUrl -Method GET -UseDefaultCredentials  -UseBasicParsing
+        if ($response -ne "Failed") {
+            $response = Invoke-RestMethod -Uri $terminologyUrl -Method GET -UseDefaultCredentials
         }
 
-        if ($terminologyResponse.Status -eq "Failed" -or $sharedTerminologyResponse.Status -eq "Failed") {
-            Write-DosMessage -Level "Error" -Message "One of the batch executions has failed. Please check EDW Console for additional logging. Halting the terminology registration." -ErrorAction Continue
+        if ($response.Status -eq "Failed") {
+            Write-DosMessage -Level "Error" -Message "The batch execution has failed. Please check EDW Console for additional logging." -ErrorAction Continue
             break
         }
-        if ($terminologyResponse.Status -eq "Success" -and $sharedTerminologyResponse.Status -eq "Success") {
-            Write-DosMessage -Level "Error" -Message "Both batch executions have run successfully." -ErrorAction Continue
+		if ($response.Status -eq "Cancelled") {
+            Write-DosMessage -Level "Error" -Message "The batch execution has been cancelled. Please check EDW Console for additional logging." -ErrorAction Continue
+            break
+        }
+        if ($response.Status -eq "Succeeded") {
+            Write-DosMessage -Level "Information" -Message "The batch execution was successful." -ErrorAction Continue
             $wasSuccessful = 1;
             break
         }
 
-        Write-DosMessage -Level "Information" -Message  "Terminology data mart status: $($terminologyResponse.Status)"
-        Write-DosMessage -Level "Information" -Message  "SharedTerminology data mart status: $($sharedTerminologyResponse.Status)"
+        Write-DosMessage -Level "Information" -Message  "Status: $($response.Status)"
     }
     return $wasSuccessful;
 
@@ -802,27 +798,43 @@ function Add-MetadataAndStructures() {
     $terminologyExists = Test-DataMartExists -Name "Terminology" -Config $Config
     $sharedTerminologyExists = Test-DataMartExists -Name "SharedTerminology" -Config $Config
 
-    if (($terminologyExists -eq $false) -or ($sharedTerminologyExists -eq $false)) {
-        # POST Terminology data marts to MDS
-        $terminologyDataMartId = Invoke-PostToMds -Config $Config -name "Terminology" -path ".\Terminology.json"
-
-        $sharedTerminologyDataMartId = Invoke-PostToMds -Config $Config -name "SharedTerminology" -path ".\SharedTerminology.json"
+    if (($terminologyExists -eq $false) -or ($sharedTerminologyExists -eq $false)) {    
+        if(!$terminologyDataMartId) {
+            Write-DosMessage -ErrorAction Stop -Level "Error" -Message "The Terminology metadata could not be created. Please resolve the error with POSTing the Terminology data mart to the metadata service"#
+        }
         
-        # POST executions 
+        $sharedTerminologyDataMartId = Invoke-PostToMds -Config $Config -name "SharedTerminology" -path ".\SharedTerminology.json"
+        if(!$sharedTerminologyDataMartId) {
+            Write-DosMessage -ErrorAction Stop -Level "Error" -Message "The SharedTerminology metadata could not be created. Please resolve the error with POSTing the SharedTerminology data mart to the metadata service"
+        }
+        
+        # POST terminology  
         $terminologyBatchExecutionId = Invoke-PostToDps -Name "Terminology" -Config $Config -dataMartId $terminologyDataMartId
-        $sharedTerminologyBatchExecutionId = Invoke-PostToDps -Name "SharedTerminology" -Config $Config -dataMartId $sharedTerminologyDataMartId
-
+        
         # Poll batch executions for 5 minutes to determine if they've been successful
-        $wasSuccessful = Invoke-PollBatchExecutions -Config $Config -terminologyBatchExecutionId $terminologyBatchExecutionId -sharedTerminologyBatchExecutionId $sharedTerminologyBatchExecutionId
+        $wasTerminologySuccessful = Invoke-PollBatchExecutions -Config $Config -executionId $terminologyBatchExecutionId
+        if(!$wasTerminologySuccessful) {
+            Write-DosMessage -ErrorAction Stop -Level "Error" -Message "The Terminology tables could not be created. Please resolve the error with POSTing the Terminology data mart to the data processing service"
+        }
+        
+        # POST SharedTerminology
+        $sharedTerminologyBatchExecutionId = Invoke-PostToDps -Name "SharedTerminology" -Config $Config -dataMartId $sharedTerminologyDataMartId
+        
+        # Poll batch executions for 5 minutes to determine if they've been successful
+        $wasSharedTerminologySuccessful = Invoke-PollBatchExecutions -Config $Config -executionId $sharedTerminologyBatchExecutionId
+        if(!$wasSharedTerminologySuccessful) {
+            Write-DosMessage -ErrorAction Stop -Level "Error" -Message "The SharedTerminology tables/views could not be created. Please resolve the error with POSTing the SharedTerminology data mart to the data processing service"
+        }
+        
 
         # if DPS role was added for user, remove the role
         if ($roleAdded) {
             Remove-EdwAdminRole -RoleName "DataProcessingServiceUser" -Config $Config
         }
+    }   
 
-        if (!$wasSuccessful) {
-            Write-DosMessage -ErrorAction Stop -Level "Error" -Message "Terminology installation is halting, since batches could not be executed properly. Please check the logs in EDW Console and requeue if necessary."
-        }
+    if (!$wasSuccessful) {
+        Write-DosMessage -ErrorAction Stop -Level "Error" -Message "Terminology installation is halting, since batches could not be executed properly. Please check the logs in EDW Console and requeue if necessary."
     }
 }
 
