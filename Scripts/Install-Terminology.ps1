@@ -1,4 +1,8 @@
-﻿param(
+﻿#Requires -RunAsAdministrator
+#Requires -Version 4.0
+#Requires -Modules PowerShellGet, PackageManagement
+
+param(
     [ValidateNotNullorEmpty()]
     [ValidateScript( {
             if (!(Test-Path $_)) {

@@ -600,6 +600,32 @@ function Invoke-PostToMds {
     }
 }
 
+function Test-DataMartExists {
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $Name,
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [PSCustomObject] $Config
+    )
+
+    $headers = @{"Content-Type" = "application/json"}
+    $headers.Add("Authorization", "Bearer $($Config.accessToken)")
+    $url = "$($Config.mdsServiceUrl)/DataMarts?`$filter=Name%20eq%20%27$Name%27&`$select=Id"
+    Write-DosMessage -Level "Information" -Message "Testing if $Name Datamart exists: $url"
+    $response = Invoke-RestMethod -Uri $url -Method GET -Headers $headers
+    $exists = $response.value.length -ge 1
+    if ($exists) {
+        Write-DosMessage -Level "Information" -Message "Datamart $Name exists"
+    }
+    else {
+        Write-DosMessage -Level "Information" -Message "Datamart $Name does not exist"
+    }
+    
+    return $exists
+}
+
 function Invoke-PostToDps {
     param(
         [Parameter(Mandatory = $true)]
@@ -773,25 +799,30 @@ function Add-MetadataAndStructures() {
     )
     $roleAdded = Add-EdwAdminRole -RoleName "DataProcessingServiceUser" -Config $Config
 
-    # POST Terminology data marts to MDS
-    $terminologyDataMartId = Invoke-PostToMds -Config $Config -name "Terminology" -path ".\Terminology.json"
+    $terminologyExists = Test-DataMartExists -Name "Terminology" -Config $Config
+    $sharedTerminologyExists = Test-DataMartExists -Name "SharedTerminology" -Config $Config
 
-    $sharedTerminologyDataMartId = Invoke-PostToMds -Config $Config -name "SharedTerminology" -path ".\SharedTerminology.json"
-    
-    # POST executions 
-    $terminologyBatchExecutionId = Invoke-PostToDps -Name "Terminology" -Config $Config -dataMartId $terminologyDataMartId
-    $sharedTerminologyBatchExecutionId = Invoke-PostToDps -Name "SharedTerminology" -Config $Config -dataMartId $sharedTerminologyDataMartId
+    if (($terminologyExists -eq $false) -or ($sharedTerminologyExists -eq $false)) {
+        # POST Terminology data marts to MDS
+        $terminologyDataMartId = Invoke-PostToMds -Config $Config -name "Terminology" -path ".\Terminology.json"
 
-    # Poll batch executions for 5 minutes to determine if they've been successful
-    $wasSuccessful = Invoke-PollBatchExecutions -Config $Config -terminologyBatchExecutionId $terminologyBatchExecutionId -sharedTerminologyBatchExecutionId $sharedTerminologyBatchExecutionId
+        $sharedTerminologyDataMartId = Invoke-PostToMds -Config $Config -name "SharedTerminology" -path ".\SharedTerminology.json"
+        
+        # POST executions 
+        $terminologyBatchExecutionId = Invoke-PostToDps -Name "Terminology" -Config $Config -dataMartId $terminologyDataMartId
+        $sharedTerminologyBatchExecutionId = Invoke-PostToDps -Name "SharedTerminology" -Config $Config -dataMartId $sharedTerminologyDataMartId
 
-    # if DPS role was added for user, remove the role
-    if ($roleAdded) {
-        Remove-EdwAdminRole -RoleName "DataProcessingServiceUser" -Config $Config
-    }
+        # Poll batch executions for 5 minutes to determine if they've been successful
+        $wasSuccessful = Invoke-PollBatchExecutions -Config $Config -terminologyBatchExecutionId $terminologyBatchExecutionId -sharedTerminologyBatchExecutionId $sharedTerminologyBatchExecutionId
 
-    if (!$wasSuccessful) {
-        Write-DosMessage -ErrorAction Stop -Level "Error" -Message "Terminology installation is halting, since batches could not be executed properly. Please check the logs in EDW Console and requeue if necessary."
+        # if DPS role was added for user, remove the role
+        if ($roleAdded) {
+            Remove-EdwAdminRole -RoleName "DataProcessingServiceUser" -Config $Config
+        }
+
+        if (!$wasSuccessful) {
+            Write-DosMessage -ErrorAction Stop -Level "Error" -Message "Terminology installation is halting, since batches could not be executed properly. Please check the logs in EDW Console and requeue if necessary."
+        }
     }
 }
 
