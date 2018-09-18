@@ -44,7 +44,7 @@ param(
 # Fail installation on first error
 $ErrorActionPreference = "Stop"
 
-[string[]] $requiredFiles = @($InstallFile, $Dacpac, $PublishProfile, "$PSScriptRoot\Install.config", "$PSScriptRoot\Terminology-Install-Utilities.psm1", "$PSScriptRoot\terminology-registration.config")
+[string[]] $requiredFiles = @($InstallFile, $Dacpac, $PublishProfile, "$PSScriptRoot\Install.config", "$PSScriptRoot\terminology-registration.config", "$PSScriptRoot\Terminology.json", "$PSScriptRoot\SharedTerminology.json", "$PSScriptRoot\Terminology-Install-Utilities.psm1")
 For ($i = 0; $i -lt $requiredFiles.Length; $i++) {
     if (!(Test-Path -Path $requiredFiles[$i])) {
         Throw "$($requiredFiles[$i]) does not exist and is required for install."
@@ -112,8 +112,10 @@ if (!(Test-Path $fabricRegistration -PathType Leaf)) {
     Invoke-WebRequest -Uri https://raw.githubusercontent.com/HealthCatalyst/Fabric.Identity/master/Fabric.Identity.API/scripts/Register.ps1 -Headers @{"Cache-Control" = "no-cache"} -OutFile $fabricRegistration -UseBasicParsing
 }
 
+# Terminology Install Utilities
 Import-Module "$PSScriptRoot\Terminology-Install-Utilities.psm1" -Force
 
+# .NET Core Server Hosting
 if (!(Test-Prerequisite "*.NET Core*Windows Server Hosting*" 2.0.7)) {    
     try {
         Write-DosMessage -Level "Warning" -Message ".NET Core Runtime & Hosting Bundle for Windows not installed...installing version 2.1.3"        

@@ -49,15 +49,15 @@ function Get-ConfigValue {
         elseif ($Required -eq $true) {
             while ([string]::IsNullOrWhiteSpace($result)) {
                 Write-Host "Enter the " -NoNewline -ForegroundColor White
-                Write-Host $Prompt  -NoNewline -ForegroundColor DarkYellow
+                Write-Host $Prompt  -NoNewline -ForegroundColor Yellow
                 Write-Host " $AdditionalPromptInfo " -NoNewline -ForegroundColor White
                 $result = Read-Host
             }
         }
         else {
             Write-Host "Enter the " -NoNewline -ForegroundColor White
-            Write-Host $Prompt  -NoNewline -ForegroundColor DarkYellow
-            Write-Host $AdditionalPromptInfo -NoNewline -ForegroundColor White
+            Write-Host $Prompt  -NoNewline -ForegroundColor Yellow
+            Write-Host " $AdditionalPromptInfo " -NoNewline -ForegroundColor White
             $result = Read-Host
         }
 
@@ -128,8 +128,12 @@ function Invoke-PingService {
 
 function Invoke-SqlCommand {
     param(
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [String] $SqlServerAddress,
         [String] $DatabaseName,
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [String] $Query,
         [PSCustomObject] $Parameters = @{},
         [Boolean] $ReturnData = $false
@@ -798,7 +802,19 @@ function Add-MetadataAndStructures() {
     $terminologyExists = Test-DataMartExists -Name "Terminology" -Config $Config
     $sharedTerminologyExists = Test-DataMartExists -Name "SharedTerminology" -Config $Config
 
-    if (($terminologyExists -eq $false) -or ($sharedTerminologyExists -eq $false)) {    
+    if (($terminologyExists -eq $false) -and ($sharedTerminologyExists -eq $false)) {
+        if(!$terminologyDataMartId) {
+            Write-DosMessage -ErrorAction Stop -Level "Error" -Message "The Terminology metadata could not be created. Please resolve the error with POSTing the Terminology data mart to the metadata service"#
+        }
+        
+        $sharedTerminologyDataMartId = Invoke-PostToMds -Config $Config -name "SharedTerminology" -path ".\SharedTerminology.json"
+        if(!$sharedTerminologyDataMartId) {
+            Write-DosMessage -ErrorAction Stop -Level "Error" -Message "The SharedTerminology metadata could not be created. Please resolve the error with POSTing the SharedTerminology data mart to the metadata service"
+        }
+            
+        # POST Terminology data marts to MDS
+        $terminologyDataMartId = Invoke-PostToMds -Config $Config -name "Terminology" -path ".\Terminology.json"
+
         if(!$terminologyDataMartId) {
             Write-DosMessage -ErrorAction Stop -Level "Error" -Message "The Terminology metadata could not be created. Please resolve the error with POSTing the Terminology data mart to the metadata service"#
         }
@@ -825,42 +841,79 @@ function Add-MetadataAndStructures() {
         if(!$wasSharedTerminologySuccessful) {
             Write-DosMessage -ErrorAction Stop -Level "Error" -Message "The SharedTerminology tables/views could not be created. Please resolve the error with POSTing the SharedTerminology data mart to the data processing service"
         }
-        
-
+    
         # if DPS role was added for user, remove the role
         if ($roleAdded) {
             Remove-EdwAdminRole -RoleName "DataProcessingServiceUser" -Config $Config
         }
-    }   
 
-    if (!$wasSuccessful) {
-        Write-DosMessage -ErrorAction Stop -Level "Error" -Message "Terminology installation is halting, since batches could not be executed properly. Please check the logs in EDW Console and requeue if necessary."
+        # Create role Terminology API on Terminology db
+        $RolePermissions = @{
+            "[Catalyst].[CodeBASE]"="SELECT";
+            "[Catalyst].[CodeSystemBASE]"="SELECT";
+            "[Open].[ValueSetCode]"="SELECT";
+            "[Catalyst].[CodeSystem]"="SELECT";
+            "[Open].[ValueSetCodeCountBASE]"="SELECT";
+            "[Open].[ValueSetDescriptionBASE]"="SELECT";
+        }
+        Publish-DatabaseRole -Config $Config -DatabaseName "Terminology" -RoleName "TerminologyServiceRole" -User $Config.iisUserCredentials.UserName -RolePermissions $RolePermissions
+
+        # Create role Terminology API on Shared db
+        $RolePermissions = @{
+            "[ClientTerm].[CodeBASE]"="SELECT";
+            "[ClientTerm].[CodeSystemBASE]"="SELECT";
+            "[ClientTerm].[ValueSetCode]"="SELECT";
+            "[Terminology].[Code]"="SELECT";
+            "[Terminology].[CodeSystem]"="SELECT";
+            "[Terminology].[ValueSetCode]"="SELECT";
+            "[Terminology].[ValueSetCodeCount]"="SELECT";
+            "[Terminology].[ValueSetDescription]"="SELECT";
+            "[ClientTerm].[ValueSetCodeBASE]"="SELECT, INSERT, UPDATE, DELETE";
+            "[ClientTerm].[ValueSetCodeCountBASE]"="SELECT, INSERT, UPDATE, DELETE";
+            "[ClientTerm].[ValueSetDescriptionBASE]"="SELECT, INSERT, UPDATE, DELETE";
+        } 
+        Publish-DatabaseRole -Config $Config -DatabaseName "Shared" -RoleName "TerminologySharedServiceRole" -User $Config.iisUserCredentials.UserName -RolePermissions $RolePermissions
+
+        if (!$wasSuccessful) {
+            Write-DosMessage -ErrorAction Stop -Level "Error" -Message "Terminology installation is halting, since batches could not be executed properly. Please check the logs in EDW Console and requeue if necessary."
+        }
     }
 }
 
-function Publish-TerminologyDatabaseRole() {
+function Publish-DatabaseRole() {
     param(
         [PSCustomObject] $Config,
         [String] $DatabaseName,
         [String] $RoleName,
-        [String] $User
+        [String] $User,
+        [Hashtable] $RolePermissions = @{}
     )
-
+    
     $serverAddress = $Config.edwAddress
+    
+    Write-DosMessage -Level "Information" -Message "Verifying/Creating role for $RoleName for $DatabaseName on $serverAddress server" 
     $Query = "DECLARE @cmd nvarchar(max)
     IF DATABASE_PRINCIPAL_ID(@RoleName) IS NULL
     BEGIN
         print '-- Creating role ';
         SET @cmd = N'CREATE ROLE ' + quotename(@RoleName);
         EXEC(@cmd);
-    END"
-    # TODO: Add tables and views here
-    # GRANT SELECT, INSERT, UPDATE, DELETE ON [dbo].[TABLENAME] TO TerminologyServiceRole;
-    # GO
+    END"    
     $parameters = @{RoleName = $RoleName}
     Invoke-SqlCommand -SqlServerAddress $serverAddress -DatabaseName $DatabaseName -Query $Query -Parameters $parameters
 
-    Write-DosMessage -Level "Information" -Message "Creating login for $User on $serverAddress server" 
+    if ($RolePermissions.Keys.length -ge 1) {
+        $Query = ""
+        foreach ($entity in $RolePermissions.Keys) {
+            $access = $RolePermissions[$entity]
+            Write-DosMessage -Level "Information" -Message "Verifying/Creating permission $access $entity for role $RoleName"
+            $Query = "$($Query)GRANT $access ON $entity TO $RoleName;`n"
+        }
+        Invoke-SqlCommand -SqlServerAddress $serverAddress -DatabaseName $DatabaseName -Query $Query
+    }
+    
+
+    Write-DosMessage -Level "Information" -Message "Verifying/Creating login for $User on $serverAddress server" 
     $Query = "DECLARE @cmd nvarchar(max)
     DECLARE @EscapeQuoteUser varchar(max)
     SET @EscapeQuoteUser = replace(@User, '''', '''''')
@@ -874,7 +927,7 @@ function Publish-TerminologyDatabaseRole() {
     $parameters = @{User = $User}
     Invoke-SqlCommand -SqlServerAddress $serverAddress -DatabaseName $DatabaseName -Query $Query -Parameters $parameters
 
-    Write-DosMessage -Level "Information" -Message "Creating login for $User on $serverAddress on database $DatabaseName" 
+    Write-DosMessage -Level "Information" -Message "Verifying/Creating login for $User on $serverAddress on database $DatabaseName" 
     $Query = "DECLARE @cmd nvarchar(max)
     DECLARE @EscapeQuoteUser varchar(max)
     SET @EscapeQuoteUser = replace(@User, '''', '''''')
@@ -911,32 +964,17 @@ function Publish-TerminologyDatabaseUpdates() {
         [String] $PublishProfile
     )
     
-    Publish-TerminologyDacpac -Config $Config -Dacpac $Dacpac -PublishProfile $PublishProfile
-    Publish-TerminologyDatabaseRole -Config $Config -DatabaseName "Terminology" -RoleName "TerminologyServiceRole" -User $Config.iisUserCredentials.UserName
-    Publish-TerminologyDatabaseRole -Config $Config -DatabaseName "Shared" -RoleName "TerminologySharedServiceRole" -User $Config.iisUserCredentials.UserName
+    Publish-TerminologyDacpac -Config $Config -Dacpac $Dacpac -PublishProfile $PublishProfile    
     
-    Publish-TerminologyDatabaseRole -Config $Config -DatabaseName "Terminology" -RoleName "db_owner" -User $Config.loaderWindowsUser
-    Publish-TerminologyDatabaseRole -Config $Config -DatabaseName "Shared" -RoleName "db_owner" -User $Config.loaderWindowsUser
+    Publish-DatabaseRole -Config $Config -DatabaseName "Terminology" -RoleName "db_owner" -User $Config.loaderWindowsUser
+    Publish-DatabaseRole -Config $Config -DatabaseName "Shared" -RoleName "db_owner" -User $Config.loaderWindowsUser
 
-    Publish-TerminologyDatabaseRole -Config $Config -DatabaseName "Terminology" -RoleName "ddladmin" -User $Config.processingServiceWindowsUser
-    Publish-TerminologyDatabaseRole -Config $Config -DatabaseName "Terminology" -RoleName "db_datareader" -User $Config.processingServiceWindowsUser
-    Publish-TerminologyDatabaseRole -Config $Config -DatabaseName "Terminology" -RoleName "db_datawriter" -User $Config.processingServiceWindowsUser
-    Publish-TerminologyDatabaseRole -Config $Config -DatabaseName "Shared" -RoleName "ddladmin" -User $Config.processingServiceWindowsUser
-    Publish-TerminologyDatabaseRole -Config $Config -DatabaseName "Shared" -RoleName "db_datareader" -User $Config.processingServiceWindowsUser
-    Publish-TerminologyDatabaseRole -Config $Config -DatabaseName "Shared" -RoleName "db_datawriter" -User $Config.processingServiceWindowsUser
-    <# TODO: Ben create Terminology shared db role for iis user
-
-    Shared Database Role
-            
-    VIEW    Terminology.Code                    Read
-    VIEW    Terminology.CodeSystem              Read
-    VIEW    Terminology.ValueSetCode            Read
-    VIEW    Terminology.ValueSetCodeCount       Read
-    VIEW    Terminology.ValueSetDescription     Read
-    TABLE   ClientTerm.ValueSetCodeBASE         Read/Write
-    TABLE   ClientTerm.ValueSetCodeCountBASE    Read/Write
-    TABLE   ClientTerm.ValueSetDescriptionBASE  Read/Write
-    #>
+    Publish-DatabaseRole -Config $Config -DatabaseName "Terminology" -RoleName "ddladmin" -User $Config.processingServiceWindowsUser
+    Publish-DatabaseRole -Config $Config -DatabaseName "Terminology" -RoleName "db_datareader" -User $Config.processingServiceWindowsUser
+    Publish-DatabaseRole -Config $Config -DatabaseName "Terminology" -RoleName "db_datawriter" -User $Config.processingServiceWindowsUser
+    Publish-DatabaseRole -Config $Config -DatabaseName "Shared" -RoleName "ddladmin" -User $Config.processingServiceWindowsUser
+    Publish-DatabaseRole -Config $Config -DatabaseName "Shared" -RoleName "db_datareader" -User $Config.processingServiceWindowsUser
+    Publish-DatabaseRole -Config $Config -DatabaseName "Shared" -RoleName "db_datawriter" -User $Config.processingServiceWindowsUser
 }
 
 function Test-Terminology {
