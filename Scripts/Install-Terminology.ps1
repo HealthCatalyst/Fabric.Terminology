@@ -1,4 +1,8 @@
-﻿param(
+﻿#Requires -RunAsAdministrator
+#Requires -Version 4.0
+#Requires -Modules PowerShellGet, PackageManagement
+
+param(
     [ValidateNotNullorEmpty()]
     [ValidateScript( {
             if (!(Test-Path $_)) {
@@ -32,13 +36,15 @@
     [String] $SqlDataDirectory,
     [String] $SqlLogDirectory,
     [String] $AppEndpoint,
+    [String] $LoaderWindowsUser,
+    [String] $ProcessingServiceWindowsUser,
     [switch] $Quiet
 )
 
 # Fail installation on first error
 $ErrorActionPreference = "Stop"
 
-[string[]] $requiredFiles = @($InstallFile, $Dacpac, $PublishProfile, "$PSScriptRoot\Install.config", "$PSScriptRoot\Terminology-Install-Utilities.psm1", "$PSScriptRoot\terminology-registration.config")
+[string[]] $requiredFiles = @($InstallFile, $Dacpac, $PublishProfile, "$PSScriptRoot\Install.config", "$PSScriptRoot\terminology-registration.config", "$PSScriptRoot\Terminology.json", "$PSScriptRoot\SharedTerminology.json", "$PSScriptRoot\Terminology-Install-Utilities.psm1")
 For ($i = 0; $i -lt $requiredFiles.Length; $i++) {
     if (!(Test-Path -Path $requiredFiles[$i])) {
         Throw "$($requiredFiles[$i]) does not exist and is required for install."
@@ -106,8 +112,10 @@ if (!(Test-Path $fabricRegistration -PathType Leaf)) {
     Invoke-WebRequest -Uri https://raw.githubusercontent.com/HealthCatalyst/Fabric.Identity/master/Fabric.Identity.API/scripts/Register.ps1 -Headers @{"Cache-Control" = "no-cache"} -OutFile $fabricRegistration -UseBasicParsing
 }
 
+# Terminology Install Utilities
 Import-Module "$PSScriptRoot\Terminology-Install-Utilities.psm1" -Force
 
+# .NET Core Server Hosting
 if (!(Test-Prerequisite "*.NET Core*Windows Server Hosting*" 2.0.7)) {    
     try {
         Write-DosMessage -Level "Warning" -Message ".NET Core Runtime & Hosting Bundle for Windows not installed...installing version 2.1.3"        
@@ -130,7 +138,7 @@ if (!(Test-Prerequisite "*.NET Core*Windows Server Hosting*" 2.0.7)) {
 
 }
 
-$config = Get-TerminologyConfig -Credentials $Credentials -DiscoveryServiceUrl $DiscoveryServiceUrl -SqlAddress $SqlAddress -EdwAddress $EdwAddress -MetadataDbName $MetadataDbName -SqlDataDirectory $SqlDataDirectory -SqlLogDirectory $SqlLogDirectory -AppEndpoint $AppEndpoint -Quiet:$Quiet
+$config = Get-TerminologyConfig -Credentials $Credentials -DiscoveryServiceUrl $DiscoveryServiceUrl -SqlAddress $SqlAddress -MetadataDbName $MetadataDbName -SqlDataDirectory $SqlDataDirectory -SqlLogDirectory $SqlLogDirectory -AppEndpoint $AppEndpoint -LoaderWindowsUserParam $LoaderWindowsUser -ProcessingServiceWindowsUserParam $ProcessingServiceWindowsUser -Quiet:$Quiet
 
 Publish-DosWebApplication -WebAppPackagePath $InstallFile -AppPoolName $config.appPool -AppPoolCredential $config.iisUserCredentials -AppName $config.appName -IISWebSite $config.siteName
 
@@ -140,7 +148,7 @@ Update-DiscoveryService -Config $config
 
 Publish-TerminologyDatabaseUpdates -Config $config -Dacpac $Dacpac -PublishProfile $PublishProfile
 
-# Add-MetadataAndStructures -Config $config
+Add-MetadataAndStructures -Config $config
 
 Write-DosMessage -Level "Information" -Message "Registering Terminology with Fabric Authorization"
 & $fabricRegistration -discoveryServiceUrl $config.discoveryServiceUrl -authorizationServiceUrl $config.authorizationServiceUrl -identityServiceUrl $Config.identityServiceUrl -registrationFile "$PSScriptRoot\terminology-registration.config" -quiet -ErrorAction Stop

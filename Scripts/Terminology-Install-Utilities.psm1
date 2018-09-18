@@ -4,7 +4,12 @@ function Get-UserValueOrDefault {
         [String] $Prompt
     )
 
-    $value = Read-Host "Enter the $Prompt or hit enter to accept the default value [$Default]"
+    Write-Host "Enter the " -NoNewline -ForegroundColor White
+    Write-Host $Prompt  -NoNewline -ForegroundColor Yellow
+    Write-Host " or hit enter to accept the default value [" -NoNewline -ForegroundColor White
+    Write-Host $Default -NoNewline -ForegroundColor Cyan
+    Write-Host "] " -NoNewline -ForegroundColor White
+    $value = Read-Host
 
     if ([string]::IsNullOrWhiteSpace($value)) {
         return $Default
@@ -43,11 +48,17 @@ function Get-ConfigValue {
         }
         elseif ($Required -eq $true) {
             while ([string]::IsNullOrWhiteSpace($result)) {
-                $result = Read-Host "Enter the $Prompt $AdditionalPromptInfo".Trim()
+                Write-Host "Enter the " -NoNewline -ForegroundColor White
+                Write-Host $Prompt  -NoNewline -ForegroundColor Yellow
+                Write-Host " $AdditionalPromptInfo " -NoNewline -ForegroundColor White
+                $result = Read-Host
             }
         }
         else {
-            $result = Read-Host "Enter the $Prompt $AdditionalPromptInfo".Trim()
+            Write-Host "Enter the " -NoNewline -ForegroundColor White
+            Write-Host $Prompt  -NoNewline -ForegroundColor Yellow
+            Write-Host " $AdditionalPromptInfo " -NoNewline -ForegroundColor White
+            $result = Read-Host
         }
 
         return $result
@@ -117,8 +128,12 @@ function Invoke-PingService {
 
 function Invoke-SqlCommand {
     param(
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [String] $SqlServerAddress,
         [String] $DatabaseName,
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
         [String] $Query,
         [PSCustomObject] $Parameters = @{},
         [Boolean] $ReturnData = $false
@@ -148,11 +163,27 @@ function Invoke-SqlCommand {
         $connection.Close()        
     }
     catch [System.Data.SqlClient.SqlException] {
-        Write-DosMessage -Level "Error" -Message "An error ocurred while executing the command.
+        Write-DosMessage -Level "Error" -Message "An error ocurred while executing the command. 
         Connection String: $($connectionString)
         Query: $Query" -ErrorAction Continue
         throw $_.Exception
     }
+}
+
+function Get-InstallerAccessToken {
+    param(
+        [ValidateNotNullOrEmpty()]
+        [String] $discoveryServiceUrl,
+        [ValidateNotNullOrEmpty()]
+        [String] $fabricInstallerSecret
+    )
+    $decryptedInstallerSecret = Get-DecryptedString $encryptionCertificate $fabricInstallerSecret
+    $identityServiceUrl = Get-ServiceFromDiscovery -DiscoveryUrl $discoveryServiceUrl -Name "IdentityService" -Version 1
+    $fabricUser = "fabric-installer"
+    $scopes = "dos/metadata dos/metadata.serviceAdmin fabric/authorization.read"
+    Write-DosMessage -Level "Information" -Message "Retrieving access token from IdentityService: $identityServiceUrl as $fabricUser user and $scopes scopes"
+    $accessToken = Get-AccessToken $identityServiceUrl $fabricUser $scopes $decryptedInstallerSecret
+    return $accessToken
 }
 
 function Test-DatabaseExists {
@@ -194,6 +225,8 @@ function Get-TerminologyConfig {
         [String] $AppEndpoint,
         [String] $SqlDataDirectory,
         [String] $SqlLogDirectory,
+        [String] $LoaderWindowsUserParam,
+        [String] $ProcessingServiceWindowsUserParam,
         [switch] $Quiet
     )
 
@@ -208,6 +241,26 @@ function Get-TerminologyConfig {
         $discoveryServiceParam = $installSettings.discoveryService
     }
     $discoveryServiceUrlConfig = Get-ConfigValue -Prompt "Discovery Service URI" -DefaultFromParam $DiscoveryServiceUrl -DefaultFromInstallConfig $discoveryServiceParam -Quiet:$Quiet
+
+    if ([string]::IsNullOrWhiteSpace($installSettings.fabricInstallerSecret)) {
+        Write-DosMessage -Level "Error"  -Message "Fabric Installer Secret and was not provided through the install.config. Please install fabric Identity and Authorization and retry running installation" -ErrorAction Stop
+    }
+
+    if ([string]::IsNullOrWhiteSpace($installSettings.encryptionCertificateThumbprint)) {
+        Write-DosMessage -Level "Error"  -Message "Encryption certificate thumbprint is required and was not provided through the install.config. Please install fabric Identity and Authorization and retry running installation" -ErrorAction Stop
+    }
+
+    # Get Installer Access Token
+    try {
+        $accessToken = Get-InstallerAccessToken -DiscoveryServiceUrl $discoveryServiceUrlConfig -fabricInstallerSecret $installSettings.fabricInstallerSecret
+        if ([string]::IsNullOrWhiteSpace($accessToken)) {
+            throw "Access token is null or empty"
+        }
+    } 
+    catch {
+        Write-DosMessage -Level "Error" -Message "An error has occured while retrieving access token. Please verify Fabric Identity/Authentication are installed and setup correctly " -ErrorAction Continue
+        throw $_.Exception
+    }
 
     # Validate Service Dependencies
     $serviceName = "MetadataService";
@@ -231,7 +284,7 @@ function Get-TerminologyConfig {
     $authorizationServiceUrl = Get-ServiceFromDiscovery -DiscoveryUrl $discoveryServiceUrlConfig -Name $serviceName -Version $serviceVersion
     
 
-    # Get Credentials
+    # Get IIS User Credentials
     if ($Null -ne $Credentials) {
         $iisUserCredentials = $Credentials
     }
@@ -282,7 +335,7 @@ function Get-TerminologyConfig {
     }
     
     # App Name
-    $appNameConfig = Get-ConfigValue -Prompt "service name" -DefaultFromParam $AppName -DefaultFromInstallConfig $installSettings.appName -Quiet:$Quiet
+    $appNameConfig = Get-ConfigValue -Prompt "Service Name" -DefaultFromParam $AppName -DefaultFromInstallConfig $installSettings.appName -Quiet:$Quiet
 
     # Terminology Service Endpoint
     if ([string]::IsNullOrWhiteSpace($installSettings.appEndpoint)) {
@@ -355,6 +408,12 @@ function Get-TerminologyConfig {
     }
     $sqlLogDirectoryConfig = Get-ConfigValue -Prompt "Log directory to create Terminology database" -DefaultFromParam $SqlLogDirectory -DefaultFromInstallConfig $sqlLogDirectoryParam -Quiet:$Quiet
 
+    # Loader User
+    $loaderWindowsUser = Get-ConfigValue -Prompt "Loader Windows username" -AdditionalPromptInfo "(ex. DOMAIN\USER)" -DefaultFromParam $LoaderWindowsUserParam -DefaultFromInstallConfig $installSettings.loaderWindowsUser -Quiet:$Quiet
+
+    # DPS User
+    $ProcessingServiceWindowsUser = Get-ConfigValue -Prompt "Data Processing Service App pool username" -AdditionalPromptInfo "(ex. DOMAIN\USER)" -DefaultFromParam $ProcessingServiceWindowsUserParam -DefaultFromInstallConfig $installSettings.processingServiceWindowsUser -Quiet:$Quiet
+
     Add-InstallationSetting "terminology" "appName" "$appNameConfig" | Out-Null
     Add-InstallationSetting "terminology" "appEndpoint" "$terminologyEndpointConfig" | Out-Null
     Add-InstallationSetting "terminology" "appInsightsInstrumentationKey" "$appInsightsKeyConfig" | Out-Null
@@ -364,6 +423,8 @@ function Get-TerminologyConfig {
     Add-InstallationSetting "common" "metadataDbName" "$metadataDbNameConfig" | Out-Null
     Add-InstallationSetting "common" "sqlDataDirectory" "$sqlDataDirectoryConfig" | Out-Null
     Add-InstallationSetting "common" "sqlLogDirectory" "$sqlLogDirectoryConfig" | Out-Null
+    Add-InstallationSetting "common" "loaderWindowsUser" "$loaderWindowsUser" | Out-Null
+    Add-InstallationSetting "common" "processingServiceWindowsUser" "$ProcessingServiceWindowsUser" | Out-Null
 
     if ([string]::IsNullOrWhiteSpace($installSettings.appPool)) {
         Write-DosMessage -Level "Error"  -Message "App Pool is required and was not provided through the install.config." -ErrorAction Stop
@@ -372,14 +433,6 @@ function Get-TerminologyConfig {
     if ([string]::IsNullOrWhiteSpace($installSettings.siteName)) {
         Write-DosMessage -Level "Error"  -Message "Site Name is required and was not provided through the install.config." -ErrorAction Stop
     }
-
-    if ([string]::IsNullOrWhiteSpace($installSettings.fabricInstallerSecret)) {
-        Write-DosMessage -Level "Error"  -Message "Fabric Installer Secret and was not provided through the install.config. Please install fabric Identity and Authorization and retry running installation" -ErrorAction Stop
-    }
-
-    if ([string]::IsNullOrWhiteSpace($installSettings.encryptionCertificateThumbprint)) {
-        Write-DosMessage -Level "Error"  -Message "Encryption certificate thumbprint is required and was not provided through the install.config. Please install fabric Identity and Authorization and retry running installation" -ErrorAction Stop
-    }    
 
     Write-DosMessage -Level "Information" -Message "Verifying Shared database exists"
     Test-DatabaseExists -SqlAddress $edwAddressConfig -Name "Shared"
@@ -398,11 +451,14 @@ function Get-TerminologyConfig {
         appInsightsKey          = $appInsightsKeyConfig
         sqlDataDirectory        = $sqlDataDirectoryConfig
         sqlLogDirectory         = $sqlLogDirectoryConfig
+        accessToken             = $accessToken
         sharedDbName            = $installSettings.sharedDbName
         mdsServiceUrl           = $mdsServiceUrl
         dpsServiceUrl           = $dpsServiceUrl
         identityServiceUrl      = $identityServiceUrl
         authorizationServiceUrl = $authorizationServiceUrl
+        loaderWindowsUser       = $loaderWindowsUser
+        processingServiceWindowsUser = $processingServiceWindowsUser
     };
 
     return $config
@@ -421,7 +477,7 @@ function Update-AppSettings {
     $appSettingsJson.DiscoveryServiceClientSettings.DiscoveryServiceUrl = $Config.discoveryServiceUrl
     if ([string]::IsNullOrWhiteSpace($Config.appInsightsKeyConfig)) {
         $appSettingsJson.ApplicationInsightsSettings.Enabled = $false
-    }
+    } 
     else {
         $appSettingsJson.ApplicationInsightsSettings.InstrumentationKey = $Config.appInsightsKeyConfig    
         $appSettingsJson.ApplicationInsightsSettings.Enabled = $true
@@ -520,29 +576,58 @@ function Invoke-PostToMds {
         [ValidateNotNullOrEmpty()]
         [PSCustomObject] $Config
     )
-
-    # TODO THIS NEEDS TO CHANGE AFTER THE FABRIC UPDATES!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    $authToken = Read-Host "Log into Atlas was a DosAdmin, and copy the access token from one of the auth headers to MDS and copy it here. This is a temporary workaround"
+    Write-DosMessage -Level "Information" "Reading file $path"
     $dataMartJson = Get-Content -Raw -Path $path
     $headers = @{"Content-Type" = "application/json"}
-    $headers.Add("Authorization", "Bearer $authToken")
+    $headers.Add("Authorization", "Bearer $($Config.accessToken)")
 
     try {
-        Write-DosMessage -Level "Information" -Message "Starting to create metadata for $name"
-        $response = Invoke-RestMethod -Uri "$($Config.mdsServiceUrl)/DataMarts" -Method POST -Body $dataMartJson -Headers $headers -UseBasicParsing
-        Write-DosMessage -Level "Information" -Message "Completed creating metadata for $name"
-        return $response.Id
+        Write-DosMessage -Level "Information" -Message "Posting json metadata in $path for $name in Metadata Service $($Config.mdsServiceUrl)/DataMarts.`nThis may take several minutes"
+        $response = Invoke-RestMethod -Uri "$($Config.mdsServiceUrl)/DataMarts" -Method POST -Body $dataMartJson -Headers $headers -TimeoutSec 600 -UseBasicParsing
+        Write-DosMessage -Level "Information" -Message "Completed creating metadata for $name with data mart $($response.Id)"
+        return $($response.Id)
     }
     catch [System.Net.WebException] {
-        Write-DosMessage -Level "Error" -Message "Creating metadata for $name stopped" -ErrorAction Continue
-        Write-DosMessage -Level "Error" -Message "Description:" $_.Exception.Response.StatusDescription -ErrorAction Continue
-        Write-DosMessage -Level "Error" -Message  $_.ErrorDetails.Message | ConvertFrom-Json | Select-Object -Expand message -ErrorAction Continue
+        $error = $_.ErrorDetails.Message | ConvertFrom-Json | Select-Object -Expand message
+        Write-DosMessage -Level "Error" -Message "Error: $error" -ErrorAction Continue
+        Write-DosMessage -Level "Error" -Message "Message: $($_.Exception.Message)" -ErrorAction Continue
+        Write-DosMessage -Level "Error" -Message "Response: $($_.Exception.Response)" -ErrorAction Continue
+        Write-DosMessage -Level "Error" -Message "InnerException: $($_.Exception.InnerException)" -ErrorAction Continue
         throw $_.Exception
     }
 }
 
+function Test-DataMartExists {
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $Name,
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [PSCustomObject] $Config
+    )
+
+    $headers = @{"Content-Type" = "application/json"}
+    $headers.Add("Authorization", "Bearer $($Config.accessToken)")
+    $url = "$($Config.mdsServiceUrl)/DataMarts?`$filter=Name%20eq%20%27$Name%27&`$select=Id"
+    Write-DosMessage -Level "Information" -Message "Testing if $Name Datamart exists: $url"
+    $response = Invoke-RestMethod -Uri $url -Method GET -Headers $headers
+    $exists = $response.value.length -ge 1
+    if ($exists) {
+        Write-DosMessage -Level "Information" -Message "Datamart $Name exists"
+    }
+    else {
+        Write-DosMessage -Level "Information" -Message "Datamart $Name does not exist"
+    }
+    
+    return $exists
+}
+
 function Invoke-PostToDps {
     param(
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $name,
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [string] $dataMartId,
@@ -551,18 +636,23 @@ function Invoke-PostToDps {
         [PSCustomObject] $Config
     )
 
+    
     $headers = @{"Content-Type" = "application/json"}
-
     try {
-        $response = Invoke-RestMethod -Uri "$($Config.dpsServiceUrl)/ExecuteDataMart" -Method POST -UseDefaultCredentials -Headers $headers -Body "{ `"DataMartId`": $dataMartId, `"BatchExecution`": { `"PipelineType`": `"Migration`", `"OverrideLoadType`": `"Incremental`", `"LoggingLevel`": `"Diagnostic`" } }"  -UseBasicParsing
+        $body = "{ `"DataMartId`": $dataMartId, `"BatchExecution`": { `"PipelineType`": `"Migration`", `"OverrideLoadType`": `"Incremental`", `"LoggingLevel`": `"Diagnostic`" } }"
+        Write-DosMessage -Level "Information" -Message "Scheduling job for '$name' with the Data Processing Service to creating physical tables.`n$($Config.dpsServiceUrl)/ExecuteDataMart`n$body"
+        $response = Invoke-RestMethod -Uri "$($Config.dpsServiceUrl)/ExecuteDataMart" -Method POST -UseDefaultCredentials -Headers $headers -Body $body -UseBasicParsing
         $batchExecutionId = ($response.value | ConvertFrom-Json).Id
-        Write-DosMessage -Level "Info" -Message  "Batch execution successfully sent to the data processing service."
+        Write-DosMessage -Level "Information" -Message  "Batch execution successfully sent to the data processing service."
 
         return $batchExecutionId;
     }
     catch [System.Net.WebException] {
-        Write-DosMessage -Level "Error" -Message  "POST for '$name' failed with status code:" $_.Exception.Response.StatusCode.value__ -ErrorAction Continue
-        Write-DosMessage -Level "Error" -Message  "Description:" $_.Exception.Response.StatusDescription -ErrorAction Continue
+        $error = $_.ErrorDetails.Message | ConvertFrom-Json | Select-Object -Expand message
+        Write-DosMessage -Level "Error" -Message "Error: $error" -ErrorAction Continue
+        Write-DosMessage -Level "Error" -Message "Message: $($_.Exception.Message)" -ErrorAction Continue
+        Write-DosMessage -Level "Error" -Message "Response: $($_.Exception.Response)" -ErrorAction Continue
+        Write-DosMessage -Level "Error" -Message "InnerException: $($_.Exception.InnerException)" -ErrorAction Continue
         throw $_.Exception
     }
 }
@@ -571,41 +661,37 @@ function Invoke-PollBatchExecutions {
     param(
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [string] $terminologyBatchExecutionId,
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [string] $sharedTerminologyBatchExecutionId,
+        [string] $executionId,
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [PSCustomObject] $Config
     )
 
     $terminologyUrl = "$($Config.dpsServiceUrl)/BatchExecutions($terminologyBatchExecutionId)"
-    $terminologyResponse = "";
-    $sharedTerminologyResponse = "";
+    $response = "";
     $wasSuccessful = 0;
 
     foreach ($i in 1..30) {
         Start-Sleep -s 5
-        if ($terminologyResponse -ne "Failed") {
-            $terminologyResponse = Invoke-RestMethod -Uri $terminologyUrl -Method GET -UseDefaultCredentials  -UseBasicParsing
-        }
-        if ($sharedTerminologyResponse -ne "Failed") {
-            $sharedTerminologyResponse = Invoke-RestMethod -Uri $terminologyUrl -Method GET -UseDefaultCredentials  -UseBasicParsing
+        if ($response -ne "Failed") {
+            $response = Invoke-RestMethod -Uri $terminologyUrl -Method GET -UseDefaultCredentials
         }
 
-        if ($terminologyResponse.Status -eq "Failed" -or $sharedTerminologyResponse.Status -eq "Failed") {
-            Write-DosMessage -Level "Error" -Error "One of the batch executions has failed. Please check EDW Console for additional logging. Halting the terminology registration."
+        if ($response.Status -eq "Failed") {
+            Write-DosMessage -Level "Error" -Message "The batch execution has failed. Please check EDW Console for additional logging." -ErrorAction Continue
             break
         }
-        if ($terminologyResponse.Status -eq "Success" -and $sharedTerminologyResponse.Status -eq "Success") {
-            Write-DosMessage -Level "Error" -Message "Both batch executions have run successfully."
+		if ($response.Status -eq "Cancelled") {
+            Write-DosMessage -Level "Error" -Message "The batch execution has been cancelled. Please check EDW Console for additional logging." -ErrorAction Continue
+            break
+        }
+        if ($response.Status -eq "Succeeded") {
+            Write-DosMessage -Level "Information" -Message "The batch execution was successful." -ErrorAction Continue
             $wasSuccessful = 1;
             break
         }
 
-        Write-DosMessage -Level "Information" -Message  "Terminology data mart status: $($terminologyResponse.Status)"
-        Write-DosMessage -Level "Information" -Message  "SharedTerminology data mart status: $($sharedTerminologyResponse.Status)"
+        Write-DosMessage -Level "Information" -Message  "Status: $($response.Status)"
     }
     return $wasSuccessful;
 
@@ -698,80 +784,156 @@ function Add-MetadataAndStructures() {
         [Parameter(Mandatory = $true)]
         [PSobject] $Config
     )
-
     $roleAdded = Add-EdwAdminRole -RoleName "DataProcessingServiceUser" -Config $Config
 
-    # POST Terminology data marts to MDS
-    Write-DosMessage -Level "Information" -Message "Creating Terminology metadata. This will take several minutes."
-    $terminologyDataMartId = Invoke-PostToMds -Config $Config -name "Terminology" -path ".\Terminology.json"
+    $terminologyExists = Test-DataMartExists -Name "Terminology" -Config $Config
+    $sharedTerminologyExists = Test-DataMartExists -Name "SharedTerminology" -Config $Config
 
-    Write-DosMessage -Level "Information" -Message "Creating SharedTerminology metadata. This will take several minutes."
-    $sharedTerminologyDataMartId = Invoke-PostToMds -Config $Config -name "SharedTerminology" -path ".\SharedTerminologyFiveNPEs.json"
+    if (($terminologyExists -eq $false) -and ($sharedTerminologyExists -eq $false)) {
+        # POST Terminology data marts to MDS
+        $terminologyDataMartId = Invoke-PostToMds -Config $Config -name "Terminology" -path ".\Terminology.json"
 
-    # POST executions 
-    Write-DosMessage -Level "Information" -Message "Creating physical tables for Terminology and SharedTerminology data marts"
-    $terminologyBatchExecutionId = Invoke-PostToDps -Config $Config -dataMartId $terminologyDataMartId
-    $sharedTerminologyBatchExecutionId = Invoke-PostToDps -Config $Config -dataMartId $sharedTerminologyDataMartId
+        if(!$terminologyDataMartId) {
+            Write-DosMessage -ErrorAction Stop -Level "Error" -Message "The Terminology metadata could not be created. Please resolve the error with POSTing the Terminology data mart to the metadata service"#
+        }
+        
+        $sharedTerminologyDataMartId = Invoke-PostToMds -Config $Config -name "SharedTerminology" -path ".\SharedTerminology.json"
+        if(!$sharedTerminologyDataMartId) {
+            Write-DosMessage -ErrorAction Stop -Level "Error" -Message "The SharedTerminology metadata could not be created. Please resolve the error with POSTing the SharedTerminology data mart to the metadata service"
+        }
+        
+        # POST Terminology  
+        $terminologyBatchExecutionId = Invoke-PostToDps -Name "Terminology" -Config $Config -dataMartId $terminologyDataMartId
+        
+        # Poll batch executions for 5 minutes to determine if they've been successful
+        $wasTerminologySuccessful = Invoke-PollBatchExecutions -Config $Config -executionId $terminologyBatchExecutionId
+        if(!$wasTerminologySuccessful) {
+            Write-DosMessage -ErrorAction Stop -Level "Error" -Message "The Terminology tables could not be created. Please resolve the error with POSTing the Terminology data mart to the data processing service"
+        }
+        
+        # POST SharedTerminology
+        $sharedTerminologyBatchExecutionId = Invoke-PostToDps -Name "SharedTerminology" -Config $Config -dataMartId $sharedTerminologyDataMartId
+        
+        # Poll batch executions for 5 minutes to determine if they've been successful
+        $wasSharedTerminologySuccessful = Invoke-PollBatchExecutions -Config $Config -executionId $sharedTerminologyBatchExecutionId
+        if(!$wasSharedTerminologySuccessful) {
+            Write-DosMessage -ErrorAction Stop -Level "Error" -Message "The SharedTerminology tables/views could not be created. Please resolve the error with POSTing the SharedTerminology data mart to the data processing service"
+        }
+    
+        # if DPS role was added for user, remove the role
+        if ($roleAdded) {
+            Remove-EdwAdminRole -RoleName "DataProcessingServiceUser" -Config $Config
+        }
 
-    # Poll batch executions for 5 minutes to determine if they've been successful
-    $wasSuccessful = Invoke-PollBatchExecutions -Config $Config -terminologyBatchExecutionId $terminologyBatchExecutionId -sharedTerminologyBatchExecutionId $sharedTerminologyBatchExecutionId
+        # Create role Terminology API on Terminology db
+        $RolePermissions = @{
+            "[Catalyst].[Code]"="SELECT";
+            "[Catalyst].[CodeBASE]"="SELECT";
+            "[Catalyst].[CodeSystem]"="SELECT";
+            "[Catalyst].[CodeSystemBASE]"="SELECT";
+            "[Open].[ValueSetCode]"="SELECT";
+            "[Open].[ValueSetCodeCountBASE]"="SELECT";
+            "[Open].[ValueSetDescriptionBASE]"="SELECT";
+        }
+        Publish-DatabaseRole -Config $Config -DatabaseName "Terminology" -RoleName "TerminologyServiceRole" -User $Config.iisUserCredentials.UserName -RolePermissions $RolePermissions
 
-    # if DPS role was added for user, remove the role
-    if ($roleAdded) {
-        Remove-EdwAdminRole -RoleName "DataProcessingServiceUser" -Config $Config
-    }
+        # Create role Terminology API on Shared db
+        $RolePermissions = @{
+            "[ClientTerm].[CodeBASE]"="SELECT";
+            "[ClientTerm].[CodeSystemBASE]"="SELECT";
+            "[ClientTerm].[ValueSetCode]"="SELECT";
+            "[ClientTerm].[ValueSetDescription]"="SELECT";
+            "[ClientTerm].[ValueSetCodeBASE]"="SELECT, INSERT, UPDATE, DELETE";
+            "[ClientTerm].[ValueSetCodeCountBASE]"="SELECT, INSERT, UPDATE, DELETE";
+            "[ClientTerm].[ValueSetDescriptionBASE]"="SELECT, INSERT, UPDATE, DELETE";
+            "[Terminology].[Code]"="SELECT";
+            "[Terminology].[CodeSystem]"="SELECT";
+            "[Terminology].[ValueSetCode]"="SELECT";
+            "[Terminology].[ValueSetCodeCount]"="SELECT";
+            "[Terminology].[ValueSetDescription]"="SELECT";
+        } 
+        Publish-DatabaseRole -Config $Config -DatabaseName "Shared" -RoleName "TerminologySharedServiceRole" -User $Config.iisUserCredentials.UserName -RolePermissions $RolePermissions
 
-    if (!$wasSuccessful) {
-        Write-DosMessage -ErrorAction Stop -Level "Error" -Message "Terminology installation is halting, since batches could not be executed properly. Please check the logs in EDW Console and requeue if necessary."
+        if (!$wasSuccessful) {
+            Write-DosMessage -ErrorAction Stop -Level "Error" -Message "Terminology installation is halting, since batches could not be executed properly. Please check the logs in EDW Console and requeue if necessary."
+        }
     }
 }
 
-function Publish-TerminologyDatabaseRole() {
+function Publish-DatabaseRole() {
     param(
         [PSCustomObject] $Config,
         [String] $DatabaseName,
-        [String] $RoleName
+        [String] $RoleName,
+        [String] $User,
+        [Hashtable] $RolePermissions = @{}
     )
-
+    
     $serverAddress = $Config.edwAddress
-
+    
+    Write-DosMessage -Level "Information" -Message "Verifying/Creating role for $RoleName for $DatabaseName on $serverAddress server" 
     $Query = "DECLARE @cmd nvarchar(max)
     IF DATABASE_PRINCIPAL_ID(@RoleName) IS NULL
     BEGIN
-        print '-- Creating role '
-        SET @cmd = N'CREATE ROLE ' + quotename(@RoleName, ']')
-        EXEC(@cmd)
-    END";
-    # TODO: Add tables and views here
-    # GRANT SELECT, INSERT, UPDATE, DELETE ON [dbo].[TABLENAME] TO TerminologyServiceRole;
-    # GO
-    $parameters = @{RoleName = $($RoleName)}
+        print '-- Creating role ';
+        SET @cmd = N'CREATE ROLE ' + quotename(@RoleName);
+        EXEC(@cmd);
+    END"    
+    $parameters = @{RoleName = $RoleName}
     Invoke-SqlCommand -SqlServerAddress $serverAddress -DatabaseName $DatabaseName -Query $Query -Parameters $parameters
 
+    if ($RolePermissions.Keys.length -ge 1) {
+        $Query = ""
+        foreach ($entity in $RolePermissions.Keys) {
+            $access = $RolePermissions[$entity]
+            Write-DosMessage -Level "Information" -Message "Verifying/Creating permission $access $entity for role $RoleName"
+            $Query = "$($Query)GRANT $access ON $entity TO $RoleName;`n"
+        }
+        Invoke-SqlCommand -SqlServerAddress $serverAddress -DatabaseName $DatabaseName -Query $Query
+    }
+    
 
-    Write-DosMessage -Level "Information" -Message "Creating login for $($Config.iisUserCredentials.UserName) on $serverAddress" 
+    Write-DosMessage -Level "Information" -Message "Verifying/Creating login for $User on $serverAddress server" 
     $Query = "DECLARE @cmd nvarchar(max)
-    If Not exists (SELECT * FROM sys.server_principals
-        WHERE sid = suser_sid(@User))
+    DECLARE @EscapeQuoteUser varchar(max)
+    SET @EscapeQuoteUser = replace(@User, '''', '''''')
+    IF NOT EXISTS (SELECT * FROM sys.server_principals WHERE sid = suser_sid(@User))
     BEGIN
-        print '-- Creating login '
-        SET @cmd = N'CREATE LOGIN ' + quotename(@User, ']') + N' FROM WINDOWS'
-        EXEC(@cmd)
+        print '-- Creating login ' + @User;
+        SET @cmd = N'CREATE LOGIN ' + quotename(@EscapeQuoteUser) + N' FROM WINDOWS';
+        EXEC(@cmd);
     END
-    ";
-    $parameters = @{User = $($Config.iisUserCredentials.UserName)}
+    "
+    $parameters = @{User = $User}
+    Invoke-SqlCommand -SqlServerAddress $serverAddress -DatabaseName $DatabaseName -Query $Query -Parameters $parameters
+
+    Write-DosMessage -Level "Information" -Message "Verifying/Creating login for $User on $serverAddress on database $DatabaseName" 
+    $Query = "DECLARE @cmd nvarchar(max)
+    DECLARE @EscapeQuoteUser varchar(max)
+    SET @EscapeQuoteUser = replace(@User, '''', '''''')
+    IF(NOT EXISTS (SELECT * FROM sys.database_principals WHERE name = @User))
+    BEGIN
+        print ''-- Creating user'';
+        SET @cmd = N'CREATE USER ' + quotename(@EscapeQuoteUser) + N' FOR LOGIN ' + quotename(@EscapeQuoteUser);
+        EXEC(@cmd);
+    END"
+    $parameters = @{User = $User}
     Invoke-SqlCommand -SqlServerAddress $serverAddress -DatabaseName $DatabaseName -Query $Query -Parameters $parameters
 
 
-    Write-DosMessage -Level "Information" -Message "Adding $($Config.iisUserCredentials.UserName) to $RoleName on $serverAddress"
+    Write-DosMessage -Level "Information" -Message "Adding $User to $RoleName on $serverAddress"
     $Query = "DECLARE @cmd nvarchar(max)
-    IF IS_ROLEMEMBER (@RoleName, @User) <> 1
+    DECLARE @exists int
+    DECLARE @EscapeQuoteUser varchar(max)
+    SET @EscapeQuoteUser = replace(@User, '''', '''''')
+    SELECT @exists = IS_ROLEMEMBER (@RoleName, @EscapeQuoteUser)
+    IF (@exists IS NULL OR @exists = 0)
     BEGIN
-        print '-- Adding user to role '
-        SET @cmd = N'ALTER ROLE ' + quotename(@RoleName, ']') + N' ADD MEMBER ' + quotename(@User, ']')
+        print '-- Adding user to role ' + @RoleName
+        SET @cmd = N'ALTER ROLE ' + @RoleName + N' ADD MEMBER ' + quotename(@EscapeQuoteUser)
         EXEC(@cmd)
-    END";
-    $parameters = @{User = $($Config.iisUserCredentials.UserName); RoleName = $($RoleName)}
+    END"
+    $parameters = @{RoleName = $RoleName; User = $User}
     Invoke-SqlCommand -SqlServerAddress $serverAddress -DatabaseName $DatabaseName -Query $Query -Parameters $parameters
 }
 
@@ -782,23 +944,17 @@ function Publish-TerminologyDatabaseUpdates() {
         [String] $PublishProfile
     )
     
-    Publish-TerminologyDacpac -Config $Config -Dacpac $Dacpac -PublishProfile $PublishProfile
-    Publish-TerminologyDatabaseRole -Config $Config -DatabaseName "Terminology" -RoleName = "TerminologyServiceRole";
-    Publish-TerminologyDatabaseRole -Config $Config -DatabaseName "Shared" -RoleName = "TerminologySharedServiceRole";
+    Publish-TerminologyDacpac -Config $Config -Dacpac $Dacpac -PublishProfile $PublishProfile    
     
-    <# TODO: Ben create Terminology shared db role for iis user
+    Publish-DatabaseRole -Config $Config -DatabaseName "Terminology" -RoleName "db_owner" -User $Config.loaderWindowsUser
+    Publish-DatabaseRole -Config $Config -DatabaseName "Shared" -RoleName "db_owner" -User $Config.loaderWindowsUser
 
-    Shared Database Role
-            
-    VIEW    Terminology.Code                    Read
-    VIEW    Terminology.CodeSystem              Read
-    VIEW    Terminology.ValueSetCode            Read
-    VIEW    Terminology.ValueSetCodeCount       Read
-    VIEW    Terminology.ValueSetDescription     Read
-    TABLE   ClientTerm.ValueSetCodeBASE         Read/Write
-    TABLE   ClientTerm.ValueSetCodeCountBASE    Read/Write
-    TABLE   ClientTerm.ValueSetDescriptionBASE  Read/Write
-    #>
+    Publish-DatabaseRole -Config $Config -DatabaseName "Terminology" -RoleName "ddladmin" -User $Config.processingServiceWindowsUser
+    Publish-DatabaseRole -Config $Config -DatabaseName "Terminology" -RoleName "db_datareader" -User $Config.processingServiceWindowsUser
+    Publish-DatabaseRole -Config $Config -DatabaseName "Terminology" -RoleName "db_datawriter" -User $Config.processingServiceWindowsUser
+    Publish-DatabaseRole -Config $Config -DatabaseName "Shared" -RoleName "ddladmin" -User $Config.processingServiceWindowsUser
+    Publish-DatabaseRole -Config $Config -DatabaseName "Shared" -RoleName "db_datareader" -User $Config.processingServiceWindowsUser
+    Publish-DatabaseRole -Config $Config -DatabaseName "Shared" -RoleName "db_datawriter" -User $Config.processingServiceWindowsUser
 }
 
 function Test-Terminology {
