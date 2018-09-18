@@ -664,11 +664,13 @@ function Invoke-PollBatchExecutions {
         [string] $executionId,
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [PSCustomObject] $Config
+        [PSCustomObject] $Config,
+        [switch] $NoError
     )
 
-    $terminologyUrl = "$($Config.dpsServiceUrl)/BatchExecutions($terminologyBatchExecutionId)"
+    $terminologyUrl = "$($Config.dpsServiceUrl)/BatchExecutions($executionId)"
     $response = "";
+    $message = "";
     $wasSuccessful = 0;
 
     foreach ($i in 1..30) {
@@ -678,21 +680,30 @@ function Invoke-PollBatchExecutions {
         }
 
         if ($response.Status -eq "Failed") {
-            Write-DosMessage -Level "Error" -Message "The batch execution has failed. Please check EDW Console for additional logging." -ErrorAction Continue
+            $message = "The batch execution has failed. Please check EDW Console for additional logging."
             break
         }
 		if ($response.Status -eq "Cancelled") {
-            Write-DosMessage -Level "Error" -Message "The batch execution has been cancelled. Please check EDW Console for additional logging." -ErrorAction Continue
+            $message = "The batch execution has been cancelled. Please check EDW Console for additional logging."
             break
         }
         if ($response.Status -eq "Succeeded") {
-            Write-DosMessage -Level "Information" -Message "The batch execution was successful." -ErrorAction Continue
+            $message = "The batch execution was successful."
             $wasSuccessful = 1;
             break
         }
 
         Write-DosMessage -Level "Information" -Message  "Status: $($response.Status)"
     }
+
+    if ($wasSuccessful -eq $true) {
+        Write-DosMessage -Level "Information" -Message $message
+    }
+    elseif ($NoError -eq $false) {
+        Write-DosMessage -Level "Error" -Message $message -ErrorAction Stop
+        throw $message
+    }
+
     return $wasSuccessful;
 
 }
@@ -815,11 +826,18 @@ function Add-MetadataAndStructures() {
         $sharedTerminologyBatchExecutionId = Invoke-PostToDps -Name "SharedTerminology" -Config $Config -dataMartId $sharedTerminologyDataMartId
         
         # Poll batch executions for 5 minutes to determine if they've been successful
-        $wasSharedTerminologySuccessful = Invoke-PollBatchExecutions -Config $Config -executionId $sharedTerminologyBatchExecutionId
+        $wasSharedTerminologySuccessful = Invoke-PollBatchExecutions -Config $Config -executionId $sharedTerminologyBatchExecutionId -NoError
         if(!$wasSharedTerminologySuccessful) {
-            Write-DosMessage -ErrorAction Stop -Level "Error" -Message "The SharedTerminology tables/views could not be created. Please resolve the error with POSTing the SharedTerminology data mart to the data processing service"
+            # POST SharedTerminology
+            $sharedTerminologyBatchExecutionId = Invoke-PostToDps -Name "SharedTerminology" -Config $Config -dataMartId $sharedTerminologyDataMartId
+            
+            # Poll batch executions for 5 minutes to determine if they've been successful
+            $wasSharedTerminologySuccessful = Invoke-PollBatchExecutions -Config $Config -executionId $sharedTerminologyBatchExecutionId
+            if(!$wasSharedTerminologySuccessful) {
+                Write-DosMessage -ErrorAction Stop -Level "Error" -Message "The SharedTerminology tables/views could not be created. Please resolve the error with POSTing the SharedTerminology data mart to the data processing service"
+            }
         }
-    
+
         # if DPS role was added for user, remove the role
         if ($roleAdded) {
             Remove-EdwAdminRole -RoleName "DataProcessingServiceUser" -Config $Config
@@ -853,10 +871,6 @@ function Add-MetadataAndStructures() {
             "[Terminology].[ValueSetDescription]"="SELECT";
         } 
         Publish-DatabaseRole -Config $Config -DatabaseName "Shared" -RoleName "TerminologySharedServiceRole" -User $Config.iisUserCredentials.UserName -RolePermissions $RolePermissions
-
-        if (!$wasSuccessful) {
-            Write-DosMessage -ErrorAction Stop -Level "Error" -Message "Terminology installation is halting, since batches could not be executed properly. Please check the logs in EDW Console and requeue if necessary."
-        }
     }
 }
 
