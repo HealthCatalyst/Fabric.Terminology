@@ -335,7 +335,7 @@ function Get-TerminologyConfig {
     }
     
     # App Name
-    $appNameConfig = Get-ConfigValue -Prompt "service name" -DefaultFromParam $AppName -DefaultFromInstallConfig $installSettings.appName -Quiet:$Quiet
+    $appNameConfig = Get-ConfigValue -Prompt "Service Name" -DefaultFromParam $AppName -DefaultFromInstallConfig $installSettings.appName -Quiet:$Quiet
 
     # Terminology Service Endpoint
     if ([string]::IsNullOrWhiteSpace($installSettings.appEndpoint)) {
@@ -409,7 +409,7 @@ function Get-TerminologyConfig {
     $sqlLogDirectoryConfig = Get-ConfigValue -Prompt "Log directory to create Terminology database" -DefaultFromParam $SqlLogDirectory -DefaultFromInstallConfig $sqlLogDirectoryParam -Quiet:$Quiet
 
     # Loader User
-    $loaderWindowsUser = Get-ConfigValue -Prompt "Loader windows username" -AdditionalPromptInfo "(ex. DOMAIN\USER)" -DefaultFromParam $LoaderWindowsUserParam -DefaultFromInstallConfig $installSettings.loaderWindowsUser -Quiet:$Quiet
+    $loaderWindowsUser = Get-ConfigValue -Prompt "Loader Windows username" -AdditionalPromptInfo "(ex. DOMAIN\USER)" -DefaultFromParam $LoaderWindowsUserParam -DefaultFromInstallConfig $installSettings.loaderWindowsUser -Quiet:$Quiet
 
     # DPS User
     $ProcessingServiceWindowsUser = Get-ConfigValue -Prompt "Data Processing Service App pool username" -AdditionalPromptInfo "(ex. DOMAIN\USER)" -DefaultFromParam $ProcessingServiceWindowsUserParam -DefaultFromInstallConfig $installSettings.processingServiceWindowsUser -Quiet:$Quiet
@@ -582,25 +582,18 @@ function Invoke-PostToMds {
     $headers.Add("Authorization", "Bearer $($Config.accessToken)")
 
     try {
-        Write-DosMessage -Level "Information" -Message "Posting json metadata in $path for $name in mds $($Config.mdsServiceUrl)/DataMarts.`nThis may take several minutes"
+        Write-DosMessage -Level "Information" -Message "Posting json metadata in $path for $name in Metadata Service $($Config.mdsServiceUrl)/DataMarts.`nThis may take several minutes"
         $response = Invoke-RestMethod -Uri "$($Config.mdsServiceUrl)/DataMarts" -Method POST -Body $dataMartJson -Headers $headers -TimeoutSec 600 -UseBasicParsing
         Write-DosMessage -Level "Information" -Message "Completed creating metadata for $name with data mart $($response.Id)"
         return $($response.Id)
     }
     catch [System.Net.WebException] {
-        #Write-DosMessage -Level "Error" -Message "Creating metadata for $name stopped"
-        #Write-DosMessage -Level "Error" -Message "Description:" $_.Exception.Response.StatusDescription
-        #Write-DosMessage -Level "Error" -Message  $_.ErrorDetails.Message | ConvertFrom-Json | Select-Object -Expand message
-        Write-Host $_.ErrorDetails.Message | ConvertFrom-Json | Select-Object -Expand message
-        Write-Host "Second"
-        Write-Host $_.Exception.Message
-        Write-Host $_.Exception.Response
-        Write-Host $_.Exception.InnerException
-        Write-Host $_.Exception.InnerException | ConvertFrom-Json | Select-Object -Expand innerException
-        Write-Host $_.Exception | ConvertFrom-Json
-        Write-Host $_.Exception | ConvertFrom-Json | Select-Object -Expand message
-        Write-Host ($_.Exception | Format-Table | Out-String)
-        
+        $error = $_.ErrorDetails.Message | ConvertFrom-Json | Select-Object -Expand message
+        Write-DosMessage -Level "Error" -Message "Error: $error" -ErrorAction Continue
+        Write-DosMessage -Level "Error" -Message "Message: $($_.Exception.Message)" -ErrorAction Continue
+        Write-DosMessage -Level "Error" -Message "Response: $($_.Exception.Response)" -ErrorAction Continue
+        Write-DosMessage -Level "Error" -Message "InnerException: $($_.Exception.InnerException)" -ErrorAction Continue
+        throw $_.Exception
     }
 }
 
@@ -655,18 +648,12 @@ function Invoke-PostToDps {
         return $batchExecutionId;
     }
     catch [System.Net.WebException] {
-        Write-Host $_.ErrorDetails.Message | ConvertFrom-Json | Select-Object -Expand message
-        Write-Host "Second"
-        Write-Host $_.Exception.Message
-        Write-Host $_.Exception.Response
-        Write-Host $_.Exception.InnerException
-        Write-Host $_.Exception.InnerException | ConvertFrom-Json | Select-Object -Expand innerException
-        Write-Host $_.Exception | ConvertFrom-Json
-        Write-Host $_.Exception | ConvertFrom-Json | Select-Object -Expand message
-        Write-Host ($_.Exception | Format-Table | Out-String)
-        
-        #Write-DosMessage -Level "Error" -Message  "POST for '$name' failed with status code:" $_.Exception.Response.StatusCode.value__ 
-        #Write-DosMessage -Level "Error" -Message  "Description:" $_.Exception.Response.StatusDescription
+        $error = $_.ErrorDetails.Message | ConvertFrom-Json | Select-Object -Expand message
+        Write-DosMessage -Level "Error" -Message "Error: $error" -ErrorAction Continue
+        Write-DosMessage -Level "Error" -Message "Message: $($_.Exception.Message)" -ErrorAction Continue
+        Write-DosMessage -Level "Error" -Message "Response: $($_.Exception.Response)" -ErrorAction Continue
+        Write-DosMessage -Level "Error" -Message "InnerException: $($_.Exception.InnerException)" -ErrorAction Continue
+        throw $_.Exception
     }
 }
 
@@ -803,15 +790,6 @@ function Add-MetadataAndStructures() {
     $sharedTerminologyExists = Test-DataMartExists -Name "SharedTerminology" -Config $Config
 
     if (($terminologyExists -eq $false) -and ($sharedTerminologyExists -eq $false)) {
-        if(!$terminologyDataMartId) {
-            Write-DosMessage -ErrorAction Stop -Level "Error" -Message "The Terminology metadata could not be created. Please resolve the error with POSTing the Terminology data mart to the metadata service"#
-        }
-        
-        $sharedTerminologyDataMartId = Invoke-PostToMds -Config $Config -name "SharedTerminology" -path ".\SharedTerminology.json"
-        if(!$sharedTerminologyDataMartId) {
-            Write-DosMessage -ErrorAction Stop -Level "Error" -Message "The SharedTerminology metadata could not be created. Please resolve the error with POSTing the SharedTerminology data mart to the metadata service"
-        }
-            
         # POST Terminology data marts to MDS
         $terminologyDataMartId = Invoke-PostToMds -Config $Config -name "Terminology" -path ".\Terminology.json"
 
@@ -824,7 +802,7 @@ function Add-MetadataAndStructures() {
             Write-DosMessage -ErrorAction Stop -Level "Error" -Message "The SharedTerminology metadata could not be created. Please resolve the error with POSTing the SharedTerminology data mart to the metadata service"
         }
         
-        # POST terminology  
+        # POST Terminology  
         $terminologyBatchExecutionId = Invoke-PostToDps -Name "Terminology" -Config $Config -dataMartId $terminologyDataMartId
         
         # Poll batch executions for 5 minutes to determine if they've been successful
@@ -849,10 +827,11 @@ function Add-MetadataAndStructures() {
 
         # Create role Terminology API on Terminology db
         $RolePermissions = @{
+            "[Catalyst].[Code]"="SELECT";
             "[Catalyst].[CodeBASE]"="SELECT";
+            "[Catalyst].[CodeSystem]"="SELECT";
             "[Catalyst].[CodeSystemBASE]"="SELECT";
             "[Open].[ValueSetCode]"="SELECT";
-            "[Catalyst].[CodeSystem]"="SELECT";
             "[Open].[ValueSetCodeCountBASE]"="SELECT";
             "[Open].[ValueSetDescriptionBASE]"="SELECT";
         }
@@ -863,14 +842,15 @@ function Add-MetadataAndStructures() {
             "[ClientTerm].[CodeBASE]"="SELECT";
             "[ClientTerm].[CodeSystemBASE]"="SELECT";
             "[ClientTerm].[ValueSetCode]"="SELECT";
+            "[ClientTerm].[ValueSetDescription]"="SELECT";
+            "[ClientTerm].[ValueSetCodeBASE]"="SELECT, INSERT, UPDATE, DELETE";
+            "[ClientTerm].[ValueSetCodeCountBASE]"="SELECT, INSERT, UPDATE, DELETE";
+            "[ClientTerm].[ValueSetDescriptionBASE]"="SELECT, INSERT, UPDATE, DELETE";
             "[Terminology].[Code]"="SELECT";
             "[Terminology].[CodeSystem]"="SELECT";
             "[Terminology].[ValueSetCode]"="SELECT";
             "[Terminology].[ValueSetCodeCount]"="SELECT";
             "[Terminology].[ValueSetDescription]"="SELECT";
-            "[ClientTerm].[ValueSetCodeBASE]"="SELECT, INSERT, UPDATE, DELETE";
-            "[ClientTerm].[ValueSetCodeCountBASE]"="SELECT, INSERT, UPDATE, DELETE";
-            "[ClientTerm].[ValueSetDescriptionBASE]"="SELECT, INSERT, UPDATE, DELETE";
         } 
         Publish-DatabaseRole -Config $Config -DatabaseName "Shared" -RoleName "TerminologySharedServiceRole" -User $Config.iisUserCredentials.UserName -RolePermissions $RolePermissions
 
