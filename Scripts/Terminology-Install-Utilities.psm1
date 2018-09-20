@@ -677,8 +677,6 @@ function Invoke-PostToDps {
         return $batchExecutionId;
     }
     catch [System.Net.WebException] {
-        $error = $_.ErrorDetails.Message | ConvertFrom-Json | Select-Object -Expand message
-        Write-DosMessage -Level "Error" -Message "Error: $error" -ErrorAction Continue
         Write-DosMessage -Level "Error" -Message "Message: $($_.Exception.Message)" -ErrorAction Continue
         Write-DosMessage -Level "Error" -Message "Response: $($_.Exception.Response)" -ErrorAction Continue
         Write-DosMessage -Level "Error" -Message "InnerException: $($_.Exception.InnerException)" -ErrorAction Continue
