@@ -211,6 +211,34 @@ function Test-DatabaseExists {
     }
 }
 
+function Test-ViewExists {
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [String] $SqlAddress,
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [String] $Database,
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [String] $Schema,
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [String] $View
+    )
+    $query = "IF EXISTS (SELECT 1 FROM sys.views WHERE object_id = OBJECT_ID(N'[$Schema].[$View]') )
+    BEGIN
+        SELECT 1 as 'EXISTS'
+    END
+    ELSE
+    BEGIN
+        SELECT 0 as 'EXISTS'
+    END"
+    $result = Invoke-SqlCommand -SqlServerAddress $SqlAddress -Query $query -Parameters $parameters -DatabaseName $Database -ReturnData $true
+    $exists = $result.table.EXISTS -eq 1
+    return $exists
+}
+
 function Get-TerminologyConfig {
     param(
         [PSCredential] $Credentials,
@@ -597,7 +625,7 @@ function Invoke-PostToMds {
     }
 }
 
-function Test-DataMartExists {
+function Get-DataMartId {
     param(
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -614,13 +642,14 @@ function Test-DataMartExists {
     $response = Invoke-RestMethod -Uri $url -Method GET -Headers $headers
     $exists = $response.value.length -ge 1
     if ($exists) {
-        Write-DosMessage -Level "Information" -Message "Datamart $Name exists"
+        $id = $response.value[0].Id
+        Write-DosMessage -Level "Information" -Message "Datamart $Name with id $id exists"
+        return $id
     }
     else {
         Write-DosMessage -Level "Information" -Message "Datamart $Name does not exist"
+        return $null
     }
-    
-    return $exists
 }
 
 function Invoke-PostToDps {
@@ -648,8 +677,6 @@ function Invoke-PostToDps {
         return $batchExecutionId;
     }
     catch [System.Net.WebException] {
-        $error = $_.ErrorDetails.Message | ConvertFrom-Json | Select-Object -Expand message
-        Write-DosMessage -Level "Error" -Message "Error: $error" -ErrorAction Continue
         Write-DosMessage -Level "Error" -Message "Message: $($_.Exception.Message)" -ErrorAction Continue
         Write-DosMessage -Level "Error" -Message "Response: $($_.Exception.Response)" -ErrorAction Continue
         Write-DosMessage -Level "Error" -Message "InnerException: $($_.Exception.InnerException)" -ErrorAction Continue
@@ -797,22 +824,33 @@ function Add-MetadataAndStructures() {
     )
     $roleAdded = Add-EdwAdminRole -RoleName "DataProcessingServiceUser" -Config $Config
 
-    $terminologyExists = Test-DataMartExists -Name "Terminology" -Config $Config
-    $sharedTerminologyExists = Test-DataMartExists -Name "SharedTerminology" -Config $Config
-
-    if (($terminologyExists -eq $false) -and ($sharedTerminologyExists -eq $false)) {
+    $terminologyDataMartId = Get-DataMartId -Name "Terminology" -Config $Config
+    if ($terminologyDataMartId -eq $null) {
         # POST Terminology data marts to MDS
         $terminologyDataMartId = Invoke-PostToMds -Config $Config -name "Terminology" -path ".\Terminology.json"
 
         if(!$terminologyDataMartId) {
             Write-DosMessage -ErrorAction Stop -Level "Error" -Message "The Terminology metadata could not be created. Please resolve the error with POSTing the Terminology data mart to the metadata service"#
         }
-        
+    } else {
+        Write-DosMessage -Level "Information" -Message "Terminology metadata already exists, skipping step"
+    }
+    
+    $sharedTerminologyDataMartId = Get-DataMartId -Name "SharedTerminology" -Config $Config
+    if ($sharedTerminologyDataMartId -eq $null) {
+        # POST Terminology data marts to MDS
         $sharedTerminologyDataMartId = Invoke-PostToMds -Config $Config -name "SharedTerminology" -path ".\SharedTerminology.json"
         if(!$sharedTerminologyDataMartId) {
             Write-DosMessage -ErrorAction Stop -Level "Error" -Message "The SharedTerminology metadata could not be created. Please resolve the error with POSTing the SharedTerminology data mart to the metadata service"
         }
-        
+    } else {
+        Write-DosMessage -Level "Information" -Message "Shared Terminology metadata already exists, skipping step"
+    }
+
+    Test-DatabaseExists -SqlAddress $Config.edwAddress -Name "Terminology"
+
+    $viewExists = Test-ViewExists -SqlAddress $Config.edwAddress -Database "Terminology" -Schema "Open" -View "HHSHCCOverrides"
+    if ($viewExists -eq $false) {
         # POST Terminology  
         $terminologyBatchExecutionId = Invoke-PostToDps -Name "Terminology" -Config $Config -dataMartId $terminologyDataMartId
         
@@ -820,8 +858,16 @@ function Add-MetadataAndStructures() {
         $wasTerminologySuccessful = Invoke-PollBatchExecutions -Config $Config -executionId $terminologyBatchExecutionId
         if(!$wasTerminologySuccessful) {
             Write-DosMessage -ErrorAction Stop -Level "Error" -Message "The Terminology tables could not be created. Please resolve the error with POSTing the Terminology data mart to the data processing service"
+            throw "job failed"
         }
-        
+    } else {
+        Write-DosMessage -Level "Information" -Message "Terminology schema already exist, skipping batch to create tables/views"
+    }
+
+    Test-DatabaseExists -SqlAddress $Config.edwAddress -Name "Shared"
+
+    $viewExists = Test-ViewExists -SqlAddress $Config.edwAddress -Database "Shared" -Schema "Terminology" -View "ValueSetDescription"
+    if ($viewExists -eq $false) {
         # POST SharedTerminology
         $sharedTerminologyBatchExecutionId = Invoke-PostToDps -Name "SharedTerminology" -Config $Config -dataMartId $sharedTerminologyDataMartId
         
@@ -835,43 +881,47 @@ function Add-MetadataAndStructures() {
             $wasSharedTerminologySuccessful = Invoke-PollBatchExecutions -Config $Config -executionId $sharedTerminologyBatchExecutionId
             if(!$wasSharedTerminologySuccessful) {
                 Write-DosMessage -ErrorAction Stop -Level "Error" -Message "The SharedTerminology tables/views could not be created. Please resolve the error with POSTing the SharedTerminology data mart to the data processing service"
+                throw "job failed"
             }
         }
-
-        # if DPS role was added for user, remove the role
-        if ($roleAdded) {
-            Remove-EdwAdminRole -RoleName "DataProcessingServiceUser" -Config $Config
-        }
-
-        # Create role Terminology API on Terminology db
-        $RolePermissions = @{
-            "[Catalyst].[Code]"="SELECT";
-            "[Catalyst].[CodeBASE]"="SELECT";
-            "[Catalyst].[CodeSystem]"="SELECT";
-            "[Catalyst].[CodeSystemBASE]"="SELECT";
-            "[Open].[ValueSetCode]"="SELECT";
-            "[Open].[ValueSetCodeCountBASE]"="SELECT";
-            "[Open].[ValueSetDescriptionBASE]"="SELECT";
-        }
-        Publish-DatabaseRole -Config $Config -DatabaseName "Terminology" -RoleName "TerminologyServiceRole" -User $Config.iisUserCredentials.UserName -RolePermissions $RolePermissions
-
-        # Create role Terminology API on Shared db
-        $RolePermissions = @{
-            "[ClientTerm].[CodeBASE]"="SELECT";
-            "[ClientTerm].[CodeSystemBASE]"="SELECT";
-            "[ClientTerm].[ValueSetCode]"="SELECT";
-            "[ClientTerm].[ValueSetDescription]"="SELECT";
-            "[ClientTerm].[ValueSetCodeBASE]"="SELECT, INSERT, UPDATE, DELETE";
-            "[ClientTerm].[ValueSetCodeCountBASE]"="SELECT, INSERT, UPDATE, DELETE";
-            "[ClientTerm].[ValueSetDescriptionBASE]"="SELECT, INSERT, UPDATE, DELETE";
-            "[Terminology].[Code]"="SELECT";
-            "[Terminology].[CodeSystem]"="SELECT";
-            "[Terminology].[ValueSetCode]"="SELECT";
-            "[Terminology].[ValueSetCodeCount]"="SELECT";
-            "[Terminology].[ValueSetDescription]"="SELECT";
-        } 
-        Publish-DatabaseRole -Config $Config -DatabaseName "Shared" -RoleName "TerminologySharedServiceRole" -User $Config.iisUserCredentials.UserName -RolePermissions $RolePermissions
+    } else {
+        Write-DosMessage -Level "Information" -Message "Shared Terminology schema already exist, skipping batch to create tables/views"
     }
+
+    # if DPS role was added for user, remove the role
+    if ($roleAdded) {
+        Remove-EdwAdminRole -RoleName "DataProcessingServiceUser" -Config $Config
+    }
+
+    # Create role Terminology API on Terminology db
+    $RolePermissions = @{
+        "[Catalyst].[Code]"="SELECT";
+        "[Catalyst].[CodeBASE]"="SELECT";
+        "[Catalyst].[CodeSystem]"="SELECT";
+        "[Catalyst].[CodeSystemBASE]"="SELECT";
+        "[Open].[ValueSetCode]"="SELECT";
+        "[Open].[ValueSetCodeCountBASE]"="SELECT";
+        "[Open].[ValueSetDescriptionBASE]"="SELECT";
+    }
+    Publish-DatabaseRole -Config $Config -DatabaseName "Terminology" -RoleName "TerminologyServiceRole" -User $Config.iisUserCredentials.UserName -RolePermissions $RolePermissions
+
+    # Create role Terminology API on Shared db
+    $RolePermissions = @{
+        "[ClientTerm].[CodeBASE]"="SELECT";
+        "[ClientTerm].[CodeSystemBASE]"="SELECT";
+        "[ClientTerm].[ValueSetCode]"="SELECT";
+        "[ClientTerm].[ValueSetDescription]"="SELECT";
+        "[ClientTerm].[ValueSetCodeBASE]"="SELECT, INSERT, UPDATE, DELETE";
+        "[ClientTerm].[ValueSetCodeCountBASE]"="SELECT, INSERT, UPDATE, DELETE";
+        "[ClientTerm].[ValueSetDescriptionBASE]"="SELECT, INSERT, UPDATE, DELETE";
+        "[Terminology].[Code]"="SELECT";
+        "[Terminology].[CodeSystem]"="SELECT";
+        "[Terminology].[ValueSetCode]"="SELECT";
+        "[Terminology].[ValueSetCodeCount]"="SELECT";
+        "[Terminology].[ValueSetDescription]"="SELECT";
+    } 
+    Publish-DatabaseRole -Config $Config -DatabaseName "Shared" -RoleName "TerminologySharedServiceRole" -User $Config.iisUserCredentials.UserName -RolePermissions $RolePermissions
+    
 }
 
 function Publish-DatabaseRole() {
