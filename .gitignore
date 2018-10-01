@@ -217,9 +217,10 @@ Fabric.Terminology.ElasticSearch.Indexer/Logs/
 *.pubxml
 
 # External install files for debugging
-Fabric.Terminology.API/Scripts/DosInstallUtilities/
-Fabric.Terminology.API/Scripts/Fabric.Terminology.InstallPackage.zip
-Fabric.Terminology.API/Scripts/Fabric-Install-Utilities.psm1
-Fabric.Terminology.API/Scripts/Fabric.Terminology.Database.dacpac
 Fabric.Terminology.Database/Fabric.Terminology.Database.jfm
-Fabric.Terminology.API/Scripts/Register.ps1
+Scripts/DosInstallUtilities/
+Scripts/Fabric-Install-Utilities.psm1
+Scripts/dbatools/
+Scripts/Fabric.Terminology.Database.dacpac
+Scripts/Fabric.Terminology.InstallPackage.zip
+Scripts/Register.ps1
