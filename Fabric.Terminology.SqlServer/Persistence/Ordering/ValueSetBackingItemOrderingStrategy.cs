@@ -92,6 +92,10 @@
                     return dto => dto.SourceDSC;
                 case "versiondate":
                     return dto => dto.VersionDTS;
+                case "authoritydescription":
+                    return dto => dto.AuthorityDSC;
+                case "lastmodifieddate":
+                    return dto => dto.LastModifiedDTS;
                 case "name":
                 default:
                     return dto => dto.ValueSetNM;
