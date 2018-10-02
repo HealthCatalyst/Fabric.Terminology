@@ -16,6 +16,8 @@
                 "valuesetreferenceid",
                 "sourcedescription",
                 "versiondate",
+                "lastmodifieddate",
+                "authoritydescription",
                 "codecount"
             };
 
