@@ -148,7 +148,11 @@
                     "VersionDate asc",
                     "VersionDate desc",
                     "CodeCount asc",
-                    "CodeCount desc"
+                    "CodeCount desc",
+                    "LastModifiedDate asc",
+                    "LastModifiedDate desc",
+                    "AuthorityDescription asc",
+                    "AuthorityDescription desc"
                 }
             };
         }
