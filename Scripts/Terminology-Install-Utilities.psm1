@@ -444,7 +444,11 @@ function Get-TerminologyConfig {
 
     Add-InstallationSetting "terminology" "appName" "$appNameConfig" | Out-Null
     Add-InstallationSetting "terminology" "appEndpoint" "$terminologyEndpointConfig" | Out-Null
-    Add-InstallationSetting "terminology" "appInsightsInstrumentationKey" "$appInsightsKeyConfig" | Out-Null
+
+    if (![string]::IsNullOrWhiteSpace($appInsightsKeyConfig)) {
+        Add-InstallationSetting "terminology" "appInsightsInstrumentationKey" "$appInsightsKeyConfig" | Out-Null
+    }
+
     Add-InstallationSetting "common" "discoveryService" "$discoveryServiceUrlConfig" | Out-Null
     Add-InstallationSetting "common" "sqlServerAddress" "$sqlAddressConfig" | Out-Null
     Add-InstallationSetting "common" "edwAddress" "$edwAddressConfig" | Out-Null
