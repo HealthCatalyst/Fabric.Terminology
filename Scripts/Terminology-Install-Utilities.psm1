@@ -418,8 +418,7 @@ function Get-TerminologyConfig {
 
     # Data Directory
     if ([string]::IsNullOrWhiteSpace($installSettings.defaultSqlDataDirectory)) {
-        $dbDefaults = Get-DbaDefaultPath -SqlInstance $edwAddressConfig
-        $sqlDataDirectoryParam = $dbDefaults.Data
+        $sqlDataDirectoryParam = "C:\SQLData"
     }
     else {
         $sqlDataDirectoryParam = $installSettings.defaultSqlDataDirectory
@@ -428,8 +427,7 @@ function Get-TerminologyConfig {
 
     # Log Directory
     if ([string]::IsNullOrWhiteSpace($installSettings.defaultSqlLogDirectory)) {
-        $dbDefaults = Get-DbaDefaultPath -SqlInstance $edwAddressConfig
-        $sqlLogDirectoryParam = $dbDefaults.Log
+        $sqlLogDirectoryParam = "C:\SQLData"
     }
     else {
         $sqlLogDirectoryParam = $installSettings.defaultSqlLogDirectory
@@ -564,8 +562,7 @@ function Publish-TerminologyDacpac() {
     $publishProfileXml.Save($PublishProfile);
     
     Write-DosMessage -Level "Information" -Message "Creating or updating Terminology database on $($Config.edwAddress). This may take a few minutes"
-    # Publish-DosDacPac -TargetSqlInstance $Config.sqlAddress -DacPacFilePath $Dacpac -TargetDb "Terminology" -PublishOptionsFilePath $PublishProfile -ErrorAction Stop
-    Publish-DbaDacpac -SqlInstance $Config.edwAddress -Database "Terminology" -Path $Dacpac -PublishXml $PublishProfile -EnableException
+    Publish-DosDacPac -TargetSqlInstance $Config.sqlAddress -DacPacFilePath $Dacpac -TargetDb "Terminology" -PublishOptionsFilePath $PublishProfile -ErrorAction Stop
 }
 
 function Get-RoleId {
@@ -718,8 +715,8 @@ function Invoke-PollBatchExecutions {
             $message = "The batch execution has been cancelled. Please check EDW Console for additional logging."
             break
         }
-        if ($response.Status -eq "Succeeded") {
-            $message = "The batch execution was successful."
+        if (($response.Status -eq "Succeeded") -or ($response.Status -eq "Skipped")) {
+            $message = "The batch execution was $($response.Status)."
             $wasSuccessful = 1;
             break
         }
