@@ -471,25 +471,25 @@ function Get-TerminologyConfig {
     
     # Setup config
     $config = [PSCustomObject]@{
-        iisUserCredentials      = $iisUserCredentials
-        appName                 = $appNameConfig
-        appEndpoint             = $terminologyEndpointConfig
-        appPool                 = $installSettings.appPool
-        siteName                = $installSettings.siteName
-        discoveryServiceUrl     = $discoveryServiceUrlConfig
-        sqlAddress              = $sqlAddressConfig
-        edwAddress              = $edwAddressConfig
-        metadataDbName          = $metadataDbNameConfig
-        appInsightsKey          = $appInsightsKeyConfig
-        sqlDataDirectory        = $sqlDataDirectoryConfig
-        sqlLogDirectory         = $sqlLogDirectoryConfig
-        accessToken             = $accessToken
-        sharedDbName            = $installSettings.sharedDbName
-        mdsServiceUrl           = $mdsServiceUrl
-        dpsServiceUrl           = $dpsServiceUrl
-        identityServiceUrl      = $identityServiceUrl
-        authorizationServiceUrl = $authorizationServiceUrl
-        loaderWindowsUser       = $loaderWindowsUser
+        iisUserCredentials           = $iisUserCredentials
+        appName                      = $appNameConfig
+        appEndpoint                  = $terminologyEndpointConfig
+        appPool                      = $installSettings.appPool
+        siteName                     = $installSettings.siteName
+        discoveryServiceUrl          = $discoveryServiceUrlConfig
+        sqlAddress                   = $sqlAddressConfig
+        edwAddress                   = $edwAddressConfig
+        metadataDbName               = $metadataDbNameConfig
+        appInsightsKey               = $appInsightsKeyConfig
+        sqlDataDirectory             = $sqlDataDirectoryConfig
+        sqlLogDirectory              = $sqlLogDirectoryConfig
+        accessToken                  = $accessToken
+        sharedDbName                 = $installSettings.sharedDbName
+        mdsServiceUrl                = $mdsServiceUrl
+        dpsServiceUrl                = $dpsServiceUrl
+        identityServiceUrl           = $identityServiceUrl
+        authorizationServiceUrl      = $authorizationServiceUrl
+        loaderWindowsUser            = $loaderWindowsUser
         processingServiceWindowsUser = $processingServiceWindowsUser
     };
 
@@ -501,7 +501,15 @@ function Update-AppSettings {
         [PSCustomObject] $Config
     )
 
-    $appSettings = "$(Get-IISWebSitePath -WebSiteName $Config.siteName)\$($Config.appName)\appsettings.json"
+    $appPath = "$(Get-IISWebSitePath -WebSiteName $Config.siteName)\$($Config.appName)"
+
+    #Give read and write access iisUser for logging permissions
+    $accessControl = Get-Acl $appPath
+    $accessControlRule = New-Object System.Security.AccessControl.FileSystemAccessRule($Config.iisUserCredentials.UserName,"Read, Write","ContainerInherit, ObjectInherit","None",'Allow')
+    $accessControl.SetAccessRule($accessControlRule)
+    Set-Acl $appPath $accessControl
+
+    $appSettings = "$appPath\appsettings.json"
     $appSettingsJson = (Get-Content $appSettings -Raw) | ConvertFrom-Json 
     $appSettingsJson.BaseTerminologyEndpoint = $Config.terminologyEndpointConfig
     $appSettingsJson.TerminologySqlSettings.ConnectionString = "Data Source=$($Config.edwAddress);Initial Catalog=$($Config.sharedDbName); Trusted_Connection=True;"
@@ -714,7 +722,7 @@ function Invoke-PollBatchExecutions {
             $message = "The batch execution has failed. Please check EDW Console for additional logging."
             break
         }
-		if ($response.Status -eq "Cancelled") {
+        if ($response.Status -eq "Cancelled") {
             $message = "The batch execution has been cancelled. Please check EDW Console for additional logging."
             break
         }
@@ -829,25 +837,27 @@ function Add-MetadataAndStructures() {
     $roleAdded = Add-EdwAdminRole -RoleName "DataProcessingServiceUser" -Config $Config
 
     $terminologyDataMartId = Get-DataMartId -Name "Terminology" -Config $Config
-    if ($terminologyDataMartId -eq $null) {
+    if ($null -eq $terminologyDataMartId) {
         # POST Terminology data marts to MDS
         $terminologyDataMartId = Invoke-PostToMds -Config $Config -name "Terminology" -path ".\Terminology.json"
 
-        if(!$terminologyDataMartId) {
+        if (!$terminologyDataMartId) {
             Write-DosMessage -ErrorAction Stop -Level "Error" -Message "The Terminology metadata could not be created. Please resolve the error with POSTing the Terminology data mart to the metadata service"#
         }
-    } else {
+    }
+    else {
         Write-DosMessage -Level "Information" -Message "Terminology metadata already exists, skipping step"
     }
     
     $sharedTerminologyDataMartId = Get-DataMartId -Name "SharedTerminology" -Config $Config
-    if ($sharedTerminologyDataMartId -eq $null) {
+    if ($null -eq $sharedTerminologyDataMartId) {
         # POST Terminology data marts to MDS
         $sharedTerminologyDataMartId = Invoke-PostToMds -Config $Config -name "SharedTerminology" -path ".\SharedTerminology.json"
-        if(!$sharedTerminologyDataMartId) {
+        if (!$sharedTerminologyDataMartId) {
             Write-DosMessage -ErrorAction Stop -Level "Error" -Message "The SharedTerminology metadata could not be created. Please resolve the error with POSTing the SharedTerminology data mart to the metadata service"
         }
-    } else {
+    }
+    else {
         Write-DosMessage -Level "Information" -Message "Shared Terminology metadata already exists, skipping step"
     }
 
@@ -860,11 +870,12 @@ function Add-MetadataAndStructures() {
         
         # Poll batch executions for 5 minutes to determine if they've been successful
         $wasTerminologySuccessful = Invoke-PollBatchExecutions -Config $Config -executionId $terminologyBatchExecutionId
-        if(!$wasTerminologySuccessful) {
+        if (!$wasTerminologySuccessful) {
             Write-DosMessage -ErrorAction Stop -Level "Error" -Message "The Terminology tables could not be created. Please resolve the error with POSTing the Terminology data mart to the data processing service"
             throw "job failed"
         }
-    } else {
+    }
+    else {
         Write-DosMessage -Level "Information" -Message "Terminology schema already exist, skipping batch to create tables/views"
     }
 
@@ -877,18 +888,19 @@ function Add-MetadataAndStructures() {
         
         # Poll batch executions for 5 minutes to determine if they've been successful
         $wasSharedTerminologySuccessful = Invoke-PollBatchExecutions -Config $Config -executionId $sharedTerminologyBatchExecutionId -NoError
-        if(!$wasSharedTerminologySuccessful) {
+        if (!$wasSharedTerminologySuccessful) {
             # POST SharedTerminology
             $sharedTerminologyBatchExecutionId = Invoke-PostToDps -Name "SharedTerminology" -Config $Config -dataMartId $sharedTerminologyDataMartId
             
             # Poll batch executions for 5 minutes to determine if they've been successful
             $wasSharedTerminologySuccessful = Invoke-PollBatchExecutions -Config $Config -executionId $sharedTerminologyBatchExecutionId
-            if(!$wasSharedTerminologySuccessful) {
+            if (!$wasSharedTerminologySuccessful) {
                 Write-DosMessage -ErrorAction Stop -Level "Error" -Message "The SharedTerminology tables/views could not be created. Please resolve the error with POSTing the SharedTerminology data mart to the data processing service"
                 throw "job failed"
             }
         }
-    } else {
+    }
+    else {
         Write-DosMessage -Level "Information" -Message "Shared Terminology schema already exist, skipping batch to create tables/views"
     }
 
@@ -899,30 +911,30 @@ function Add-MetadataAndStructures() {
 
     # Create role Terminology API on Terminology db
     $RolePermissions = @{
-        "[Catalyst].[Code]"="SELECT";
-        "[Catalyst].[CodeBASE]"="SELECT";
-        "[Catalyst].[CodeSystem]"="SELECT";
-        "[Catalyst].[CodeSystemBASE]"="SELECT";
-        "[Open].[ValueSetCode]"="SELECT";
-        "[Open].[ValueSetCodeCountBASE]"="SELECT";
-        "[Open].[ValueSetDescriptionBASE]"="SELECT";
+        "[Catalyst].[Code]"                = "SELECT";
+        "[Catalyst].[CodeBASE]"            = "SELECT";
+        "[Catalyst].[CodeSystem]"          = "SELECT";
+        "[Catalyst].[CodeSystemBASE]"      = "SELECT";
+        "[Open].[ValueSetCode]"            = "SELECT";
+        "[Open].[ValueSetCodeCountBASE]"   = "SELECT";
+        "[Open].[ValueSetDescriptionBASE]" = "SELECT";
     }
     Publish-DatabaseRole -Config $Config -DatabaseName "Terminology" -RoleName "TerminologyServiceRole" -User $Config.iisUserCredentials.UserName -RolePermissions $RolePermissions
 
     # Create role Terminology API on Shared db
     $RolePermissions = @{
-        "[ClientTerm].[CodeBASE]"="SELECT";
-        "[ClientTerm].[CodeSystemBASE]"="SELECT";
-        "[ClientTerm].[ValueSetCode]"="SELECT";
-        "[ClientTerm].[ValueSetDescription]"="SELECT";
-        "[ClientTerm].[ValueSetCodeBASE]"="SELECT, INSERT, UPDATE, DELETE";
-        "[ClientTerm].[ValueSetCodeCountBASE]"="SELECT, INSERT, UPDATE, DELETE";
-        "[ClientTerm].[ValueSetDescriptionBASE]"="SELECT, INSERT, UPDATE, DELETE";
-        "[Terminology].[Code]"="SELECT";
-        "[Terminology].[CodeSystem]"="SELECT";
-        "[Terminology].[ValueSetCode]"="SELECT";
-        "[Terminology].[ValueSetCodeCount]"="SELECT";
-        "[Terminology].[ValueSetDescription]"="SELECT";
+        "[ClientTerm].[CodeBASE]"                = "SELECT";
+        "[ClientTerm].[CodeSystemBASE]"          = "SELECT";
+        "[ClientTerm].[ValueSetCode]"            = "SELECT";
+        "[ClientTerm].[ValueSetDescription]"     = "SELECT";
+        "[ClientTerm].[ValueSetCodeBASE]"        = "SELECT, INSERT, UPDATE, DELETE";
+        "[ClientTerm].[ValueSetCodeCountBASE]"   = "SELECT, INSERT, UPDATE, DELETE";
+        "[ClientTerm].[ValueSetDescriptionBASE]" = "SELECT, INSERT, UPDATE, DELETE";
+        "[Terminology].[Code]"                   = "SELECT";
+        "[Terminology].[CodeSystem]"             = "SELECT";
+        "[Terminology].[ValueSetCode]"           = "SELECT";
+        "[Terminology].[ValueSetCodeCount]"      = "SELECT";
+        "[Terminology].[ValueSetDescription]"    = "SELECT";
     } 
     Publish-DatabaseRole -Config $Config -DatabaseName "Shared" -RoleName "TerminologySharedServiceRole" -User $Config.iisUserCredentials.UserName -RolePermissions $RolePermissions
     
