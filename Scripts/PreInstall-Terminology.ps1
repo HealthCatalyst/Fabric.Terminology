@@ -1,7 +1,7 @@
 <# 
 .SYNOPSIS 
  
-Setup all dependencies for the install script Install-Terminology.ps1 
+Setup all dependencies for the install script Install-Terminology.ps1. Only used for development and debugging purposes.
 
 .DESCRIPTION 
  
