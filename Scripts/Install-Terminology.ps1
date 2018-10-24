@@ -77,25 +77,6 @@ if (!(Test-Path .\Fabric-Install-Utilities.psm1)) {
 }
 Import-Module -Name .\Fabric-Install-Utilities.psm1 -Force
 
-# DBA tools
-$dbatools = Get-Childitem -Path ./**/dbatools.psm1 -Recurse
-$minVersion = [System.Version]::new(0, 9, 12 , 0)
-if ($dbatools.length -eq 0) {
-    $installed = Get-Module dbatools
-    if ($null -eq $installed) {
-        $installed = Get-InstalledModule -Name dbatools
-    }
-    if (($null -eq $installed) -or ($installed.Version.CompareTo($minVersion) -lt 0)) {
-        Write-DosMessage -Level "Warning" -Message "Installing dbatools from Powershell Gallery"
-        Install-Module dbatools -Scope CurrentUser -MinimumVersion 0.9.12 -Force
-        Import-Module dbatools -Force
-    }
-}
-else {
-    Write-DosMessage -Level "Verbose" -Message "Installing dbatools at $($dbatools.FullName)"
-    Import-Module -Name $dbatools.FullName
-}
- 
 # IIS web administration
 try {
     Import-Module WebAdministration
