@@ -24,8 +24,9 @@ if (!$ConfigManifestPath) {
 
 Write-Host "IMPORTING NECESSARY MODULES AND FUNCTIONS"
 # get all dependent modules and functions
-Install-Module -Name DgxInstallUtilities -Scope CurrentUser -Force
-Import-Module -Name DgxInstallUtilities -Force
+# Install-Module -Name DgxInstallUtilities -Scope CurrentUser -Force
+# Import-Module -Name DgxInstallUtilities -Force
+Import-Module "C:\Source\CAP\DgxInstallUtilities" -Force
 Write-Host "Success`n" -ForegroundColor Green
 
 Write-Host "PRE-INSTALLATION CHECKS"
@@ -57,6 +58,8 @@ $storeConfig = @{
     sqlServerAddress                = $commonConfig.sqlServerAddress
     metadataDbName                  = $commonConfig.metadataDbName
     discoveryService                = $commonConfig.discoveryService
+    loaderWindowsUser               = $commonConfig.loaderWindowsUser
+    processingServiceWindowsUser    = $commonConfig.processingServiceWindowsUser
     appName                         = $appConfig.appName
     appPoolName                     = $appConfig.appPoolName
     appPoolUser                     = $appConfig.appPoolUser
@@ -70,60 +73,92 @@ $storeConfig = @{
 # get static or derived configurations 
 Write-DosMessage -Level "Information" -Message "Getting derived and static configurations"
 $staticConfig = @{
-    installPath              = $ConfigStore.Path
+    installPath               = $ConfigStore.Path
     <# path to the location of the zip file that contains the binaries for service #>
-    appPackagePath           = "$PSScriptRoot\Package\Fabric.Terminology.zip"
+    appPackagePath            = "$PSScriptRoot\Package\Fabric.Terminology.zip"
     <# name of primary dll within the appPackagePath that versioning is to be based on #>
-    appPackageBaseAssembly   = "Fabric.Terminology.API.dll"
+    appPackageBaseAssembly    = "Fabric.Terminology.API.dll"
     <# path to database dacpac file used to create database objects #>
-    dacpacPath               = "$PSScriptRoot\Database\Fabric.Terminology.Database.dacpac"
+    dacpacPath                = "$PSScriptRoot\Database\Fabric.Terminology.Database.dacpac"
     <# file name given to the publish.xml file; the installer will create this for you
        so it doesn't have to be a valid file name, only a valid directory #>
-    publishFilePath          = "$PSScriptRoot\Database\Fabric.Terminology.Database.publish.xml"
+    publishFilePath           = "$PSScriptRoot\Database\Fabric.Terminology.Database.publish.xml"
     <# connection string to the metadata database as well as a test script that if records return is valid #>
-    metadataConnection       = @{ sqlConnection = "Data Source=$($storeConfig.sqlServerAddress);Initial Catalog=$($storeConfig.metadataDbName);Integrated Security=True;Application Name=$($storeConfig.appName);"; sqlTestCommand = "SELECT object_id FROM sys.columns WHERE name = 'BuildNumberTXT' AND OBJECT_ID = OBJECT_ID('CatalystAdmin.DiscoveryServiceBASE')" }
-    appFriendlyName          = "Fabric.Terminology"
-    appDescription           = "The Fabric.Terminology Service provides shared healthcare terminology data."
-    appDiscoveryType         = "Service"
-    appIsHidden              = $true
-    authorizationService     = (Get-ServiceFromDiscovery -name "AuthorizationService" -version 1 $storeConfig.discoveryService )
-    identityService          = (Get-ServiceFromDiscovery -name "IdentityService" -version 1 $storeConfig.discoveryService )
+    metadataConnection        = @{ sqlConnection = "Data Source=$($storeConfig.sqlServerAddress);Initial Catalog=$($storeConfig.metadataDbName);Integrated Security=True;Application Name=$($storeConfig.appName);"; sqlTestCommand = "SELECT object_id FROM sys.columns WHERE name = 'BuildNumberTXT' AND OBJECT_ID = OBJECT_ID('CatalystAdmin.DiscoveryServiceBASE')" }
+    appFriendlyName           = "Fabric.Terminology"
+    appDescription            = "The Fabric.Terminology Service provides shared healthcare terminology data."
+    appDiscoveryType          = "Service"
+    appIsHidden               = $true
+    authorizationService      = (Get-ServiceFromDiscovery -name "AuthorizationService" -version 1 $storeConfig.discoveryService )
+    identityService           = (Get-ServiceFromDiscovery -name "IdentityService" -version 1 $storeConfig.discoveryService )
     <# array of roles to be applied to the database table created #>
-    sharedDatabaseRoles      = @(
-        @{
-            name        = "TerminologySharedServiceRole"
-            permissions = @{
-                "[ClientTerm].[CodeBASE]"                = "SELECT";
-                "[ClientTerm].[CodeSystemBASE]"          = "SELECT";
-                "[ClientTerm].[ValueSetCode]"            = "SELECT";
-                "[ClientTerm].[ValueSetDescription]"     = "SELECT";
-                "[ClientTerm].[ValueSetCodeBASE]"        = "SELECT, INSERT, UPDATE, DELETE";
-                "[ClientTerm].[ValueSetCodeCountBASE]"   = "SELECT, INSERT, UPDATE, DELETE";
-                "[ClientTerm].[ValueSetDescriptionBASE]" = "SELECT, INSERT, UPDATE, DELETE";
-                "[Terminology].[Code]"                   = "SELECT";
-                "[Terminology].[CodeSystem]"             = "SELECT";
-                "[Terminology].[ValueSetCode]"           = "SELECT";
-                "[Terminology].[ValueSetCodeCount]"      = "SELECT";
-                "[Terminology].[ValueSetDescription]"    = "SELECT";
-            }
+    databaseLoaderRoleUpdates = @(
+        @{    
+            databaseName  = 'Shared'
+            user          = $storeConfig.loaderWindowsUser
+            databaseRoles = @(@{name = "db_owner"})
+        },
+        @{    
+            databaseName  = 'Shared'
+            user          = $storeConfig.processingServiceWindowsUser
+            databaseRoles = @(@{name = "db_ddladmin"}, @{name = "db_datareader"}, @{name = "db_datawriter"})
+        },
+        @{    
+            databaseName  = 'Terminology'
+            user          = $storeConfig.loaderWindowsUser
+            databaseRoles = @(@{name = "db_owner"})
+        },
+        @{    
+            databaseName  = 'Terminology'
+            user          = $storeConfig.processingServiceWindowsUser
+            databaseRoles = @(@{name = "db_ddladmin"}, @{name = "db_datareader"}, @{name = "db_datawriter"})
         }
     )
-    terminologyDatabaseRoles = @(
+    databaseAppRoleUpdates    = @(
+        @{    
+            databaseName  = 'Shared'
+            user          = $storeConfig.appPoolUser
+            databaseRoles = @(
+                @{
+                    name        = "TerminologySharedServiceRole"
+                    permissions = @{
+                        "[ClientTerm].[CodeBASE]"                = "SELECT";
+                        "[ClientTerm].[CodeSystemBASE]"          = "SELECT";
+                        "[ClientTerm].[ValueSetCode]"            = "SELECT";
+                        "[ClientTerm].[ValueSetDescription]"     = "SELECT";
+                        "[ClientTerm].[ValueSetCodeBASE]"        = "SELECT, INSERT, UPDATE, DELETE";
+                        "[ClientTerm].[ValueSetCodeCountBASE]"   = "SELECT, INSERT, UPDATE, DELETE";
+                        "[ClientTerm].[ValueSetDescriptionBASE]" = "SELECT, INSERT, UPDATE, DELETE";
+                        "[Terminology].[Code]"                   = "SELECT";
+                        "[Terminology].[CodeSystem]"             = "SELECT";
+                        "[Terminology].[ValueSetCode]"           = "SELECT";
+                        "[Terminology].[ValueSetCodeCount]"      = "SELECT";
+                        "[Terminology].[ValueSetDescription]"    = "SELECT";
+                    }
+                }
+            )
+        },
         @{
-            name        = "TerminologyServiceRole"
-            permissions = @{
-                "[Catalyst].[Code]"                = "SELECT";
-                "[Catalyst].[CodeBASE]"            = "SELECT";
-                "[Catalyst].[CodeSystem]"          = "SELECT";
-                "[Catalyst].[CodeSystemBASE]"      = "SELECT";
-                "[Open].[ValueSetCode]"            = "SELECT";
-                "[Open].[ValueSetCodeCountBASE]"   = "SELECT";
-                "[Open].[ValueSetDescriptionBASE]" = "SELECT";
-            }
+            databaseName  = 'Terminology'
+            user          = $storeConfig.appPoolUser
+            databaseRoles = @(
+                @{
+                    name        = "TerminologyServiceRole"
+                    permissions = @{
+                        "[Catalyst].[Code]"                = "SELECT";
+                        "[Catalyst].[CodeBASE]"            = "SELECT";
+                        "[Catalyst].[CodeSystem]"          = "SELECT";
+                        "[Catalyst].[CodeSystemBASE]"      = "SELECT";
+                        "[Open].[ValueSetCode]"            = "SELECT";
+                        "[Open].[ValueSetCodeCountBASE]"   = "SELECT";
+                        "[Open].[ValueSetDescriptionBASE]" = "SELECT";
+                    }
+                }
+            )
         }
     )
     <# configuration for both registration with fabric.identity as well as fabric.authorization #>
-    apiRegistration          = @{
+    apiRegistration           = @{
         name              = "terminology-api"
         userClaims        = @("name", "email", "role", "groups")
         scopes            = @(@{ name = "dos/valuesets"; displayName = "ValueSets" })
@@ -162,40 +197,19 @@ $config = $storeConfig, $staticConfig | Merge-Hashtables
 # assign a confirmation checkList for each configuration
 $checkList = @{
     # store config
-    fabricInstallerSecret           = @("isNotNull")
-    encryptionCertificateThumbprint = @("isNotNull")
-    sqlServerAddress                = @("isNotNull")
-    metadataDbName                  = @("isNotNull")
-    discoveryService                = @("isValidEndpoint")
-    appName                         = @("isNotNull")
-    appPoolName                     = @("isNotNull")
-    appPoolUser                     = @("isNotNull")
-    generalAccessADGroup            = @("isNotNull")
-    siteName                        = @("isNotNull")
-    appEndpoint                     = @("isNotNull")
-    sqlDataDirectory                = @("isNotNull")
-    sqlLogDirectory                 = @("isNotNull")
+    fabricInstallerSecret = @("isNotNull"); encryptionCertificateThumbprint = @("isNotNull"); sqlServerAddress = @("isNotNull"); metadataDbName = @("isNotNull");
+    discoveryService = @("isValidEndpoint"); appName = @("isNotNull"); appPoolName = @("isNotNull"); appPoolUser = @("isNotNull");
+    loaderWindowsUser = @("isNotNull"); processingServiceWindowsUser = @("isNotNull"); generalAccessADGroup = @("isNotNull"); siteName = @("isNotNull");
+    appEndpoint = @("isNotNull"); sqlDataDirectory = @("isNotNull"); sqlLogDirectory = @("isNotNull");
     # static or derived
-    installPath                     = @("isValidPath")
-    appPackagePath                  = @("isValidPath")
-    appPackageBaseAssembly          = @("isNotNull")
-    dacpacPath                      = @("isValidPath")
-    publishFilePath                 = @("isValidDir")
-    metadataConnection              = @("isValidConnection")
-    sharedConnection                = @("isValidConnection")
-    appFriendlyName                 = @("isNotNull")
-    appDescription                  = @("isNotNull")
-    appDiscoveryType                = @("isNotNull")
-    appIsHidden                     = @("isBoolean")
-    authorizationService            = @("isNotNull")
-    identityService                 = @("isNotNull")
-    terminologyDatabaseRoles        = @("isNotNull")
-    sharedDatabaseRoles             = @("isNotNull")
-    apiRegistration                 = @("isNotNull")
+    installPath = @("isValidPath"); appPackagePath = @("isValidPath"); appPackageBaseAssembly = @("isNotNull"); dacpacPath = @("isValidPath");
+    publishFilePath = @("isValidDir"); metadataConnection = @("isValidConnection"); appFriendlyName = @("isNotNull"); appDescription = @("isNotNull");
+    appDiscoveryType = @("isNotNull"); appIsHidden = @("isBoolean"); authorizationService = @("isNotNull"); identityService = @("isNotNull");
+    databaseLoaderRoleUpdates = @("isNotNull"); databaseAppRoleUpdates = @("isNotNull"); apiRegistration = @("isNotNull");
 } 
 Write-Host "Success`n" -ForegroundColor Green
 
-Write-Host "RUN CONFIGURATIONS CHECKS"
+Write-Host "RUN CONFIGURATION CHECKS"
 # check all configurations for issues 
 Write-DosMessage -Level "Information" -Message "Checking all configurations for issues"
 Confirm-Configurations -config $config -checkList $checkList
@@ -372,8 +386,7 @@ foreach ($securableItem in $config.apiRegistration.securableItems) {
 }
 Write-Host "Success`n" -ForegroundColor Green
 
-<#
-Write-Host "PUBLISH DATABASE OBJECTS WITH DACPAC"
+Write-Host "PUBLISH TERMINOLOGY DATABASE WITH DACPAC"
 # create a publish xml file with configured mount points for dacpac
 Write-DosMessage -Level "Information" -Message "Creating a publish xml file with configured mount points for dacpac"
 $dacPacPublishFileParams = @{
@@ -388,32 +401,52 @@ Write-DosMessage -Level "Information" -Message "Publishing database objects usin
 $dosDacPacParams = @{
     DacPacFilePath         = $config.dacpacPath
     TargetSqlInstance      = $config.sqlServerAddress
-    TargetDb               = 'Terminology'
+    TargetDb               = "Terminology"
     PublishOptionsFilePath = $config.publishFilePath
 }
 Publish-DosDacPac @dosDacPacParams -ErrorAction Stop | Out-Null
-
-# apply database permissions
-Write-DosMessage -Level "Information" -Message "Applying shared database permissions"
-$publishDatabaseRoleParams = @{
-    databaseName     = 'Shared'
-    user             = $config.appPoolUser
-    sqlServerAddress = $config.sqlServerAddress
-    databaseRoles    = $config.sharedDatabaseRoles
-}
-Publish-DatabaseRole @publishDatabaseRoleParams
-
-Write-DosMessage -Level "Information" -Message "Applying terminology database permissions"
-$publishDatabaseRoleParams = @{
-    databaseName     = 'Terminology'
-    user             = $config.appPoolUser
-    sqlServerAddress = $config.sqlServerAddress
-    databaseRoles    = $config.terminologyDatabaseRoles
-}
-Publish-DatabaseRole @publishDatabaseRoleParams
 Write-Host "Success`n" -ForegroundColor Green
 
-Write-Host "UPDATE APP SETTINGS"
+Write-Host "APPLY DATABASE LOADER PERMISSIONS"
+# apply database permissions needed for data loading
+foreach ($databaseUpdate in $config.databaseLoaderRoleUpdates) {
+    Write-DosMessage -Level "Information" -Message "Applying $($databaseUpdate.databaseName) database permissions"
+    $publishDatabaseRoleParams = @{
+        databaseName     = $databaseUpdate.databaseName
+        user             = $databaseUpdate.user
+        sqlServerAddress = $config.sqlServerAddress
+        databaseRoles    = $databaseUpdate.databaseRoles
+    }
+    Publish-DatabaseRole @publishDatabaseRoleParams
+}
+Write-Host "Success`n" -ForegroundColor Green
+
+Write-Host "ADD DATAMART METADATA WITH METADATA SERVICE"
+Write-Host "Success`n" -ForegroundColor Green
+
+Write-Host "EXECUTE DATAMART BATCH WITH DATA PROCESSING SERVICE"
+Write-Host "Success`n" -ForegroundColor Green
+
+
+
+<#
+Write-Host "APPLY DATABASE APPLICATION PERMISSIONS"
+# apply database permissions needed for application users
+foreach ($databaseUpdate in $config.databaseAppRoleUpdates) {
+    Write-DosMessage -Level "Information" -Message "Applying $($databaseUpdate.databaseName) database permissions"
+    $publishDatabaseRoleParams = @{
+        databaseName     = $databaseUpdate.databaseName
+        user             = $databaseUpdate.user
+        sqlServerAddress = $config.sqlServerAddress
+        databaseRoles    = $databaseUpdate.databaseRoles
+    }
+    Publish-DatabaseRole @publishDatabaseRoleParams
+}
+Write-Host "Success`n" -ForegroundColor Green
+#>
+
+<#
+Write-Host "UPDATE APPLICATION SETTINGS"
 # update settings in appsettings.json
 Write-DosMessage -Level "Information" -Message "Updating settings in appsettings.json"
 $appSettingsParams = @{
