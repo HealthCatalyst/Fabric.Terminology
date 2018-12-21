@@ -56,6 +56,7 @@ $storeConfig = @{
     fabricInstallerSecret           = $commonConfig.fabricInstallerSecret
     encryptionCertificateThumbprint = $commonConfig.encryptionCertificateThumbprint
     sqlServerAddress                = $commonConfig.sqlServerAddress
+    edwAddress                      = $commonConfig.edwAddress
     metadataDbName                  = $commonConfig.metadataDbName
     discoveryService                = $commonConfig.discoveryService
     loaderWindowsUser               = $commonConfig.loaderWindowsUser
@@ -73,50 +74,61 @@ $storeConfig = @{
 # get static or derived configurations 
 Write-DosMessage -Level "Information" -Message "Getting derived and static configurations"
 $staticConfig = @{
-    installPath               = $ConfigStore.Path
+    installPath                   = $ConfigStore.Path
     <# path to the location of the zip file that contains the binaries for service #>
-    appPackagePath            = "$PSScriptRoot\Package\Fabric.Terminology.zip"
+    appPackagePath                = "$PSScriptRoot\Package\Fabric.Terminology.zip"
     <# name of primary dll within the appPackagePath that versioning is to be based on #>
-    appPackageBaseAssembly    = "Fabric.Terminology.API.dll"
+    appPackageBaseAssembly        = "Fabric.Terminology.API.dll"
     <# path to database dacpac file used to create database objects #>
-    dacpacPath                = "$PSScriptRoot\Database\Fabric.Terminology.Database.dacpac"
+    dacpacPath                    = "$PSScriptRoot\Database\Fabric.Terminology.Database.dacpac"
+    dacpacSqlInstance             = $storeConfig.edwAddress
+    dacpacDatabase                = "Terminology"
     <# file name given to the publish.xml file; the installer will create this for you
        so it doesn't have to be a valid file name, only a valid directory #>
-    publishFilePath           = "$PSScriptRoot\Database\Fabric.Terminology.Database.publish.xml"
+    publishFilePath               = "$PSScriptRoot\Database\Fabric.Terminology.Database.publish.xml"
     <# connection string to the metadata database as well as a test script that if records return is valid #>
-    metadataConnection        = @{ sqlConnection = "Data Source=$($storeConfig.sqlServerAddress);Initial Catalog=$($storeConfig.metadataDbName);Integrated Security=True;Application Name=$($storeConfig.appName);"; sqlTestCommand = "SELECT object_id FROM sys.columns WHERE name = 'BuildNumberTXT' AND OBJECT_ID = OBJECT_ID('CatalystAdmin.DiscoveryServiceBASE')" }
-    appFriendlyName           = "Fabric.Terminology"
-    appDescription            = "The Fabric.Terminology Service provides shared healthcare terminology data."
-    appDiscoveryType          = "Service"
-    appIsHidden               = $true
-    authorizationService      = (Get-ServiceFromDiscovery -name "AuthorizationService" -version 1 $storeConfig.discoveryService )
-    identityService           = (Get-ServiceFromDiscovery -name "IdentityService" -version 1 $storeConfig.discoveryService )
+    metadataConnection            = @{ sqlConnection = "Data Source=$($storeConfig.sqlServerAddress);Initial Catalog=$($storeConfig.metadataDbName);Integrated Security=True;Application Name=$($storeConfig.appName);"; sqlTestCommand = "SELECT object_id FROM sys.columns WHERE name = 'BuildNumberTXT' AND OBJECT_ID = OBJECT_ID('CatalystAdmin.DiscoveryServiceBASE')" }
+    appFriendlyName               = "Fabric.Terminology"
+    appDescription                = "The Fabric.Terminology Service provides shared healthcare terminology data."
+    appDiscoveryType              = "Service"
+    appIsHidden                   = $true
+    authorizationService          = (Get-ServiceFromDiscovery -name "AuthorizationService" -version 1 $storeConfig.discoveryService )
+    identityService               = (Get-ServiceFromDiscovery -name "IdentityService" -version 1 $storeConfig.discoveryService )
+    metaDataService               = (Get-ServiceFromDiscovery -name "MetaDataService" -version 2 $storeConfig.discoveryService )
+    dataProcessingService         = (Get-ServiceFromDiscovery -name "DataProcessingService" -version 1 $storeConfig.discoveryService )
+    metaDataTerminologyPath       = "$PSScriptRoot\Metadata\Terminology.json"
+    metaDataSharedTerminologyPath = "$PSScriptRoot\Metadata\SharedTerminology.json"
     <# array of roles to be applied to the database table created #>
-    databaseLoaderRoleUpdates = @(
+    databaseLoaderRoleUpdates     = @(
         @{    
             databaseName  = 'Shared'
+            server        = $storeConfig.edwAddress
             user          = $storeConfig.loaderWindowsUser
             databaseRoles = @(@{name = "db_owner"})
         },
         @{    
             databaseName  = 'Shared'
+            server        = $storeConfig.edwAddress
             user          = $storeConfig.processingServiceWindowsUser
             databaseRoles = @(@{name = "db_ddladmin"}, @{name = "db_datareader"}, @{name = "db_datawriter"})
         },
         @{    
             databaseName  = 'Terminology'
+            server        = $storeConfig.edwAddress
             user          = $storeConfig.loaderWindowsUser
             databaseRoles = @(@{name = "db_owner"})
         },
         @{    
             databaseName  = 'Terminology'
+            server        = $storeConfig.edwAddress
             user          = $storeConfig.processingServiceWindowsUser
             databaseRoles = @(@{name = "db_ddladmin"}, @{name = "db_datareader"}, @{name = "db_datawriter"})
         }
     )
-    databaseAppRoleUpdates    = @(
+    databaseAppRoleUpdates        = @(
         @{    
             databaseName  = 'Shared'
+            server        = $storeConfig.edwAddress
             user          = $storeConfig.appPoolUser
             databaseRoles = @(
                 @{
@@ -140,6 +152,7 @@ $staticConfig = @{
         },
         @{
             databaseName  = 'Terminology'
+            server        = $storeConfig.edwAddress
             user          = $storeConfig.appPoolUser
             databaseRoles = @(
                 @{
@@ -158,7 +171,7 @@ $staticConfig = @{
         }
     )
     <# configuration for both registration with fabric.identity as well as fabric.authorization #>
-    apiRegistration           = @{
+    apiRegistration               = @{
         name              = "terminology-api"
         userClaims        = @("name", "email", "role", "groups")
         scopes            = @(@{ name = "dos/valuesets"; displayName = "ValueSets" })
@@ -197,15 +210,44 @@ $config = $storeConfig, $staticConfig | Merge-Hashtables
 # assign a confirmation checkList for each configuration
 $checkList = @{
     # store config
-    fabricInstallerSecret = @("isNotNull"); encryptionCertificateThumbprint = @("isNotNull"); sqlServerAddress = @("isNotNull"); metadataDbName = @("isNotNull");
-    discoveryService = @("isValidEndpoint"); appName = @("isNotNull"); appPoolName = @("isNotNull"); appPoolUser = @("isNotNull");
-    loaderWindowsUser = @("isNotNull"); processingServiceWindowsUser = @("isNotNull"); generalAccessADGroup = @("isNotNull"); siteName = @("isNotNull");
-    appEndpoint = @("isNotNull"); sqlDataDirectory = @("isNotNull"); sqlLogDirectory = @("isNotNull");
+    fabricInstallerSecret           = @("isNotNull")
+    encryptionCertificateThumbprint = @("isNotNull")
+    sqlServerAddress                = @("isNotNull")
+    edwAddress                      = @("isNotNull")
+    metadataDbName                  = @("isNotNull")
+    discoveryService                = @("isValidEndpoint")
+    loaderWindowsUser               = @("isNotNull")
+    processingServiceWindowsUser    = @("isNotNull")
+    appName                         = @("isNotNull")
+    appPoolName                     = @("isNotNull")
+    appPoolUser                     = @("isNotNull")
+    generalAccessADGroup            = @("isNotNull")
+    siteName                        = @("isNotNull")
+    appEndpoint                     = @("isNotNull")
+    sqlDataDirectory                = @("isNotNull")
+    sqlLogDirectory                 = @("isNotNull")
     # static or derived
-    installPath = @("isValidPath"); appPackagePath = @("isValidPath"); appPackageBaseAssembly = @("isNotNull"); dacpacPath = @("isValidPath");
-    publishFilePath = @("isValidDir"); metadataConnection = @("isValidConnection"); appFriendlyName = @("isNotNull"); appDescription = @("isNotNull");
-    appDiscoveryType = @("isNotNull"); appIsHidden = @("isBoolean"); authorizationService = @("isNotNull"); identityService = @("isNotNull");
-    databaseLoaderRoleUpdates = @("isNotNull"); databaseAppRoleUpdates = @("isNotNull"); apiRegistration = @("isNotNull");
+    installPath                     = @("isValidPath")
+    appPackagePath                  = @("isValidPath")
+    appPackageBaseAssembly          = @("isNotNull")
+    dacpacPath                      = @("isValidPath")
+    dacpacSqlInstance               = @("isNotNull")
+    dacpacDatabase                  = @("isNotNull")
+    publishFilePath                 = @("isValidDir")
+    metadataConnection              = @("isValidConnection")
+    appFriendlyName                 = @("isNotNull")
+    appDescription                  = @("isNotNull")
+    appDiscoveryType                = @("isNotNull")
+    appIsHidden                     = @("isBoolean")
+    authorizationService            = @("isNotNull")
+    identityService                 = @("isNotNull")
+    metaDataService                 = @("isNotNull")
+    dataProcessingService           = @("isNotNull")
+    metaDataTerminologyPath         = @("isValidPath")
+    metaDataSharedTerminologyPath   = @("isValidPath")
+    databaseLoaderRoleUpdates       = @("isNotNull")
+    databaseAppRoleUpdates          = @("isNotNull")
+    apiRegistration                 = @("isNotNull")
 } 
 Write-Host "Success`n" -ForegroundColor Green
 
@@ -268,7 +310,7 @@ $secret = Get-DecryptedString -encryptionCertificate $encryptionCertificate -enc
 $accessTokenParams = @{
     identityUrl = $config.identityService
     clientId    = "fabric-installer"
-    scope       = "fabric/identity.manageresources fabric/authorization.write fabric/authorization.read fabric/authorization.dos.write fabric/authorization.manageclients"
+    scope       = "fabric/identity.manageresources fabric/authorization.write fabric/authorization.read fabric/authorization.dos.write fabric/authorization.manageclients dos/metadata dos/metadata.serviceAdmin"
     secret      = $secret
 }
 $accessToken = Get-AccessToken @accessTokenParams
@@ -400,8 +442,8 @@ Set-DacPacPublishFile @dacPacPublishFileParams -ErrorAction Stop | Out-Null
 Write-DosMessage -Level "Information" -Message "Publishing database objects using the configured DACPAC file"
 $dosDacPacParams = @{
     DacPacFilePath         = $config.dacpacPath
-    TargetSqlInstance      = $config.sqlServerAddress
-    TargetDb               = "Terminology"
+    TargetSqlInstance      = $config.dacpacSqlInstance
+    TargetDb               = $config.dacpacDatabase
     PublishOptionsFilePath = $config.publishFilePath
 }
 Publish-DosDacPac @dosDacPacParams -ErrorAction Stop | Out-Null
@@ -414,22 +456,125 @@ foreach ($databaseUpdate in $config.databaseLoaderRoleUpdates) {
     $publishDatabaseRoleParams = @{
         databaseName     = $databaseUpdate.databaseName
         user             = $databaseUpdate.user
-        sqlServerAddress = $config.sqlServerAddress
+        sqlServerAddress = $databaseUpdate.server
         databaseRoles    = $databaseUpdate.databaseRoles
     }
     Publish-DatabaseRole @publishDatabaseRoleParams
 }
 Write-Host "Success`n" -ForegroundColor Green
 
-Write-Host "ADD DATAMART METADATA WITH METADATA SERVICE"
+Write-Host "REGISTER DATAMART METADATA WITH METADATA SERVICE"
+# Terminology datamart
+$datamartMetadataParams = @{
+    metadataUrl = $config.metaDataService
+    body        = (Get-Content $config.metaDataTerminologyPath -Raw)
+    accessToken = $accessToken
+}
+$dataMartTerminology = New-DatamartMetadata @datamartMetadataParams
+
+# SharedTerminology datamart
+$datamartMetadataParams = @{
+    metadataUrl = $config.metaDataService
+    body        = (Get-Content $config.metaDataSharedTerminologyPath -Raw)
+    accessToken = $accessToken
+}
+$dataMartSharedTerminology = New-DatamartMetadata @datamartMetadataParams
+Write-Host "Success" -ForegroundColor Green
+
+# Terminology datamart
+$batchExecutionDataProcessingParams = @{
+    dataProcessingUrl = $config.dataProcessingService
+    body              = @{
+        DataMartId      = $dataMartTerminology.Id
+        BatchExecution  = @{
+            PipelineType     = "Migration"
+            OverrideLoadType = "Incremental"
+            LoggingLevel     = "Diagnostic"
+        }
+        BatchDefinition = @{
+            Name = "Terminology (DOSInstaller)"
+        }
+    }
+    edwAdminRole      = @{
+        roleName         = "DataProcessingServiceUser"
+        sqlServerAddress = $config.sqlServerAddress
+        metadataDbName   = $config.metadataDbName
+    }
+}
+Invoke-BatchExecutionDataProcessing @batchExecutionDataProcessingParams | Out-Null
+Write-DosMessage -Level "Information" -Message "Batch Completed"
+Write-Host "Success" -ForegroundColor Green
+
+# SharedTerminology (Custom Batch) datamart
+$customEntititesParams = @{
+    dataMartId       = $dataMartSharedTerminology.Id
+    entities         = @(
+        @{entitySchema = "ClientTerm"; entityName = "Term"}
+        @{entitySchema = "ClientTerm"; entityName = "CodeSystem"}
+        @{entitySchema = "ClientTerm"; entityName = "ValueSetMeasure"}
+        @{entitySchema = "ClientTerm"; entityName = "ValueSetCodeCount"}
+        @{entitySchema = "ClientTerm"; entityName = "Map"}
+        @{entitySchema = "ClientTerm"; entityName = "MapSystem"}
+        @{entitySchema = "ClientTerm"; entityName = "Relation"}
+        @{entitySchema = "ClientTerm"; entityName = "ValueSetCode"}
+        @{entitySchema = "ClientTerm"; entityName = "ValueSetDescriptionAttribute"}
+        @{entitySchema = "ClientTerm"; entityName = "ValueSetDescription"}
+        @{entitySchema = "TermMap"; entityName = "LocalMap"}
+    )
+    sqlServerAddress = $config.sqlServerAddress
+    metadataDbName   = $config.metadataDbName
+}
+$customEntitites = Get-CustomEntities @customEntititesParams
+$batchExecutionDataProcessingParams = @{
+    dataProcessingUrl = $config.dataProcessingService
+    body              = @{
+        DataMartId      = $dataMartSharedTerminology.Id
+        BatchExecution  = @{
+            PipelineType     = "Migration"
+            OverrideLoadType = "Incremental"
+            LoggingLevel     = "Diagnostic"
+        }
+        BatchDefinition = @{
+            Name                        = "SharedTerminology Step1 (DOSInstaller)"
+            LoadType                    = "Custom Entities"
+            IncludeDownstreamDependents = "false"
+            CustomEntities              = $customEntitites
+        }
+    }
+    edwAdminRole      = @{
+        roleName         = "DataProcessingServiceUser"
+        sqlServerAddress = $config.sqlServerAddress
+        metadataDbName   = $config.metadataDbName
+    }
+}
+Invoke-BatchExecutionDataProcessing @batchExecutionDataProcessingParams #| Out-Null
+Write-DosMessage -Level "Information" -Message "Batch Completed"
+Write-Host "Success" -ForegroundColor Green
+
+# SharedTerminology datamart
+$batchExecutionDataProcessingParams = @{
+    dataProcessingUrl = $config.dataProcessingService
+    body              = @{
+        DataMartId      = $dataMartSharedTerminology.Id
+        BatchExecution  = @{
+            PipelineType     = "Migration"
+            OverrideLoadType = "Incremental"
+            LoggingLevel     = "Diagnostic"
+        }
+        BatchDefinition = @{
+            Name = "SharedTerminology Step2 (DOSInstaller)"
+        }
+    }
+    edwAdminRole      = @{
+        roleName         = "DataProcessingServiceUser"
+        sqlServerAddress = $config.sqlServerAddress
+        metadataDbName   = $config.metadataDbName
+    }
+}
+Invoke-BatchExecutionDataProcessing @batchExecutionDataProcessingParams | Out-Null
+Write-DosMessage -Level "Information" -Message "Batch Completed"
 Write-Host "Success`n" -ForegroundColor Green
 
-Write-Host "EXECUTE DATAMART BATCH WITH DATA PROCESSING SERVICE"
-Write-Host "Success`n" -ForegroundColor Green
-
-
-
-<#
 Write-Host "APPLY DATABASE APPLICATION PERMISSIONS"
 # apply database permissions needed for application users
 foreach ($databaseUpdate in $config.databaseAppRoleUpdates) {
@@ -437,15 +582,13 @@ foreach ($databaseUpdate in $config.databaseAppRoleUpdates) {
     $publishDatabaseRoleParams = @{
         databaseName     = $databaseUpdate.databaseName
         user             = $databaseUpdate.user
-        sqlServerAddress = $config.sqlServerAddress
+        sqlServerAddress = $databaseUpdate.server
         databaseRoles    = $databaseUpdate.databaseRoles
     }
     Publish-DatabaseRole @publishDatabaseRoleParams
 }
 Write-Host "Success`n" -ForegroundColor Green
-#>
 
-<#
 Write-Host "UPDATE APPLICATION SETTINGS"
 # update settings in appsettings.json
 Write-DosMessage -Level "Information" -Message "Updating settings in appsettings.json"
@@ -459,6 +602,6 @@ $appSettingsParams = @{
 }
 Update-AppSettings @appSettingsParams
 Write-Host "Success`n" -ForegroundColor Green
-#>
+
 
 Write-Host "INSTALLATION COMPLETED SUCCESSFULLY!" -ForegroundColor Green
