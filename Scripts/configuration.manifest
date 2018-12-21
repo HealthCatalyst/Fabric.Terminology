@@ -37,6 +37,8 @@
             <variable name="siteName" value="Default Web Site" />
             <!-- The URI for the Analytics Service -->
             <variable name="appEndpoint" value="https://localhost/TerminologyService" />
+            <!-- application insights key -->
+            <variable name="appInsightsInstrumentationKey" value="" />
             <!-- sql data mount -->
             <variable name="sqlDataDirectory" value="C:\SQLData" />
             <!-- sql log mount -->
