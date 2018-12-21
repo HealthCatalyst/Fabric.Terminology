@@ -76,16 +76,16 @@ Write-DosMessage -Level "Information" -Message "Getting derived and static confi
 $staticConfig = @{
     installPath                   = $ConfigStore.Path
     <# path to the location of the zip file that contains the binaries for service #>
-    appPackagePath                = "$PSScriptRoot\Package\Fabric.Terminology.zip"
+    appPackagePath                = "$PSScriptRoot\Fabric.Terminology.InstallPackage.zip"
     <# name of primary dll within the appPackagePath that versioning is to be based on #>
     appPackageBaseAssembly        = "Fabric.Terminology.API.dll"
     <# path to database dacpac file used to create database objects #>
-    dacpacPath                    = "$PSScriptRoot\Database\Fabric.Terminology.Database.dacpac"
+    dacpacPath                    = "$PSScriptRoot\Fabric.Terminology.Database.dacpac"
     dacpacSqlInstance             = $storeConfig.edwAddress
     dacpacDatabase                = "Terminology"
     <# file name given to the publish.xml file; the installer will create this for you
        so it doesn't have to be a valid file name, only a valid directory #>
-    publishFilePath               = "$PSScriptRoot\Database\Fabric.Terminology.Database.publish.xml"
+    publishFilePath               = "$PSScriptRoot\Fabric.Terminology.Database.publish.xml"
     <# connection string to the metadata database as well as a test script that if records return is valid #>
     metadataConnection            = @{ sqlConnection = "Data Source=$($storeConfig.sqlServerAddress);Initial Catalog=$($storeConfig.metadataDbName);Integrated Security=True;Application Name=$($storeConfig.appName);"; sqlTestCommand = "SELECT object_id FROM sys.columns WHERE name = 'BuildNumberTXT' AND OBJECT_ID = OBJECT_ID('CatalystAdmin.DiscoveryServiceBASE')" }
     appFriendlyName               = "Fabric.Terminology"
@@ -96,8 +96,8 @@ $staticConfig = @{
     identityService               = (Get-ServiceFromDiscovery -name "IdentityService" -version 1 $storeConfig.discoveryService )
     metaDataService               = (Get-ServiceFromDiscovery -name "MetaDataService" -version 2 $storeConfig.discoveryService )
     dataProcessingService         = (Get-ServiceFromDiscovery -name "DataProcessingService" -version 1 $storeConfig.discoveryService )
-    metaDataTerminologyPath       = "$PSScriptRoot\Metadata\Terminology.json"
-    metaDataSharedTerminologyPath = "$PSScriptRoot\Metadata\SharedTerminology.json"
+    metaDataTerminologyPath       = "$PSScriptRoot\Terminology.json"
+    metaDataSharedTerminologyPath = "$PSScriptRoot\SharedTerminology.json"
     <# array of roles to be applied to the database table created #>
     databaseLoaderRoleUpdates     = @(
         @{    
