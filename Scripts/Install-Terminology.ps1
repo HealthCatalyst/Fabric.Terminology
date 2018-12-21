@@ -328,7 +328,7 @@ $apiRegistrationParams = @{
         scopes     = $config.apiRegistration.scopes
     }
 }
-New-ApiRegistration @apiRegistrationParams | Out-Null <# $apiSecret #>
+$apiSecret = New-ApiRegistration @apiRegistrationParams
 
 # register new client with fabric.identity
 Write-DosMessage -Level "Information" -Message "Registering client ""$($config.apiRegistration.clientName)"" with Fabric.Identity"
@@ -343,7 +343,7 @@ $clientRegistrationParams = @{
         allowedScopes     = $config.apiRegistration.allowedScopes
     }
 }
-New-ClientRegistration @clientRegistrationParams | Out-Null <# $clientSecret #>
+$clientSecret = New-ClientRegistration @clientRegistrationParams
 Write-Host "Success`n" -ForegroundColor Green
 
 Write-Host "REGISTER WITH FABRIC.AUTHORIZATION"
@@ -591,6 +591,18 @@ foreach ($databaseUpdate in $config.databaseAppRoleUpdates) {
 Write-Host "Success`n" -ForegroundColor Green
 
 Write-Host "UPDATE APPLICATION SETTINGS"
+# update settings in web.config
+Write-DosMessage -Level "Information" -Message "Updating settings in web.config"
+$webConfigPath = [System.IO.Path]::Combine($webroot, 'web.config')
+$webConfigParams = @(
+    @{webConfigPath = $webConfigPath; settingKey = "ClientSecret"; settingValue = $clientSecret}
+    @{webConfigPath = $webConfigPath; settingKey = "apiSecret"; settingValue = $apiSecret}
+)
+foreach ($webConfigParam in $webConfigParams) {
+    Update-WebConfig @webConfigParam
+}
+Write-Host "Success`n" -ForegroundColor Green
+
 # update settings in appsettings.json
 Write-DosMessage -Level "Information" -Message "Updating settings in appsettings.json"
 $appSettingsPath = [System.IO.Path]::Combine($webroot, 'appsettings.json')
@@ -602,7 +614,7 @@ $appSettingsJson = (Get-Content $appSettingsPath -Raw) | ConvertFrom-Json
 $appSettingsJson.BaseTerminologyEndpoint = $config.appEndpoint
 $appSettingsJson.TerminologySqlSettings.ConnectionString = "Data Source=$($config.edwAddress);Initial Catalog=Shared; Trusted_Connection=True;"
 $appSettingsJson.IdentityServerSettings.ClientSecret = $config.appName
-$appSettingsJson.DiscoveryServiceClientSettings.DiscoveryServiceUrl = $config.discoveryServiceUrl
+$appSettingsJson.DiscoveryServiceClientSettings.DiscoveryServiceUrl = $config.discoveryService
 if ([string]::IsNullOrWhiteSpace($config.appInsightsInstrumentationKey)) {
     $appSettingsJson.ApplicationInsightsSettings.Enabled = $false
 } 
