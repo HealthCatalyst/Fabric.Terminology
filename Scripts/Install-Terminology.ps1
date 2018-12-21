@@ -67,6 +67,7 @@ $storeConfig = @{
     generalAccessADGroup            = $appConfig.generalAccessADGroup
     siteName                        = $appConfig.siteName
     appEndpoint                     = $appConfig.appEndpoint
+    appInsightsInstrumentationKey   = $appConfig.appInsightsInstrumentationKey
     sqlDataDirectory                = $appConfig.sqlDataDirectory
     sqlLogDirectory                 = $appConfig.sqlLogDirectory
 } | Push-ConfigType "store"
@@ -592,15 +593,24 @@ Write-Host "Success`n" -ForegroundColor Green
 Write-Host "UPDATE APPLICATION SETTINGS"
 # update settings in appsettings.json
 Write-DosMessage -Level "Information" -Message "Updating settings in appsettings.json"
-$appSettingsParams = @{
-    appSettingsPath   = [System.IO.Path]::Combine($webroot, 'appsettings.json')
-    appSettingsValues = @{
-        discoveryServiceUrl              = $config.discoveryService
-        applicationEndpoint              = "$($config.appEndpoint)/v$($version.FileMajorPart)"
-        metadataDatabaseConnectionString = $config.metadataConnection.sqlConnection
-    }
+$appSettingsPath = [System.IO.Path]::Combine($webroot, 'appsettings.json')
+$accessControl = Get-Acl $webroot
+$accessControlRule = New-Object System.Security.AccessControl.FileSystemAccessRule($config.appPoolUser, "Read, Write", "ContainerInherit, ObjectInherit", "None", "Allow")
+$accessControl.SetAccessRule($accessControlRule)
+Set-Acl $webroot.FullName $accessControl
+$appSettingsJson = (Get-Content $appSettingsPath -Raw) | ConvertFrom-Json 
+$appSettingsJson.BaseTerminologyEndpoint = $config.appEndpoint
+$appSettingsJson.TerminologySqlSettings.ConnectionString = "Data Source=$($config.edwAddress);Initial Catalog=Shared; Trusted_Connection=True;"
+$appSettingsJson.IdentityServerSettings.ClientSecret = $config.appName
+$appSettingsJson.DiscoveryServiceClientSettings.DiscoveryServiceUrl = $config.discoveryServiceUrl
+if ([string]::IsNullOrWhiteSpace($config.appInsightsInstrumentationKey)) {
+    $appSettingsJson.ApplicationInsightsSettings.Enabled = $false
+} 
+else {
+    $appSettingsJson.ApplicationInsightsSettings.InstrumentationKey = $config.appInsightsInstrumentationKey    
+    $appSettingsJson.ApplicationInsightsSettings.Enabled = $true
 }
-Update-AppSettings @appSettingsParams
+$appSettingsJson | ConvertTo-Json -Depth 10 | Set-Content $appSettingsPath
 Write-Host "Success`n" -ForegroundColor Green
 
 
