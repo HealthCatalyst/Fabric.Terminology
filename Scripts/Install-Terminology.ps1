@@ -24,9 +24,8 @@ if (!$ConfigManifestPath) {
 
 Write-Host "IMPORTING NECESSARY MODULES AND FUNCTIONS"
 # get all dependent modules and functions
-# Install-Module -Name DgxInstallUtilities -Scope CurrentUser -Force
-# Import-Module -Name DgxInstallUtilities -Force
-Import-Module "C:\Source\CAP\DgxInstallUtilities" -Force
+Install-Module -Name DgxInstallUtilities -Scope CurrentUser -Force
+Import-Module -Name DgxInstallUtilities -Force
 Write-Host "Success`n" -ForegroundColor Green
 
 Write-Host "PRE-INSTALLATION CHECKS"
