@@ -480,100 +480,141 @@ $datamartMetadataParams = @{
     accessToken = $accessToken
 }
 $dataMartSharedTerminology = New-DatamartMetadata @datamartMetadataParams
-Write-Host "Success" -ForegroundColor Green
+Write-Host "Success`n" -ForegroundColor Green
 
 # Terminology datamart
-$batchExecutionDataProcessingParams = @{
-    dataProcessingUrl = $config.dataProcessingService
-    body              = @{
-        DataMartId      = $dataMartTerminology.Id
-        BatchExecution  = @{
-            PipelineType     = "Migration"
-            OverrideLoadType = "Incremental"
-            LoggingLevel     = "Diagnostic"
+Write-Host "DATA PROCESSING OF TERMINOLOGY DATAMART"
+$missingEntitiesAndViewsParams = @{
+    dataMartId   = $dataMartTerminology.Id
+    metadataUrl  = $config.metaDataService
+    accessToken  = $accessToken
+    sqlAddress   = $config.edwAddress
+    databaseName = "Terminology"
+}    
+$missingCheck = Get-MissingEntitiesAndViews @missingEntitiesAndViewsParams
+if ($missingCheck.missingFlag) {
+    $batchExecutionDataProcessingParams = @{
+        dataProcessingUrl = $config.dataProcessingService
+        body              = @{
+            DataMartId      = $dataMartTerminology.Id
+            BatchExecution  = @{
+                PipelineType     = "Migration"
+                OverrideLoadType = "Incremental"
+                LoggingLevel     = "Diagnostic"
+            }
+            BatchDefinition = @{
+                Name = "Terminology (DOSInstaller)"
+            }
         }
-        BatchDefinition = @{
-            Name = "Terminology (DOSInstaller)"
+        edwAdminRole      = @{
+            roleName         = "DataProcessingServiceUser"
+            sqlServerAddress = $config.sqlServerAddress
+            metadataDbName   = $config.metadataDbName
         }
     }
-    edwAdminRole      = @{
-        roleName         = "DataProcessingServiceUser"
-        sqlServerAddress = $config.sqlServerAddress
-        metadataDbName   = $config.metadataDbName
+    Invoke-BatchExecutionDataProcessing @batchExecutionDataProcessingParams | Out-Null
+    Write-DosMessage -Level "Information" -Message "Batch Completed"
+    $missingCheck = Get-MissingEntitiesAndViews @missingEntitiesAndViewsParams
+    if ($missingCheck.missingFlag -and $missingCheck.views -eq $missingCheck.total) {
+        # if the data mart is only missing views then deploy those views, because the migration
+        # pipeline won't re-deploy views that exist in metadata but aren't in the database
+        Publish-MissingViews -dataMartId $dataMartTerminology.Id -sqlAddress $config.sqlServerAddress -metadataDbName $config.metadataDbName
     }
 }
-Invoke-BatchExecutionDataProcessing @batchExecutionDataProcessingParams | Out-Null
-Write-DosMessage -Level "Information" -Message "Batch Completed"
-Write-Host "Success" -ForegroundColor Green
+else {
+    Write-DosMessage -Level "Information" -Message "Check returned no missing tables or views. Skipping data processing."
+}
+Write-Host "Success`n" -ForegroundColor Green
 
 # SharedTerminology (Custom Batch) datamart
-$customEntititesParams = @{
-    dataMartId       = $dataMartSharedTerminology.Id
-    entities         = @(
-        @{entitySchema = "ClientTerm"; entityName = "Term"}
-        @{entitySchema = "ClientTerm"; entityName = "CodeSystem"}
-        @{entitySchema = "ClientTerm"; entityName = "ValueSetMeasure"}
-        @{entitySchema = "ClientTerm"; entityName = "ValueSetCodeCount"}
-        @{entitySchema = "ClientTerm"; entityName = "Map"}
-        @{entitySchema = "ClientTerm"; entityName = "MapSystem"}
-        @{entitySchema = "ClientTerm"; entityName = "Relation"}
-        @{entitySchema = "ClientTerm"; entityName = "ValueSetCode"}
-        @{entitySchema = "ClientTerm"; entityName = "ValueSetDescriptionAttribute"}
-        @{entitySchema = "ClientTerm"; entityName = "ValueSetDescription"}
-        @{entitySchema = "TermMap"; entityName = "LocalMap"}
-    )
-    sqlServerAddress = $config.sqlServerAddress
-    metadataDbName   = $config.metadataDbName
-}
-$customEntitites = Get-CustomEntities @customEntititesParams
-$batchExecutionDataProcessingParams = @{
-    dataProcessingUrl = $config.dataProcessingService
-    body              = @{
-        DataMartId      = $dataMartSharedTerminology.Id
-        BatchExecution  = @{
-            PipelineType     = "Migration"
-            OverrideLoadType = "Incremental"
-            LoggingLevel     = "Diagnostic"
-        }
-        BatchDefinition = @{
-            Name                        = "SharedTerminology Step1 (DOSInstaller)"
-            LoadType                    = "Custom Entities"
-            IncludeDownstreamDependents = "false"
-            CustomEntities              = $customEntitites
-        }
-    }
-    edwAdminRole      = @{
-        roleName         = "DataProcessingServiceUser"
+Write-Host "DATA PROCESSING OF SHARED TERMINOLOGY"
+$missingEntitiesAndViewsParams = @{
+    dataMartId   = $dataMartSharedTerminology.Id
+    metadataUrl  = $config.metaDataService
+    accessToken  = $accessToken
+    sqlAddress   = $config.edwAddress
+    databaseName = "Shared"
+}    
+$missingCheck = Get-MissingEntitiesAndViews @missingEntitiesAndViewsParams
+if ($missingCheck.missingFlag) {
+    Write-DosMessage -Level "Information" -Message "Data Processing of SharedTerminology - Part 1"
+    $customEntititesParams = @{
+        dataMartId       = $dataMartSharedTerminology.Id
+        entities         = @(
+            @{entitySchema = "ClientTerm"; entityName = "Term"}
+            @{entitySchema = "ClientTerm"; entityName = "CodeSystem"}
+            @{entitySchema = "ClientTerm"; entityName = "ValueSetMeasure"}
+            @{entitySchema = "ClientTerm"; entityName = "ValueSetCodeCount"}
+            @{entitySchema = "ClientTerm"; entityName = "Map"}
+            @{entitySchema = "ClientTerm"; entityName = "MapSystem"}
+            @{entitySchema = "ClientTerm"; entityName = "Relation"}
+            @{entitySchema = "ClientTerm"; entityName = "ValueSetCode"}
+            @{entitySchema = "ClientTerm"; entityName = "ValueSetDescriptionAttribute"}
+            @{entitySchema = "ClientTerm"; entityName = "ValueSetDescription"}
+            @{entitySchema = "TermMap"; entityName = "LocalMap"}
+        )
         sqlServerAddress = $config.sqlServerAddress
         metadataDbName   = $config.metadataDbName
     }
-}
-Invoke-BatchExecutionDataProcessing @batchExecutionDataProcessingParams #| Out-Null
-Write-DosMessage -Level "Information" -Message "Batch Completed"
-Write-Host "Success" -ForegroundColor Green
+    $customEntitites = Get-CustomEntities @customEntititesParams
+    $batchExecutionDataProcessingParams = @{
+        dataProcessingUrl = $config.dataProcessingService
+        body              = @{
+            DataMartId      = $dataMartSharedTerminology.Id
+            BatchExecution  = @{
+                PipelineType     = "Migration"
+                OverrideLoadType = "Incremental"
+                LoggingLevel     = "Diagnostic"
+            }
+            BatchDefinition = @{
+                Name                        = "SharedTerminology Step1 (DOSInstaller)"
+                LoadType                    = "Custom Entities"
+                IncludeDownstreamDependents = "false"
+                CustomEntities              = $customEntitites
+            }
+        }
+        edwAdminRole      = @{
+            roleName         = "DataProcessingServiceUser"
+            sqlServerAddress = $config.sqlServerAddress
+            metadataDbName   = $config.metadataDbName
+        }
+    }
+    Invoke-BatchExecutionDataProcessing @batchExecutionDataProcessingParams #| Out-Null
+    Write-DosMessage -Level "Information" -Message "Batch Completed"
 
-# SharedTerminology datamart
-$batchExecutionDataProcessingParams = @{
-    dataProcessingUrl = $config.dataProcessingService
-    body              = @{
-        DataMartId      = $dataMartSharedTerminology.Id
-        BatchExecution  = @{
-            PipelineType     = "Migration"
-            OverrideLoadType = "Incremental"
-            LoggingLevel     = "Diagnostic"
+    # SharedTerminology datamart
+    Write-DosMessage -Level "Information" -Message "Data Processing of SharedTerminology - Part 2"
+    $batchExecutionDataProcessingParams = @{
+        dataProcessingUrl = $config.dataProcessingService
+        body              = @{
+            DataMartId      = $dataMartSharedTerminology.Id
+            BatchExecution  = @{
+                PipelineType     = "Migration"
+                OverrideLoadType = "Incremental"
+                LoggingLevel     = "Diagnostic"
+            }
+            BatchDefinition = @{
+                Name = "SharedTerminology Step2 (DOSInstaller)"
+            }
         }
-        BatchDefinition = @{
-            Name = "SharedTerminology Step2 (DOSInstaller)"
+        edwAdminRole      = @{
+            roleName         = "DataProcessingServiceUser"
+            sqlServerAddress = $config.sqlServerAddress
+            metadataDbName   = $config.metadataDbName
         }
     }
-    edwAdminRole      = @{
-        roleName         = "DataProcessingServiceUser"
-        sqlServerAddress = $config.sqlServerAddress
-        metadataDbName   = $config.metadataDbName
+    Invoke-BatchExecutionDataProcessing @batchExecutionDataProcessingParams | Out-Null
+    Write-DosMessage -Level "Information" -Message "Batch Completed"
+    $missingCheck = Get-MissingEntitiesAndViews @missingEntitiesAndViewsParams
+    if ($missingCheck.missingFlag -and $missingCheck.views -eq $missingCheck.total) {
+        # if the data mart is only missing views then deploy those views, because the migration
+        # pipeline won't re-deploy views that exist in metadata but aren't in the database
+        Publish-MissingViews -dataMartId $dataMartSharedTerminology.Id -sqlAddress $config.sqlServerAddress -metadataDbName $config.metadataDbName
     }
 }
-Invoke-BatchExecutionDataProcessing @batchExecutionDataProcessingParams | Out-Null
-Write-DosMessage -Level "Information" -Message "Batch Completed"
+else {
+    Write-DosMessage -Level "Information" -Message "Check returned no missing tables or views. Skipping data processing."
+}
 Write-Host "Success`n" -ForegroundColor Green
 
 Write-Host "APPLY DATABASE APPLICATION PERMISSIONS"
@@ -601,8 +642,6 @@ $webConfigParams = @(
 foreach ($webConfigParam in $webConfigParams) {
     Update-WebConfig @webConfigParam
 }
-Write-Host "Success`n" -ForegroundColor Green
-
 # update settings in appsettings.json
 Write-DosMessage -Level "Information" -Message "Updating settings in appsettings.json"
 $appSettingsPath = [System.IO.Path]::Combine($webroot, 'appsettings.json')
