@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<installation>
+    <settings>
+        <scope name="common">
+            <!-- The encrypted Fabric.Installer client secret, used for registering additional API's
+                 and Clients with Fabric.Identity. After Fabric.Identity is installed, the secret will 
+                 be written to this setting -->
+            <variable name="fabricInstallerSecret" value="" />
+            <!-- The thumb-print of an SSL certificate to use for encrypting/decrypting sensitive information 
+                 in the config. For initial installation it is recommended to use the thumbprint of the 
+                 certificate providing TLS/SSL for the website.-->
+            <variable name="encryptionCertificateThumbprint" value="" />
+            <!-- The address of the metadata sql server instance -->
+            <variable name="sqlServerAddress" value="localhost" />
+            <!-- The address of the data sql server instance; oftentimes is the same as the sqlServerAddress -->
+            <variable name="edwAddress" value="localhost" />
+            <!-- The database name of the metadata database -->
+            <variable name="metadataDbName" value="EDWAdmin" />
+            <!-- The discovery service api endpoint -->
+            <variable name="discoveryService" value="https://localhost/DiscoveryService/v1" />
+            <!-- The account used by the data processing service engine to load data
+                 often given dbo_owner access -->
+            <variable name="loaderWindowsUser" value="hqcatalyst\edw_loader" />
+            <!-- The user account -->
+            <variable name="processingServiceWindowsUser" value="hqcatalyst\dev.test" />
+        </scope>
+        <scope name="terminology">
+            <!-- The name of the app that will be created in IIS -->
+            <variable name="appName" value="TerminologyService" />
+            <!-- The name of the app pool that will be created in IIS -->
+            <variable name="appPoolName" value="TerminologyService" />
+            <!-- The user account for the app to run under in IIS -->
+            <variable name="appPoolUser" value="hqcatalyst\dev.test" />
+            <!-- Active directory group that gets default access to terminology -->
+            <variable name="generalAccessADGroup" value="HQCATALYST\Domain Users" />
+            <!-- The name of the IIS website to install the application under -->
+            <variable name="siteName" value="Default Web Site" />
+            <!-- The URI for the Analytics Service -->
+            <variable name="appEndpoint" value="https://localhost/TerminologyService" />
+            <!-- application insights key -->
+            <variable name="appInsightsInstrumentationKey" value="" />
+            <!-- sql data mount -->
+            <variable name="sqlDataDirectory" value="C:\SQLData" />
+            <!-- sql log mount -->
+            <variable name="sqlLogDirectory" value="C:\SQLData" />
+        </scope>
+    </settings>
+</installation>
