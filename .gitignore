@@ -216,4 +216,11 @@ Fabric.Terminology.ElasticSearch.Indexer/Logs/
 *.stackdump
 *.pubxml
 
-Fabric\.Terminology\.Database/Fabric\.Terminology\.Database\.jfm
+Fabric.Terminology.Database/Fabric.Terminology.Database.jfm	
+Scripts/DosInstallUtilities/	
+Scripts/Fabric-Install-Utilities.psm1	
+Scripts/dbatools/	
+Scripts/Fabric.Terminology.Database.dacpac	
+Scripts/Fabric.Terminology.InstallPackage.zip	
+Scripts/Register.ps1
+
