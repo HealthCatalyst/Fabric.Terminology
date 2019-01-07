@@ -215,3 +215,5 @@ Fabric.Terminology.API/Logs/
 Fabric.Terminology.ElasticSearch.Indexer/Logs/
 *.stackdump
 *.pubxml
+
+Fabric\.Terminology\.Database/Fabric\.Terminology\.Database\.jfm
