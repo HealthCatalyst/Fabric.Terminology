@@ -2,14 +2,17 @@
 
 Following are notes for each release: new features and any steps required for upgrading (e.g. other services that need to be installed or upgraded).
 
-## 1.0.x - In Development ##
 
-- Fabric.Identity and Fabric.Authorization integration.
-
-## 0.7.6 ##
+## 0.7.6 / 1.0.2 ##
 - Bumps release version to tie to 1.0.2 (CAP 18.2 release version)
 
-## 0.7.5  ##
+## 0.7.5 / 1.0.1 (HF 1)  ##
+
+- Hotfix for LastModifiedDate and AuthorityDescription sorting
+
+## 1.0.1  ##
+
+- Fabric.Identity and Fabric.Authorization integration.
 
 ## 0.7.4  ##
 
