@@ -550,7 +550,21 @@ if ($missingCheck.missingFlag) {
             @{entitySchema = "ClientTerm"; entityName = "ValueSetCode"}
             @{entitySchema = "ClientTerm"; entityName = "ValueSetDescriptionAttribute"}
             @{entitySchema = "ClientTerm"; entityName = "ValueSetDescription"}
+            @{entitySchema = "ClientTerm"; entityName = "Attribute"}
+            @{entitySchema = "ClientTerm"; entityName = "Code"}
             @{entitySchema = "TermMap"; entityName = "LocalMap"}
+            @{entitySchema = "TerminologyStage"; entityName = "RelationStage"}
+            @{entitySchema = "TerminologyStage"; entityName = "MapSystemStage"}
+            @{entitySchema = "TerminologyStage"; entityName = "MapStage"}
+            @{entitySchema = "TerminologyStage"; entityName = "TermStage"}
+            @{entitySchema = "TerminologyStage"; entityName = "ValueSetCodeCountStage"}
+            @{entitySchema = "TerminologyStage"; entityName = "ValueSetMeasureStage"}
+            @{entitySchema = "TerminologyStage"; entityName = "AttributeStage"}
+            @{entitySchema = "TerminologyStage"; entityName = "CodeSystemStage"}
+            @{entitySchema = "TerminologyStage"; entityName = "CodeStage"}
+            @{entitySchema = "TerminologyStage"; entityName = "ValueSetCodeStage"}
+            @{entitySchema = "TerminologyStage"; entityName = "ValueSetDescriptionAttributeStage"}
+            @{entitySchema = "TerminologyStage"; entityName = "ValueSetDescriptionStage"}
         )
         sqlServerAddress = $config.sqlServerAddress
         metadataDbName   = $config.metadataDbName
