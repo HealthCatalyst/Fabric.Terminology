@@ -513,12 +513,7 @@ if ($missingCheck.missingFlag) {
     }
     Invoke-BatchExecutionDataProcessing @batchExecutionDataProcessingParams | Out-Null
     Write-DosMessage -Level "Information" -Message "Batch Completed"
-    $missingCheck = Get-MissingEntitiesAndViews @missingEntitiesAndViewsParams
-    if ($missingCheck.missingFlag -and $missingCheck.views -eq $missingCheck.total) {
-        # if the data mart is only missing views then deploy those views, because the migration
-        # pipeline won't re-deploy views that exist in metadata but aren't in the database
-        Publish-MissingViews -dataMartId $dataMartTerminology.Id -sqlAddress $config.sqlServerAddress -metadataDbName $config.metadataDbName
-    }
+    Publish-MissingViews -dataMartId $dataMartTerminology.Id -sqlAddress $config.sqlServerAddress -metadataDbName $config.metadataDbName
 }
 else {
     Write-DosMessage -Level "Information" -Message "Check returned no missing tables or views. Skipping data processing."
@@ -618,12 +613,7 @@ if ($missingCheck.missingFlag) {
     }
     Invoke-BatchExecutionDataProcessing @batchExecutionDataProcessingParams | Out-Null
     Write-DosMessage -Level "Information" -Message "Batch Completed"
-    $missingCheck = Get-MissingEntitiesAndViews @missingEntitiesAndViewsParams
-    if ($missingCheck.missingFlag -and $missingCheck.views -eq $missingCheck.total) {
-        # if the data mart is only missing views then deploy those views, because the migration
-        # pipeline won't re-deploy views that exist in metadata but aren't in the database
-        Publish-MissingViews -dataMartId $dataMartSharedTerminology.Id -sqlAddress $config.sqlServerAddress -metadataDbName $config.metadataDbName
-    }
+    Publish-MissingViews -dataMartId $dataMartSharedTerminology.Id -sqlAddress $config.sqlServerAddress -metadataDbName $config.metadataDbName
 }
 else {
     Write-DosMessage -Level "Information" -Message "Check returned no missing tables or views. Skipping data processing."
