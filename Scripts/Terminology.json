@@ -15,6 +15,7 @@
   "Connections": [
     {
       "Id": -2,
+      "ContentId": "59d7107e-f7b8-4059-b449-df3414706139",
       "SystemName": "CatalystSFTP",
       "Description": "Internal Health Catalyst SFTP",
       "DataSystemTypeCode": "sFTP",
@@ -25,6 +26,7 @@
     },
     {
       "Id": -3,
+      "ContentId": "fc137c8a-7a1b-4ef2-a33b-883e90e70edc",
       "SystemName": "EDW",
       "Description": "Default EDW Connection",
       "DataSystemTypeCode": "SQL Server",
@@ -35,6 +37,7 @@
     },
     {
       "Id": -4,
+      "ContentId": "93705f73-5dda-4387-a8cd-426d3658bc02",
       "SystemName": "LocalConnection",
       "Description": "File Share Local",
       "DataSystemTypeCode": "File Share",

@@ -15,6 +15,7 @@
   "Connections": [
     {
       "Id": -2,
+      "ContentId": "208f7d5c-b6e2-4c52-8ac8-51122fcd8ec5",
       "SystemName": "EDW",
       "Description": "Default EDW Connection",
       "DataSystemTypeCode": "SQL Server",
