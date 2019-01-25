@@ -3,6 +3,8 @@ param(
     [Hashtable] $ConfigStore,
     [string] $ConfigManifestPath
 )
+Write-Host "TERMINOLOGY SERVICE INSTALLER`n" -ForegroundColor Magenta
+
 # fail installation on first error
 $ErrorActionPreference = "Stop"
 
