@@ -3,8 +3,6 @@ param(
     [Hashtable] $ConfigStore,
     [string] $ConfigManifestPath
 )
-Write-Host "TERMINOLOGY SERVICE INSTALLER`n" -ForegroundColor Magenta
-
 # fail installation on first error
 $ErrorActionPreference = "Stop"
 
@@ -22,16 +20,13 @@ if (!$ConfigManifestPath) {
     $ConfigManifestPath = "$PSScriptRoot\configuration.manifest"
 }
 
-Write-Host "IMPORTING NECESSARY MODULES AND FUNCTIONS"
 # get all dependent modules and functions
 Install-Module -Name DgxInstallUtilities -Scope CurrentUser -Force
 Import-Module -Name DgxInstallUtilities -Force
-Write-Host "Success`n" -ForegroundColor Green
 
-Write-Host "PRE-INSTALLATION CHECKS"
-# setup dos logging with default parameters 
-Write-DosMessage -Level "Information" -Message "Setup DOS logging based on logging parameters"
-Set-DosMessageConfiguration -LoggingMode Both -MinimumLoggingLevel "Information" -LogFilePath "$((Get-Item $PSScriptRoot).Parent.Parent.FullName)\SetupOutput\Install-Terminology.log"
+Write-DosMessageHeader -Message "TERMINOLOGY SERVICE INSTALLER" -Rows 2 -Begin
+
+Write-DosMessageHeader -Message "PRE-INSTALLATION CHECKS"
 # make sure configuration paths exist
 Write-DosMessage -Level "Information" -Message "Find install config [$($ConfigStore.Path)]"
 if (!(Test-Path $ConfigStore.Path)) { throw "Can't find config store [$($ConfigStore.Path)]" }
@@ -44,9 +39,8 @@ $validConfigStore = @{
     ConfigManifestPath = $ConfigManifestPath
 }
 Confirm-ValidConfigStore @validConfigStore
-Write-Host "Success`n" -ForegroundColor Green
 
-Write-Host "GETTING CONFIGURATION VALUES"
+Write-DosMessageHeader -Message "GETTING CONFIGURATION VALUES"
 # get store configurations from the config store (both common and app)
 Write-DosMessage -Level "Information" -Message "Getting store configs from $([io.path]::GetFileName($ConfigStore.Path))"
 $commonConfig = Get-DosConfigValues -ConfigStore $ConfigStore -Scope "common"
@@ -249,15 +243,13 @@ $checkList = @{
     databaseAppRoleUpdates          = @("isNotNull")
     apiRegistration                 = @("isNotNull")
 } 
-Write-Host "Success`n" -ForegroundColor Green
 
-Write-Host "RUN CONFIGURATION CHECKS"
+Write-DosMessageHeader -Message "RUN CONFIGURATION CHECKS"
 # check all configurations for issues 
 Write-DosMessage -Level "Information" -Message "Checking all configurations for issues"
 Confirm-Configurations -config $config -checkList $checkList
-Write-Host "Success`n" -ForegroundColor Green
 
-Write-Host "DEPLOY IIS WEB APPLICATION"
+Write-DosMessageHeader -Message "DEPLOY IIS WEB APPLICATION"
 # deploy iis web application
 if (!$AppPoolCredential) {
     $storedCredentialParams = @{
@@ -278,9 +270,8 @@ $dosWebApplicationParams = @{
     IISWebSite        = $config.siteName
 }
 Publish-DosWebApplication @dosWebApplicationParams -ErrorAction Stop | Out-Null
-Write-Host "Success`n" -ForegroundColor Green
 
-Write-Host "REGISTER WITH DISCOVERY SERVICE"
+Write-DosMessageHeader -Message "REGISTER WITH DISCOVERY SERVICE"
 # register new service with discovery
 Write-DosMessage -Level "Information" -Message "Registering $($config.appFriendlyName) with discovery service"
 $webroot = Get-WebFilePath -PSPath "IIS:\Sites\$($config.siteName)\$($config.appName)" -ErrorAction Stop
@@ -300,9 +291,8 @@ $discoveryRegistrationSqlParams = @{
     }
 }
 Add-DiscoveryRegistrationSql @discoveryRegistrationSqlParams -ErrorAction Stop | Out-Null
-Write-Host "Success`n" -ForegroundColor Green
 
-Write-Host "REGISTER WITH FABRIC.IDENTITY"
+Write-DosMessageHeader -Message "REGISTER WITH FABRIC.IDENTITY"
 # get access token
 Write-DosMessage -Level "Information" -Message "Getting access token using encryption thumbprint and fabric installer secret"
 $encryptionCertificate = Get-EncryptionCertificate $config.encryptionCertificateThumbprint
@@ -343,9 +333,8 @@ $clientRegistrationParams = @{
     }
 }
 $clientSecret = New-ClientRegistration @clientRegistrationParams
-Write-Host "Success`n" -ForegroundColor Green
 
-Write-Host "REGISTER WITH FABRIC.AUTHORIZATION"
+Write-DosMessageHeader -Message "REGISTER WITH FABRIC.AUTHORIZATION"
 # register new client with fabric.authorization
 # note: this automatically creates a new "[clientId]-admin" role of grain "app" with the permission name "manageauthorization" 
 Write-DosMessage -Level "Information" -Message "Registering client ""$($config.apiRegistration.clientName)"" with Fabric.Authorization"
@@ -426,9 +415,8 @@ foreach ($securableItem in $config.apiRegistration.securableItems) {
         }
     }
 }
-Write-Host "Success`n" -ForegroundColor Green
 
-Write-Host "PUBLISH TERMINOLOGY DATABASE WITH DACPAC"
+Write-DosMessageHeader -Message "PUBLISH TERMINOLOGY DATABASE WITH DACPAC"
 # create a publish xml file with configured mount points for dacpac
 Write-DosMessage -Level "Information" -Message "Creating a publish xml file with configured mount points for dacpac"
 $dacPacPublishFileParams = @{
@@ -447,9 +435,8 @@ $dosDacPacParams = @{
     PublishOptionsFilePath = $config.publishFilePath
 }
 Publish-DosDacPac @dosDacPacParams -ErrorAction Stop | Out-Null
-Write-Host "Success`n" -ForegroundColor Green
 
-Write-Host "APPLY DATABASE LOADER PERMISSIONS"
+Write-DosMessageHeader -Message "APPLY DATABASE LOADER PERMISSIONS"
 # apply database permissions needed for data loading
 foreach ($databaseUpdate in $config.databaseLoaderRoleUpdates) {
     Write-DosMessage -Level "Information" -Message "Applying $($databaseUpdate.databaseName) database permissions"
@@ -461,9 +448,8 @@ foreach ($databaseUpdate in $config.databaseLoaderRoleUpdates) {
     }
     Publish-DatabaseRole @publishDatabaseRoleParams
 }
-Write-Host "Success`n" -ForegroundColor Green
 
-Write-Host "REGISTER DATAMART METADATA WITH METADATA SERVICE"
+Write-DosMessageHeader -Message "REGISTER DATAMART METADATA WITH METADATA SERVICE"
 # Terminology datamart
 $datamartMetadataParams = @{
     metadataUrl = $config.metaDataService
@@ -479,10 +465,9 @@ $datamartMetadataParams = @{
     accessToken = $accessToken
 }
 $dataMartSharedTerminology = New-DatamartMetadata @datamartMetadataParams
-Write-Host "Success`n" -ForegroundColor Green
 
 # Terminology datamart
-Write-Host "DATA PROCESSING OF TERMINOLOGY DATAMART"
+Write-DosMessageHeader -Message "DATA PROCESSING OF TERMINOLOGY DATAMART"
 $missingEntitiesAndViewsParams = @{
     dataMartId   = $dataMartTerminology.Id
     metadataUrl  = $config.metaDataService
@@ -518,10 +503,9 @@ if ($missingCheck.missingFlag) {
 else {
     Write-DosMessage -Level "Information" -Message "Check returned no missing tables or views. Skipping data processing."
 }
-Write-Host "Success`n" -ForegroundColor Green
 
 # SharedTerminology (Custom Batch) datamart
-Write-Host "DATA PROCESSING OF SHARED TERMINOLOGY"
+Write-DosMessageHeader -Message "DATA PROCESSING OF SHARED TERMINOLOGY"
 $missingEntitiesAndViewsParams = @{
     dataMartId   = $dataMartSharedTerminology.Id
     metadataUrl  = $config.metaDataService
@@ -618,9 +602,8 @@ if ($missingCheck.missingFlag) {
 else {
     Write-DosMessage -Level "Information" -Message "Check returned no missing tables or views. Skipping data processing."
 }
-Write-Host "Success`n" -ForegroundColor Green
 
-Write-Host "APPLY DATABASE APPLICATION PERMISSIONS"
+Write-DosMessageHeader -Message "APPLY DATABASE APPLICATION PERMISSIONS"
 # apply database permissions needed for application users
 foreach ($databaseUpdate in $config.databaseAppRoleUpdates) {
     Write-DosMessage -Level "Information" -Message "Applying $($databaseUpdate.databaseName) database permissions"
@@ -632,9 +615,8 @@ foreach ($databaseUpdate in $config.databaseAppRoleUpdates) {
     }
     Publish-DatabaseRole @publishDatabaseRoleParams
 }
-Write-Host "Success`n" -ForegroundColor Green
 
-Write-Host "UPDATE APPLICATION SETTINGS"
+Write-DosMessageHeader -Message "UPDATE APPLICATION SETTINGS"
 # update settings in web.config
 Write-DosMessage -Level "Information" -Message "Updating settings in web.config"
 $webConfigPath = [System.IO.Path]::Combine($webroot, 'web.config')
@@ -665,7 +647,6 @@ else {
     $appSettingsJson.ApplicationInsightsSettings.Enabled = $true
 }
 $appSettingsJson | ConvertTo-Json -Depth 10 | Set-Content $appSettingsPath
-Write-Host "Success`n" -ForegroundColor Green
 
 
-Write-Host "INSTALLATION COMPLETED SUCCESSFULLY!" -ForegroundColor Green
+Write-DosMessageHeader -Message "INSTALLATION COMPLETED SUCCESSFULLY!" -End
