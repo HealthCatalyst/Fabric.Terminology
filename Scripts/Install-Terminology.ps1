@@ -253,24 +253,29 @@ Confirm-Configurations -config $config -checkList $checkList
 
 Write-DosMessageHeader -Message "DEPLOY IIS WEB APPLICATION"
 # deploy iis web application
-if (!$AppPoolCredential) {
-    $storedCredentialParams = @{
-        Target   = "healthcatalyst:dos-installer:$($config.appName)"
-        UserName = $config.appPoolUser
-        Persist  = "Enterprise"
-        Type     = "Generic"
-        Message  = "Please Enter AppPool Credentials for [$($config.appPoolUser)]"
-    }
-    $AppPoolCredential = Get-CredentialsFromStore @storedCredentialParams
-}
-Write-DosMessage -Level "Information" -Message "Deploying IIS Web Application"
 $dosWebApplicationParams = @{
     WebAppPackagePath = $config.appPackagePath
     AppPoolName       = $config.appPoolName
-    AppPoolCredential = $AppPoolCredential
     AppName           = $config.appName
     IISWebSite        = $config.siteName
 }
+Import-Module WebAdministration -Force
+if (!(Test-Path "IIS:\AppPools\$($config.appPoolName)" -PathType Container)) {
+    if (!$AppPoolCredential) {
+        $storedCredentialParams = @{
+            Target   = "healthcatalyst:dos-installer:$($config.appName)"
+            UserName = $config.appPoolUser
+            Persist  = "Enterprise"
+            Type     = "Generic"
+            Message  = "Please enter the password for the AppPool Credentials for [$($config.appPoolUser)]"
+        }
+        $dosWebApplicationParams.Add("AppPoolCredential", (Get-CredentialsFromStore @storedCredentialParams))
+    }
+    else {
+        $dosWebApplicationParams.Add("AppPoolCredential", $AppPoolCredential)
+    }
+}
+Write-DosMessage -Level "Information" -Message "Deploying IIS Web Application"
 Publish-DosWebApplication @dosWebApplicationParams -ErrorAction Stop | Out-Null
 
 Write-DosMessageHeader -Message "REGISTER WITH DISCOVERY SERVICE"
