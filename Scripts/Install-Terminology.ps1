@@ -23,12 +23,14 @@ if (!$ConfigManifestPath) {
 }
 
 # get all dependent modules and functions
-Install-Module -Name DgxInstallUtilities -Scope CurrentUser -Force
-Import-Module -Name DgxInstallUtilities -Force
+Install-Module -Name DgxInstallUtilities -RequiredVersion 1.1.18.0 -Scope CurrentUser -Force
+Import-Module -Name DgxInstallUtilities -RequiredVersion 1.1.18.0 -Force
 
 Write-DosMessageHeader -Message "TERMINOLOGY SERVICE INSTALLER" -Rows 2 -Begin
 
 Write-DosMessageHeader -Message "PRE-INSTALLATION CHECKS"
+# check for dotnetcore version
+try { $progressPreference = 'silentlyContinue'; Install-DotNetCoreIfNeeded -version "2.1.8.0" -downloadUrl "https://download.visualstudio.microsoft.com/download/pr/c2b2968d-022d-4889-afd0-b02010813c94/bd315e931f55eecfdaea258cf3dee48e/dotnet-hosting-2.1.8-win.exe" } finally { $progressPreference = 'Continue' }
 # make sure configuration paths exist
 Write-DosMessage -Level "Information" -Message "Find install config [$($ConfigStore.Path)]"
 if (!(Test-Path $ConfigStore.Path)) { throw "Can't find config store [$($ConfigStore.Path)]" }
