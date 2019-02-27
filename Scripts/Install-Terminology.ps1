@@ -23,8 +23,8 @@ if (!$ConfigManifestPath) {
 }
 
 # get all dependent modules and functions
-Install-Module -Name DgxInstallUtilities -Scope CurrentUser -Force
-Import-Module -Name DgxInstallUtilities -Force
+Install-Module -Name DgxInstallUtilities -RequiredVersion 1.1.18.0 -Scope CurrentUser -Force
+Import-Module -Name DgxInstallUtilities -RequiredVersion 1.1.18.0 -Force
 
 Write-DosMessageHeader -Message "TERMINOLOGY SERVICE INSTALLER" -Rows 2 -Begin
 
