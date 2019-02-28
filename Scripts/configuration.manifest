@@ -32,7 +32,7 @@
             <!-- The user account for the app to run under in IIS -->
             <variable name="appPoolUser" value="hqcatalyst\dev.test" />
             <!-- Active directory group that gets default access to terminology -->
-            <variable name="generalAccessADGroup" value="HQCATALYST\Domain Users" />
+            <variable name="generalAccessADGroup" value="Everyone" />
             <!-- The name of the IIS website to install the application under -->
             <variable name="siteName" value="Default Web Site" />
             <!-- The URI for the Analytics Service -->
