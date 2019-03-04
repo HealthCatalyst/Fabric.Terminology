@@ -23,8 +23,8 @@ if (!$ConfigManifestPath) {
 }
 
 # get all dependent modules and functions
-Install-Module -Name DgxInstallUtilities -RequiredVersion 1.1.18.0 -Scope CurrentUser -Force
-Import-Module -Name DgxInstallUtilities -RequiredVersion 1.1.18.0 -Force
+Install-Module -Name DgxInstallUtilities -RequiredVersion 1.1.19.0 -Scope CurrentUser -Force
+Import-Module -Name DgxInstallUtilities -RequiredVersion 1.1.19.0 -Force
 
 Write-DosMessageHeader -Message "TERMINOLOGY SERVICE INSTALLER" -Rows 2 -Begin
 
@@ -90,10 +90,10 @@ $staticConfig = @{
     appDescription                = "The Fabric.Terminology Service provides shared healthcare terminology data."
     appDiscoveryType              = "Service"
     appIsHidden                   = $true
-    authorizationService          = (Get-ServiceFromDiscovery -name "AuthorizationService" -version 1 $storeConfig.discoveryService )
-    identityService               = (Get-ServiceFromDiscovery -name "IdentityService" -version 1 $storeConfig.discoveryService )
-    metaDataService               = (Get-ServiceFromDiscovery -name "MetaDataService" -version 2 $storeConfig.discoveryService )
-    dataProcessingService         = (Get-ServiceFromDiscovery -name "DataProcessingService" -version 1 $storeConfig.discoveryService )
+    identityService               = (Get-DosServiceUrl -DiscoveryServiceUrl $storeConfig.discoveryService -ServiceName "IdentityService" -ServiceVersion 1)
+    authorizationService          = (Get-DosServiceUrl -DiscoveryServiceUrl $storeConfig.discoveryService -ServiceName "AuthorizationService" -ServiceVersion 1)
+    metaDataService               = (Get-DosServiceUrl -DiscoveryServiceUrl $storeConfig.discoveryService -ServiceName "MetaDataService" -ServiceVersion 2)
+    dataProcessingService         = (Get-DosServiceUrl -DiscoveryServiceUrl $storeConfig.discoveryService -ServiceName "DataProcessingService" -ServiceVersion 1)
     metaDataTerminologyPath       = "$PSScriptRoot\Terminology.json"
     metaDataSharedTerminologyPath = "$PSScriptRoot\SharedTerminology.json"
     <# array of roles to be applied to the database table created #>
@@ -274,7 +274,15 @@ if (!(Test-Path "IIS:\AppPools\$($config.appPoolName)" -PathType Container)) {
         $dosWebApplicationParams.Add("AppPoolCredential", (Get-CredentialsFromStore @storedCredentialParams))
     }
     else {
+        Write-DosMessage -Level "Information" -Message "Using pipeline credentials from `$AppPoolCredential parameter: [$($AppPoolCredential.UserName)]"
+        if ($AppPoolCredential.UserName -ne $config.appPoolUser) {
+            Write-DosMessage -Level "Fatal" -Message "The `"userName`" provided in the `$AppPoolCredential parameter is different than the `"appPoolUser`" variable found in the install.config file: [$($AppPoolCredential.UserName)] != [$($config.appPoolUser)]"
+        }
+        if (!(Confirm-DosCredential -Credential $AppPoolCredential)) {
+            Write-DosMessage -Level "Fatal" -Message "Unable to validate the credentials provided in the `$AppPoolCredential parameter: [$($config.appPoolUser)]"
+        }
         $dosWebApplicationParams.Add("AppPoolCredential", $AppPoolCredential)
+        Write-DosMessage -Level "Information" -Message "Credentials validated successfully."
     }
 }
 Write-DosMessage -Level "Information" -Message "Deploying IIS Web Application"
@@ -304,8 +312,7 @@ Add-DiscoveryRegistrationSql @discoveryRegistrationSqlParams -ErrorAction Stop |
 Write-DosMessageHeader -Message "REGISTER WITH FABRIC.IDENTITY"
 # get access token
 Write-DosMessage -Level "Information" -Message "Getting access token using encryption thumbprint and fabric installer secret"
-$encryptionCertificate = Get-EncryptionCertificate $config.encryptionCertificateThumbprint
-$secret = Get-DecryptedString -encryptionCertificate $encryptionCertificate -encryptedString $config.fabricInstallerSecret
+$secret = Unprotect-DosInstallerSecret -CertificateThumprint $config.encryptionCertificateThumbprint -EncryptedInstallerSecretValue $(if ($config.fabricInstallerSecret.StartsWith("!!enc!!:")) { $config.fabricInstallerSecret.Replace("!!enc!!:", "") } else { $config.fabricInstallerSecret })
 $accessTokenParams = @{
     identityUrl = $config.identityService
     clientId    = "fabric-installer"
